@@ -185,6 +185,14 @@
 
 typedef struct { int num; const char *name; } p2k_name_t;
 
+/* What is on the end of a driver output, where the manuals name a part. Only the coil tables carry
+   it: it decides which physical model PinMAME's PWM integrator uses for that output, and a coil is
+   the default, so nothing else has to say anything. The bulb numbers are the manuals' own - the
+   comment after each entry is where they came from */
+enum { P2K_DEV_COIL = 0, P2K_DEV_BULB_89, P2K_DEV_BULB_906 };
+
+typedef struct { int num; const char *name; int dev; } p2k_name_t;
+
 /* which game's tables a caller wants */
 enum { P2K_GAME_RFM = 0, P2K_GAME_SWEP1 = 1 };
 
@@ -346,15 +354,15 @@ static const p2k_name_t p2k_rfm_coil_names[] = {
   {  14, "Bottom Jet" },                       /* AE1-26-1200 */
   {  15, "Autoplunger" },                      /* AE1-23-800 */
   {  16, "Right Lockup" },                     /* AE1-23-800 */
-  {  17, "Center Arrow Flasher" },             /* #906 */
+  {  17, "Center Arrow Flasher", P2K_DEV_BULB_906 }, /* #906 */
   {  18, "Knocker (Optional)" },               /* AE-26-1200, kit */
   {  19, "Shaker (Optional)" },                /* motor, kit */
-  {  22, "Right Popper Flasher" },             /* #906 */
-  {  23, "Left Arch Flasher" },                /* #89 */
-  {  25, "Right Arch Flasher" },               /* #89 */
-  {  26, "Left Martian Flasher" },             /* #89 */
-  {  27, "Right Martian Flasher" },            /* #89 */
-  {  28, "Attack Mars Flasher" },              /* #906 */
+  {  22, "Right Popper Flasher", P2K_DEV_BULB_906 }, /* #906 */
+  {  23, "Left Arch Flasher", P2K_DEV_BULB_89 }, /* #89 */
+  {  25, "Right Arch Flasher", P2K_DEV_BULB_89 }, /* #89 */
+  {  26, "Left Martian Flasher", P2K_DEV_BULB_89 }, /* #89 */
+  {  27, "Right Martian Flasher", P2K_DEV_BULB_89 }, /* #89 */
+  {  28, "Attack Mars Flasher", P2K_DEV_BULB_906 }, /* #906 */
   {  33, "Right Flipper Power" },              /* FL1-11629 */
   {  34, "Right Flipper Hold" },               /* FL1-11629 */
   {  35, "Left Flipper Power" },               /* FL1-11629 */
@@ -382,28 +390,28 @@ static const p2k_name_t p2k_swep1_coil_names[] = {
   {  12, "Upper Jet" },                        /* AE1-26-1200 */
   {  13, "Middle Jet" },                       /* AE1-26-1200 */
   {  14, "Lower Jet" },                        /* AE1-26-1200 */
-  {  15, "Upper Hotdog Flashers" },            /* #906 (2) */
+  {  15, "Upper Hotdog Flashers", P2K_DEV_BULB_906 }, /* #906 (2) */
   {  16, "Right Saucer" },                     /* AE1-27-1200 */
-  {  17, "Lower Left Hotdog Fl." },            /* #906 */
-  {  18, "Lower Right Hotdog Fl." },           /* #906 */
-  {  19, "Back Panel right/upper fl." },       /* #906 */
-  {  20, "Back Panel right/middle fl." },      /* #906 */
-  {  21, "Jet Flasher" },                      /* #906 */
-  {  22, "Left Inlanes Flasher" },             /* #89 */
-  {  23, "Right Inlanes Flasher" },            /* #89 */
-  {  24, "Back Panel Middle fl." },            /* #906 */
-  {  25, "Back Panel right/lower fl." },       /* #906 */
-  {  26, "Back Panel left/upper fl." },        /* #906 */
-  {  27, "Back Panel left/middle fl." },       /* #906 */
-  {  28, "Back Panel left/lower fl." },        /* #906 */
+  {  17, "Lower Left Hotdog Fl.", P2K_DEV_BULB_906 }, /* #906 */
+  {  18, "Lower Right Hotdog Fl.", P2K_DEV_BULB_906 }, /* #906 */
+  {  19, "Back Panel right/upper fl.", P2K_DEV_BULB_906 }, /* #906 */
+  {  20, "Back Panel right/middle fl.", P2K_DEV_BULB_906 }, /* #906 */
+  {  21, "Jet Flasher", P2K_DEV_BULB_906 }, /* #906 */
+  {  22, "Left Inlanes Flasher", P2K_DEV_BULB_89 }, /* #89 */
+  {  23, "Right Inlanes Flasher", P2K_DEV_BULB_89 }, /* #89 */
+  {  24, "Back Panel Middle fl.", P2K_DEV_BULB_906 }, /* #906 */
+  {  25, "Back Panel right/lower fl.", P2K_DEV_BULB_906 }, /* #906 */
+  {  26, "Back Panel left/upper fl.", P2K_DEV_BULB_906 }, /* #906 */
+  {  27, "Back Panel left/middle fl.", P2K_DEV_BULB_906 }, /* #906 */
+  {  28, "Back Panel left/lower fl.", P2K_DEV_BULB_906 }, /* #906 */
   {  33, "Right Flipper Power" },              /* FL1-11722 */
   {  34, "Right Flipper Hold" },               /* FL1-11722 */
   {  35, "Left Flipper Power" },               /* FL1-11722 */
   {  36, "Left Flipper Hold" },                /* FL1-11722 */
   {  37, "Shield Power" },                     /* FL1-15411 */
   {  38, "Shield Hold" },                      /* FL1-15411 */
-  {  39, "Left Laser Flasher" },               /* #89 */
-  {  40, "Right Laser Flasher" },              /* #89 */
+  {  39, "Left Laser Flasher", P2K_DEV_BULB_89 }, /* #89 */
+  {  40, "Right Laser Flasher", P2K_DEV_BULB_89 }, /* #89 */
   {  41, "Neon" },                             /* A-23157 */
   {  42, "Knocker (Optional)" },               /* AE-26-1200, kit */
   {  43, "Shaker Motor (Optional)" },          /* motor, kit */
@@ -654,7 +662,7 @@ static const p2k_name_t *p2k_lamp_names(int game) {
   return game ? p2k_swep1_lamp_names : p2k_rfm_lamp_names;
 }
 
-static const char *p2k_lookup(const p2k_name_t *t, int num) {
+static const char *p2k_lookup(const p2k_name_t * const t, int num) {
   int i; for (i = 0; t[i].name; i++) if (t[i].num == num) return t[i].name;
   return NULL;
 }

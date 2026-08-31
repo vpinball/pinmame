@@ -3,7 +3,7 @@
 // PinMAME P2K subsystem - the PinMAME-facing side of the machine
 //
 // src/wpc/p2k.c is compiled as part of PinMAME and knows nothing about the subsystem's C++
-// types; these four functions are the whole contract between them
+// types; the functions below are the whole contract between them
 
 #include "p2k_driver.h"
 #include "p2k_debug.h"
@@ -93,9 +93,6 @@ void p2k_pinmame_write(offs_t address, UINT32 data, UINT32 mem_mask)
 	/*if (g_machine)*/ g_machine->mem_w(address, data, mem_mask);
 }
 
-// The power driver board's DIP switch byte, register 0x02. The machine reads it once during
-// startup and it selects the country, which is what the pricing tables key off - so a change
-// only takes effect on the next boot, exactly as moving the physical switches would
 // Put the host's date and time into the machine's real-time clock, on every start, so it shows real
 // time rather than the clock it had when it was last switched off. keep_year must be set for a
 // machine that has a clock of its own: the firmware treats the year register as a count of years to
@@ -105,23 +102,42 @@ void p2k_pinmame_clock_from_host(int keep_year)
 	if (g_machine) g_machine->clock_from_host(keep_year != 0);
 }
 
+// The power driver board's DIP switch byte, register 0x02: the country code, which is what the
+// pricing tables key off. Pushed every frame, but the machine only reads it during startup, so a
+// change takes effect on the next boot - exactly as moving the physical switches would
 void p2k_pinmame_set_dips(unsigned char dips)
 {
 	if (g_machine) g_machine->set_dips(dips);
 }
 
-// The pinball I/O. PinMAME's core model owns the switch matrix and wants the lamp and coil
-// state back; the driver board in the subsystem is the other end of that. Called from
-// src/wpc/p2k.c once per frame for now - fast enough for lamps, and the point at which a faster
-// sync would go if coils need it
+// The pinball I/O. PinMAME's core model owns the switch matrix and wants the lamp and coil state
+// back; the driver board in the subsystem is the other end of that. Switches go in live, and the
+// outputs come back as what the board did since the last pull rather than what it is doing at this
+// instant - it chops its coils far faster than anything here is called, so a sample would alias.
+// See p2k_state::pull_outputs and the note on its accumulators
+
+// The array to read the matrix from. The caller keeps ownership and must outlive the machine - src/wpc/p2k.c passes coreGlobals.swMatrix, which is static
+void p2k_pinmame_set_switch_source(const volatile unsigned char *matrix)
+{
+	if (g_machine) g_machine->set_switch_source(matrix);
+}
+
+// Where to report a coil edge to. src/wpc/p2k.c passes a function that hands it to PinMAME's PWM
+// integrator; a standalone build passes nothing and the machine runs exactly as before
+void p2k_pinmame_set_solenoid_notify(void (*fn)(UINT32 solenoids, UINT32 solenoids2))
+{
+	if (g_machine) g_machine->set_solenoid_notify(fn);
+}
+
+// With a live source set this only refreshes the fallback copy, but it also carries the debug hooks
 void p2k_pinmame_push_switches(const unsigned char *matrix, unsigned count)
 {
 	/*if (g_machine)*/ g_machine->push_switches(matrix, count);
 }
 
-void p2k_pinmame_pull_outputs(unsigned char *lamps, unsigned lamp_columns, UINT32 *solenoids, UINT32 *solenoids2)
+void p2k_pinmame_pull_outputs(unsigned char *lamps, unsigned lamp_columns, UINT32 *solenoids, UINT32 *solenoids2, UINT32 *solNow, UINT32 *sol2Now)
 {
-	/*if (g_machine)*/ g_machine->pull_outputs(lamps, lamp_columns, solenoids, solenoids2);
+	/*if (g_machine)*/ g_machine->pull_outputs(lamps, lamp_columns, solenoids, solenoids2, solNow, sol2Now);
 }
 
 // The current picture, as 0x00RRGGBB pixels, for PinMAME's video path. The caller passes a

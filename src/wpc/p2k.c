@@ -54,7 +54,9 @@ extern void p2k_pinmame_set_dips(unsigned char dips);
    keep_year for a machine that already has a clock of its own: the firmware reads the year register
    as a number of years to add rather than a date, so giving it the host year twice makes the displayed year climb */
 extern void p2k_pinmame_clock_from_host(int keep_year);
-extern void p2k_pinmame_pull_outputs(unsigned char *lamps, unsigned lamp_columns, UINT32 *solenoids, UINT32 *solenoids2);
+extern void p2k_pinmame_pull_outputs(unsigned char *lamps, unsigned lamp_columns, UINT32 *solenoids, UINT32 *solenoids2, UINT32 *solNow, UINT32 *sol2Now);
+extern void p2k_pinmame_set_switch_source(const volatile unsigned char *matrix);
+extern void p2k_pinmame_set_solenoid_notify(void (*fn)(UINT32 solenoids, UINT32 solenoids2));
 
 static READ32_HANDLER(p2k_r)  { return p2k_pinmame_read(offset * 4, ~mem_mask); }
 static WRITE32_HANDLER(p2k_w) { p2k_pinmame_write(offset * 4, data, ~mem_mask); }
@@ -120,6 +122,7 @@ static int p2k_watch(const char *var, int *cache) {
 static int p2k_solwatch(void)  { static int on = -1; return p2k_watch("P2K_SOLWATCH",  &on); }
 static int p2k_lampwatch(void) { static int on = -1; return p2k_watch("P2K_LAMPWATCH", &on); }
 static int p2k_swwatch(void)   { static int on = -1; return p2k_watch("P2K_SWWATCH",   &on); }
+static int p2k_pwmwatch(void)  { static int on = -1; return p2k_watch("P2K_PWMWATCH", &on); }
 
 /* Diff a bit array against the last call's copy and print what changed, by name. Bit b of byte i
    is device number base + i * stride + b, which is the only thing that differs between the three:
@@ -157,6 +160,7 @@ static int p2k_dcs_log(void) {
 #define p2k_solwatch()  0
 #define p2k_lampwatch() 0
 #define p2k_swwatch()   0
+#define p2k_pwmwatch()  0
 #define p2k_dcs_log()   0
 #endif
 
@@ -201,22 +205,58 @@ void p2k_dcs_write(UINT32 offset, UINT32 data, UINT32 mem_mask) {
   else                 dcs_p2k_echo_w((UINT8)value);
 }
 
+/* Both defined with the coil map further down, which needs the custom-solenoid constants */
+static void p2k_initPwm(void);
+static int p2k_solIndex(int driver);
+
 /* The pinball I/O meets PinMAME's core model here: the switch matrix goes down to the driver
-   board, the lamp columns and coil bits come back. Once per frame is enough for lamps for now(!) - the core
-   will integrate them anyway; if coils turn out to need finer timing, adopt here.
+/  board, the lamp columns and coil bits come back.
+/
+/  Driven from the CPU's frame interrupt, the way wpc.c and se.c do it, and deliberately not from
+/  the video update where it used to sit: a PINMAME_VIDEO_UPDATE is reached through draw_screen(),
+/  which mame.c skips when osd_skip_this_frame() says so, and a skipped frame then meant the machine
+/  got no switches and nobody read its coils.
+/
+/  What comes back is everything the board did since the last call, not its state at this instant.
+/  It chops its outputs far faster than this runs, so a sample aliases - that is what used to make
+/  swep1_150's neon tube toggle every two or three frames. p2k_state::pull_outputs does the
+/  accumulating; src/p2k/README.md has the measurements the design rests on.
+/
+/  p2k_names.h carries all tables for switch/coil/lamp mappings and every one has been stepped
+/  through the games' own test menus */
 
-   //!! PWM missing
+/* Frames each kind of output is accumulated over before it is published: the window only has to outlast
+/  the gap between two pulses of one output, and 33 ms clears the longest chop period measured here
+/  by threefold where 16.7 ms would not. Flippers bypass it and publish every frame - they are the one output where a player would feel the extra hold */
+#define P2K_SOLSMOOTH   2
+#define P2K_LAMPSMOOTH  2
+#define P2K_FLIPSOLMASK (CORE_LLFLIPSOLBITS | CORE_LRFLIPSOLBITS)
 
-   p2k_names.h carries all tables for switch/coil/lamp mappings and every one has been stepped through the games' own test menus */
+/* Whether PinMAME's PWM integration is running for coils. It is the user's choice, not the
+   driver's: unlike capcom.c and sam.c this machine does not force it on, because the binary path
+   above is complete on its own and nothing here depends on the integrator existing */
+#define P2K_PWM_SOL (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL))
+
+static struct {
+  UINT32 solAcc, sol2Acc; /* OR of the driver levels since the last publish */
+  UINT8  lampAcc[16];     /* OR of the lamp rows since the last publish */
+  int    tick;            /* frames since the machine started */
+  int    ready;           /* set once the subsystem exists, so a stray interrupt cannot call into it */
+} p2klocals;
+
 static void p2k_sync_io(void) {
   UINT8 lamps[16]; /* eight driven columns, two row banks each */
-  UINT32 solenoids = 0, solenoids2 = 0;
+  UINT32 solenoids = 0, solenoids2 = 0, solNow = 0, sol2Now = 0;
   int i;
 
   /* Let the core read the keyboard into its switch columns first - it is what calls our
      SWITCH_UPDATE handler. Nothing else in this driver drives it, so without this the cabinet
-     and coin door keys never reach the machine. The flipper argument enables the core's
-     end-of-stroke simulation, which this board does not report. //!! ??
+     and coin door keys never reach the machine.
+
+     The flipper argument guards core_updateSw()'s "fake solenoids" block, which only runs for
+     games whose flippers are not CPU controlled. P2K_FLIPPERS declares FLIP_SOL(FLIP_L) and masks
+     FLIP_EOS out, so neither that block nor the core's end-of-stroke simulation applies: nothing
+     turns on the argument.
 
      Order matters here: core_updateSw() rewrites bits 0x02 and 0x08 of the flipper column from
      the flipper keys, and on this board those are the coin door switch and an unused position.
@@ -228,17 +268,48 @@ static void p2k_sync_io(void) {
      for a watch and nothing else */
   p2k_bringupFrame++;
 #endif
+  p2klocals.tick++;
 
   core_updateSw(FALSE);
 
   p2k_pinmame_set_dips((unsigned char)core_getDip(0));
+  /* The board reads coreGlobals.swMatrix directly - see p2k_pinmame_set_switch_source() in
+     MACHINE_INIT - so this only refreshes the copy it falls back on, and the debug hooks inside it */
   p2k_pinmame_push_switches((const unsigned char *)coreGlobals.swMatrix, CORE_MAXSWCOL);
-  p2k_pinmame_pull_outputs(lamps, sizeof(lamps), &solenoids, &solenoids2);
+  p2k_pinmame_pull_outputs(lamps, sizeof(lamps), &solenoids, &solenoids2, &solNow, &sol2Now);
 
   for (i = 0; i < (int)sizeof(lamps); i++)
-    coreGlobals.lampMatrix[i] = lamps[i];
-  coreGlobals.solenoids = solenoids;
-  coreGlobals.solenoids2 = solenoids2;
+    p2klocals.lampAcc[i] |= lamps[i];
+  p2klocals.solAcc  |= solenoids;
+  p2klocals.sol2Acc |= solenoids2;
+
+  coreGlobals.pulsedSolState = solNow;  /* core_getPulsedSol()'s "instant status": never smoothed */
+
+  /* Flippers first and every frame, then the rest on the slower window. The two are interleaved in
+     the same word, so each publish has to leave the other's bits alone */
+  coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~(UINT32)P2K_FLIPSOLMASK)
+                         | (solenoids2 & (UINT32)P2K_FLIPSOLMASK);
+
+  /* Published whether or not the integrator is also running, which is what wpc.c and se.c do: with
+     CORE_MODOUT_SOL_2_STATE's fastOn set it writes these same words itself on every edge, so the
+     two overlap and the more recent writer wins. Standing aside instead was tried and is worse -
+     the accumulators then never reset, and drivers 37-48 go stale in a word p2k_getSol() reads */
+  if ((p2klocals.tick % P2K_SOLSMOOTH) == 0) {
+    coreGlobals.solenoids  = p2klocals.solAcc;
+    coreGlobals.solenoids2 = (coreGlobals.solenoids2 & (UINT32)P2K_FLIPSOLMASK)
+                           | (p2klocals.sol2Acc & ~(UINT32)P2K_FLIPSOLMASK);
+    p2klocals.solAcc = p2klocals.sol2Acc = 0;
+  }
+  if ((p2klocals.tick % P2K_LAMPSMOOTH) == 0) {
+    for (i = 0; i < (int)sizeof(p2klocals.lampAcc); i++)
+      coreGlobals.lampMatrix[i] = p2klocals.lampAcc[i];
+    memset(p2klocals.lampAcc, 0, sizeof(p2klocals.lampAcc));
+  }
+
+  /* Everything below watches what was just published, so it reads the smoothed values rather than
+     the raw pull - which is what the rest of PinMAME sees, and so the right thing to be told about */
+  solenoids  = coreGlobals.solenoids;
+  solenoids2 = coreGlobals.solenoids2;
 
 #if P2K_DEBUG
   /* The watches sit here, right after this driver publishes everything, because it is the one
@@ -247,7 +318,7 @@ static void p2k_sync_io(void) {
      runs during core_updateSw() above, before p2k_pinmame_pull_outputs() has fetched the board's
      own state, so what it sees is the core's "fake solenoids if not CPU controlled" rather than
      the machine's. pull_outputs overwrites solenoids2 whole, so the faking never reaches here */
-  if (p2k_solwatch() || p2k_lampwatch() || p2k_swwatch()) {
+  if (p2k_solwatch() || p2k_lampwatch() || p2k_swwatch() || p2k_pwmwatch()) {
     const int game = p2k_gameIndex();
 
     /* Coils and flashers. All six driver registers, which is drivers 1-48: solenoids is 1-32 and
@@ -269,7 +340,28 @@ static void p2k_sync_io(void) {
        has the arithmetic and how it was measured */
     if (p2k_lampwatch()) {
       static UINT8 prev[16];
-      p2k_watch_bits("lamp", lamps, (int)sizeof(lamps), prev, p2k_lamp_names(game), 0, 8);
+      p2k_watch_bits("lamp", (const UINT8 *)coreGlobals.lampMatrix, 16, prev, p2k_lamp_names(game), 0, 8);
+    }
+
+    /* What the integrator makes of the coils, as a fraction rather than a bit. A flasher driven in
+       15 ms pulses should settle below 1.0 here while the binary watch above says it is simply on */
+    if (p2k_pwmwatch() && P2K_PWM_SOL) {
+      static float prevv[CORE_MODOUT_SOL_MAX];
+      const p2k_name_t * const coils = p2k_coil_names(game);
+      int k;
+      for (k = 0; coils[k].name; k++) {
+        /* p2k_solIndex() answers an absolute index into physicOutputState[], which starts at
+           CORE_MODOUT_SOL0 - so a solenoid-sized array has to be indexed from there */
+        const int idx = p2k_solIndex(coils[k].num);
+        const int slot = idx - CORE_MODOUT_SOL0;
+        const float v = coreGlobals.physicOutputState[idx].value;
+        const float d = v > prevv[slot] ? v - prevv[slot] : prevv[slot] - v;
+        if (d > 0.02f) {
+          printf("[p2k pwm] frame %d: %3d %-28s %.3f\n", p2k_bringupFrame, coils[k].num, coils[k].name, (double)v);
+          fflush(stdout);
+          prevv[slot] = v;
+        }
+      }
     }
 
     /* Switches, as they went down to the board a moment ago. Optos read inverted from what the
@@ -281,6 +373,15 @@ static void p2k_sync_io(void) {
     }
   }
 #endif
+}
+
+/* The frame interrupt, and the only thing that drives the pinball I/O.
+/
+/  Guarded on p2klocals.ready rather than trusting the ordering: MACHINE_INIT builds the subsystem
+/  and cpu_run() starts the clock afterwards, so an interrupt cannot arrive first today, but
+/  p2k_pinmame_pull_outputs() dereferences the machine without checking and this is a cheap way to keep that honest */
+static INTERRUPT_GEN(p2k_vblank) {
+  if (p2klocals.ready) p2k_sync_io();
 }
 
 /* Per-channel average of two 0x00RRGGBB pixels, rounding down, without letting a channel carry
@@ -305,8 +406,6 @@ static void p2k_sync_io(void) {
 static PINMAME_VIDEO_UPDATE(p2k_video) {
   static UINT32 frame[P2K_MAX_PIXELS];
   unsigned width, height, success, fast_path_success;
-
-  p2k_sync_io();
 
   success = p2k_pinmame_frame(frame, P2K_MAX_PIXELS, &width, &height, (bitmap->depth != 32), &fast_path_success);
   if (!success || !width || !height) { fillbitmap(bitmap, 0, cliprect); return; }
@@ -527,8 +626,16 @@ static MACHINE_INIT(p2k) {
   }
 
   p2k_dumpNames();
+  memset(&p2klocals, 0, sizeof(p2klocals));
   p2k_pinmame_start(memory_region(P2K_PRISMREGION), (unsigned int)memory_region_length(P2K_PRISMREGION),
                     memory_region(P2K_UPDREGION), (unsigned int)memory_region_length(P2K_UPDREGION));
+  /* The board reads the switch matrix out of this array as the game asks for a column, rather than
+     out of a copy taken once a frame - so a table or a keypress reaches it straight away. It is the
+     same array wpc.c and se.c let their read handlers index, and it is static, so handing over a
+     pointer to it is safe for the life of the machine */
+  p2k_pinmame_set_switch_source(coreGlobals.swMatrix);
+  p2k_initPwm();
+  p2klocals.ready = 1;
   if (p2k_nvLoaded) { /* whatever PinMAME had on file, after the reset that fills in the EEPROM defaults */
     p2k_pinmame_nvram_set(P2K_NV_BLOCK_CMOS,   p2k_nvCmos,   P2K_NV_CMOS_SIZE);
     p2k_pinmame_nvram_set(P2K_NV_BLOCK_EEPROM, p2k_nvEeprom, P2K_NV_EEPROM_SIZE);
@@ -548,6 +655,7 @@ static MACHINE_INIT(p2k) {
 /  196828 zero bytes: nothing was saved, and restoring those zeros over the PLX EEPROM defaults
 /  stopped the next boot dead at "STARTING UPDATE GAME CODE" */
 static MACHINE_STOP(p2k) {
+  p2klocals.ready = 0;
   p2k_pinmame_nvram_get(P2K_NV_BLOCK_CMOS,   p2k_nvCmos,   P2K_NV_CMOS_SIZE);
   p2k_pinmame_nvram_get(P2K_NV_BLOCK_EEPROM, p2k_nvEeprom, P2K_NV_EEPROM_SIZE);
   p2k_pinmame_nvram_get(P2K_NV_BLOCK_RTC,    p2k_nvRtc,    P2K_NV_RTC_SIZE);
@@ -562,6 +670,9 @@ MACHINE_DRIVER_START(p2k)
 	MDRV_NVRAM_HANDLER(p2k)
 	MDRV_CPU_ADD_TAG("mcpu", MEDIAGX, 233000000/3) //!! sync with p2k_pinmame.cpp
 	MDRV_CPU_MEMORY(p2k_readmem, p2k_writemem)
+	/* Once per frame, and it does not interrupt the CPU - MEDIAGX has no vblank line wired here.
+	   It is a scheduler callback, which is exactly what wpc.c and se.c use theirs for */
+	MDRV_CPU_VBLANK_INT(p2k_vblank, 1)
 	MDRV_IMPORT_FROM(wmssnd_dcs3)
 	/* 480 rows, not the 240 the frame buffer holds: core_initDisplaySize() forces the visible
 	   height to Machine->drv->screen_height, so the layout's row count alone does not size the window. See P2K_LINE_DOUBLE */
@@ -1317,7 +1428,7 @@ ROM_END
 /* 2.10 in four builds, and the split runs deeper than the 2.24 one does: r1-r3 are not just
    earlier links of r4's code.
 
-     r1   undated, in the 24 Jan package alongside r2 (see below)
+     r1   19/01/19 no package of its own, it rides along in the 24 Jan one (see below)
      r2   24/01/19
      r3   06/04/19
      r4   11/04/19 the release, and the one this driver had before the other three turned up
@@ -1336,8 +1447,13 @@ ROM_END
    symbols.rom beside them, which are older. That is this line's habit rather than a one-off - the
    06 Apr archive does the same and its unprefixed copy is exactly r2, and the 22 Nov 2017 1.90
    archive's unprefixed copy is exactly the 21 Nov build. So the unprefixed pair is the previous
-   build left in place, which dates r1 to before 24 Jan 2019 and no closer. Its boot data carries
-   no build stamp the others' do not, so there is nothing sharper to date it by */
+   build left in place.
+
+   Having no package of its own does not make it undated, though: its boot data carries an ordinary
+   build stamp like every other set's, Sat Jan 19 19:36:59 2019, five days before r2. The whole line
+   reads 19 Jan -> 24 Jan -> 06 Apr -> 11 Apr 2019. Worth stating because the file name cannot tell
+   you - only the version-prefixed copies are named, so anything that scans for pin2000_*_bootdata
+   .rom walks straight past this one and it looks undated when it is not */
 ROM_START(rfm_210r4)
 	P2K_COMMON_RFM_SF("pin2000_50070_0191_sf.rom", CRC(9870a651) SHA1(d16e3fc489f90677f9bf0666b4dc01a412e7dadd))
 	P2K_UPDATE(50070, 0210, CRC(ce6111dc) SHA1(fcce8430bac6bad9260ef86f3e37cc87eebb3896),
@@ -2002,25 +2118,18 @@ static core_tLCDLayout p2k_disp[] = {
 /  which is not normally fitted, so its test never writes the register - that is why this took an
 /  Episode I set. Only the myPinballs drives - knocker 42, shaker 43, topper 44 - wait on 2.x.
 /
-/  STILL OUTSTANDING: the modulated outputs. This machine takes no part in PinMAME's PWM model at
-/  all - no coil strength, no bulb fade, no GI brightness, just on and off - and nSolenoids is left
-/  at 0 on purpose. That is not an oversight, and switching it on is not small:
+/  THE MODULATED OUTPUTS: coils and flashers are done, lamps are not.
 /
-/    * nSolenoids alone makes things worse, not better. core_getSol() reads physicOutputState[] as
-/      soon as the count is non-zero and the option is set, so declaring the count without also
-/      feeding the integrator would report every output as permanently off.
-/    * The integrator wants writes when the hardware is written, not once a frame.
-/      core_write_pwm_output*() integrates over the time an output was actually on, and
-/      p2k_sync_io() above samples the whole machine once per video update - a coil pulsed for
-/      20 ms between two 60 Hz samples can read as fully on, fully off or anything between, and no
-/      care at this end recovers a duty cycle that was never captured.
-/    * So it has to be pushed from the subsystem, where p2k_state writes the coil, lamp and GI
-/      registers, and that means p2k_driver.cpp reaching into the core - which it deliberately does
-/      not do. Either that boundary gains a narrow output-event callback, or the sync moves to
-/      something finer than a frame.
-/    * Then the straightforward part: core_set_pwm_output_type() per output, with the coil and bulb
-/      models the manuals' solenoid tables already name - AE1-26-1500, #906, #89 and the rest - and
-/      core_update_pwm_solenoids()/_lamps()/_gis() on a tick.
+/  p2k_initPwm() below declares the coil outputs and p2k_solPwm() feeds the integrator from the
+/  driver register write, so a flasher now reports the brightness its filament actually reached
+/  instead of a bit. Measured on rfm_160, a #89 arch flasher climbs 0.06, 0.19, 0.59, 0.71, 1.02
+/  over six frames and decays over eight more, and a short pulse on a #906 peaks around 0.17 - it
+/  never gets bright, which is the point. Coils stay binary, which is what CORE_MODOUT_SOL_2_STATE
+/  is for: the question about a coil is whether it fired.
+/
+/  It is off unless the user turns it on. Unlike capcom.c and sam.c this driver does not set
+/  CORE_MODOUT_FORCE_ON, because the binary path above is complete on its own - and because
+/  FORCE_ON would actively break things here while nLamps is 0, see the note in p2k_initPwm().
 /
 /  capcom.c is the smallest driver that does the whole thing, and the one to read first */
 #define P2K_CUSTSOL_FIRSTDRIVER 37
@@ -2032,6 +2141,84 @@ static int p2k_getSol(int solNo) {
     return 0;
   /* solenoids2 bit 0 is driver 33, so bit 4 is 37 and bit 15 is 48 */
   return (coreGlobals.solenoids2 & (1u << (driver - 33))) ? 1 : 0;
+}
+
+/* Where each driver output lands in PinMAME's modulated-output array.
+/
+/  The three ranges are not contiguous, because the core reserves fixed slots: 1-32 are the plain
+/  solenoids, the flipper coils have to sit in the lower flipper slots 45-48 where core_getSol() and
+/  core_getAllPhysicSols() look for them once hasModulatedFlippers is set, and everything above goes
+/  in the custom solenoids - the same 51-62 that p2k_getSol() answers for on the binary path. Both
+/  paths therefore describe one output the same way round */
+static int p2k_solIndex(int driver) {
+  if (driver <= 32) return CORE_MODOUT_SOL0 + driver - 1;
+  if (driver <= 36) return CORE_MODOUT_SOL0 + sLRFlipPow - 1 + (driver - 33);
+  return CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL - 1 + (driver - P2K_CUSTSOL_FIRSTDRIVER);
+}
+
+/* A coil edge, straight from the driver register write in p2k_driver.cpp.
+/
+/  This is the whole point of the exercise: core_write_pwm_output*() timestamps the change with
+/  timer_get_time() as it is called, so the integrator learns how long an output was actually on
+/  rather than what it happened to be doing when a frame ended. The board chops its coils at 180 Hz
+/  and drives flashers in 15 ms pulses, neither of which survives a 60 Hz sample.
+/
+/  Cheap to call for all six registers every time: the core records nothing for a bit that has not
+/  moved, and the subsystem only calls here when a register write actually changed a level */
+static void p2k_solPwm(UINT32 sol, UINT32 sol2) {
+  if (!P2K_PWM_SOL) return;
+  core_write_pwm_output_8b(p2k_solIndex(1),  (UINT8) (sol         & 0xff));
+  core_write_pwm_output_8b(p2k_solIndex(9),  (UINT8)((sol  >>  8) & 0xff));
+  core_write_pwm_output_8b(p2k_solIndex(17), (UINT8)((sol  >> 16) & 0xff));
+  core_write_pwm_output_8b(p2k_solIndex(25), (UINT8)((sol  >> 24) & 0xff));
+  /* Not the 8b form for these three: only the first range is eight-aligned, which that one asserts */
+  core_write_pwm_output(p2k_solIndex(33), 4, (UINT8) (sol2        & 0x0f));
+  core_write_pwm_output(p2k_solIndex(37), 8, (UINT8)((sol2 >>  4) & 0xff));
+  core_write_pwm_output(p2k_solIndex(45), 4, (UINT8)((sol2 >> 12) & 0x0f));
+}
+
+/* Declare the outputs, and what is on the end of each.
+/
+/  Called from MACHINE_INIT, which is coreData->init - after MACHINE_INIT(core) has put the default
+/  types in and before it builds the bulb tables, the same slot wpc.c and capcom.c fill.
+/
+/  Coils are the default and flashers come out of the game's own table, which carries the manuals'
+/  part numbers as P2K_DEV_ entries. That is the whole per-game list: wpc.c writes one out by hand
+/  for every title it supports, and this reads the one already checked against the machines' test
+/  menus. The bulb models are WPC's because the board is: a #89 or #906 on 20V through the same
+/  driver transistor, which is what CORE_MODOUT_BULB_*_20V_DC_WPC describes */
+static void p2k_initPwm(void) {
+  const p2k_name_t * const coils = p2k_coil_names(p2k_gameIndex());
+  int i;
+
+  coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + P2K_CUSTSOL_COUNT;
+  coreGlobals.hasModulatedFlippers = TRUE;
+  core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
+
+  for (i = 0; coils[i].name; i++) {
+    if (coils[i].dev == P2K_DEV_BULB_89)
+      core_set_pwm_output_type(p2k_solIndex(coils[i].num), 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
+    else if (coils[i].dev == P2K_DEV_BULB_906)
+      core_set_pwm_output_type(p2k_solIndex(coils[i].num), 1, CORE_MODOUT_BULB_906_20V_DC_WPC);
+  }
+
+  p2k_pinmame_set_solenoid_notify(p2k_solPwm);
+
+#if P2K_DEBUG
+  /* P2K_PWM=1 turns the integration on for a standalone run, which is otherwise impossible: nothing
+     outside VPinMAME/libpinmame ever sets options.usemodsol, so the code above would never execute
+     and could not be checked.
+     ENABLE_PHYSOUT_SOLENOIDS and not FORCE_ON, deliberately. FORCE_ON also makes
+     core_update_pwm_outputs() rebuild coreGlobals.lampMatrix from physicOutputState whenever the
+     updated range touches the lamps - and with nLamps still 0 that range is empty, so every lamp
+     would be rewritten to off. Whoever declares the lamps later can revisit this; until then the
+     narrow flag is the only safe one here */
+  if (getenv("P2K_PWM")) {
+    options.usemodsol |= CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS;
+    fprintf(stderr, "[p2k pwm] solenoid PWM integration on: %d outputs, flashers from the %s table\n",
+            coreGlobals.nSolenoids, p2k_romPrefix());
+  }
+#endif
 }
 
 /* GEN_P2K: Nothing in the core tests the bit, so setting it changes no
@@ -2194,8 +2381,8 @@ CORE_CLONEDEF(rfm, 191, 160, "Pinball 2000: Revenge From Mars (1.91 unofficial M
 CORE_CLONEDEF(rfm, 195r1, 160, "Pinball 2000: Revenge From Mars (1.95 rev. 1 unofficial MOD)", 2018, "Midway / hemtoni", p2k, 0)
 CORE_CLONEDEF(rfm, 195r2, 160, "Pinball 2000: Revenge From Mars (1.95 rev. 2 unofficial MOD)", 2018, "Midway / hemtoni", p2k, 0)
 CORE_CLONEDEF(rfm, 200, 160, "Pinball 2000: Revenge From Mars (2.00 unofficial MOD)", 2018, "Midway / mypinballs", p2k, 0)
-CORE_CLONEDEF(rfm, 210r1, 160, "Pinball 2000: Revenge From Mars (2.10 rev. 1 unofficial MOD)", 2019, "Midway / mypinballs", p2k, 0)
-CORE_CLONEDEF(rfm, 210r2, 160, "Pinball 2000: Revenge From Mars (2.10 rev. 2 unofficial MOD)", 2019, "Midway / mypinballs", p2k, 0)
+CORE_CLONEDEF(rfm, 210r1, 160, "Pinball 2000: Revenge From Mars (2.10 rev. 1 unofficial MOD)", 2019, "Midway / mypinballs", p2k, 0) // quirk: seems to not work, but an existing CMOS fixes the boot (so just reset/restart once)
+CORE_CLONEDEF(rfm, 210r2, 160, "Pinball 2000: Revenge From Mars (2.10 rev. 2 unofficial MOD)", 2019, "Midway / mypinballs", p2k, 0) // dto.
 CORE_CLONEDEF(rfm, 210r3, 160, "Pinball 2000: Revenge From Mars (2.10 rev. 3 unofficial MOD)", 2019, "Midway / mypinballs", p2k, 0)
 CORE_CLONEDEF(rfm, 210r4, 160, "Pinball 2000: Revenge From Mars (2.10 rev. 4 unofficial MOD)", 2019, "Midway / mypinballs", p2k, 0)
 CORE_CLONEDEF(rfm, 220, 160, "Pinball 2000: Revenge From Mars (2.20 unofficial MOD)", 2019, "Midway / mypinballs", p2k, 0)

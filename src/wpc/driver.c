@@ -3362,8 +3362,8 @@ DRIVER(rfm,220)         //          10/19   Pinball 2000: Revenge From Mars (2.2
 // 2.10 in four builds, and unlike 2.24's three these are not one line: r1-r3 share an im_flsh0 and a sound flash of their own, r4 has a different im_flsh0 and goes back to 1.91's flash the way 2.00 and 2.20/2.21 do. r4 is the actual release
 DRIVER(rfm,210r4)       //          04/19   Pinball 2000: Revenge From Mars (2.10 rev. 4 unofficial MOD) // 11 Apr, the release: adds shaker (driver 19) and knocker (driver 18) hardware control, both optional
 DRIVER(rfm,210r3)       //          04/19   Pinball 2000: Revenge From Mars (2.10 rev. 3 unofficial MOD) // 06 Apr
-DRIVER(rfm,210r2)       //          01/19   Pinball 2000: Revenge From Mars (2.10 rev. 2 unofficial MOD) // 24 Jan
-DRIVER(rfm,210r1)       //          ??/19   Pinball 2000: Revenge From Mars (2.10 rev. 1 unofficial MOD) // no package of its own - the unprefixed copy left in r2's archive, so before 24 Jan and no closer
+DRIVER(rfm,210r2)       //          01/19   Pinball 2000: Revenge From Mars (2.10 rev. 2 unofficial MOD) // 24 Jan; like r1, wedges on the very first boot of an empty CMOS and comes up normally from the second on - see src/p2k/README.md
+DRIVER(rfm,210r1)       //          01/19   Pinball 2000: Revenge From Mars (2.10 rev. 1 unofficial MOD) // 19 Jan; no package of its own - the unprefixed copy left in r2's archive, but its boot data is stamped like any other; wedges on the very first boot of an empty CMOS, see r2 above
 DRIVER(rfm,200)         //          12/18   Pinball 2000: Revenge From Mars (2.00 unofficial MOD)    // myPinballs' first; still XINA 1.22, keeps 1.91's sound flash, and none of 2.10's optional shaker/knocker adjustments yet
 
 // hemtoni's RFM line: all XINA 1.22. In order: 1.90, 1.95, 1.91 (so 1.95 is not the newest despite the number).
@@ -3385,7 +3385,7 @@ DRIVER(rfm,190r1)       //          11/17   Pinball 2000: Revenge From Mars (1.9
 DRIVER(rfm,121)         //          05/16   Pinball 2000: Revenge From Mars (1.21 unofficial MOD)        // it validates and starts, then drops into the Fatal monitor. Its game.rom has a "GRUB2 Multiboot" header where every other image has a build date, which is the suspect of not booting properly
 
 // semi-official ones:
-DRIVER(rfm,180)         //          04/06   Pinball 2000: Revenge From Mars (1.80 unofficial MOD)        // 23 Apr; the only version needing 8MB SDRAM; Tom Uban, for the EPC 2006 tournament server; package says 09/03, but its game.rom was built 04/2006
+DRIVER(rfm,180)         //          04/06   Pinball 2000: Revenge From Mars (1.80 unofficial MOD)        // 23 Apr; the only version needing 8MB SDRAM; Tom Uban, for the EPC 2006 tournament server; also packaged as ..._09222003_..., byte for byte the same four files, which is where the 09/03 date on it comes from
 DRIVER(rfm,170)         //          02/06   Pinball 2000: Revenge From Mars (1.70 unofficial MOD)        // built 06 Feb, revision history dates the release 16 Apr - "This version includes JTS."; still on 1.60's XINA 1.19, so 1.80 is where 1.21 and the 8MB arrive
 
 // official line:
@@ -3458,7 +3458,7 @@ DRIVER(swep1,110)       //          09/99   Pinball 2000: Star Wars Episode I (1
 DRIVER(swep1,100)       //          07/99   Pinball 2000: Star Wars Episode I (1.00) // 19 Jul, XINA 1.13; first production release
 // 0.51 (07/99, XINA 1.12)
 // 0.50 (07/99, XINA 1.12)
-// 0.43 (07/99, XINA 1.12)
+// 0.43 (07/99, XINA 1.12) - an owner reports it on a developer flash PRISM card; no package or extraction seen
 // 0.42 (07/99, XINA 1.12)
 // 0.41 (06/99, XINA 1.12)
 DRIVER(swep1,040)       //          06/99   Pinball 2000: Star Wars Episode I (0.40 prototype/factory) // the Prism ROM copy, as above - and the changelog calls 0.40 "the big ROM masking, the offical masked version", so what is in those mask ROMs is exactly this

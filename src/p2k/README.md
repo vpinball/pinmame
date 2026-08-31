@@ -24,7 +24,7 @@ MODs elsewhere:
 | `rfm_210r4` | | 04/2019 | the 11 Apr build, the 2.10 release; shaker/knocker support |
 | `rfm_210r3` | | 04/2019 | the 06 Apr build |
 | `rfm_210r2` | | 01/2019 | the 24 Jan build |
-| `rfm_210r1` | | ?/2019 | no package of its own - the unprefixed copy left in r2's archive, so older than 24 Jan and no closer. r1-r3 share an im_flsh0 and a sound flash that r4 does not use |
+| `rfm_210r1` | | 01/2019 | the 19 Jan build. No package of its own - it is the unprefixed copy left in r2's archive - but its boot data is stamped like any other, so it is dated. r1-r3 share an im_flsh0 and a sound flash that r4 does not use |
 | `rfm_200` | | 12/2018 | myPinballs' first; still XINA 1.22, keeps 1.91's sound flash, no shaker/knocker yet |
 | `rfm_195r2` | | 03/2018 | the 29 Mar build, the 1.95 that circulated; German re-translation, used by nothing later - not the newest 1.x |
 | `rfm_195r1` | | 03/2018 | the 27 Mar build |
@@ -118,8 +118,7 @@ Also unknown is, if there exists a ROM/Flash dump somewhere already.
 
 `u100`/`u101` hold a fallback copy of the game alongside the system data, and the update flash
 overrides it. `P2K_NO_UPDATE=1` hides the update flash, and then the loader validates and starts
-that copy instead.
-Each copy carries its own version in the boot-data header at bank 0 offset `0x8040`, as a
+that copy instead. Each copy carries its own version in the boot-data header at bank 0 offset `0x8040`, as a
 game id and a major/minor pair, formatted for display through `"Software version: %d.%d"`:
 
 | Prism pair | set | game id | fallback version | bootstrap loader |
@@ -405,7 +404,14 @@ given image:
 * Every official XINA, 1.02 through 1.21, follows it. **No** XINA from 1.22 on does - the
   aftermarket kept 1.21's `01:21` for a while (1.22 and 1.31 both carry it) and then stopped
   bothering, which is also why a XINA version number alone does not identify a build: 1.22 appears
-  with three different timestamps here, 1.31 with two, 1.36 with two.
+  with **four** different timestamps here - two of them a day apart in January 2016 - 1.31 with two, 1.36 with two.
+
+  The XINA changelogs do not settle 1.22 either - they disagree with each other. The standalone
+  `XINA_Revision_History.txt` dates it `Fri May 18 19:58:21 2018` and describes it as a "TCP-Port
+  bug fix"; the `xina_changelog.txt` inside the Episode I 1.66 package dates the same version
+  `Mon Nov 16 21:58:21 2017` and calls it an "Ephemeral TCP-Port bug fix". Same version number,
+  same fix, eighteen months apart, and neither date matches the `Mon Nov 20` stamp the 1.9x images
+  actually carry. Treat "XINA 1.22" as a label rather than a build, and go by the timestamp.
 * Every official game image follows it - RFM 1.20 to 1.60, Episode I 1.00 to 1.50 - **and so do
   RFM 1.70, RFM 1.80 and Episode I 1.60**, which are Tom Uban's. Nothing else does: not one
   aftermarket build, and not the 0.7x/0.8x pre-production ones, which pre-date the convention.
@@ -414,6 +420,18 @@ given image:
   convention, which no other unofficial build does. It is independent support for the attribution
   to the original programmers, alongside RFM 1.80 and SWEP1 1.60's boot data being built 52 seconds
   apart.
+
+#### Some versions circulate under two archive names
+
+At least three packages exist under a second filename with byte-identical contents, so a collection holding
+both looks like it has more versions than it does. Checked file by file against the
+[Encore-Pinball2000](https://github.com/ThomazPom/Encore-Pinball2000) `updates/` tree:
+
+| this name | is the same four files as |
+|---|---|
+| `pin2000_50070_0180_09222003_B_10000000` | `..._0180_04232006_...` - which is where 1.80's misleading 09/03 date comes from |
+| `pin2000_50070_0190_03292018_B_10000000` | `..._0190_03312018_...` (`rfm_190r3`) |
+| `pin2000_50070_0191_05302018_B_10000000` | `..._0191_05312018_...` (`rfm_191`) |
 
 #### The r2 boot ROMs
 
@@ -565,6 +583,113 @@ operations manuals instead, the lamp table's layout in the image never having be
 the manual's cell numbering maps to PinMAME's matrix through the board's two row banks - see the
 header of `src/wpc/p2k_names.h`, which records how that was measured against the games' own lamp
 tests. The extraction tool lives with the port's working notes.
+
+### The I/O update cycle
+
+The board is driven from a frame interrupt (`MDRV_CPU_VBLANK_INT`), not from the video renderer.
+That matters: `PINMAME_VIDEO_UPDATE` is reached through `draw_screen()`, which `src/mame.c` only
+calls when `osd_skip_this_frame()` says no, so while the I/O lived there a skipped frame meant the
+machine received no switches and nobody read its coils. `wpc.c` and `se.c` both use a CPU interrupt
+for the same job, and it cannot be skipped.
+
+**Switches are read live.** The board indexes `coreGlobals.swMatrix` at the moment the game strobes
+a column, rather than a copy taken once a frame, so a table or a keypress lands immediately. This is
+what the WPC and Whitestar read handlers do.
+
+**Outputs are accumulated, not sampled.** This is the part that is easy to get wrong, and the
+measurements are worth keeping because they are what the design rests on. Logging every driver
+register write on `rfm_160`:
+
+| what | measured |
+|---|---|
+| driver board service tick | every **0.92 ms** (~1080 Hz) |
+| lamp column strobe | 8 one-hot columns plus a `0x00` blank; each column re-strobed at **136 Hz** |
+| Left/Right Martian (drivers 1-2) | on 3 writes, off 3 writes - **50% duty at ~180 Hz**, in ~34 ms bursts |
+| Jet Exit Post (driver 3) | on 3 writes, off 9 - **25% duty**, held for over a second |
+| gates (drivers 4-5) | one steady run of 1.2 s and 2.0 s, no modulation |
+
+These coils have no separate holding winding, so the software chops the main one - the same reason
+`wpc.c` gives for its own smoothing. Reading the latch once per frame samples that square wave at
+60 Hz, which reports whichever phase it happens to land on and drops any pulse that falls between
+two samples. It was visible: `swep1_150`'s neon tube toggled on and off every two or three frames,
+101 transitions in one attract run, of which 56 were three frames apart or less.
+
+So every write ORs into an accumulator in `p2k_state`, and `pull_outputs()` hands over the window
+and starts a new one. Lamps clear to nothing, so a column the game stops strobing goes dark;
+solenoids reseed with the current level, so an output still held stays on and only a released one
+falls away. That asymmetry is `se.c`'s.
+
+`P2K_SOLSMOOTH` and `P2K_LAMPSMOOTH` in `src/wpc/p2k.c` then hold each published result for a
+couple of frames, as `WPC_SOLSMOOTH` and `SE_SOLSMOOTH` do. Both are 2 here rather than WPC's 4 for
+coils: the window only has to outlast the gap between two pulses of one output, the longest chop
+period measured is about 11 ms, and 33 ms gives a threefold margin where 16.7 ms would not. Flipper
+coils are published every frame regardless - `se.c` treats its `flipsol` the same way - because they
+are the one output where a player would feel the extra hold.
+
+After the change the neon settles to 3 transitions instead of 101, no driver on either game shows a
+gap of three frames or less, and the genuine attract blink on driver 29 keeps its 16-frame period -
+which is the check that matters, because over-smoothing would have flattened it.
+
+What this does **not** do is model duty cycle: 25% and 100% both read "on". That is the PWM work
+still outstanding, and the note above `p2k_getSol()` in `src/wpc/p2k.c` says what it would take.
+
+### Modulated outputs (PWM)
+
+Coils and flashers take part in PinMAME's PWM integration; the lamp matrix does not, yet.
+
+The board drives its outputs in shades, not on and off. Logging every driver register write on
+`rfm_160` during a game:
+
+| output | measured drive |
+|---|---|
+| coils (Left/Right Martian) | chopped **180 Hz at 50% duty**, in ~34 ms bursts |
+| Jet Exit Post | held at **25% duty** for over a second |
+| flashers (17, 22, 23, 25-28) | solid 15-16 ms pulses, often in trains ~10 ms apart - **~60% duty at 40 Hz** |
+| lamps, 123 of 128 | plain on/off |
+| lamps, 5 of 128 | **50% duty at 34 Hz** - a real half-brightness |
+
+These coils have no separate holding winding, so the software chops the main one - the same reason
+`wpc.c` gives for its own smoothing. The binary path reports all of this as simply "on".
+
+With PWM on, `p2k_solPwm()` reports each edge from the register write and the core times it. A #89
+arch flasher then reads 0.06, 0.19, 0.59, 0.71, 1.02 over six frames and decays over eight more,
+and a short pulse on a #906 peaks near 0.17 - it never gets bright, which is what a 15 ms pulse
+does to a filament. Coils stay binary under `CORE_MODOUT_SOL_2_STATE`, which is right: the question
+about a coil is whether it fired. Values above 1.0 are normal for a briefly over-driven filament
+and `saturatedByte()` clamps them at the consumer.
+
+Three things are worth knowing before extending this.
+
+**The flasher list is not hand-written.** `wpc.c` spells out per game which solenoid carries a `#89`
+and which a `#906`, hundreds of lines of it. Here the manuals' part numbers were already recorded
+against every driver in `p2k_names.h`, so they were promoted from comments to a `P2K_DEV_` field and
+`p2k_initPwm()` loops the table, which is data already checked against the machines' own test menus.
+Revenge From Mars and Episode I are covered, 22 flashers between them.
+
+**The binary publish and the integrator overlap, on purpose.** `CORE_MODOUT_SOL_2_STATE` sets
+`fastOn`, which makes the integrator write `coreGlobals.solenoids`/`solenoids2` itself on every
+edge - the same words the smoothing window publishes. `wpc.c` and `se.c` have the same overlap and
+the more recent writer simply wins. Having the window stand aside instead was tried and is worse:
+the accumulators then never reset, and drivers 37-48 go stale in a word that `p2k_getSol()` reads
+for the binary path.
+
+**`CORE_MODOUT_FORCE_ON` must not be used while `nLamps` is 0.** `core_update_pwm_outputs()` has a
+fallback under that flag which rebuilds `coreGlobals.lampMatrix` from `physicOutputState` whenever
+the updated range touches the lamps - and an empty lamp range still satisfies its bounds test, so
+every lamp would be rewritten to off. The driver enables `CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS`
+alone, and leaves the choice to the user rather than forcing it as `capcom.c` and `sam.c` do.
+
+#### Trying it
+
+`P2K_PWM=1` turns the integration on for a standalone run - nothing outside VPinMAME and libpinmame
+ever sets `options.usemodsol`, so there is otherwise no way to exercise it. `P2K_PWMWATCH=1` then
+prints each coil's integrated value as it changes:
+
+```
+[p2k pwm] frame 2257:  23 Left Arch Flasher            0.586
+[p2k pwm] frame 2260:  23 Left Arch Flasher            1.020
+[p2k pwm] frame 2268:  23 Left Arch Flasher            0.193
+```
 
 ## How it works
 
@@ -1160,9 +1285,11 @@ those tables and not just a trace. Four things to know reading it:
   to 47 is a ball *arriving*. The rest are the usual way round.
 * **`(unnamed)`** means the device fired but no table entry covers it. On a stock machine that is
   worth looking at; on 2.x it may be one of the myPinballs additions.
-* **Frame resolution.** The watches sample once per frame, in `p2k_sync_io()`. That is fine for
-  lamps and switches and enough to see a coil the test menu is pulsing, but it is not coil-accurate
-  timing, and a stroke shorter than a frame can still be missed.
+* **Frame resolution.** The watches print once per frame, from `p2k_sync_io()`, and show what was
+  published to PinMAME rather than the raw board state. A stroke shorter than a frame is *not*
+  missed - it is accumulated on the far side of the boundary, see below - but its length is
+  rounded up to the publish window, so this is not coil-accurate timing. To see the board itself,
+  use `P2K_PDBWATCH`, which logs every register write as it happens.
 
 #### Walking the switch matrix
 

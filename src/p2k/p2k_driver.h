@@ -86,7 +86,18 @@ public:
 	void lpt_w(offs_t offset, u8 data);
 	// the pinball I/O, seen from PinMAME's side
 	void push_switches(const u8 *matrix, unsigned count);
-	void pull_outputs(u8 *lamps, unsigned lamp_columns, u32 *solenoids, u32 *solenoids2) const;
+	// What the board did since the last call, resetting the accumulators - hence not const.
+	// solNow/sol2Now optionally take the instantaneous driver levels as well
+	void pull_outputs(u8 * const lamps, unsigned lamp_columns, u32 * const solenoids, u32 * const solenoids2, u32 * const solNow = nullptr, u32 * const sol2Now = nullptr);
+	// Read the matrix live from the caller's array rather than the pushed copy. Optional: without
+	// it the copy is used, which is what a standalone build gets
+	void set_switch_source(const volatile u8 *matrix) { m_sw_live = matrix; }
+	// Called on every driver register write that changes a coil level, so PinMAME can timestamp the
+	// edge for its PWM integrator - which needs to know when a level changed, not merely that it
+	// did. Optional, and separate from pull_outputs() on purpose: that one answers "what happened
+	// over the frame" for the binary path, this one is the live edge
+	using sol_notify_t = void (*)(u32 solenoids, u32 solenoids2);
+	void set_solenoid_notify(sol_notify_t fn) { m_sol_notify = fn; }
 	void port_w(offs_t port, u8 data);
 
 	// The boot code logs over COM1. A minimal 16550-compatible console stands in for the real
@@ -102,6 +113,8 @@ public:
 	p2k_machine &machine() { return *m_machine; }
 
 private:
+	u8 sw_column(unsigned col) const;  // the matrix as pdb_reg_r wants it, live source or copy
+
 	// memory regions, sized as in the MAME driver's address map
 	std::vector<u8> m_main_ram;        // 0x00000000-0x0009ffff and 0x00100000-0x0fffffff
 	std::vector<u8> m_video_ram_a;     // 0x000a0000-0x000affff
@@ -163,20 +176,29 @@ private:
 	int m_pdb_phase_1 = 0;       // MAME's m_pdb_1/m_pdb_2: index written / I/O register selected
 	int m_pdb_phase_2 = 0;
 	u8 m_switch_column = 0;      // last value written to index register 5 (switch column strobe)
-	u8 m_coin_switches = 0;      // inputs, still unwired: PinMAME's core model comes with M3.5
 	u8 m_dip_switches = 0;       // what pdb_reg_r 0x02 answers, from core_getDip(0): the country code, 0 being USA/Canada. It was a hardcoded 1, i.e. Germany
-	u8 m_cabinet_switches = 0;
-	u8 m_diag_switches = 0;
 	u8 m_start_button = 0;
 	u8 m_lpt_data = 0;           // printer port data latch at 0x378
 	u8 m_lpt_control = 0;
 	u8 m_sw_matrix[16] = {};     // switch state pushed in from PinMAME's core model
-	u8 m_lamp_row_a = 0;         // driver board index 6/7/8: two lamp rows and the column strobe
+	const volatile u8 *m_sw_live = nullptr; // ... or read live from there, if set_switch_source was called
+	// Driver board index 6 and 7. The column strobe at index 8 is not kept: it selects which
+	// m_lamp_acc entries a write lands in and nothing reads it back - the lamp status registers
+	// echo these two latches, not the column
+	u8 m_lamp_row_a = 0;
 	u8 m_lamp_row_b = 0;
-	u8 m_lamp_col = 0;
-	u8 m_lamp_matrix[16] = {};   // two row banks per driven column, the shape PinMAME wants
 	u32 m_solenoids = 0;         // registers 09/0a/0b/0c, eight bits each
 	u32 m_solenoids2 = 0;        // registers 0c/0e - drivers 33-48, which do not fit the first word
+
+	// What the board did between two pull_outputs() calls, not what it is doing at the instant of
+	// one. These coils have no separate holding winding, so the software chops the main one - the
+	// reason wpc.c gives for its own smoothing - and reading a latch once a frame samples that
+	// square wave at 60 Hz, reporting whichever phase it lands on and dropping anything shorter.
+	// Every write ORs into these instead, so a pull sees every pulse however brief. src/p2k/README.md has the measured duty cycles
+	u32 m_sol_acc = 0;           // OR of m_solenoids over the window
+	u32 m_sol2_acc = 0;          // OR of m_solenoids2 over the window
+	u8 m_lamp_acc[16] = {};      // OR of the lamp rows over the window, per strobed column (two row banks per driven column)
+	sol_notify_t m_sol_notify = nullptr; // the live edge, separate from the accumulators above
 #if P2K_DEBUG
 	u32 m_pci_cfg_addr = 0;      // last 0xcf8 write, so P2K_PCIWATCH can label the 0xcfc read
 #endif
