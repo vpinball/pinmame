@@ -216,8 +216,8 @@ static struct
    unsigned int endpointId;
    bool registered;
 
-   unsigned int onControllerChangeId;
-   unsigned int onGetControllersId;
+   std::string gameId;
+   std::unique_ptr<PinballPlugin::Controller::CtrlItemProvider<ControllerDef>> controllerProvider;
 
    struct StateGroup
    {
@@ -245,9 +245,9 @@ static struct
       int statePos;                       // Position of state
       SegElementType segType;
    } sortedSegLayout[CORE_SEGCOUNT]; // Sorted individual segment element
-   unsigned int onSegSrcChangedId, getSegSrcId;
    float segLuminances[CORE_SEGCOUNT * 16];
    float segPrevLuminances[CORE_SEGCOUNT * 16];
+   std::unique_ptr<PinballPlugin::Controller::CtrlItemProvider<SegSrcId>> segDisplayProvider;
 
    int nDisplays = 0;
    struct
@@ -255,7 +255,7 @@ static struct
       DisplaySrcId srcId;
       const core_tLCDLayout* layout;
    } displays[32]; // WPT declares 15 DMD layouts
-   unsigned int onDisplaySrcChangedId, getDisplaySrcId;
+   std::unique_ptr<PinballPlugin::Controller::CtrlItemProvider<DisplaySrcId>> displayProvider;
 
    unsigned int onAudioCmdId, onDmdCmdId, onConsoleDataId;
 
@@ -733,15 +733,13 @@ extern "C" void OnStateChange(const int state)
          break;
       case 3: // Stopping, it is invalid to call PinMAME emulation state
       {
-         // It would be cleaner to unregister everything here but we would have a race condition if unregistering here as it must be done
-         // on Plugin API thread, while we are on emulation thread, blocking the Plugin API thread until stop is done. So we protect thread safe Getter/Setter against this state
-         // msgLocals.msgApi->RunOnMainThread(msgLocals.endpointId, -1, [](void* userData) { msgLocals.stateProvider->ClearItems(); }, nullptr);
-         // We also request a lock to block until any ongoing parallel state processing is ended before we invalidate internal PinMAME state
-         std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
+         // Stopping is supposed to happen as a consequence of a stop request, so we should never end here in a registered state
+         assert(!msgLocals.registered);
+         if (msgLocals.registered)
+            msgLocals.msgApi->RunOnMainThread(msgLocals.endpointId, -1, [](void* userData) { OnGameEnd(nullptr); }, nullptr);
          break;
       }
       case 0: // Stopped
-         msgLocals.msgApi->RunOnMainThread(msgLocals.endpointId, 0, OnGameEnd, nullptr);
          break;
       }
    }
@@ -1166,7 +1164,9 @@ PINMAMEAPI PINMAME_STATUS PinmameRun(const char* const p_name)
 	strncpy(g_szGameName, p_name, sizeof(g_szGameName) - 1);
 	g_szGameName[sizeof(g_szGameName) - 1] = '\0';
 
-	OnStateChange(2); // Starting state (in between stopped and started)
+   msgLocals.gameId = std::format("pinmame::{}", p_name);
+
+   OnStateChange(2); // Starting state (in between stopped and started)
 
 	vp_init();
 
@@ -1227,6 +1227,8 @@ PINMAMEAPI int PinmameIsPaused()
 
 PINMAMEAPI void PinmameStop()
 {
+   OnGameEnd(nullptr);
+
 	if (!_p_gameThread) {
 		if (_isRunning) {
 			libpinmame_log_error("PinmameStop(): run state is %d but game thread handle is null; forcing stopped state.", _isRunning);
@@ -1785,50 +1787,14 @@ static void OnGetMachineState(const unsigned int eventId, void* userData, void* 
    msg->hardwareGen = core_gameData->gen;
 }
 
-static void OnGetControllers(const unsigned int eventId, void* userData, void* msgData)
-{
-   if (_isRunning != 1)
-      return;
-
-   auto msg = static_cast<GetControllersMsg*>(msgData);
-   if (msg->count < msg->maxEntryCount)
-   {
-      static std::string gameId;
-      // Broadcast the game name that was requested (which may be an alias registered through alias.txt)
-      // so consumers see the same id the table script used, not the resolved driver name
-      gameId = std::format("pinmame::{}", g_szGameName[0] ? g_szGameName : Machine->gamedrv->name);
-      msg->entries[msg->count].endpointId = msgLocals.endpointId;
-      msg->entries[msg->count].gameId = gameId.c_str();
-   }
-   msg->count++;
-}
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Device states
 
 INLINE uint8_t saturatedByte(float v) { return static_cast<uint8_t>(255.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v)); }
 
-static void GetDefaultValue(int type, void* pResult)
-{
-   switch (type)
-   {
-   case CTLPI_STATE_FORMAT_UINT8:*static_cast<uint8_t*>(pResult) = 0; break;
-   case CTLPI_STATE_FORMAT_UINT16:*static_cast<uint16_t*>(pResult) = 0; break;
-   case CTLPI_STATE_FORMAT_UINT32:*static_cast<uint32_t*>(pResult) = 0; break;
-   case CTLPI_STATE_FORMAT_UINT64:*static_cast<uint64_t*>(pResult) = 0; break;
-   case CTLPI_STATE_FORMAT_INT8:*static_cast<int8_t*>(pResult) = 0; break;
-   case CTLPI_STATE_FORMAT_INT16:*static_cast<int16_t*>(pResult) = 0; break;
-   case CTLPI_STATE_FORMAT_INT32:*static_cast<int32_t*>(pResult) = 0; break;
-   case CTLPI_STATE_FORMAT_INT64:*static_cast<int64_t*>(pResult) = 0; break;
-   case CTLPI_STATE_FORMAT_FLOAT:*static_cast<float*>(pResult) = 0.f; break;
-   case CTLPI_STATE_FORMAT_DOUBLE:*static_cast<double*>(pResult) = 0.0; break;
-   case CTLPI_STATE_FORMAT_STRING: *static_cast<const char**>(pResult) = ""; break;
-   }
-}
 static void GetSolenoid1State(CtlResId blockId, unsigned int stateIndex, void* pResult)
 {
-   std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
-   if (_isRunning != 1) { GetDefaultValue(msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateDef.stateDefs[stateIndex].dataFormat, pResult); return; }
+   assert(_isRunning == 1);
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    if (options.usemodsol & CORE_MODOUT_FORCE_ON)
       core_update_pwm_outputs(CORE_MODOUT_SOL0 + core_BitColToNum(srcId), 1);
@@ -1836,15 +1802,13 @@ static void GetSolenoid1State(CtlResId blockId, unsigned int stateIndex, void* p
 }
 static void GetSolenoid1VPMState(CtlResId blockId, unsigned int stateIndex, void* pResult)
 {
-   std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
-   if (_isRunning != 1) { GetDefaultValue(msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateDef.stateDefs[stateIndex].dataFormat, pResult); return; }
+   assert(_isRunning == 1);
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    *static_cast<uint8_t*>(pResult) = (coreGlobals.solenoids & srcId) != 0 ? 1 : 0;
 }
 static void GetSolenoid2State(CtlResId blockId, unsigned int stateIndex, void* pResult)
 {
-   std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
-   if (_isRunning != 1) { GetDefaultValue(msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateDef.stateDefs[stateIndex].dataFormat, pResult); return; }
+   assert(_isRunning == 1);
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    if (options.usemodsol & CORE_MODOUT_FORCE_ON)
       core_update_pwm_outputs(CORE_MODOUT_SOL0 + core_BitColToNum(srcId) + 32, 1);
@@ -1852,30 +1816,26 @@ static void GetSolenoid2State(CtlResId blockId, unsigned int stateIndex, void* p
 }
 static void GetSolenoid2VPMState(CtlResId blockId, unsigned int stateIndex, void* pResult)
 {
-   std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
-   if (_isRunning != 1) { GetDefaultValue(msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateDef.stateDefs[stateIndex].dataFormat, pResult); return; }
+   assert(_isRunning == 1);
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    *static_cast<uint8_t*>(pResult) = (coreGlobals.solenoids2 & srcId) != 0 ? 1 : 0;
 }
 static void GetCustomSolenoidState(CtlResId blockId, unsigned int stateIndex, void* pResult)
 {
-   std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
-   if (_isRunning != 1) { GetDefaultValue(msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateDef.stateDefs[stateIndex].dataFormat, pResult); return; }
+   assert(_isRunning == 1);
    // TODO core_gameData->hw.getSol is supposed to return 0..255, but this would need to be checked on each driver
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    *static_cast<float*>(pResult) = static_cast<float>(core_gameData->hw.getSol(srcId)) / 255.f;
 }
 static void GetCustomSolenoidVPMState(CtlResId blockId, unsigned int stateIndex, void* pResult)
 {
-   std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
-   if (_isRunning != 1) { GetDefaultValue(msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateDef.stateDefs[stateIndex].dataFormat, pResult); return; }
+   assert(_isRunning == 1);
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    *static_cast<uint8_t*>(pResult) = static_cast<uint8_t>(core_gameData->hw.getSol(srcId));
 }
 static void GetLampState(CtlResId blockId, unsigned int stateIndex, void* pResult)
 {
-   std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
-   if (_isRunning != 1) { GetDefaultValue(msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateDef.stateDefs[stateIndex].dataFormat, pResult); return; }
+   assert(_isRunning == 1);
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    if (options.usemodsol & CORE_MODOUT_FORCE_ON)
       core_update_pwm_outputs(CORE_MODOUT_LAMP0 + srcId, 1);
@@ -1883,8 +1843,7 @@ static void GetLampState(CtlResId blockId, unsigned int stateIndex, void* pResul
 }
 static void GetLampVPMState(CtlResId blockId, unsigned int stateIndex, void* pResult)
 {
-   std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
-   if (_isRunning != 1) { GetDefaultValue(msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateDef.stateDefs[stateIndex].dataFormat, pResult); return; }
+   assert(_isRunning == 1);
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    if (options.usemodsol & CORE_MODOUT_FORCE_ON)
       core_update_pwm_outputs(CORE_MODOUT_LAMP0 + srcId, 1);
@@ -1892,8 +1851,7 @@ static void GetLampVPMState(CtlResId blockId, unsigned int stateIndex, void* pRe
 }
 static void GetGIState(CtlResId blockId, unsigned int stateIndex, void* pResult)
 {
-   std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
-   if (_isRunning != 1) { GetDefaultValue(msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateDef.stateDefs[stateIndex].dataFormat, pResult); return; }
+   assert(_isRunning == 1);
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    if (core_gameData->gen & GEN_ALLWPC) // WPC GI level is 0..8
       *static_cast<float*>(pResult) = static_cast<float>(coreGlobals.gi[srcId]) / 8.f;
@@ -1902,45 +1860,39 @@ static void GetGIState(CtlResId blockId, unsigned int stateIndex, void* pResult)
 }
 static void GetGIVPMState(CtlResId blockId, unsigned int stateIndex, void* pResult)
 {
-   std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
-   if (_isRunning != 1) { GetDefaultValue(msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateDef.stateDefs[stateIndex].dataFormat, pResult); return; }
+   assert(_isRunning == 1);
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    *static_cast<uint8_t*>(pResult) = static_cast<uint8_t>(coreGlobals.gi[srcId]);
 }
 static void GetPhysOutState(CtlResId blockId, unsigned int stateIndex, void* pResult)
 {
-   std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
-   if (_isRunning != 1) { GetDefaultValue(msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateDef.stateDefs[stateIndex].dataFormat, pResult); return; }
+   assert(_isRunning == 1);
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    core_update_pwm_outputs(srcId, 1);
    *static_cast<float*>(pResult) = coreGlobals.physicOutputState[srcId].value;
 }
 static void GetPhysOutVPMState(CtlResId blockId, unsigned int stateIndex, void* pResult)
 {
-   std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
-   if (_isRunning != 1) { GetDefaultValue(msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateDef.stateDefs[stateIndex].dataFormat, pResult); return; }
+   assert(_isRunning == 1);
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    core_update_pwm_outputs(srcId, 1);
    *static_cast<uint8_t*>(pResult) = saturatedByte(coreGlobals.physicOutputState[srcId].value);
 }
 static void GetSwitchState(CtlResId blockId, unsigned int stateIndex, void* pResult)
 {
-   std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
-   if (_isRunning != 1) { GetDefaultValue(msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateDef.stateDefs[stateIndex].dataFormat, pResult); return; }
+   assert(_isRunning == 1);
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    *static_cast<uint8_t*>(pResult) = core_getSw(static_cast<int16_t>(srcId)) != 0 ? 0xFF : 0;
 }
 static void SetSwitchState(CtlResId blockId, unsigned int stateIndex, const void* pResult)
 {
-   if (_isRunning != 1) return;
-   std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
+   assert(_isRunning == 1);
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    core_setSw(static_cast<int16_t>(srcId), *static_cast<const uint8_t*>(pResult) != 0);
 }
 static void GetDIPSwitchState(CtlResId blockId, unsigned int stateIndex, void* pResult)
 {
-   std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
-   if (_isRunning != 1) { GetDefaultValue(msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateDef.stateDefs[stateIndex].dataFormat, pResult); return; }
+   assert(_isRunning == 1);
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    const int bank = srcId / 8;
    const int mask = 1 << (srcId & 7);
@@ -1948,8 +1900,7 @@ static void GetDIPSwitchState(CtlResId blockId, unsigned int stateIndex, void* p
 }
 static void SetDIPSwitchState(CtlResId blockId, unsigned int stateIndex, const void* pResult)
 {
-   if (_isRunning != 1) return;
-   std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
+   assert(_isRunning == 1);
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    const int bank = srcId / 8;
    const int mask = 1 << (srcId & 7);
@@ -1960,64 +1911,335 @@ static void SetDIPSwitchState(CtlResId blockId, unsigned int stateIndex, const v
 }
 static void GetMemMapState(CtlResId blockId, unsigned int stateIndex, void* pResult)
 {
-   std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
-   if (_isRunning != 1) { GetDefaultValue(msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateDef.stateDefs[stateIndex].dataFormat, pResult); return; }
+   assert(_isRunning == 1);
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    msgLocals.memMapStates[srcId].getState(srcId, pResult);
 }
 static void GetCoreMechState(CtlResId blockId, unsigned int stateIndex, void* pResult)
 {
-   std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
-   if (_isRunning != 1) { GetDefaultValue(msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateDef.stateDefs[stateIndex].dataFormat, pResult); return; }
+   assert(_isRunning == 1);
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    *static_cast<int32_t*>(pResult) = core_gameData->hw.getMech ? core_gameData->hw.getMech(srcId) : 0;
 }
 static void GetCustomMechPosState(CtlResId blockId, unsigned int stateIndex, void* pResult)
 {
-   std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
-   if (_isRunning != 1) { GetDefaultValue(msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateDef.stateDefs[stateIndex].dataFormat, pResult); return; }
+   assert(_isRunning == 1);
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    *static_cast<float*>(pResult) = mech_getFloatPos(srcId);
 }
 static void GetCustomMechSpeedState(CtlResId blockId, unsigned int stateIndex, void* pResult)
 {
-   std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
-   if (_isRunning != 1) { GetDefaultValue(msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateDef.stateDefs[stateIndex].dataFormat, pResult); return; }
+   assert(_isRunning == 1);
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    *static_cast<float*>(pResult) = mech_getFloatSpeed(srcId);
 }
 static void GetCustomMechPosVPMState(CtlResId blockId, unsigned int stateIndex, void* pResult)
 {
-   std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
-   if (_isRunning != 1) { GetDefaultValue(msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateDef.stateDefs[stateIndex].dataFormat, pResult); return; }
+   assert(_isRunning == 1);
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    *static_cast<int32_t*>(pResult) = mech_getPos(srcId);
 }
 static void GetCustomMechSpeedVPMState(CtlResId blockId, unsigned int stateIndex, void* pResult)
 {
-   std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
-   if (_isRunning != 1) { GetDefaultValue(msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateDef.stateDefs[stateIndex].dataFormat, pResult); return; }
+   assert(_isRunning == 1);
    const int srcId = msgLocals.stateGroups[blockId.resId - PMPI_GROUP_SOLENOID].stateMap[stateIndex].srcId;
    *static_cast<int32_t*>(pResult) = mech_getSpeed(srcId);
+}
+
+// The existing output layout is the result of years of evolution, starting with the WPC hardware (hence
+// the dedicated GI outputs with 0..8 values), then adding different levels of device emulation (merging
+// binary output states over a given period, some smoothing, physic model,...) and solving conflicts
+// by moving the outputs to free slots. This 'legacy' mapping is preserved for backward compatibility:
+// - state groups are defined for new (normalized physic states) and legacy (VPinMAME) outputs
+// - mappingId correspond to 'legacy' mapping
+//
+// Existing solenoid access is implemented in core_getSol, core_getAllSol and core_getAllPhysicSols. Sadly,
+// these functions do not always return the same value. When difference exists, the implementation of 
+// core_getAllSol is taken as it is supposed to be the most widely used.
+static void SetupMsgApiGameStates()
+{
+   for (uint32_t i = PMPI_GROUP_SOLENOID; i <= PMPI_GROUP_VPM_MECH; i++)
+   {
+      auto& group = msgLocals.stateGroups[i - PMPI_GROUP_SOLENOID];
+      group.stateMap.clear();
+      group.states.clear();
+   }
+   auto setupGroup = [](uint32_t groupId, const char* name, const char* desc)
+      {
+         msgLocals.stateGroups[groupId - PMPI_GROUP_SOLENOID].stateDef = {
+            .id = { msgLocals.endpointId, groupId },
+            .name = name,
+            .desc = desc,
+            .nStates = static_cast<unsigned int>(msgLocals.stateGroups[groupId - PMPI_GROUP_SOLENOID].states.size()),
+            .stateDefs = msgLocals.stateGroups[groupId - PMPI_GROUP_SOLENOID].states.data()
+         };
+      };
+   auto addDevice = [](int groupId, const char* label, const char* desc, uint32_t mappingId, int format, int type, void(MSGPIAPI* get)(CtlResId, unsigned int, void*), void(MSGPIAPI* set)(CtlResId, unsigned int, const void*), int mappingSrc)
+      {
+         msgLocals.stateGroups[groupId - PMPI_GROUP_SOLENOID].states.emplace_back(label, desc, mappingId, format, type, get, set);
+         msgLocals.stateGroups[groupId - PMPI_GROUP_SOLENOID].stateMap.emplace_back(mappingSrc);
+      };
+   auto fmtString = [](const char* format, ...) {
+      va_list args;
+
+      va_start(args, format);
+      int size = vsnprintf(NULL, 0, format, args) + 1; // +1 for the null terminator
+      va_end(args);
+
+      va_start(args, format);
+      char* formatted_string = new char[size];
+      vsnprintf(formatted_string, size, format, args);
+      va_end(args);
+
+      return formatted_string;
+      };
+
+   // 'Solenoid' outputs (in fact all sort of controlled or emulated outputs with a messy mapping)
+   {
+      const int nSols = coreGlobals.nSolenoids ? coreGlobals.nSolenoids : (CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol);
+      const bool isPhysSol = (coreGlobals.nSolenoids > 0) && ((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) != 0);
+      auto addPhysSol = [&isPhysSol, &addDevice, &fmtString](const char* label, const char* desc, const char* descVPM, uint32_t mappingId, void(MSGPIAPI* get)(CtlResId, unsigned int, void*), void(MSGPIAPI* getVPM)(CtlResId, unsigned int, void*), int mappingSrc, int physSolIndex)
+         {
+            if (isPhysSol && physSolIndex < coreGlobals.nSolenoids)
+            {
+               addDevice(PMPI_GROUP_SOLENOID, label, desc, mappingId, CTLPI_STATE_FORMAT_FLOAT, core_get_pwm_output_type(CORE_MODOUT_SOL0 + physSolIndex) == 1 ? CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS : CTLPI_STATE_TYPE_CUSTOM, GetPhysOutState, nullptr, CORE_MODOUT_SOL0 + physSolIndex);
+               addDevice(PMPI_GROUP_VPM_SOLENOID, fmtString("%s", label), descVPM, mappingId, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_CUSTOM, GetPhysOutVPMState, nullptr, CORE_MODOUT_SOL0 + physSolIndex);
+            }
+            else
+            {
+               addDevice(PMPI_GROUP_SOLENOID, label, desc, mappingId, CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_CUSTOM, get, nullptr, mappingSrc);
+               addDevice(PMPI_GROUP_VPM_SOLENOID, fmtString("%s", label), descVPM, mappingId, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_CUSTOM, getVPM, nullptr, mappingSrc);
+            }
+         };
+      // 1..28, solenoid/flasher outputs from driver board
+      for (uint16_t i = 1; i <= 28; i++)
+         addPhysSol(fmtString("Output #%02d", i), nullptr, nullptr, i, GetSolenoid1State, GetSolenoid1VPMState, 1 << (i - 1), i - 1);
+      // 29..32
+      {
+         // 29..31, WPC 29 & 30 are J111 GPIO, 31 is a fake GameOn solenoids for fast flip (not modulated, stored in 0x0F00 of solenoids2)
+         if (core_gameData->gen & GEN_ALLWPC)
+         {
+            addPhysSol(fmtString("GPIO #1 (WPC J111.1)"), nullptr, nullptr, 29, GetSolenoid2State, GetSolenoid2VPMState, 0x0100, 28);
+            addPhysSol(fmtString("GPIO #2 (WPC J111.2)"), nullptr, nullptr, 30, GetSolenoid2State, GetSolenoid2VPMState, 0x0200, 29);
+            if (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_WPCDMD)) // Pre Fliptronic real GameOn
+               addPhysSol(fmtString("WPC GameOn"), nullptr, nullptr, 31, GetSolenoid2State, GetSolenoid2VPMState, 0x0400, 30);
+            else // Fliptronic ROM controlled flippers, with (sadly) an overlay of J111 third output and the fake GameOn (which is only available if fastflip is defined)
+               addPhysSol(fmtString("GPIO #3 (WPC J111.3) overlayed with FastFlip Fake GameOn"), nullptr, nullptr, 31, GetSolenoid2State, GetSolenoid2VPMState, 0x0400, 30);
+         }
+         // 29..32, solenoid outputs from driver board
+         // Note: core_getSol only implement for S11 while core_getAllSol implements for all system (but is it used by other systems ?)
+         else // if (core_gameData->gen & GEN_ALLS11)
+         {
+            for (uint16_t i = 29; i <= 32; i++)
+               addPhysSol(fmtString("Output #%02d", i), nullptr, nullptr, i, GetSolenoid1State, GetSolenoid1VPMState, 1 << (i - 1), i - 1);
+         }
+      }
+      // 33..36
+      {
+         // 33, SAM: fake GameOn solenoid for fast flip
+         // Note: core_getSol returns it replicated 4 times for 33..36 while core_getAllSol only returns it as 33 (34..36 are unused)
+         if (core_gameData->gen & GEN_SAM)
+            addPhysSol(fmtString("SAM Fake GameOn"), nullptr, nullptr, 33, GetSolenoid2State, GetSolenoid2VPMState, 0x00000010, 32);
+         // 33..36: Whitestar various extension boards (stored in 0x00F0 of solenoids2, which is upper flipper for other hardwares)
+         // Note: core_getSol does not implement this while core_getAllSol does
+         else if (core_gameData->gen & GEN_ALLWS)
+         {
+            for (uint16_t i = 33; i <= 36; i++)
+               addPhysSol(fmtString("Whitestar Ext Sol #%02d", i - 32), nullptr, nullptr, i, GetSolenoid2State, GetSolenoid2VPMState, 1 << (i - 33 + 4), i - 1);
+         }
+         // 33..36, WPC fliptronic board: upper flipper solenoids that may also be used as generic modulated outputs (Solenoids 29..32 in schematics)
+         // Note: core_getSol returns each coil state while core_getAllSol will set hold coil if either of Hold/Power is set
+         else if (core_gameData->gen & (GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS))
+         {
+            // TODO Ensure earlier generation do not have ext board in this area (they do not have upper flipper)
+            // GEN_WPCALPHA_1: dd / fh
+            // GEN_WPCALPHA_2: fh / bop / hd
+            // GEN_WPCDMD: t2 / gi / Slugfest
+            for (uint16_t i = 33; i < 37; i++)
+            {
+               const bool isFlipperCoil = core_gameData->hw.flippers & FLIP_SOL((i < 35) ? FLIP_UR : FLIP_UL);
+               const char* label;
+               if (isFlipperCoil)
+                  label = fmtString("Output #%02d - Upper %s Flipper %s solenoid (CPU controlled)", i, (i < 35) ? "Right" : "Left", (i & 1) ? "Power" : "Hold|Power");
+               else if (core_gameData->gen & (GEN_WPC95 | GEN_WPC95DCS))
+                  label = fmtString("Output #%02d (WPC95 J120)", i);
+               else
+                  label = fmtString("Output #%02d (Fliptronic)", i);
+               if (coreGlobals.hasModulatedFlippers && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
+               {
+                  int type = core_get_pwm_output_type(CORE_MODOUT_SOL0 + i - 1) == 1 ? CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS : CTLPI_STATE_TYPE_CUSTOM;
+                  addDevice(PMPI_GROUP_SOLENOID, label, nullptr, i, CTLPI_STATE_FORMAT_FLOAT, type, GetPhysOutState, nullptr, CORE_MODOUT_SOL0 + i - 1);
+                  addDevice(PMPI_GROUP_VPM_SOLENOID, fmtString("%s", label), nullptr, i, CTLPI_STATE_FORMAT_UINT8, type, GetPhysOutVPMState, nullptr, CORE_MODOUT_SOL0 + i - 1);
+               }
+               else
+               {
+                  int mask;
+                  switch (i)
+                  {
+                  case 33:mask = isFlipperCoil ? 0x10 : 0x10; break; // Power bit
+                  case 34:mask = isFlipperCoil ? CORE_URFLIPSOLBITS : 0x20; break; // Power|Hold bits
+                  case 35:mask = isFlipperCoil ? 0x40 : 0x40; break; // Power bit
+                  case 36:mask = isFlipperCoil ? CORE_ULFLIPSOLBITS : 0x80; break; // Power|Hold bits
+                  }
+                  addDevice(PMPI_GROUP_SOLENOID, label, nullptr, i, CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_CUSTOM, GetSolenoid2State, nullptr, mask);
+                  addDevice(PMPI_GROUP_VPM_SOLENOID, fmtString("%s", label), nullptr, i, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_CUSTOM, GetSolenoid2VPMState, nullptr, mask);
+               }
+            }
+         }
+      }
+      // 37..44
+      {
+         // 37..44, WPC95: 4 low power digital outputs (duplicated 37..40 / 41..44, stored in 0xF0000000 of solenoids)
+         if (core_gameData->gen & (GEN_WPC95 | GEN_WPC95DCS))
+         {
+            for (uint16_t i = 0; i < 8; i++)
+               addPhysSol(fmtString("Output #%02d (WPC95 J110 LPDC)", 37 + (i & 3)),
+                  nullptr, nullptr, 37 + i, GetSolenoid1State, GetSolenoid1VPMState, 1 << (36 + (i & 3)), 36 + (i & 3));
+         }
+         // 37..44, S11, SAM, SPA: extension board with 8 outputs (stored in 0xFF00 of solenoids2)
+         else if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA))
+         {
+            for (uint16_t i = 37; i <= 44; i++)
+               addPhysSol(
+                  fmtString("%s Ext Output #%d", (core_gameData->gen & GEN_ALLS11) ? "S11" : (core_gameData->gen & GEN_SAM) ? "SAM" : "SPA", i - 36),
+                  nullptr, nullptr, i, GetSolenoid2State, GetSolenoid2VPMState, 1 << (8 + i - 37), 40 + i - 37);
+         }
+      }
+      // 45..48, lower flipper solenoids
+      // Note: core_getSol returns each coil state while core_getAllSol will set hold coil if either of Hold/Power coil is set
+      for (uint16_t i = 45; i < 49; i++)
+      {
+         const bool isCPU = core_gameData->hw.flippers & FLIP_SOL((i < 47) ? FLIP_LR : FLIP_LL);
+         const char* leftRight = (i < 47) ? "Right" : "Left";
+         const char* bits = (i & 1) ? "Power" : "Hold|Power";
+         const char* label;
+         if (isCPU && (core_gameData->gen & GEN_ALLWPC))
+            label = fmtString("Output #%02d - Lower %s Flipper %s solenoid (CPU controlled)", 29 + (i - 45), leftRight, bits);
+         else if (isCPU)
+            label = fmtString("Lower %s Flipper: %s solenoid (CPU controlled)", leftRight, bits);
+         else
+            label = fmtString("Lower %s Flipper: %s solenoid (emulated wired)", leftRight, bits);
+         if (coreGlobals.hasModulatedFlippers && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
+         {
+            int type = core_get_pwm_output_type(CORE_MODOUT_SOL0 + i - 1) == 1 ? CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS : CTLPI_STATE_TYPE_CUSTOM;
+            addDevice(PMPI_GROUP_SOLENOID, label, nullptr, i, CTLPI_STATE_FORMAT_FLOAT, type, GetPhysOutState, nullptr, CORE_MODOUT_SOL0 + i - 1);
+            addDevice(PMPI_GROUP_VPM_SOLENOID, fmtString("%s", label), nullptr, i, CTLPI_STATE_FORMAT_UINT8, type, GetPhysOutVPMState, nullptr, CORE_MODOUT_SOL0 + i - 1);
+         }
+         else
+         {
+            int mask;
+            switch (i)
+            {
+            case 45:mask = 0x01; break; // Power bit
+            case 46:mask = CORE_LRFLIPSOLBITS; break; // Power|Hold bits
+            case 47:mask = 0x04; break; // Power bit
+            case 48:mask = CORE_LLFLIPSOLBITS; break; // Power|Hold bits
+            }
+            addDevice(PMPI_GROUP_SOLENOID, label, nullptr, i, CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_CUSTOM, GetSolenoid2State, nullptr, mask);
+            addDevice(PMPI_GROUP_VPM_SOLENOID, fmtString("%s", label), nullptr, i, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_CUSTOM, GetSolenoid2VPMState, nullptr, mask);
+         }
+      }
+      // 49, simulated fake plunger, not broadcasted
+      // 50, unused, reserved
+      // 51..66, custom through core_gameData->hw.getSol or physic model
+      // Note for WPC except WPC95, the first 8 custom solenoids are actually the extension boards (report in group 0x0002 with an adapyted label ?)
+      for (uint16_t i = CORE_FIRSTCUSTSOL - 1; i < nSols; i++)
+         addPhysSol(fmtString("Custom Output #%02d", i), nullptr, nullptr, i + 1, GetCustomSolenoidState, GetCustomSolenoidVPMState, i + 1, i);
+
+      setupGroup(PMPI_GROUP_SOLENOID, "Solenoids", "Generic high/low current outputs (solenoids & flashers but also auxiliary boards, custom driver outputs and PinMAME internal state)");
+      setupGroup(PMPI_GROUP_VPM_SOLENOID, "VPinMAME Solenoids", "Backward compatible VPinMAME states (less precise, meaning depends on game driver)");
+   }
+
+   // GI dedicated drivers (WPC 0..8, Whitestar 0/9, SAM 0/9)
+   {
+      const bool isPhysGI = (coreGlobals.nGI > 0) && ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_GI) != 0);
+      for (uint16_t i = 0; i < coreGlobals.nGI; i++)
+      {
+         addDevice(PMPI_GROUP_GI, fmtString("GI #%d", i + 1), nullptr, i, CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS, isPhysGI ? GetPhysOutState : GetGIState, nullptr, isPhysGI ? (CORE_MODOUT_GI0 + i) : i);
+         addDevice(PMPI_GROUP_VPM_GI, fmtString("GI #%d", i + 1), fmtString((core_gameData->gen & GEN_ALLWPC) ? "Value in 0..8 range" : "0 (off) or 9 (on)"), i, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_CUSTOM, isPhysGI ? GetPhysOutVPMState : GetGIVPMState, nullptr, isPhysGI ? (CORE_MODOUT_GI0 + i) : i);
+      }
+      setupGroup(PMPI_GROUP_GI, "GIs", "General Illumination strings (WPC, Whitestar & SAM are the only one with dedicated GI outputs, other hardwares use generic outputs to drive a GI relay/thyristor)");
+      setupGroup(PMPI_GROUP_VPM_GI, "VPinMAME GIs", "Backward compatible VPinMAME states (less precise, meaning depends on game driver)");
+   }
+
+   // Lamp matrix
+   {
+      const int hasSAMModulatedLeds = (core_gameData->gen & GEN_SAM) && (core_gameData->hw.lampCol > 2);
+      const int nLamps = (hasSAMModulatedLeds || coreGlobals.nLamps) ? coreGlobals.nLamps : (8 * (CORE_CUSTLAMPCOL + core_gameData->hw.lampCol));
+      const bool isPhysLamp = (coreGlobals.nLamps > 0) && ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS) != 0);
+      for (uint16_t i = 0; i < nLamps; i++)
+      {
+         uint16_t l = coreData->m2lamp ? static_cast<uint16_t>(coreData->m2lamp((i / 8) + 1, i & 7)) : i;
+         addDevice(PMPI_GROUP_LAMP, fmtString("Lamp #%x%x", (i / 8) + 1, (i & 7) + 1), nullptr, l, CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS, isPhysLamp ? GetPhysOutState : GetLampState, nullptr, isPhysLamp ? (CORE_MODOUT_LAMP0 + i) : i);
+         addDevice(PMPI_GROUP_VPM_LAMP, fmtString("Lamp #%x%x", (i / 8) + 1, (i & 7) + 1), fmtString("FIXME define value"), l, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_CUSTOM, isPhysLamp ? GetPhysOutVPMState : GetLampVPMState, nullptr, isPhysLamp ? (CORE_MODOUT_LAMP0 + i) : i);
+      }
+      setupGroup(PMPI_GROUP_LAMP, "Lamps", "Playfield, cabinet and backglass lamps (either matrix or directly controlled)");
+      setupGroup(PMPI_GROUP_VPM_LAMP, "VPinMAME Lamps", "Backward compatible VPinMAME states (less precise, meaning depends on game driver)");
+   }
+
+   // Emulated mechanical devices (we don't know which ones are available so always declare all of them)
+   // This is somewhat hacky as the definition depends on g_fHandleMechanics and we do not update if it changes (it must be defined before)
+   for (uint16_t i = 0; i < MECH_MAXMECH; i++)
+   {
+      if (g_fHandleMechanics == 0)
+      {
+         if (i < MECH_MAXMECH / 2)
+         {
+            addDevice(PMPI_GROUP_MECH, fmtString("User Mech Pos #%02d", i), nullptr, i + 1, CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_CUSTOM, GetCustomMechPosState, nullptr, MECH_MAXMECH / 2 + i);
+            addDevice(PMPI_GROUP_VPM_MECH, fmtString("User Mech Pos #%02d", i), nullptr, i + 1, CTLPI_STATE_FORMAT_INT32, CTLPI_STATE_TYPE_CUSTOM, GetCustomMechPosVPMState, nullptr, MECH_MAXMECH / 2 + i);
+         }
+         else
+         {
+            uint16_t j = i - MECH_MAXMECH / 2;
+            addDevice(PMPI_GROUP_MECH, fmtString("User Mech Speed #%02d", j), nullptr, -(j + 1), CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_CUSTOM, GetCustomMechSpeedState, nullptr, MECH_MAXMECH / 2 + j);
+            addDevice(PMPI_GROUP_VPM_MECH, fmtString("User Mech Speed #%02d", j), nullptr, -(j + 1), CTLPI_STATE_FORMAT_INT32, CTLPI_STATE_TYPE_CUSTOM, GetCustomMechSpeedVPMState, nullptr, MECH_MAXMECH / 2 + j);
+         }
+      }
+      else
+      {
+         addDevice(PMPI_GROUP_MECH, fmtString("PinMame Mech #%02d", i), nullptr, i, CTLPI_STATE_FORMAT_INT32, CTLPI_STATE_TYPE_CUSTOM, GetCoreMechState, nullptr, i);
+      }
+   }
+   setupGroup(PMPI_GROUP_MECH, "Mechs", "Emulated mechanical parts (driver or user defined)");
+   setupGroup(PMPI_GROUP_VPM_MECH, "VPinMAME Mechs", "Backward compatible VPinMAME states (less precise data format)");
+
+   // Playfield & cabinet switches
+   for (uint16_t i = 0; i < (CORE_STDSWCOLS + core_gameData->hw.swCol) * 8; i++)
+   {
+      const int swNo = coreData->m2sw ? coreData->m2sw(i / 8, i & 7) : i; // Note that some hardware use negative switch indices to identify cabinet switches (for example Whitestar)
+      assert(i == (coreData->sw2m ? coreData->sw2m(swNo) : ((swNo / 10) * 8 + (swNo % 10 - 1))));
+      addDevice(PMPI_GROUP_SWITCH, swNo < 0 ? fmtString("Cabinet #%02x", 16 + swNo) : fmtString("Playfield #%02x", swNo), nullptr, static_cast<uint16_t>(swNo), CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_SWITCH, GetSwitchState, SetSwitchState, swNo);
+   }
+   setupGroup(PMPI_GROUP_SWITCH, "Switches", "Playfield & cabinet switches");
+
+   // DIP switches
+   for (uint16_t i = 0; i < coreData->coreDips; i++)
+   {
+      addDevice(PMPI_GROUP_DIPSWITCH, fmtString("DIP #%02d", i + 1), nullptr, i + 1, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_SWITCH, GetDIPSwitchState, SetDIPSwitchState, i + 1);
+   }
+   setupGroup(PMPI_GROUP_DIPSWITCH, "DIP Switches", "Hardware onboard DIP switches");
+
+   // MemMap Game states
+   for (uint16_t i = 0; i < msgLocals.memMapStates.size(); i++)
+   {
+      addDevice(PMPI_GROUP_GAMESTATE, fmtString("%s", msgLocals.memMapStates[i].name.c_str()), fmtString("%s", msgLocals.memMapStates[i].group.c_str()), i, msgLocals.memMapStates[i].type, CTLPI_STATE_TYPE_CUSTOM, GetMemMapState, nullptr, i);
+   }
+   setupGroup(PMPI_GROUP_GAMESTATE, "Game States", "Live game states gathered from internal machine memory");
+
+   msgLocals.stateProvider = std::make_unique<PinballPlugin::Controller::CtrlItemProvider<StateSrcId>>(msgLocals.msgApi, msgLocals.endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG);
+   std::vector<StateSrcId> stateGroups;
+   for (uint32_t i = PMPI_GROUP_SOLENOID; i <= PMPI_GROUP_VPM_MECH; i++)
+      stateGroups.push_back(msgLocals.stateGroups[i - PMPI_GROUP_SOLENOID].stateDef);
+   msgLocals.stateProvider->AddItems(stateGroups);
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Alphanumeric segment displays
 
-static void OnGetSegSrc(const unsigned int eventId, void* userData, void* msgData)
-{
-   if (_isRunning != 1)
-      return;
-
-   GetSegSrcMsg* const msg = (GetSegSrcMsg*)msgData;
-   for (unsigned int index = 0; index < msgLocals.nSegDisplays; index++, msg->count++)
-      if (msg->count < msg->maxEntryCount)
-         memcpy(&msg->entries[msg->count], &msgLocals.segDisplays[index].srcId, sizeof(SegSrcId));
-}
-
 static SegDisplayFrame GetSegDisplay(const CtlResId id)
 {
+   assert(_isRunning == 1);
    assert(id.endpointId == msgLocals.endpointId);
    assert(id.resId < msgLocals.nSegDisplays);
    
@@ -2079,172 +2301,33 @@ static SegDisplayFrame GetSegDisplay(const CtlResId id)
    return { msgLocals.segDisplays[id.resId].segFrameId, msgLocals.segLuminances + (startElement * 16) };
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// Video & Dot Matrix Displays
-
-static void OnGetDisplaySrc(const unsigned int eventId, void* userData, void* msgData)
+// Layout declaration in drivers were originaly made for rendering and are (sadly) also used to unswizzle alphanum segment data.
+// We need to interpret them to build back the displays list with their individual components (for example see Space Gambler or WPC).
+// The CORE_SEG mask also mix segment layouts (number of segment, with/without dot & comma, ...) with segment addressing (which output
+// drive the segment, is the segment driven together with another segment, ...). The CORE_SEG mask can also include a comma every 
+// three digit information, and the CORE_SEGREV flag which indicates that the memory position is in reversed order.
+// We resolve all these to simply expose physical layouts, with stable output order. To do so, we convert them to individual 
+// elements and group them based on their declaration order and render position, then process the additional flags at setup here,
+// or when accessing data (for example, to process shared segment command).
+static void SetupMsgApiSegDisplays()
 {
-   if (_isRunning != 1)
-      return;
-
-   GetDisplaySrcMsg* const msg = static_cast<GetDisplaySrcMsg*>(msgData);
-   for (unsigned int index = 0; index < msgLocals.nDisplays; index++, msg->count++)
-      if (msg->count < msg->maxEntryCount)
-         memcpy(&msg->entries[msg->count], &msgLocals.displays[index].srcId, sizeof(DisplaySrcId));
-}
-
-static DisplayFrame GetDisplayFrame(const CtlResId id)
-{
-   if ((id.endpointId != msgLocals.endpointId) || (id.resId >= msgLocals.nDisplays) || (_isRunning != 1))
-      return { 0, nullptr };
-   if ((msgLocals.displays[id.resId].layout->type & CORE_SEGMASK) == CORE_VIDEO) {
-      const PinmameDisplay* pDisplay = _displays[msgLocals.displays[id.resId].layout->index];
-      return { pDisplay->frameId, pDisplay->pData };
-   }
-   else {
-      unsigned int frameId;
-      const float* lumFrame = core_dmd_update_pwm(msgLocals.displays[id.resId].layout, &frameId);
-      return { frameId, lumFrame };
-   }
-}
-
-static DisplayFrame GetDisplayIdFrame(const CtlResId id)
-{
-   if ((id.endpointId != msgLocals.endpointId) || (id.resId >= msgLocals.nDisplays) || (_isRunning != 1))
-      return { 0, nullptr };
-   unsigned int frameId;
-   const UINT8* rawFrame = core_dmd_update_identify(msgLocals.displays[id.resId].layout, &frameId);
-   return { frameId, rawFrame };
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// Overall game messages
-
-static const char* fmtString(const char *format, ...) {
-    va_list args;
-
-    va_start(args, format);
-    int size = vsnprintf(NULL, 0, format, args) + 1; // +1 for the null terminator
-    va_end(args);
-
-    va_start(args, format);
-    char *formatted_string = new char[size];
-    vsnprintf(formatted_string, size, format, args);
-    va_end(args);
-
-    return formatted_string;
-}
-
-static void SetupMsgApi()
-{
-   assert(msgLocals.msgApi != nullptr);
-
-   // For the time being, the API only covers a running controller (the setup/info part is not yet exposed), so we do not have anything to register if we are not running
-   if (_isRunning != 1)
-      return;
-
-   assert(!msgLocals.registered);
-   msgLocals.registered = true;
-
-   msgLocals.onControllerChangeId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_ON_CHG_MSG);
-   msgLocals.onGetControllersId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_GET_MSG);
-   msgLocals.onAudioCmdId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_AUDIO_CMD);
-   msgLocals.onDmdCmdId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_DISPLAY_CMD);
-   msgLocals.onConsoleDataId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_CONSOLE_DATA);
-   msgLocals.onGetMachineStateId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_GET_MACHINE_STATE);
-   msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.onGetControllersId, OnGetControllers, nullptr);
-   msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.onGetMachineStateId, OnGetMachineState, nullptr);
-
-   // -- Prepare data structures for displays
-   msgLocals.nDisplays = 0;
    int nSegLayouts = 0;
    const core_tLCDLayout* segLayout[128] = { };
-   memset(msgLocals.displays, 0, sizeof(msgLocals.displays));
-   for (const core_dispLayout * layout = core_gameData->lcdLayout, * parent_layout = NULL; layout->length || (parent_layout && parent_layout->length); layout++) {
+   for (const core_dispLayout* layout = core_gameData->lcdLayout, *parent_layout = NULL; layout->length || (parent_layout && parent_layout->length); layout++) {
       if (layout->length == 0) { layout = parent_layout; parent_layout = NULL; }
       switch (layout->type & CORE_SEGMASK)
       {
       case CORE_IMPORT: assert(parent_layout == NULL); parent_layout = layout + 1; layout = layout->importedLayout - 1; break;
       case CORE_DMD: // DMD displays and LED matrices (for example RBION,... search for CORE_NODISP to list them)
       case CORE_VIDEO: // Video display for games like Baby PacMan, frames are stored as RGB8
-         if (msgLocals.nDisplays >= (int)(sizeof(msgLocals.displays) / sizeof(msgLocals.displays[0])))
-         {
-            libpinmame_log_error("SetupMsgApi: too many display layouts, ignoring extra display");
-            break;
-         }
-         if ((layout->type & CORE_SEGMASK) == CORE_VIDEO)
-         {
-            if (layout->type & CORE_VIDEO_ROT90)
-            {
-               msgLocals.displays[msgLocals.nDisplays].srcId.width = layout->start;
-               msgLocals.displays[msgLocals.nDisplays].srcId.height = layout->length;
-            }
-            else
-            {
-               msgLocals.displays[msgLocals.nDisplays].srcId.width = layout->length;
-               msgLocals.displays[msgLocals.nDisplays].srcId.height = layout->start;
-            }
-         }
-         else
-         {
-            msgLocals.displays[msgLocals.nDisplays].srcId.width = layout->length;
-            msgLocals.displays[msgLocals.nDisplays].srcId.height = layout->start;
-         }
-         msgLocals.displays[msgLocals.nDisplays].layout = layout;
-         msgLocals.displays[msgLocals.nDisplays].srcId.id = { msgLocals.endpointId, static_cast<uint32_t>(msgLocals.nDisplays) };
-         msgLocals.displays[msgLocals.nDisplays].srcId.groupId = { msgLocals.endpointId, 0 };
-         if ((layout->type & CORE_SEGMASK) == CORE_VIDEO)
-            msgLocals.displays[msgLocals.nDisplays].srcId.hardware = CTLPI_DISPLAY_HARDWARE_CRT_DISPLAY;
-         else if ((layout->length < 128) || (layout->start < 16))
-            msgLocals.displays[msgLocals.nDisplays].srcId.hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN; // Mini display, usually LEDs
-         else if (core_gameData->gen == GEN_SAM)
-            // TODO return the right information:
-            // - Before POTC, all tables used Neon Plasma display
-            // - Then, due to RoHS, european versions of POTC to Family Guy use a modified PinLED display
-            //   Then the 520-5052-05 red led matrix is used
-            //   Then, starting with Tranformers, the 520-5052-15 orange/red led matrix is used
-            // - All US Stern games before AC/DC use a 128 x 32 neon plasma (520-5052-00), then LED (520-5052-15)
-            msgLocals.displays[msgLocals.nDisplays].srcId.hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN;
-         else if (core_gameData->gen == GEN_SPA)
-            msgLocals.displays[msgLocals.nDisplays].srcId.hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN;
-         else
-            msgLocals.displays[msgLocals.nDisplays].srcId.hardware = CTLPI_DISPLAY_HARDWARE_NEON_PLASMA;
-         msgLocals.displays[msgLocals.nDisplays].srcId.frameFormat = ((layout->type & CORE_SEGMASK) != CORE_VIDEO) ? CTLPI_DISPLAY_FORMAT_LUM32F
-            : IsPacked565Display(layout->type)                                                                     ? CTLPI_DISPLAY_FORMAT_SRGB565
-                                                                                                                   : CTLPI_DISPLAY_FORMAT_SRGB888;
-         msgLocals.displays[msgLocals.nDisplays].srcId.GetRenderFrame = &GetDisplayFrame;
-         if ((layout->type & CORE_SEGMASK) != CORE_VIDEO)
-         {
-            msgLocals.displays[msgLocals.nDisplays].srcId.identifyFormat = ((core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0)) ? CTLPI_DISPLAY_ID_FORMAT_BITPLANE4 : CTLPI_DISPLAY_ID_FORMAT_BITPLANE2;
-            msgLocals.displays[msgLocals.nDisplays].srcId.GetIdentifyFrame = &GetDisplayIdFrame;
-         }
-         msgLocals.nDisplays++;
          break;
       default: // Alphanumeric segment displays
          segLayout[nSegLayouts] = layout;
          nSegLayouts++;
-         break; 
+         break;
       }
    }
-   if (msgLocals.nDisplays > 0)
-   {
-      msgLocals.onDisplaySrcChangedId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
-      msgLocals.getDisplaySrcId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
-      msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.getDisplaySrcId, OnGetDisplaySrc, nullptr);
-      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onDisplaySrcChangedId, nullptr);
-   }
-   
-   // -- Prepare data structures for segment displays
-   // Layout declaration in drivers were originaly made for rendering and are (sadly) also used to unswizzle alphanum segment data.
-   // We need to interpret them to build back the displays list with their individual components (for example see Space Gambler or WPC).
-   // The CORE_SEG mask also mix segment layouts (number of segment, with/without dot & comma, ...) with segment addressing (which output
-   // drive the segment, is the segment driven together with another segment, ...). The CORE_SEG mask can also include a comma every 
-   // three digit information, and the CORE_SEGREV flag which indicates that the memory position is in reversed order.
-   // We resolve all these to simply expose physical layouts, with stable output order. To do so, we convert them to individual 
-   // elements and group them based on their declaration order and render position, then process the additional flags at setup here,
-   // or when accessing data (for example, to process shared segment command).
+
    msgLocals.nSortedSegLayout = 0;
    memset(msgLocals.sortedSegLayout, 0, sizeof(msgLocals.sortedSegLayout));
    for (int i = 0; i < nSegLayouts; i++)
@@ -2304,6 +2387,7 @@ static void SetupMsgApi()
          msgLocals.nSortedSegLayout++;
       }
    }
+
    msgLocals.nSegDisplays = 0;
    int segDisplayStart = 0;
    memset(msgLocals.segDisplays, 0, sizeof(msgLocals.segDisplays));
@@ -2341,12 +2425,12 @@ static void SetupMsgApi()
          case GEN_DE:
             msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.hardware = CTLPI_SEG_HARDWARE_NEON_PLASMA;
             break;
-            
+
          case GEN_WPCALPHA_1:
          case GEN_WPCALPHA_2:
             msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.hardware = CTLPI_SEG_HARDWARE_NEON_PLASMA;
             break;
-            
+
          case GEN_STMPU100:
          case GEN_STMPU200:
             msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.hardware = CTLPI_SEG_HARDWARE_NEON_PLASMA;
@@ -2357,13 +2441,13 @@ static void SetupMsgApi()
          case GEN_GTS80B:
          case GEN_GTS3:
             msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.hardware = msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.nElements == 4 ? CTLPI_SEG_HARDWARE_GTS1_4DIGIT
-                                                                         : msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.nElements == 2 ? CTLPI_SEG_HARDWARE_GTS1_4DIGIT // Ball & Credit, reported as 2x2 (while hardware is 1x4 with a space in between)
-                                                                         : msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.nElements == 6 ? CTLPI_SEG_HARDWARE_GTS1_6DIGIT
-                                                                         : msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.nElements == 7 ? CTLPI_SEG_HARDWARE_GTS80A_7DIGIT
-                                                                         : msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.nElements == 20 ? CTLPI_SEG_HARDWARE_GTS80B_20DIGIT
-                                                                         : CTLPI_SEG_HARDWARE_UNKNOWN; // This one should not happen but need to be checked (some playfield LED displays maybe ?)
+               : msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.nElements == 2 ? CTLPI_SEG_HARDWARE_GTS1_4DIGIT // Ball & Credit, reported as 2x2 (while hardware is 1x4 with a space in between)
+               : msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.nElements == 6 ? CTLPI_SEG_HARDWARE_GTS1_6DIGIT
+               : msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.nElements == 7 ? CTLPI_SEG_HARDWARE_GTS80A_7DIGIT
+               : msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.nElements == 20 ? CTLPI_SEG_HARDWARE_GTS80B_20DIGIT
+               : CTLPI_SEG_HARDWARE_UNKNOWN; // This one should not happen but need to be checked (some playfield LED displays maybe ?)
             break;
-            
+
          default:
             msgLocals.segDisplays[msgLocals.nSegDisplays].srcId.hardware = CTLPI_SEG_HARDWARE_UNKNOWN;
             break;
@@ -2379,278 +2463,149 @@ static void SetupMsgApi()
          msgLocals.nSegDisplays++;
       }
    }
+
    if (msgLocals.nSegDisplays > 0)
    {
-      msgLocals.onSegSrcChangedId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG);
-      msgLocals.getSegSrcId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_GET_SRC_MSG);
-      msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.getSegSrcId, OnGetSegSrc, nullptr);
-      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onSegSrcChangedId, nullptr);
+      msgLocals.segDisplayProvider = std::make_unique<PinballPlugin::Controller::CtrlItemProvider<SegSrcId>>(msgLocals.msgApi, msgLocals.endpointId, CTLPI_SEG_GET_SRC_MSG, CTLPI_SEG_ON_SRC_CHG_MSG);
+      std::vector<SegSrcId> segSrcIds;
+      for (unsigned int i = 0; i < msgLocals.nSegDisplays; i++)
+         segSrcIds.push_back(msgLocals.segDisplays[i].srcId);
+      msgLocals.segDisplayProvider->AddItems(segSrcIds);
    }
+}
 
-   // -- Hardware states (controlled devices, switches,...)
-   // The existing output layout is the result of years of evolution, starting with the WPC hardware (hence
-   // the dedicated GI outputs with 0..8 values), then adding different levels of device emulation (merging
-   // binary output states over a given period, some smoothing, physic model,...) and solving conflicts
-   // by moving the outputs to free slots. This 'legacy' mapping is preserved for backward compatibility:
-   // - state groups are defined for new (normalized physic states) and legacy (VPinMAME) outputs
-   // - mappingId correspond to 'legacy' mapping
-   //
-   // Existing solenoid access is implemented in core_getSol, core_getAllSol and core_getAllPhysicSols. Sadly,
-   // these functions do not always return the same value. When difference exists, the implementation of 
-   // core_getAllSol is taken as it is supposed to be the most widely used.
-   //
-   for (uint32_t i = PMPI_GROUP_SOLENOID; i <= PMPI_GROUP_VPM_MECH; i++)
-   {
-      auto& group = msgLocals.stateGroups[i - PMPI_GROUP_SOLENOID];
-      group.stateMap.clear();
-      group.states.clear();
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Video & Dot Matrix Displays
+
+static DisplayFrame GetDisplayFrame(const CtlResId id)
+{
+   assert(_isRunning == 1);
+   assert(id.endpointId == msgLocals.endpointId);
+   assert(id.resId < msgLocals.nDisplays);
+   if ((msgLocals.displays[id.resId].layout->type & CORE_SEGMASK) == CORE_VIDEO) {
+      const PinmameDisplay* pDisplay = _displays[msgLocals.displays[id.resId].layout->index];
+      return { pDisplay->frameId, pDisplay->pData };
    }
-   auto setupGroup = [](uint32_t groupId, const char* name, const char* desc)
+   else {
+      unsigned int frameId;
+      const float* lumFrame = core_dmd_update_pwm(msgLocals.displays[id.resId].layout, &frameId);
+      return { frameId, lumFrame };
+   }
+}
+
+static DisplayFrame GetDisplayIdFrame(const CtlResId id)
+{
+   assert(_isRunning == 1);
+   assert(id.endpointId == msgLocals.endpointId);
+   assert(id.resId < msgLocals.nDisplays);
+   unsigned int frameId;
+   const UINT8* rawFrame = core_dmd_update_identify(msgLocals.displays[id.resId].layout, &frameId);
+   return { frameId, rawFrame };
+}
+
+static void SetupMsgApiVideoDisplays()
+{
+   msgLocals.nDisplays = 0;
+   memset(msgLocals.displays, 0, sizeof(msgLocals.displays));
+   for (const core_dispLayout* layout = core_gameData->lcdLayout, *parent_layout = NULL; layout->length || (parent_layout && parent_layout->length); layout++) {
+      if (layout->length == 0) { layout = parent_layout; parent_layout = NULL; }
+      switch (layout->type & CORE_SEGMASK)
       {
-         msgLocals.stateGroups[groupId - PMPI_GROUP_SOLENOID].stateDef = {
-            .id = { msgLocals.endpointId, groupId },
-            .name = name,
-            .desc = desc,
-            .nStates = static_cast<unsigned int>(msgLocals.stateGroups[groupId - PMPI_GROUP_SOLENOID].states.size()),
-            .stateDefs = msgLocals.stateGroups[groupId - PMPI_GROUP_SOLENOID].states.data()
-         };
-      };
-   auto addDevice = [](int groupId, const char* label, const char* desc, uint32_t mappingId, int format, int type, void(MSGPIAPI* get)(CtlResId, unsigned int, void*), void(MSGPIAPI* set)(CtlResId, unsigned int, const void*), int mappingSrc)
-      {
-         msgLocals.stateGroups[groupId - PMPI_GROUP_SOLENOID].states.emplace_back(label, desc, mappingId, format, type, get, set);
-         msgLocals.stateGroups[groupId - PMPI_GROUP_SOLENOID].stateMap.emplace_back(mappingSrc);
-      };
-   // 'Solenoid' outputs (in fact all sort of controlled or emulated outputs with a messy mapping)
-   {
-      const int nSols = coreGlobals.nSolenoids ? coreGlobals.nSolenoids : (CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol);
-      const bool isPhysSol = (coreGlobals.nSolenoids > 0) && ((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) != 0);
-      auto addPhysSol = [&isPhysSol, &addDevice](const char* label, const char* desc, const char* descVPM, uint32_t mappingId, void(MSGPIAPI* get)(CtlResId, unsigned int, void*), void(MSGPIAPI* getVPM)(CtlResId, unsigned int, void*), int mappingSrc, int physSolIndex)
+      case CORE_IMPORT: assert(parent_layout == NULL); parent_layout = layout + 1; layout = layout->importedLayout - 1; break;
+      case CORE_DMD: // DMD displays and LED matrices (for example RBION,... search for CORE_NODISP to list them)
+      case CORE_VIDEO: // Video display for games like Baby PacMan, frames are stored as RGB8
+         if (msgLocals.nDisplays >= (int)(sizeof(msgLocals.displays) / sizeof(msgLocals.displays[0])))
          {
-            if (isPhysSol && physSolIndex < coreGlobals.nSolenoids)
+            libpinmame_log_error("SetupMsgApi: too many display layouts, ignoring extra display");
+            break;
+         }
+         if ((layout->type & CORE_SEGMASK) == CORE_VIDEO)
+         {
+            if (layout->type & CORE_VIDEO_ROT90)
             {
-               addDevice(PMPI_GROUP_SOLENOID, label, desc, mappingId, CTLPI_STATE_FORMAT_FLOAT, core_get_pwm_output_type(CORE_MODOUT_SOL0 + physSolIndex) == 1 ? CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS : CTLPI_STATE_TYPE_CUSTOM, GetPhysOutState, nullptr, CORE_MODOUT_SOL0 + physSolIndex);
-               addDevice(PMPI_GROUP_VPM_SOLENOID, fmtString("%s", label), descVPM, mappingId, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_CUSTOM, GetPhysOutVPMState, nullptr, CORE_MODOUT_SOL0 + physSolIndex);
+               msgLocals.displays[msgLocals.nDisplays].srcId.width = layout->start;
+               msgLocals.displays[msgLocals.nDisplays].srcId.height = layout->length;
             }
             else
             {
-               addDevice(PMPI_GROUP_SOLENOID, label, desc, mappingId, CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_CUSTOM, get, nullptr, mappingSrc);
-               addDevice(PMPI_GROUP_VPM_SOLENOID, fmtString("%s", label), descVPM, mappingId, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_CUSTOM, getVPM, nullptr, mappingSrc);
+               msgLocals.displays[msgLocals.nDisplays].srcId.width = layout->length;
+               msgLocals.displays[msgLocals.nDisplays].srcId.height = layout->start;
             }
-         };
-      // 1..28, solenoid/flasher outputs from driver board
-      for (uint16_t i = 1; i <= 28; i++)
-         addPhysSol(fmtString("Output #%02d", i), nullptr, nullptr, i, GetSolenoid1State, GetSolenoid1VPMState, 1u << (i - 1), i - 1);
-      // 29..32
-      {
-         // 29..31, WPC 29 & 30 are J111 GPIO, 31 is a fake GameOn solenoids for fast flip (not modulated, stored in 0x0F00 of solenoids2)
-         if (core_gameData->gen & GEN_ALLWPC)
-         {
-            addPhysSol(fmtString("GPIO #1 (WPC J111.1)"), nullptr, nullptr, 29, GetSolenoid2State, GetSolenoid2VPMState, 0x0100, 28);
-            addPhysSol(fmtString("GPIO #2 (WPC J111.2)"), nullptr, nullptr, 30, GetSolenoid2State, GetSolenoid2VPMState, 0x0200, 29);
-            if (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_WPCDMD)) // Pre Fliptronic real GameOn
-               addPhysSol(fmtString("WPC GameOn"), nullptr, nullptr, 31, GetSolenoid2State, GetSolenoid2VPMState, 0x0400, 30);
-            else // Fliptronic ROM controlled flippers, with (sadly) an overlay of J111 third output and the fake GameOn (which is only available if fastflip is defined)
-               addPhysSol(fmtString("GPIO #3 (WPC J111.3) overlayed with FastFlip Fake GameOn"), nullptr, nullptr, 31, GetSolenoid2State, GetSolenoid2VPMState, 0x0400, 30);
-         }
-         // 29..32, solenoid outputs from driver board
-         // Note: core_getSol only implement for S11 while core_getAllSol implements for all system (but is it used by other systems ?)
-         else // if (core_gameData->gen & GEN_ALLS11)
-         {
-            for (uint16_t i = 29; i <= 32; i++)
-               addPhysSol(fmtString("Output #%02d", i), nullptr, nullptr, i, GetSolenoid1State, GetSolenoid1VPMState, 1u << (i - 1), i - 1);
-         }
-      }
-      // 33..36
-      {
-         // 33, SAM: fake GameOn solenoid for fast flip
-         // Note: core_getSol returns it replicated 4 times for 33..36 while core_getAllSol only returns it as 33 (34..36 are unused)
-         if (core_gameData->gen & GEN_SAM)
-            addPhysSol(fmtString("SAM Fake GameOn"), nullptr, nullptr, 33, GetSolenoid2State, GetSolenoid2VPMState, 0x00000010, 32);
-         // 33..36: Whitestar various extension boards (stored in 0x00F0 of solenoids2, which is upper flipper for other hardwares)
-         // Note: core_getSol does not implement this while core_getAllSol does
-         else if (core_gameData->gen & GEN_ALLWS)
-         {
-            for (uint16_t i = 33; i <= 36; i++)
-               addPhysSol(fmtString("Whitestar Ext Sol #%02d", i - 32), nullptr, nullptr, i, GetSolenoid2State, GetSolenoid2VPMState, 1u << (i - 33 + 4), i - 1);
-         }
-         // 33..36, WPC fliptronic board: upper flipper solenoids that may also be used as generic modulated outputs (Solenoids 29..32 in schematics)
-         // Note: core_getSol returns each coil state while core_getAllSol will set hold coil if either of Hold/Power is set
-         else if (core_gameData->gen & (GEN_WPCFLIPTRON | GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS))
-         {
-            // TODO Ensure earlier generation do not have ext board in this area (they do not have upper flipper)
-            // GEN_WPCALPHA_1: dd / fh
-            // GEN_WPCALPHA_2: fh / bop / hd
-            // GEN_WPCDMD: t2 / gi / Slugfest
-            for (uint16_t i = 33; i < 37; i++)
-            {
-               const bool isFlipperCoil = core_gameData->hw.flippers & FLIP_SOL((i < 35) ? FLIP_UR : FLIP_UL);
-               const char* label;
-               if (isFlipperCoil)
-                  label = fmtString("Output #%02d - Upper %s Flipper %s solenoid (CPU controlled)", i, (i < 35) ? "Right" : "Left", (i & 1) ? "Power" : "Hold|Power");
-               else if (core_gameData->gen & (GEN_WPC95 | GEN_WPC95DCS))
-                  label = fmtString("Output #%02d (WPC95 J120)", i);
-               else
-                  label = fmtString("Output #%02d (Fliptronic)", i);
-               if (coreGlobals.hasModulatedFlippers && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
-               {
-                  int type = core_get_pwm_output_type(CORE_MODOUT_SOL0 + i - 1) == 1 ? CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS : CTLPI_STATE_TYPE_CUSTOM;
-                  addDevice(PMPI_GROUP_SOLENOID, label, nullptr, i, CTLPI_STATE_FORMAT_FLOAT, type, GetPhysOutState, nullptr, CORE_MODOUT_SOL0 + i - 1);
-                  addDevice(PMPI_GROUP_VPM_SOLENOID, fmtString("%s", label), nullptr, i, CTLPI_STATE_FORMAT_UINT8, type, GetPhysOutVPMState, nullptr, CORE_MODOUT_SOL0 + i - 1);
-               }
-               else
-               {
-                  int mask;
-                  switch (i)
-                  {
-                  case 33:mask = isFlipperCoil ? 0x10 : 0x10; break; // Power bit
-                  case 34:mask = isFlipperCoil ? CORE_URFLIPSOLBITS : 0x20; break; // Power|Hold bits
-                  case 35:mask = isFlipperCoil ? 0x40 : 0x40; break; // Power bit
-                  case 36:mask = isFlipperCoil ? CORE_ULFLIPSOLBITS : 0x80; break; // Power|Hold bits
-                  }
-                  addDevice(PMPI_GROUP_SOLENOID, label, nullptr, i, CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_CUSTOM, GetSolenoid2State, nullptr, mask);
-                  addDevice(PMPI_GROUP_VPM_SOLENOID, fmtString("%s", label), nullptr, i, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_CUSTOM, GetSolenoid2VPMState, nullptr, mask);
-               }
-            }
-         }
-      }
-      // 37..44
-      {
-         // 37..44, WPC95: 4 low power digital outputs (duplicated 37..40 / 41..44, stored in 0xF0000000 of solenoids)
-         if (core_gameData->gen & (GEN_WPC95 | GEN_WPC95DCS))
-         {
-            for (uint16_t i = 0; i < 8; i++)
-               addPhysSol(fmtString("Output #%02d (WPC95 J110 LPDC)", 37 + (i & 3)),
-                  nullptr, nullptr, 37 + i, GetSolenoid1State, GetSolenoid1VPMState, 1u << (36 + (i & 3)), 36 + (i & 3));
-         }
-         // 37..44, S11, SAM, SPA: extension board with 8 outputs (stored in 0xFF00 of solenoids2)
-         else if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA))
-         {
-            for (uint16_t i = 37; i <= 44; i++)
-               addPhysSol(
-                  fmtString("%s Ext Output #%d", (core_gameData->gen & GEN_ALLS11) ? "S11" : (core_gameData->gen & GEN_SAM) ? "SAM" : "SPA", i - 36),
-                  nullptr, nullptr, i, GetSolenoid2State, GetSolenoid2VPMState, 1u << (8 + i - 37), 40 + i - 37);
-         }
-      }
-      // 45..48, lower flipper solenoids
-      // Note: core_getSol returns each coil state while core_getAllSol will set hold coil if either of Hold/Power coil is set
-      for (uint16_t i = 45; i < 49; i++)
-      {
-         const bool isCPU = core_gameData->hw.flippers & FLIP_SOL((i < 47) ? FLIP_LR : FLIP_LL);
-         const char* leftRight = (i < 47) ? "Right" : "Left";
-         const char* bits = (i & 1) ? "Power" : "Hold|Power";
-         const char* label;
-         if (isCPU && (core_gameData->gen & GEN_ALLWPC))
-            label = fmtString("Output #%02d - Lower %s Flipper %s solenoid (CPU controlled)", 29 + (i - 45), leftRight, bits);
-         else if (isCPU)
-            label = fmtString("Lower %s Flipper: %s solenoid (CPU controlled)", leftRight, bits);
-         else
-            label = fmtString("Lower %s Flipper: %s solenoid (emulated wired)", leftRight, bits);
-         if (coreGlobals.hasModulatedFlippers && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
-         {
-            int type = core_get_pwm_output_type(CORE_MODOUT_SOL0 + i - 1) == 1 ? CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS : CTLPI_STATE_TYPE_CUSTOM;
-            addDevice(PMPI_GROUP_SOLENOID, label, nullptr, i, CTLPI_STATE_FORMAT_FLOAT, type, GetPhysOutState, nullptr, CORE_MODOUT_SOL0 + i - 1);
-            addDevice(PMPI_GROUP_VPM_SOLENOID, fmtString("%s", label), nullptr, i, CTLPI_STATE_FORMAT_UINT8, type, GetPhysOutVPMState, nullptr, CORE_MODOUT_SOL0 + i - 1);
          }
          else
          {
-            int mask;
-            switch (i)
-            {
-            case 45:mask = 0x01; break; // Power bit
-            case 46:mask = CORE_LRFLIPSOLBITS; break; // Power|Hold bits
-            case 47:mask = 0x04; break; // Power bit
-            case 48:mask = CORE_LLFLIPSOLBITS; break; // Power|Hold bits
-            }
-            addDevice(PMPI_GROUP_SOLENOID, label, nullptr, i, CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_CUSTOM, GetSolenoid2State, nullptr, mask);
-            addDevice(PMPI_GROUP_VPM_SOLENOID, fmtString("%s", label), nullptr, i, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_CUSTOM, GetSolenoid2VPMState, nullptr, mask);
+            msgLocals.displays[msgLocals.nDisplays].srcId.width = layout->length;
+            msgLocals.displays[msgLocals.nDisplays].srcId.height = layout->start;
          }
+         msgLocals.displays[msgLocals.nDisplays].layout = layout;
+         msgLocals.displays[msgLocals.nDisplays].srcId.id = { msgLocals.endpointId, static_cast<uint32_t>(msgLocals.nDisplays) };
+         msgLocals.displays[msgLocals.nDisplays].srcId.groupId = { msgLocals.endpointId, 0 };
+         if ((layout->type & CORE_SEGMASK) == CORE_VIDEO)
+            msgLocals.displays[msgLocals.nDisplays].srcId.hardware = CTLPI_DISPLAY_HARDWARE_CRT_DISPLAY;
+         else if ((layout->length < 128) || (layout->start < 16))
+            msgLocals.displays[msgLocals.nDisplays].srcId.hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN; // Mini display, usually LEDs
+         else if (core_gameData->gen == GEN_SAM)
+            // TODO return the right information:
+            // - Before POTC, all tables used Neon Plasma display
+            // - Then, due to RoHS, european versions of POTC to Family Guy use a modified PinLED display
+            //   Then the 520-5052-05 red led matrix is used
+            //   Then, starting with Tranformers, the 520-5052-15 orange/red led matrix is used
+            // - All US Stern games before AC/DC use a 128 x 32 neon plasma (520-5052-00), then LED (520-5052-15)
+            msgLocals.displays[msgLocals.nDisplays].srcId.hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN;
+         else if (core_gameData->gen == GEN_SPA)
+            msgLocals.displays[msgLocals.nDisplays].srcId.hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN;
+         else
+            msgLocals.displays[msgLocals.nDisplays].srcId.hardware = CTLPI_DISPLAY_HARDWARE_NEON_PLASMA;
+         msgLocals.displays[msgLocals.nDisplays].srcId.frameFormat = ((layout->type & CORE_SEGMASK) != CORE_VIDEO) ? CTLPI_DISPLAY_FORMAT_LUM32F
+            : IsPacked565Display(layout->type) ? CTLPI_DISPLAY_FORMAT_SRGB565
+            : CTLPI_DISPLAY_FORMAT_SRGB888;
+         msgLocals.displays[msgLocals.nDisplays].srcId.GetRenderFrame = &GetDisplayFrame;
+         if ((layout->type & CORE_SEGMASK) != CORE_VIDEO)
+         {
+            msgLocals.displays[msgLocals.nDisplays].srcId.identifyFormat = ((core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0)) ? CTLPI_DISPLAY_ID_FORMAT_BITPLANE4 : CTLPI_DISPLAY_ID_FORMAT_BITPLANE2;
+            msgLocals.displays[msgLocals.nDisplays].srcId.GetIdentifyFrame = &GetDisplayIdFrame;
+         }
+         msgLocals.nDisplays++;
+         break;
+      default: // Alphanumeric segment displays
+         break;
       }
-      // 49, simulated fake plunger, not broadcasted
-      // 50, unused, reserved
-      // 51..66, custom through core_gameData->hw.getSol or physic model
-      // Note for WPC except WPC95, the first 8 custom solenoids are actually the extension boards (report in group 0x0002 with an adapyted label ?)
-      for (uint16_t i = CORE_FIRSTCUSTSOL - 1; i < nSols; i++)
-         addPhysSol(fmtString("Custom Output #%02d", i), nullptr, nullptr, i + 1, GetCustomSolenoidState, GetCustomSolenoidVPMState, i + 1, i);
+   }
 
-      setupGroup(PMPI_GROUP_SOLENOID, "Solenoids", "Generic high/low current outputs (solenoids & flashers but also auxiliary boards, custom driver outputs and PinMAME internal state)");
-      setupGroup(PMPI_GROUP_VPM_SOLENOID, "VPinMAME Solenoids", "Backward compatible VPinMAME states (less precise, meaning depends on game driver)");
-   }
-   // GI dedicated drivers (WPC 0..8, Whitestar 0/9, SAM 0/9)
+   if (msgLocals.nDisplays > 0)
    {
-      const bool isPhysGI = (coreGlobals.nGI > 0) && ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_GI) != 0);
-      for (uint16_t i = 0; i < coreGlobals.nGI; i++)
-      {
-         addDevice(PMPI_GROUP_GI, fmtString("GI #%d", i + 1), nullptr, i, CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS, isPhysGI ? GetPhysOutState : GetGIState, nullptr, isPhysGI ? (CORE_MODOUT_GI0 + i) : i);
-         addDevice(PMPI_GROUP_VPM_GI, fmtString("GI #%d", i + 1), fmtString((core_gameData->gen& GEN_ALLWPC) ? "Value in 0..8 range" : "0 (off) or 9 (on)"), i, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_CUSTOM, isPhysGI ? GetPhysOutVPMState : GetGIVPMState, nullptr, isPhysGI ? (CORE_MODOUT_GI0 + i) : i);
-      }
-      setupGroup(PMPI_GROUP_GI, "GIs", "General Illumination strings (WPC, Whitestar & SAM are the only one with dedicated GI outputs, other hardwares use generic outputs to drive a GI relay/thyristor)");
-      setupGroup(PMPI_GROUP_VPM_GI, "VPinMAME GIs", "Backward compatible VPinMAME states (less precise, meaning depends on game driver)");
+      msgLocals.displayProvider = std::make_unique<PinballPlugin::Controller::CtrlItemProvider<DisplaySrcId>>(msgLocals.msgApi, msgLocals.endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
+      std::vector<DisplaySrcId> displaySrcIds;
+      for (unsigned int i = 0; i < msgLocals.nDisplays; i++)
+         displaySrcIds.push_back(msgLocals.displays[i].srcId);
+      msgLocals.displayProvider->AddItems(displaySrcIds);
    }
-   // Lamp matrix
-   {
-      const int hasSAMModulatedLeds = (core_gameData->gen & GEN_SAM) && (core_gameData->hw.lampCol > 2);
-      const int nLamps = (hasSAMModulatedLeds || coreGlobals.nLamps) ? coreGlobals.nLamps : (8 * (CORE_CUSTLAMPCOL + core_gameData->hw.lampCol));
-      const bool isPhysLamp = (coreGlobals.nLamps > 0) && ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS) != 0);
-      for (uint16_t i = 0; i < nLamps; i++)
-      {
-         uint16_t l = coreData->m2lamp ? static_cast<uint16_t>(coreData->m2lamp((i / 8) + 1, i & 7)) : i;
-         addDevice(PMPI_GROUP_LAMP, fmtString("Lamp #%x%x", (i / 8) + 1, (i & 7) + 1), nullptr, l, CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS, isPhysLamp ? GetPhysOutState : GetLampState, nullptr, isPhysLamp ? (CORE_MODOUT_LAMP0 + i) : i);
-         addDevice(PMPI_GROUP_VPM_LAMP, fmtString("Lamp #%x%x", (i / 8) + 1, (i & 7) + 1), fmtString("FIXME define value"), l, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_CUSTOM, isPhysLamp ? GetPhysOutVPMState : GetLampVPMState, nullptr, isPhysLamp ? (CORE_MODOUT_LAMP0 + i) : i);
-      }
-      setupGroup(PMPI_GROUP_LAMP, "Lamps", "Playfield, cabinet and backglass lamps (either matrix or directly controlled)");
-      setupGroup(PMPI_GROUP_VPM_LAMP, "VPinMAME Lamps", "Backward compatible VPinMAME states (less precise, meaning depends on game driver)");
-   }
-   // Emulated mechanical devices (we don't know which ones are available so always declare all of them)
-   // This is somewhat hacky as the definition depends on g_fHandleMechanics and we do not update if it changes (it must be defined before)
-   for (uint16_t i = 0; i < MECH_MAXMECH; i++)
-   {
-      if (g_fHandleMechanics == 0)
-      {
-         if (i < MECH_MAXMECH / 2)
-         {
-            addDevice(PMPI_GROUP_MECH, fmtString("User Mech Pos #%02d", i), nullptr, i + 1, CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_CUSTOM, GetCustomMechPosState, nullptr, MECH_MAXMECH / 2 + i);
-            addDevice(PMPI_GROUP_VPM_MECH, fmtString("User Mech Pos #%02d", i), nullptr, i + 1, CTLPI_STATE_FORMAT_INT32, CTLPI_STATE_TYPE_CUSTOM, GetCustomMechPosVPMState, nullptr, MECH_MAXMECH / 2 + i);
-         }
-         else
-         {
-            uint16_t j = i - MECH_MAXMECH/2;
-            addDevice(PMPI_GROUP_MECH, fmtString("User Mech Speed #%02d", j), nullptr, -(j + 1), CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_CUSTOM, GetCustomMechSpeedState, nullptr, MECH_MAXMECH / 2 + j);
-            addDevice(PMPI_GROUP_VPM_MECH, fmtString("User Mech Speed #%02d", j), nullptr, -(j + 1), CTLPI_STATE_FORMAT_INT32, CTLPI_STATE_TYPE_CUSTOM, GetCustomMechSpeedVPMState, nullptr, MECH_MAXMECH / 2 + j);
-         }
-      }
-      else
-      {
-         addDevice(PMPI_GROUP_MECH, fmtString("PinMame Mech #%02d", i), nullptr, i, CTLPI_STATE_FORMAT_INT32, CTLPI_STATE_TYPE_CUSTOM, GetCoreMechState, nullptr, i);
-      }
-   }
-   setupGroup(PMPI_GROUP_MECH, "Mechs", "Emulated mechanical parts (driver or user defined)");
-   setupGroup(PMPI_GROUP_VPM_MECH, "VPinMAME Mechs", "Backward compatible VPinMAME states (less precise data format)");
-   // Playfield & cabinet switches
-   for (uint16_t i = 0; i < (CORE_STDSWCOLS + core_gameData->hw.swCol) * 8; i++)
-   {
-      const int swNo = coreData->m2sw ? coreData->m2sw(i / 8, i & 7) : i; // Note that some hardware use negative switch indices to identify cabinet switches (for example Whitestar)
-      assert(i == (coreData->sw2m ? coreData->sw2m(swNo) : ((swNo / 10) * 8 + (swNo % 10 - 1))));
-      addDevice(PMPI_GROUP_SWITCH, swNo < 0 ? fmtString("Cabinet #%02x", 16 + swNo) : fmtString("Playfield #%02x", swNo), nullptr, static_cast<uint16_t>(swNo), CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_SWITCH, GetSwitchState, SetSwitchState, swNo);
-   }
-   setupGroup(PMPI_GROUP_SWITCH, "Switches", "Playfield & cabinet switches");
-   // DIP switches
-   for (uint16_t i = 0; i < coreData->coreDips; i++)
-   {
-      addDevice(PMPI_GROUP_DIPSWITCH, fmtString("DIP #%02d", i + 1), nullptr, i + 1, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_SWITCH, GetDIPSwitchState, SetDIPSwitchState, i + 1);
-   }
-   setupGroup(PMPI_GROUP_DIPSWITCH, "DIP Switches", "Hardware onboard DIP switches");
-   // MemMap Game states
-   for (uint16_t i = 0; i < msgLocals.memMapStates.size(); i++)
-   {
-      addDevice(PMPI_GROUP_GAMESTATE, fmtString("%s", msgLocals.memMapStates[i].name.c_str()), fmtString("%s", msgLocals.memMapStates[i].group.c_str()), i, msgLocals.memMapStates[i].type, CTLPI_STATE_TYPE_CUSTOM, GetMemMapState, nullptr, i);
-   }
-   setupGroup(PMPI_GROUP_GAMESTATE, "Game States", "Live game states gathered from internal machine memory");
-   //
-   msgLocals.stateProvider = std::make_unique<PinballPlugin::Controller::CtrlItemProvider<StateSrcId>>(msgLocals.msgApi, msgLocals.endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG);
-   std::vector<StateSrcId> stateGroups;
-   for (uint32_t i = PMPI_GROUP_SOLENOID; i <= PMPI_GROUP_VPM_MECH; i++)
-      stateGroups.push_back(msgLocals.stateGroups[i - PMPI_GROUP_SOLENOID].stateDef);
-   msgLocals.stateProvider->AddItems(stateGroups);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Overall game messages
+
+static void SetupMsgApi()
+{
+   // The API only covers a running controller (the setup/info part is not exposed), so we do not have anything to register if we are not running
+   assert(_isRunning == 1);
+   assert(msgLocals.msgApi != nullptr);
+   assert(!msgLocals.registered);
+   msgLocals.registered = true;
+
+   msgLocals.onAudioCmdId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_AUDIO_CMD);
+   msgLocals.onDmdCmdId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_DISPLAY_CMD);
+   msgLocals.onConsoleDataId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_CONSOLE_DATA);
+   msgLocals.onGetMachineStateId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_GET_MACHINE_STATE);
+   msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.onGetMachineStateId, OnGetMachineState, nullptr);
+
+   msgLocals.controllerProvider = std::make_unique<PinballPlugin::Controller::CtrlItemProvider<ControllerDef>>(msgLocals.msgApi, msgLocals.endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG);
+
+   SetupMsgApiVideoDisplays();
+   SetupMsgApiSegDisplays();
+   SetupMsgApiGameStates();
 }
 
 static void ReleaseMsgApi()
@@ -2663,41 +2618,27 @@ static void ReleaseMsgApi()
    msgLocals.registered = false;
 
    msgLocals.msgApi->UnsubscribeMsg(msgLocals.onGetMachineStateId, OnGetMachineState, nullptr);
-   msgLocals.msgApi->UnsubscribeMsg(msgLocals.onGetControllersId, OnGetControllers, nullptr);
-   msgLocals.msgApi->ReleaseMsgID(msgLocals.onControllerChangeId);
-   msgLocals.msgApi->ReleaseMsgID(msgLocals.onGetControllersId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onAudioCmdId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onDmdCmdId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onConsoleDataId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onGetMachineStateId);
 
-   if (msgLocals.nDisplays > 0)
-   {
-      msgLocals.msgApi->UnsubscribeMsg(msgLocals.getDisplaySrcId, OnGetDisplaySrc, nullptr);
-      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onDisplaySrcChangedId, nullptr);
-      msgLocals.msgApi->ReleaseMsgID(msgLocals.onDisplaySrcChangedId);
-      msgLocals.msgApi->ReleaseMsgID(msgLocals.getDisplaySrcId);
-      memset(msgLocals.displays, 0, sizeof(msgLocals.displays));
-      msgLocals.nDisplays = 0;
-   }
+   msgLocals.controllerProvider = nullptr;
+
+   msgLocals.displayProvider = nullptr;
+   memset(msgLocals.displays, 0, sizeof(msgLocals.displays));
+   msgLocals.nDisplays = 0;
    
-   if (msgLocals.nSegDisplays > 0)
-   {
-      msgLocals.msgApi->UnsubscribeMsg(msgLocals.getSegSrcId, OnGetSegSrc, nullptr);
-      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onSegSrcChangedId, nullptr);
-      msgLocals.msgApi->ReleaseMsgID(msgLocals.onSegSrcChangedId);
-      msgLocals.msgApi->ReleaseMsgID(msgLocals.getSegSrcId);
-      msgLocals.nSegDisplays = 0;
-      memset(&msgLocals.segDisplays, 0, sizeof(msgLocals.segDisplays));
-      msgLocals.nSortedSegLayout = 0;
-      memset(&msgLocals.sortedSegLayout, 0, sizeof(msgLocals.sortedSegLayout));
-      memset(&msgLocals.segLuminances, 0, sizeof(msgLocals.segLuminances));
-      memset(&msgLocals.segPrevLuminances, 0, sizeof(msgLocals.segPrevLuminances));
-   }
+   msgLocals.segDisplayProvider = nullptr;
+   msgLocals.nSegDisplays = 0;
+   memset(&msgLocals.segDisplays, 0, sizeof(msgLocals.segDisplays));
+   msgLocals.nSortedSegLayout = 0;
+   memset(&msgLocals.sortedSegLayout, 0, sizeof(msgLocals.sortedSegLayout));
+   memset(&msgLocals.segLuminances, 0, sizeof(msgLocals.segLuminances));
+   memset(&msgLocals.segPrevLuminances, 0, sizeof(msgLocals.segPrevLuminances));
 
    if (msgLocals.stateProvider)
    {
-      std::lock_guard lock(msgLocals.stateProvider->GetListMutex());
       for (const auto& group : msgLocals.stateProvider->GetItems())
       {
          for (int i = 0; i < group.nStates; i++)
@@ -2720,26 +2661,26 @@ static void ReleaseMsgApi()
 
 static void OnGameStart(void*)
 {
-   SetupMsgApi();
-   if (msgLocals.registered)
-      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onControllerChangeId, nullptr);
+   if (msgLocals.msgApi)
+   {
+      SetupMsgApi();
+      msgLocals.controllerProvider->SetItem({ msgLocals.endpointId, msgLocals.gameId.c_str() });
+   }
 }
 
 static void OnGameEnd(void*)
 {
-   if (msgLocals.registered)
-      msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onControllerChangeId, nullptr);
-   ReleaseMsgApi();
+   if (msgLocals.msgApi)
+   {
+      ReleaseMsgApi();
+   }
 }
 
 PINMAMEAPI void PinmameSetMsgAPI(MsgPluginAPI* msgApi, unsigned int endpointId)
 {
-   if (msgLocals.msgApi)
-      ReleaseMsgApi();
+   assert(!msgLocals.registered);
    msgLocals.msgApi = msgApi;
    msgLocals.endpointId = endpointId;
-   if (msgLocals.msgApi)
-      SetupMsgApi();
 }
 
 static void SetMemMapImpl(uint8_t* platform, size_t platformSize, uint8_t* game, size_t gameSize)

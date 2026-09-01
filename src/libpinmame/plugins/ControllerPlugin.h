@@ -375,6 +375,7 @@ typedef struct AudioUpdateMsg
 //
 #ifdef __cplusplus
 #include <assert.h>
+#include <exception>
 #include <functional>
 #include <mutex>
 #include <thread>
@@ -451,8 +452,17 @@ inline bool operator!=(const AudioSrcId& a, const AudioSrcId& b)
 {
     return !(a == b);
 }
+
 namespace PinballPlugin::Controller
 {
+
+// Extract get game from controller gameId (format is layout :: gameid)
+inline std::string_view CtrlGetGameKey(const char* gameId)
+{
+   const std::string_view id(gameId);
+   const size_t sep = id.find("::");
+   return sep == std::string_view::npos ? id : id.substr(sep + 2);
+}
 
 template <class T> struct GetCtrlSrcMsg
 {
@@ -461,6 +471,94 @@ template <class T> struct GetCtrlSrcMsg
    // Response
    unsigned int count; // Number of entries, also position to put next entry, should be increased even if exceeding maxEntryCount to get the total count
    T* entries; // Pointer to an array of maxEntryCount entries to be filled
+};
+
+// Simple item provider helper, single threaded, tied to the MsgAPI thread
+template <class T> class CtrlItemProvider
+{
+public:
+   CtrlItemProvider(const MsgPluginAPI* msgApi, uint32_t endpointId, const char* getMsgName, const char* onChangeMsgName)
+      : m_msgApi(msgApi)
+      , m_endpointId(endpointId)
+      , m_getMsgId(msgApi->GetMsgID(CTLPI_NAMESPACE, getMsgName))
+      , m_onChangeMsgId(msgApi->GetMsgID(CTLPI_NAMESPACE, onChangeMsgName))
+   {
+   }
+
+   ~CtrlItemProvider()
+   {
+      assert(std::this_thread::get_id() == m_threadLock);
+      ClearItems();
+      m_msgApi->ReleaseMsgID(m_getMsgId);
+      m_msgApi->ReleaseMsgID(m_onChangeMsgId);
+   }
+
+   void SetItem(const T& item)
+   {
+      // Note that we must do 2 change broadcast as the first (clear) broadcast ensures that there aren't any other thread using 
+      // the previous items before discarding them and advertising the new element. Doing it in a single pass would risk a threading
+      // crash if previous element were used while being discarded and replaced.
+      ClearItems();
+      AddItem(item);
+   }
+
+   void AddItem(const T& item)
+   {
+      assert(std::this_thread::get_id() == m_threadLock);
+      m_items.push_back(item);
+      if (m_items.size() == 1)
+         m_msgApi->SubscribeMsg(m_endpointId, m_getMsgId, OnGetItems, this);
+      m_msgApi->BroadcastMsg(m_endpointId, m_onChangeMsgId, nullptr);
+   }
+
+   void AddItems(const std::vector<T>& list)
+   {
+      assert(std::this_thread::get_id() == m_threadLock);
+      m_items.insert(m_items.end(), list.begin(), list.end());
+      if (m_items.size() == list.size())
+         m_msgApi->SubscribeMsg(m_endpointId, m_getMsgId, OnGetItems, this);
+      m_msgApi->BroadcastMsg(m_endpointId, m_onChangeMsgId, nullptr);
+   }
+
+   void ClearItems()
+   {
+      assert(std::this_thread::get_id() == m_threadLock);
+      if (m_items.empty())
+         return;
+      m_items.clear();
+      m_msgApi->UnsubscribeMsg(m_getMsgId, OnGetItems, this);
+      m_msgApi->BroadcastMsg(m_endpointId, m_onChangeMsgId, nullptr);
+   }
+
+   const std::vector<T>& GetItems() const
+   {
+      assert(std::this_thread::get_id() == m_threadLock);
+      return m_items;
+   }
+
+private:
+   static void OnGetItems(const unsigned int eventId, void* userData, void* msgData)
+   {
+      CtrlItemProvider<T>* me = static_cast<CtrlItemProvider<T>*>(userData);
+      assert(std::this_thread::get_id() == me->m_threadLock);
+      GetCtrlSrcMsg<T>* getMsg = static_cast<GetCtrlSrcMsg<T>*>(msgData);
+      auto it = me->m_items.begin();
+      while (it != me->m_items.end() && getMsg->count < getMsg->maxEntryCount)
+      {
+         getMsg->entries[getMsg->count] = *it;
+         getMsg->count++;
+         ++it;
+      }
+      getMsg->count += static_cast<unsigned int>(std::distance(it, me->m_items.end()));
+   }
+
+   const std::thread::id m_threadLock{ std::this_thread::get_id() };
+   const MsgPluginAPI* m_msgApi;
+   const uint32_t m_endpointId;
+   const unsigned int m_getMsgId;
+   const unsigned int m_onChangeMsgId;
+
+   std::vector<T> m_items;
 };
 
 // Gather a shared controller item list. Single threaded, tied to MsgAPI thread.
@@ -497,173 +595,179 @@ template <class T> static std::vector<T> GetCtrlItems(const MsgPluginAPI* msgApi
    return list;
 }
 
-template <class T> class CtrlItemProvider
-{
-public:
-   CtrlItemProvider(const MsgPluginAPI* msgApi, uint32_t endpointId, const char* getMsgName, const char* onChangeMsgName)
-      : m_threadLock(std::this_thread::get_id())
-      , m_msgApi(msgApi)
-      , m_endpointId(endpointId)
-      , m_getMsgId(msgApi->GetMsgID(CTLPI_NAMESPACE, getMsgName))
-      , m_onChangeMsgId(msgApi->GetMsgID(CTLPI_NAMESPACE, onChangeMsgName))
-   {
-   }
-
-   ~CtrlItemProvider()
-   {
-      assert(std::this_thread::get_id() == m_threadLock);
-      ClearItems();
-      m_msgApi->ReleaseMsgID(m_getMsgId);
-      m_msgApi->ReleaseMsgID(m_onChangeMsgId);
-   }
-
-   void SetItem(const T& item)
-   {
-      // Note that we must do 2 change broadcast as the first (clear) broadcast ensures that there aren't any other thread using 
-      // the previous items before discarding them and advertising the new element. Doing it in a single pass would risk a threading
-      // crash if previous element were used while being discarded and replaced.
-      ClearItems();
-      AddItem(item);
-   }
-
-   void AddItem(const T& item)
-   {
-      assert(std::this_thread::get_id() == m_threadLock);
-      {
-         std::lock_guard lock(m_listMutex);
-         m_items.push_back(item);
-         if (m_items.size() == 1)
-            m_msgApi->SubscribeMsg(m_endpointId, m_getMsgId, OnGetItems, this);
-      }
-      m_msgApi->BroadcastMsg(m_endpointId, m_onChangeMsgId, nullptr);
-   }
-
-   void AddItems(const std::vector<T>& list)
-   {
-      assert(std::this_thread::get_id() == m_threadLock);
-      {
-         std::lock_guard lock(m_listMutex);
-         m_items.insert(m_items.end(), list.begin(), list.end());
-         if (m_items.size() == list.size())
-            m_msgApi->SubscribeMsg(m_endpointId, m_getMsgId, OnGetItems, this);
-      }
-      m_msgApi->BroadcastMsg(m_endpointId, m_onChangeMsgId, nullptr);
-   }
-
-   void ClearItems()
-   {
-      assert(std::this_thread::get_id() == m_threadLock);
-      {
-         std::lock_guard lock(m_listMutex);
-         if (m_items.empty())
-            return;
-         m_items.clear();
-      }
-      m_msgApi->UnsubscribeMsg(m_getMsgId, OnGetItems, this);
-      m_msgApi->BroadcastMsg(m_endpointId, m_onChangeMsgId, nullptr);
-   }
-
-   std::mutex& GetListMutex() { return m_listMutex; }
-
-   const std::vector<T>& GetItems()
-   {
-      assert(!m_listMutex.try_lock() && "GetItems() called without holding m_listMutex");
-      return m_items;
-   }
-
-private:
-   static void OnGetItems(const unsigned int eventId, void* userData, void* msgData)
-   {
-      CtrlItemProvider<T>* me = static_cast<CtrlItemProvider<T>*>(userData);
-      assert(std::this_thread::get_id() == me->m_threadLock);
-      GetCtrlSrcMsg<T>* getMsg = static_cast<GetCtrlSrcMsg<T>*>(msgData);
-      auto it = me->m_items.begin();
-      while (it != me->m_items.end() && getMsg->count < getMsg->maxEntryCount)
-      {
-         getMsg->entries[getMsg->count] = *it;
-         getMsg->count++;
-         it++;
-      }
-      getMsg->count += static_cast<unsigned int>(std::distance(it, me->m_items.end()));
-   }
-
-   const std::thread::id m_threadLock;
-   const MsgPluginAPI* m_msgApi;
-   const uint32_t m_endpointId;
-   const unsigned int m_getMsgId;
-   const unsigned int m_onChangeMsgId;
-
-   std::mutex m_listMutex;
-   std::vector<T> m_items;
-};
-
+// Provide a consumer with a list of items gathered from distributed plugin, in a multithreaded context.
+// . The list only mutates on the MsgApi thread, either reflecting change events, or during a `Subscribe`/`Unsubscribe` call
+// . The list is empty until subscribed, after which it is automatically populated and kept up to date.
+// . `Unsubscribe` **MUST** be called before destruction. During a call to `Unsubscribe`, the list mutates to an empty state.
+// . List items are immutable and valid from a change event until the end of processing of the corresponding end-of-life
+//   change event (Note that C++ prevents vector<const T> so this is not enforced, but is strictly required)
+// . Items may only be accessed through the `With` method to guarantee proper synchronization against list change events.
+// . When list content changes (always on the MsgApi thread):
+//   - `onItemsAboutToChange` is called. Before returning, this method **MUST**:
+//     . prevent client threads from starting new list-dependent operations;
+//     . wait for all existing list-dependent operations to complete;
+//     . discard all copied or borrowed data referring to the current items.
+//   - `onItemsChanged` is called, allowing to resume processing.
+// . Clients may cache copies of items or item-derived data between change events.
+//   If the cached data borrows from provider-owned storage:
+//   - it may only be accessed as part of a With() operation;
+//   - it must be discarded by onItemsAboutToChange before that callback returns.
+// . The filter and lifecycle callbacks **MUST NOT** throw.
 template <class T> class CtrlItemConsumer
 {
 public:
-   CtrlItemConsumer(const MsgPluginAPI* msgApi, uint32_t endpointId, const char* getMsgName, const char* onChangeMsgName, const std::function<void(std::vector<T>&)>& filterItems,
-      const std::function<void()> onItemsChanged)
-      : m_threadLock(std::this_thread::get_id())
-      , m_msgApi(msgApi)
+   CtrlItemConsumer(const MsgPluginAPI* msgApi, uint32_t endpointId, const char* getMsgName, const char* onChangeMsgName,
+      const std::function<void(std::vector<T>&)>& filterItems,
+      const std::function<void()>& onItemsAboutToChange,
+      const std::function<void()>& onItemsChanged)
+      : m_msgApi(msgApi)
       , m_endpointId(endpointId)
       , m_getMsgId(msgApi->GetMsgID(CTLPI_NAMESPACE, getMsgName))
       , m_onChangeMsgId(msgApi->GetMsgID(CTLPI_NAMESPACE, onChangeMsgName))
       , m_filterItems(filterItems)
+      , m_onItemsAboutToChange(onItemsAboutToChange)
       , m_onItemsChanged(onItemsChanged)
    {
-      m_msgApi->SubscribeMsg(m_endpointId, m_onChangeMsgId, OnItemsChanged, this);
    }
 
+   CtrlItemConsumer(const CtrlItemConsumer&) = delete;
+   CtrlItemConsumer& operator=(const CtrlItemConsumer&) = delete;
+   CtrlItemConsumer(CtrlItemConsumer&&) = delete;
+   CtrlItemConsumer& operator=(CtrlItemConsumer&&) = delete;
+
+   [[nodiscard]] bool IsSubscribed() const
+   {
+      assert(std::this_thread::get_id() == m_msgApiThreadId);
+      return m_subscribed;
+   }
+   
+   void Subscribe() noexcept
+   {
+      assert(std::this_thread::get_id() == m_msgApiThreadId);
+      assert(!m_subscribed);
+      assert(!m_isUpdatingList);
+      m_msgApi->SubscribeMsg(m_endpointId, m_onChangeMsgId, OnItemsChanged, this);
+      m_subscribed = true;
+      UpdateList();
+   }
+
+   void Refresh() noexcept
+   {
+      assert(std::this_thread::get_id() == m_msgApiThreadId);
+      if (m_subscribed)
+         UpdateList();
+   }
+
+   void Unsubscribe() noexcept
+   {
+      assert(std::this_thread::get_id() == m_msgApiThreadId);
+      assert(m_subscribed);
+      assert(!m_isUpdatingList);
+      m_subscribed = false;
+      m_msgApi->UnsubscribeMsg(m_onChangeMsgId, OnItemsChanged, this);
+      {
+         std::lock_guard lock(m_listMutex);
+         if (m_items.empty())
+            return;
+      }
+      try
+      {
+         if (m_onItemsAboutToChange)
+            m_onItemsAboutToChange();
+         {
+            std::lock_guard lock(m_listMutex);
+            m_items.clear();
+         }
+         if (m_onItemsChanged)
+            m_onItemsChanged();
+      }
+      catch (...)
+      {
+         std::terminate();
+      }
+   }
+   
    ~CtrlItemConsumer()
    {
-      assert(std::this_thread::get_id() == m_threadLock);
-      m_msgApi->UnsubscribeMsg(m_onChangeMsgId, OnItemsChanged, this);
+      assert(std::this_thread::get_id() == m_msgApiThreadId);
+      assert(!m_subscribed);
       m_msgApi->ReleaseMsgID(m_getMsgId);
       m_msgApi->ReleaseMsgID(m_onChangeMsgId);
    }
-
-   void SelectItems(bool discardSameSelectionEvent)
+   
+   template <typename Func> auto With(Func&& func) const -> decltype(func(std::declval<const std::vector<T>&>()))
    {
-      assert(std::this_thread::get_id() == m_threadLock);
-      std::vector<T> items = GetCtrlItems<T>(m_msgApi, m_endpointId, m_getMsgId);
-
-      if (!items.empty())
-         m_filterItems(items);
-
-      if (discardSameSelectionEvent && m_items == items)
-         return;
-
-      {
-         std::lock_guard lock(m_listMutex);
-         m_items = std::move(items);
-      }
-      m_onItemsChanged();
-   }
-
-   std::mutex& GetListMutex() { return m_listMutex; }
-
-   const std::vector<T>& GetItems()
-   {
-      assert(!m_listMutex.try_lock() && "GetItems() called without holding m_listMutex");
-      return m_items;
+      std::lock_guard lock(m_listMutex);
+      return std::forward<Func>(func)(m_items);
    }
 
 private:
-   static void OnItemsChanged(const unsigned int eventId, void* userData, void* msgData)
+   void UpdateList() noexcept
    {
-      CtrlItemConsumer<T>* me = static_cast<CtrlItemConsumer<T>*>(userData);
-      me->SelectItems(true);
+      assert(std::this_thread::get_id() == m_msgApiThreadId);
+      assert(m_subscribed);
+
+      // Coalesce reentrant UpdateList() calls to avoid recursive updates.
+      if (m_isUpdatingList)
+      {
+         m_listUpdatePending = true;
+         return;
+      }
+
+      m_isUpdatingList = true;
+      m_listUpdatePending = true;
+      while (m_subscribed && m_listUpdatePending)
+      {
+         m_listUpdatePending = false;
+
+         std::vector<T> items = GetCtrlItems<T>(m_msgApi, m_endpointId, m_getMsgId);
+         if (!items.empty() && m_filterItems)
+            m_filterItems(items);
+         if (!m_subscribed)
+            break;
+
+         {
+            std::lock_guard lock(m_listMutex); // Not entirely needed as items are const (no modification through `With`) and list is only changed on the  MsgAPI thread
+            if (m_items == items)
+               continue;
+         }
+         
+         if (m_onItemsAboutToChange)
+            m_onItemsAboutToChange();
+         if (!m_subscribed)
+            break;
+         {
+            std::lock_guard lock(m_listMutex);
+            m_items = std::move(items);
+         }
+         if (m_onItemsChanged)
+            m_onItemsChanged();
+      }
+      m_isUpdatingList = false;
    }
 
-   const std::thread::id m_threadLock;
-   const MsgPluginAPI* m_msgApi;
+   static void OnItemsChanged(const unsigned int, void* userData, void*) noexcept
+   {
+      CtrlItemConsumer<T>* me = static_cast<CtrlItemConsumer<T>*>(userData);
+      me->UpdateList();
+   }
+
+   const std::thread::id m_msgApiThreadId { std::this_thread::get_id() };
+   const MsgPluginAPI* const m_msgApi;
    const uint32_t m_endpointId;
    const unsigned int m_getMsgId;
    const unsigned int m_onChangeMsgId;
    const std::function<void(std::vector<T>&)> m_filterItems;
+   const std::function<void()> m_onItemsAboutToChange;
    const std::function<void()> m_onItemsChanged;
 
-   std::mutex m_listMutex;
    std::vector<T> m_items;
+   mutable std::mutex m_listMutex;
+
+   bool m_isUpdatingList = false;
+   bool m_listUpdatePending = false;
+   
+   bool m_subscribed = false;
 };
 
 };
