@@ -34,6 +34,17 @@ typedef struct PinMAMEMachineStateMsg
    uint64_t hardwareGen;
 } PinMAMEMachineStateMsg;
 
+#define PMPI_READ_MEMORY                     "ReadMemory"
+
+typedef struct PinMAMEReadMemoryMsg
+{
+   int version;         // Always 1 (to allow upgrading this message in later revisions)
+   uint32_t address;    // Request: start address in the main CPU address space
+   uint32_t size;       // Request: number of bytes to read
+   uint8_t* data;       // Request: caller-owned buffer, at least 'size' bytes
+   uint32_t read;       // Response: bytes actually read, 0 if unavailable
+} PinMAMEReadMemoryMsg;
+
 
 // State groups
 // 
