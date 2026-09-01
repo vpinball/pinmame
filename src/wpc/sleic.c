@@ -88,23 +88,114 @@ static INTERRUPT_GEN(sleic3_irq_gen) {
   else if (sleic3_int0_acc >= 1.0) { sleic3_int0_acc -= 1.0; cpu_set_irq_line_and_vector(SLEIC_MAIN_CPU, 0, HOLD_LINE, 0x0C); }
 }
 
+/* How the panel's two raster fields are weighted, which differs per machine because the
+ * two games ship different I8039 display ROMs:
+ *
+ *   Sleic Pin-Ball (sp01-1_1.rom): both fields hold the row lit for essentially the same
+ *     time -- P1.7 is raised for MOV R6,#30 / DJNZ (98 cycles) in field 1 against
+ *     MOV R6,#2E / DJNZ (94 cycles) in field 2, a ratio of 1.04:1.  Two equal fields give
+ *     THREE levels, not four: off, one plane (either one, ~50%), both planes (100%).  The
+ *     artwork agrees -- in the source images the field-1 plane is a strict subset of the
+ *     field-2 plane (e.g. at F000:9943: 0 pixels in field 1 only, 769 in field 2 only,
+ *     872 in both), so the pair encodes "lit" plus "lit brightly", not a 2-bit number.
+ *     Both single-plane states do occur in the frame buffer during play (measured over a
+ *     scripted game: 7.9% of pixels field-1-only, 7.4% field-2-only), and the real panel
+ *     shows them at the SAME brightness -- rendering them two levels apart is what made
+ *     the shading look wrong against the machine.
+ *
+ *   Bike Race (bkdsp01.bin): field 1 carries an extra MOV R6,#20 / DJNZ dwell (66 cycles)
+ *     that field 2 does not have at all, so the fields are strongly asymmetric and the
+ *     pair really is a weighted 2-bit value.  Keep the 4-level mapping there.
+ *
+ * Set in MACHINE_INIT; SLEIC1 (Sleic Pin-Ball) overrides it. */
+static int sleic_dmd_equal_fields;
+
+/* Decode the 2-bitplane frame buffer at 0x60410 into a 128x32 brightness grid.
+ * See the plane/weighting notes in SLEIC_irq_i8039 below. */
+static void sleic3_build_dmd_frame(UINT8 *dst) {
+  int ii, jj, kk;
+  const UINT8 *buf = memory_region(SLEIC_MEMREG_CPU) + 0x60410;
+  for (ii = 0; ii < 32; ii++) {
+    UINT8 *line = dst + ii * 128;
+    const UINT8 *src = buf + ii * 32;
+    for (jj = 0; jj < 16; jj++) {
+      UINT8 f1 = src[jj];            /* plane lit by raster field 1 (rows 0x00-0x1F) */
+      UINT8 f2 = src[jj + 0x800];    /* plane lit by raster field 2 (rows 0x20-0x3F) */
+      for (kk = 7; kk >= 0; kk--) {
+        int a = (f1 >> kk) & 1, b = (f2 >> kk) & 1;
+        *line++ = sleic_dmd_equal_fields ? (a | b ? (a & b ? 3 : 2) : 0)  /* 3 levels  */
+                                         : ((a << 1) | b);                /* 4 levels  */
+      }
+    }
+  }
+}
+
+/* Bike Race V4.1 rebuilds the panel from scratch every frame: it strobes PCS4 bit 3 to
+ * announce a finished frame, then takes the DMD lock (PCS0 bit 0) to blank-clear all
+ * 0x2FFF bytes, drops it, and redraws.  Sampling the buffer freely -- as the I8039 tick
+ * below does -- therefore catches cleared and half-drawn states, which is exactly the
+ * garbage that set showed.  So latch a copy at the strobe and keep displaying it: the
+ * I8039 tick still submits at the panel rate (which the DMD PWM integrator wants), it
+ * just submits complete frames.
+ *
+ * The latch has to lapse rather than stay on for good.  The 1992 sets redraw the panel
+ * incrementally and are perfectly stable to sample, and they strobe bit 3 exactly once,
+ * during init -- latching on that one strobe and holding it freezes them on an empty
+ * frame.  So a strobe only claims the next second of ticks: if the strobes keep coming
+ * the latch stays in charge (V4.1 strobes every ~90 ms), and if they stop we fall back
+ * to sampling the buffer directly, which is safe precisely because a redraw is always
+ * followed by a strobe. */
+#define SLEIC3_DMD_LATCH_TICKS 244       /* ~1 s at the 244 Hz I8039 tick */
+static UINT8 sleic3_dmd_latch[128 * 32];
+static int   sleic3_dmd_latch_ttl;
+
 static INTERRUPT_GEN(SLEIC_irq_i8039) {
   cpu_set_irq_line(SLEIC_DISPLAY_CPU, 0, PULSE_LINE);
 
   /* The I8039 is a pure timing generator (drives only the panel scan), so we read
-   * the 80188's DMD frame buffer directly. The buffer at 0x60410 has a 32-byte row
-   * stride: 16 bytes (= 128 px, MSB first, 1 = lit) of pixel data, then 16 unused. */
-  int ii, jj, kk;
-  UINT8 *buf = memory_region(SLEIC_MEMREG_CPU) + 0x60410;
-  for (ii = 0; ii < 32; ii++) {
-    UINT8 *line = &locals.rawDMD[ii * 128];
-    UINT8 *src  = buf + ii * 32;
-    for (jj = 0; jj < 16; jj++) {
-      UINT8 b = src[jj];
-      for (kk = 7; kk >= 0; kk--)
-        *line++ = (b >> kk) & 1 ? 3 : 0;
-    }
+   * the 80188's DMD frame buffer directly.  The panel is a 2-bitplane PWM display
+   * with 4 brightness levels; both planes live in the frame buffer at 0x60410:
+   *
+   *   plane 0 : 0x60410 + row*0x20, 16 bytes (= 128 px, MSB first, 1 = lit)
+   *   plane 1 : same, +0x800
+   *
+   * (the 16 bytes following each row's plane 0 are unused padding).  The layout is
+   * written by the 80188 frame blitter at F000:08AF in bkcpu04:
+   *     mov di,0410h / mov cx,20h / mov bx,0800h
+   *     mov al,ds:[bp+si] / mov es:[bx+di],al   ; plane 1 -> +0x800
+   *     lodsb / stosb                           ; plane 0 -> +0x000
+   *     add di,20h                              ; row stride 32
+   *
+   * That there are two differently weighted fields (and not just two copies of one
+   * image) comes from the I8039 raster loop in bkdsp01 -- the whole program is 116
+   * bytes: it scans the row counter twice per refresh, 0x00-0x1F then 0x20-0x3F, and
+   * the first field carries an extra dwell (MOV R6,#20 / DJNZ R6,$ at 0x0032) that
+   * the second does not, so row-counter bit 5 picks the plane and the two fields are
+   * lit for different lengths of time.  Bit 5 is the long-dwell field when clear, which
+   * makes the +0x000 plane the bright one -- the MSB.
+   *
+   * That cannot be read off the raster loop alone, because the 80188 sees the panel RAM
+   * through a scrambled decode (the buffer base 0x410 holds A10 and A4 high, rows step
+   * A5-A9, the plane is A11), so bit 5 cannot be traced to A11 without the board's PAL.
+   * What settles it is how Sleic Pin-Ball actually uses the two planes in play: of 822
+   * distinct in-game frames captured over a scripted game, 613 are drawn entirely into
+   * the +0x000 plane and none of the rest use +0x800 on its own.  The whole ordinary
+   * display -- score, JUGADOR/BOLA, the text screens -- is that one plane, and on the
+   * real machine it reads as a normally bright display with only the highlights (both
+   * planes) hotter.  Making +0x000 the LSB would run the entire game at one third
+   * brightness and leave the two brighter levels almost unused, which is not what the
+   * hardware does.  This also agrees with the blitter, where +0x000 is the primary
+   * lodsb/stosb stream, and with Io Moon's decode above, where the base plane is the
+   * MSB.  (A statistic over the attract animation appears to favour the opposite
+   * assignment by counting single-level pixel steps; it does not, because it assumes
+   * fades are done by toggling the LSB when this firmware fades by toggling the main
+   * plane, which is a two-level step.) */
+  if (sleic3_dmd_latch_ttl > 0) {        /* firmware is announcing completed frames */
+    sleic3_dmd_latch_ttl--;
+    memcpy(locals.rawDMD, sleic3_dmd_latch, sizeof locals.rawDMD);
   }
+  else
+    sleic3_build_dmd_frame(locals.rawDMD);
   sleic_dmd_dump(locals.rawDMD);
   core_dmd_submit_frame(core_gameData->lcdLayout->importedLayout ? core_gameData->lcdLayout->importedLayout : core_gameData->lcdLayout, locals.rawDMD, 1);
 }
@@ -246,6 +337,17 @@ static WRITE_HANDLER(pic_w) {
   logerror("PIC W(%03x->%2x) = %02x\n", offset, offset>>7, data);
 }
 
+/* Io Moon submits its DMD from the display pointer at 4000:1150 when the firmware
+ * strobes PCS4 bit 3.  Bike Race and Sleic Pin-Ball instead have an I8039 that rasters
+ * the panel out of the 0x60410 frame buffer, and their 4000:1150 is ordinary work RAM,
+ * so the pointer-based submit must not run for them -- it would push whatever that RAM
+ * happens to hold as a frame.  Set in MACHINE_INIT(SLEIC) from the presence of the
+ * display CPU.  (Bike Race V4.1 made this visible: it clears and redraws the panel
+ * every frame and strobes PCS4 bit 3 each time -- 114 strobes in a 600-frame run,
+ * against a single one from the 1992 sets -- so the bogus frames swamped the real
+ * ones and the DMD showed garbage.) */
+static int sleic_dmd_from_ptr;
+
 /* Snapshot the 2-bitplane DMD frame buffer and submit the 128x32 brightness
  * grid to PinMAME's DMD core. Each plane is 512 bytes (32 rows x 16 bytes,
  * MSB = leftmost pixel); plane 0 weighted x2, plane 1 x1 -> 4 grey levels.
@@ -357,7 +459,14 @@ static WRITE_HANDLER(sleic_periph_w) {
       cpu_set_irq_line(SLEIC_IO_CPU, IRQ_LINE_NMI, PULSE_LINE);
       break;
     case 0x200:                          /* PCS4: DMD mode; bit 3 = frame swap */
-      if (data & 0x08) sleic_submit_dmd_frame();  /* buffer-swap ack is emitted by the PIC phase machine */
+      if (data & 0x08) {
+        if (sleic_dmd_from_ptr)
+          sleic_submit_dmd_frame();      /* Io Moon: buffer-swap ack is emitted by the PIC phase machine */
+        else {                           /* I8039 machines: latch the finished 0x60410 frame */
+          sleic3_build_dmd_frame(sleic3_dmd_latch);
+          sleic3_dmd_latch_ttl = SLEIC3_DMD_LATCH_TICKS;
+        }
+      }
       break;
     default:
       logerror("SLEIC periph A000:%03X = %02x\n", offset, data);
@@ -826,6 +935,12 @@ MEMORY_END
 
 static MACHINE_INIT(SLEIC) {
   memset(&locals, 0, sizeof locals);
+  /* Only Io Moon lacks the I8039 display CPU, and only Io Moon uses the 4000:1150
+   * display-pointer submit on the PCS4 bit-3 strobe. */
+  sleic_dmd_from_ptr = (Machine->drv->cpu[SLEIC_DISPLAY_CPU].cpu_type == CPU_DUMMY);
+  sleic_dmd_equal_fields = 0;        /* Bike Race weighting; SLEIC1 overrides below */
+  memset(sleic3_dmd_latch, 0, sizeof sleic3_dmd_latch);
+  sleic3_dmd_latch_ttl = 0;
   memset(&sleic_io, 0, sizeof sleic_io);
   sleic_oki_latch = sleic_oki_prev_strobe = 0;
   sleic_oki_pending = 0;
@@ -846,6 +961,13 @@ static MACHINE_INIT(SLEIC) {
    *     Z80 ROMs; the key bindings already exist in sleic3_pf_keys below.)
    * The driver does not fabricate the ball complement -- the frontend (Visual Pinball)
    * supplies trough state; the keys above are only for standalone testing. */
+}
+
+/* Sleic Pin-Ball's display ROM lights both raster fields for the same time, so its panel
+ * has three levels rather than four -- see sleic_dmd_equal_fields above. */
+static MACHINE_INIT(SLEIC1) {
+  machine_init_SLEIC();
+  sleic_dmd_equal_fields = 1;
 }
 
 /* Bike Race (SLEIC3) playfield-matrix test keys. The 40 matrix positions (Z80 switch
@@ -969,6 +1091,7 @@ MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(SLEIC1)
   MDRV_IMPORT_FROM(SLEIC)
+  MDRV_CORE_INIT_RESET_STOP(SLEIC1,NULL,NULL)
 
   // Sleic Pin-Ball cabinet/direct switches (C31-C36) -> swMatrix[9]; playfield
   // matrix via sleic1_pf_keys -> swMatrix[1..8].
