@@ -541,7 +541,12 @@ extern "C" int osd_start_audio_stream(const int stereo)
 {
    msgLocals.nAudioChannels = stereo ? 2 : 1;
 
-   if (_p_Config->cb_OnAudioAvailable)
+   if (msgLocals.msgApi != nullptr)
+   {
+      // Audio is streamed through the message API once registered (which happens after the mixer is started), but the mixer needs the number of samples to render per frame right away
+      return (int)(Machine->sample_rate / Machine->drv->frames_per_second);
+   }
+   else if (_p_Config->cb_OnAudioAvailable)
    {
       memset(&_audioInfo, 0, sizeof(PinmameAudioInfo));
       _audioInfo.format = _p_Config->audioFormat;
@@ -2648,7 +2653,7 @@ static void SetupMsgApiAudioStreaming()
    msgLocals.onAudioUpdateId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_UPDATE_MSG);
 
    msgLocals.audioProvider = std::make_unique<PinballPlugin::Controller::CtrlItemProvider<AudioSrcId>>(msgLocals.msgApi, msgLocals.endpointId, CTLPI_AUDIO_GET_SRC_MSG, CTLPI_AUDIO_ON_SRC_CHG_MSG);
-   msgLocals.audioProvider->SetItem({ .id = { 0, 0 }, .overrideId = { 0, 0 }, .name = "PinMAME", .desc = "PinMAME audio stream", .target = CTLPI_AUDIO_TARGET_BACKGLASS });
+   msgLocals.audioProvider->SetItem({ .id = { msgLocals.endpointId, 0 }, .overrideId = { 0, 0 }, .name = "PinMAME", .desc = "PinMAME audio stream", .target = CTLPI_AUDIO_TARGET_BACKGLASS });
 }
 
 
