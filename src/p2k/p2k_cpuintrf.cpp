@@ -852,21 +852,30 @@ int mediagx_execute(int cycles)
 	// run in chunks so the debugger gets a look in between; the machine's own runner keeps the
 	// CPU and the timer queue in step within each chunk
 	constexpr int chunk = 2000;
-	int left = cycles;
+	int consumed = 0;
 	g_bridge_aborted = false;
-	mediagx_ICount = 0;
-	while (left > 0 && !g_bridge_aborted)
+
+	// Count the cycles still owed, and return cycles - mediagx_ICount: same as
+	// other cores (m6809.c, adsp2100.c) and both halves have to move together,
+	// because cpuexec.c derives the cycles run from the return value less cycles_stolen.
+	// Needed for the PWM integrator timestamps!
+	//
+	// Decremented after each chunk, not before, so the clock reads the chunk's start and never runs ahead of the machine
+	mediagx_ICount = cycles;
+	while (mediagx_ICount > 0 && !g_bridge_aborted)
 	{
-		int n = (left > chunk) ? chunk : left;
+		const int n = (mediagx_ICount > chunk) ? chunk : mediagx_ICount;
 		g_bridge_state->run_cycles(u64(n));
-		left -= n;
+		mediagx_ICount -= n;
+		consumed += n;
 		P2K_REMOTE_DEBUG_HOOK();
 		if (mediagx_ICount < 0) g_bridge_aborted = true;
 	}
 
-	p2k_report_progress(u64(cycles - left));
-	mediagx_ICount = 0;
-	return cycles - left;
+	// Not cycles - mediagx_ICount: on the abort path that count is driven to -1 whatever was left,
+	// so the return value overshoots by exactly what cpuexec.c deducts as cycles_stolen. Only this running total is the cycles actually run
+	p2k_report_progress(u64(consumed));
+	return cycles - mediagx_ICount;
 }
 
 // Context switching is not modelled - there is exactly one MediaGX in the machine, and its

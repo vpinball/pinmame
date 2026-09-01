@@ -2486,6 +2486,8 @@ void p2k_state::lpt_w(offs_t offset, u8 data)
 					m_lamp_acc[c * 2 + 0] |= m_lamp_row_a;
 					m_lamp_acc[c * 2 + 1] |= m_lamp_row_b;
 				}
+			// Unconditionally, blanking writes included: see set_lamp_notify()
+			if (m_lamp_notify) m_lamp_notify(data, m_lamp_row_a, m_lamp_row_b);
 			break;
 		// Measured in the game's own coil test, which cycles the drivers in order and names each
 		// one on screen: the driver numbering runs 0x0b, 0x0a, 0x09, 0x0d, 0x0c, eight per

@@ -129,6 +129,12 @@ void p2k_pinmame_set_solenoid_notify(void (*fn)(UINT32 solenoids, UINT32 solenoi
 	if (g_machine) g_machine->set_solenoid_notify(fn);
 }
 
+// Where to report a lamp column strobe to, for the same reason as the coil edge above
+void p2k_pinmame_set_lamp_notify(void (*fn)(unsigned char columns, unsigned char row_a, unsigned char row_b))
+{
+	if (g_machine) g_machine->set_lamp_notify(fn);
+}
+
 // With a live source set this only refreshes the fallback copy, but it also carries the debug hooks
 void p2k_pinmame_push_switches(const unsigned char *matrix, unsigned count)
 {

@@ -635,7 +635,7 @@ still outstanding, and the note above `p2k_getSol()` in `src/wpc/p2k.c` says wha
 
 ### Modulated outputs (PWM)
 
-Coils and flashers take part in PinMAME's PWM integration; the lamp matrix does not, yet.
+Coils, flashers and the lamp matrix are all part of PinMAME's PWM integration.
 
 The board drives its outputs in shades, not on and off. Logging every driver register write on
 `rfm_160` during a game:

@@ -221,3 +221,44 @@ a branch the release did not take.
 
 Two triples are shared and are told apart by the installer's own version number rather than by
 size: RFM 1.30/1.40/1.50/1.70 all build to the same lengths, as do Episode I 1.20 and 1.30.
+
+## The lamp matrix, and the two things it needed
+
+Two problems had to be solved before the matrix could be declared:
+
+**The CPU had to start reporting its own progress.** `core_write_pwm_output*()` timestamps each edge
+with `timer_get_time()`, which resolves through `cpunum_get_localtime()` to
+`cycles_running - activecpu_get_icount()`. `mediagx_execute()` used to set `mediagx_ICount` to 0 on
+entry and never decrement it - it served only as a negative flag for `abort_timeslice` - so the
+subtraction returned the whole slice and every edge inside one slice was stamped with the slice's
+*end*, quantised to about **333 us**. Coils and flashers, whose states last 15 ms and more, were
+unaffected. A lamp column slot is about **0.9 ms** and could not be represented at all.
+
+The fix is the contract every stock core keeps (`m6809.c`, `adsp2100.c`):
+`ICount = cycles` at entry, count down, `return cycles - ICount`. Both halves must change together -
+`cpuexec.c` computes `ran` as the return value minus `cycles_stolen`, and `abort_timeslice()` adds
+`ICount + 1` to `cycles_stolen`, so counting down while still returning `cycles - left` would deduct
+the unrun cycles twice. Resolution is now one chunk, 2000 cycles or ~26 us.
+
+**The blanking writes have to be honoured.** The scan is column, blank, column, blank - but not
+evenly. Measured on `rfm_160` during a game, 18629 strobes per column:
+
+| after column | blank writes before the next column |
+|---|---|
+| 0 to 6 | exactly **1** each |
+| 7 | **5.97** (max 6) - a real dead period at the end of every pass |
+
+Holding each column until the next is selected, instead of letting the blanks turn it off, looks
+harmless and is not. It holds *column 7 only* lit through that whole end-of-scan gap, so its sixteen
+lamps integrate at six times every other column's duty - and since a #44 is a 6.3V bulb being fed
+16.6V, running one continuously does not read bright, it reads **47 times nominal** while every
+other column sits at 0.42. That asymmetry is the tell.
+
+With the blanks honoured, all 116 named lamps land in a tight band, peaks 0.367 to 0.461, no
+outliers, and the eight columns agree with each other (mean peaks 0.383 to 0.404).
+
+**Expect them dimmer than a WPC matrix.** A lamp here is lit about one write in twenty-one, roughly
+**4.8%** of the scan, where WPC steps straight from column to column and reaches **12.5%**. That is
+this board's duty cycle, not a shortcut in the model, and it is why a lit lamp reports around 0.40
+rather than near 1.0. If that turns out to look wrong on a real table, the lever is the bulb model's
+voltage rather than anything in the strobe handling.

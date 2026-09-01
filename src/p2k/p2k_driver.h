@@ -98,6 +98,12 @@ public:
 	// over the frame" for the binary path, this one is the live edge
 	using sol_notify_t = void (*)(u32 solenoids, u32 solenoids2);
 	void set_solenoid_notify(sol_notify_t fn) { m_sol_notify = fn; }
+	// The same for the lamp matrix, called on every column strobe including the blanking writes -
+	// a column going dark is as much an edge as one lighting up, and the integrator needs both to
+	// weigh the duty cycle. The rows are handed over with the strobe rather than read back, so the
+	// receiver does not have to know which of the two banks were latched when
+	using lamp_notify_t = void (*)(u8 columns, u8 row_a, u8 row_b);
+	void set_lamp_notify(lamp_notify_t fn) { m_lamp_notify = fn; }
 	void port_w(offs_t port, u8 data);
 
 	// The boot code logs over COM1. A minimal 16550-compatible console stands in for the real
@@ -198,7 +204,8 @@ private:
 	u32 m_sol_acc = 0;           // OR of m_solenoids over the window
 	u32 m_sol2_acc = 0;          // OR of m_solenoids2 over the window
 	u8 m_lamp_acc[16] = {};      // OR of the lamp rows over the window, per strobed column (two row banks per driven column)
-	sol_notify_t m_sol_notify = nullptr; // the live edge, separate from the accumulators above
+	sol_notify_t m_sol_notify   = nullptr; // the live edge, separate from the accumulators above
+	lamp_notify_t m_lamp_notify = nullptr; // ... and the column strobe, likewise live
 #if P2K_DEBUG
 	u32 m_pci_cfg_addr = 0;      // last 0xcf8 write, so P2K_PCIWATCH can label the 0xcfc read
 #endif

@@ -57,6 +57,7 @@ extern void p2k_pinmame_clock_from_host(int keep_year);
 extern void p2k_pinmame_pull_outputs(unsigned char *lamps, unsigned lamp_columns, UINT32 *solenoids, UINT32 *solenoids2, UINT32 *solNow, UINT32 *sol2Now);
 extern void p2k_pinmame_set_switch_source(const volatile unsigned char *matrix);
 extern void p2k_pinmame_set_solenoid_notify(void (*fn)(UINT32 solenoids, UINT32 solenoids2));
+extern void p2k_pinmame_set_lamp_notify(void (*fn)(unsigned char columns, unsigned char row_a, unsigned char row_b));
 
 static READ32_HANDLER(p2k_r)  { return p2k_pinmame_read(offset * 4, ~mem_mask); }
 static WRITE32_HANDLER(p2k_w) { p2k_pinmame_write(offset * 4, data, ~mem_mask); }
@@ -208,6 +209,7 @@ void p2k_dcs_write(UINT32 offset, UINT32 data, UINT32 mem_mask) {
 /* Both defined with the coil map further down, which needs the custom-solenoid constants */
 static void p2k_initPwm(void);
 static int p2k_solIndex(int driver);
+static void p2k_lampPwm(unsigned char columns, unsigned char rowA, unsigned char rowB);
 
 /* The pinball I/O meets PinMAME's core model here: the switch matrix goes down to the driver
 /  board, the lamp columns and coil bits come back.
@@ -235,7 +237,8 @@ static int p2k_solIndex(int driver);
 /* Whether PinMAME's PWM integration is running for coils. It is the user's choice, not the
    driver's: unlike capcom.c and sam.c this machine does not force it on, because the binary path
    above is complete on its own and nothing here depends on the integrator existing */
-#define P2K_PWM_SOL (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL))
+#define P2K_PWM_SOL  (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL))
+#define P2K_PWM_LAMP (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_LAMPS))
 
 static struct {
   UINT32 solAcc, sol2Acc; /* OR of the driver levels since the last publish */
@@ -360,6 +363,29 @@ static void p2k_sync_io(void) {
           printf("[p2k pwm] frame %d: %3d %-28s %.3f\n", p2k_bringupFrame, coils[k].num, coils[k].name, (double)v);
           fflush(stdout);
           prevv[slot] = v;
+        }
+      }
+    }
+
+    /* And the same for the lamps, indexed by matrix position - byte * 8 + bit, which is what
+       p2k_lampPwm() writes and how the lamp names are numbered. A lit lamp settles near 0.4 here,
+       not 1.0, for the reason given at p2k_lampPwm(); one the game strobes on alternate passes
+       settles proportionally lower, and that difference is the whole point of this over the on/off matrix above */
+    if (p2k_pwmwatch() && P2K_PWM_LAMP) {
+      static float prevl[128];
+      const p2k_name_t * const lamps = p2k_lamp_names(game);
+      int k;
+      for (k = 0; lamps[k].name; k++) {
+        const int n = lamps[k].num;
+        if (n < 0 || n >= (int)(sizeof(prevl) / sizeof(prevl[0]))) continue;
+        {
+          const float v = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + n].value;
+          const float d = v > prevl[n] ? v - prevl[n] : prevl[n] - v;
+          if (d > 0.05f) {
+            printf("[p2k lampv] frame %d: %3d %-30s %.3f\n", p2k_bringupFrame, n, lamps[k].name, (double)v);
+            fflush(stdout);
+            prevl[n] = v;
+          }
         }
       }
     }
@@ -2118,7 +2144,7 @@ static core_tLCDLayout p2k_disp[] = {
 /  which is not normally fitted, so its test never writes the register - that is why this took an
 /  Episode I set. Only the myPinballs drives - knocker 42, shaker 43, topper 44 - wait on 2.x.
 /
-/  THE MODULATED OUTPUTS: coils and flashers are done, lamps are not.
+/  THE MODULATED OUTPUTS: coils, flashers and the lamp matrix all working.
 /
 /  p2k_initPwm() below declares the coil outputs and p2k_solPwm() feeds the integrator from the
 /  driver register write, so a flasher now reports the brightness its filament actually reached
@@ -2129,7 +2155,9 @@ static core_tLCDLayout p2k_disp[] = {
 /
 /  It is off unless the user turns it on. Unlike capcom.c and sam.c this driver does not set
 /  CORE_MODOUT_FORCE_ON, because the binary path above is complete on its own - and because
-/  FORCE_ON would actively break things here while nLamps is 0, see the note in p2k_initPwm().
+/  FORCE_ON also reaches paths this driver does not declare, see the note in p2k_initPwm().
+/
+/  Why a lit lamp reads near 0.4 rather than 1.0 is at p2k_lampPwm().
 /
 /  capcom.c is the smallest driver that does the whole thing, and the one to read first */
 #define P2K_CUSTSOL_FIRSTDRIVER 37
@@ -2177,6 +2205,34 @@ static void p2k_solPwm(UINT32 sol, UINT32 sol2) {
   core_write_pwm_output(p2k_solIndex(45), 4, (UINT8)((sol2 >> 12) & 0x0f));
 }
 
+/* A lamp column strobe, straight from the board.
+/
+/  The same shape as core_write_pwm_output_lamp_matrix(): the strobed column gets its rows, every
+/  other column gets zero. That helper cannot be used as it stands because it walks eight outputs
+/  per column bit, and this board puts sixteen lamps on a column - bank A in PinMAME's byte 2c and
+/  bank B in 2c+1 - so the two banks are written separately here.
+/
+/  The blanking writes are honoured, and that is not optional. Measured on rfm_160, the scan is
+/  column, blank, column, blank ... with exactly one blank after columns 0 to 6 and *six* after
+/  column 7 - a real dead period at the end of every pass. Ignoring the blanks to hold each column
+/  until the next was tried, and it holds column 7 lit through that whole gap: those sixteen lamps
+/  then integrate at six times every other column's duty, and a #44 is a 6.3V bulb being fed 16.6V,
+/  so run continuously it does not read bright, it reads 47 times nominal. Every other column read
+/  0.42 beside it.
+/
+/  So a lamp here is lit one write in twenty-one, about 4.8% of the scan, where WPC steps straight
+/  from column to column and reaches 12.5%. That is why these come out dimmer than a WPC matrix
+/  would: it is the board's own duty cycle, not a modelling shortcut */
+static void p2k_lampPwm(unsigned char columns, unsigned char rowA, unsigned char rowB) {
+  int c;
+  if (!P2K_PWM_LAMP) return;
+  for (c = 0; c < 8; c++) {
+    const int lit = (columns >> c) & 1;
+    core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + (c * 2    ) * 8, (UINT8)(lit ? rowA : 0));
+    core_write_pwm_output_8b(CORE_MODOUT_LAMP0 + (c * 2 + 1) * 8, (UINT8)(lit ? rowB : 0));
+  }
+}
+
 /* Declare the outputs, and what is on the end of each.
 /
 /  Called from MACHINE_INIT, which is coreData->init - after MACHINE_INIT(core) has put the default
@@ -2186,10 +2242,18 @@ static void p2k_solPwm(UINT32 sol, UINT32 sol2) {
 /  part numbers as P2K_DEV_ entries. That is the whole per-game list: wpc.c writes one out by hand
 /  for every title it supports, and this reads the one already checked against the machines' test
 /  menus. The bulb models are WPC's because the board is: a #89 or #906 on 20V through the same
-/  driver transistor, which is what CORE_MODOUT_BULB_*_20V_DC_WPC describes */
+/  driver transistor, which is what CORE_MODOUT_BULB_*_20V_DC_WPC describes.
+/
+/  Lamps take WPC's #44 model, an 18V matrix strobed a column at a time being what
+/  CORE_MODOUT_BULB_44_18V_DC_WPC describes. Expect them to read dimmer than a WPC matrix does;
+/  p2k_lampPwm() has the measurements and the reason */
 static void p2k_initPwm(void) {
   const p2k_name_t * const coils = p2k_coil_names(p2k_gameIndex());
   int i;
+
+  /* Eight driven columns of sixteen lamps, which is the 64 + lampCol * 8 that wpc.c and se.c compute for their own matrices */
+  coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8;
+  core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps, CORE_MODOUT_BULB_44_18V_DC_WPC);
 
   coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + P2K_CUSTSOL_COUNT;
   coreGlobals.hasModulatedFlippers = TRUE;
@@ -2203,20 +2267,16 @@ static void p2k_initPwm(void) {
   }
 
   p2k_pinmame_set_solenoid_notify(p2k_solPwm);
+  p2k_pinmame_set_lamp_notify(p2k_lampPwm);
 
 #if P2K_DEBUG
   /* P2K_PWM=1 turns the integration on for a standalone run, which is otherwise impossible: nothing
      outside VPinMAME/libpinmame ever sets options.usemodsol, so the code above would never execute
-     and could not be checked.
-     ENABLE_PHYSOUT_SOLENOIDS and not FORCE_ON, deliberately. FORCE_ON also makes
-     core_update_pwm_outputs() rebuild coreGlobals.lampMatrix from physicOutputState whenever the
-     updated range touches the lamps - and with nLamps still 0 that range is empty, so every lamp
-     would be rewritten to off. Whoever declares the lamps later can revisit this; until then the
-     narrow flag is the only safe one here */
+     and could not be checked */
   if (getenv("P2K_PWM")) {
-    options.usemodsol |= CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS;
-    fprintf(stderr, "[p2k pwm] solenoid PWM integration on: %d outputs, flashers from the %s table\n",
-            coreGlobals.nSolenoids, p2k_romPrefix());
+    options.usemodsol |= CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_PHYSOUT_LAMPS;
+    fprintf(stderr, "[p2k pwm] PWM integration on: %d solenoids, %d lamps, flashers from the %s table\n",
+            coreGlobals.nSolenoids, coreGlobals.nLamps, p2k_romPrefix());
   }
 #endif
 }
