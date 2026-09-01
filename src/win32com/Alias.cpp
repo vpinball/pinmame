@@ -58,7 +58,7 @@ const char* checkGameAlias(const char* aRomName) {
 				
 				if (_stricmp(token, aRomName) == 0)
 				{
-					strcpy_s(alias_from_file, sizeof(alias_from_file), strtok(NULL, " ,\n#;'"));
+					strcpy_s(alias_from_file, sizeof(alias_from_file), strtok(NULL, " ,\r\n#;'"));
 					fclose(f);
 					return alias_from_file;
 				}
