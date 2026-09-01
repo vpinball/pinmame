@@ -257,7 +257,15 @@ static struct
    } displays[32]; // WPT declares 15 DMD layouts
    std::unique_ptr<PinballPlugin::Controller::CtrlItemProvider<DisplaySrcId>> displayProvider;
 
-   unsigned int onAudioCmdId, onDmdCmdId, onConsoleDataId;
+   unsigned int onAudioCmdId;
+   unsigned int onAudioUpdateId;
+   unsigned int nAudioChannels;
+   std::unique_ptr<AudioUpdateMsg> audioUpdate;
+   std::unique_ptr<PinballPlugin::Controller::CtrlItemProvider<AudioSrcId>> audioProvider;
+
+   unsigned int onDmdCmdId;
+
+   unsigned int onConsoleDataId;
 
    unsigned int onGetMachineStateId;
 
@@ -530,18 +538,24 @@ extern "C" int osd_readkey_unicode(const int flush)
 
 extern "C" int osd_start_audio_stream(const int stereo)
 {
-	if (!_p_Config->cb_OnAudioAvailable)
-		return 0;
+   msgLocals.nAudioChannels = stereo ? 2 : 1;
 
-	memset(&_audioInfo, 0, sizeof(PinmameAudioInfo));
-	_audioInfo.format = _p_Config->audioFormat;
-	_audioInfo.channels = stereo ? 2 : 1;
-	_audioInfo.sampleRate = Machine->sample_rate;
-	_audioInfo.framesPerSecond = Machine->drv->frames_per_second;
-	_audioInfo.samplesPerFrame = (int)(Machine->sample_rate / Machine->drv->frames_per_second);
-	_audioInfo.bufferSize = PINMAME_ACCUMULATOR_SAMPLES * 2;
+   if (_p_Config->cb_OnAudioAvailable)
+   {
+      memset(&_audioInfo, 0, sizeof(PinmameAudioInfo));
+      _audioInfo.format = _p_Config->audioFormat;
+      _audioInfo.channels = stereo ? 2 : 1;
+      _audioInfo.sampleRate = Machine->sample_rate;
+      _audioInfo.framesPerSecond = Machine->drv->frames_per_second;
+      _audioInfo.samplesPerFrame = (int)(Machine->sample_rate / Machine->drv->frames_per_second);
+      _audioInfo.bufferSize = PINMAME_ACCUMULATOR_SAMPLES * 2;
 
-	return (*(_p_Config->cb_OnAudioAvailable))(&_audioInfo, _p_userData);
+      return (*(_p_Config->cb_OnAudioAvailable))(&_audioInfo, _p_userData);
+   }
+   else
+   {
+      return 0;
+   }
 }
 
 /******************************************************
@@ -550,17 +564,45 @@ extern "C" int osd_start_audio_stream(const int stereo)
 
 extern "C" int osd_update_audio_stream(INT16* p_buffer)
 {
-	if(!_p_Config->cb_OnAudioUpdated)
-		return 0;
+   if (msgLocals.registered)
+   {
+      const int samplesThisFrame = mixer_samples_this_frame();
 
-	const int samplesThisFrame = mixer_samples_this_frame();
+      // Data are only valid in the context of the call, we need to copy the data to feed them on the message thread.
+      AudioUpdateMsg* audioUpdate = new AudioUpdateMsg();
+      audioUpdate->volume = 1.0f;
+      audioUpdate->sourceId = { msgLocals.endpointId, 0 }; // Source is always tied to endpoint
+      audioUpdate->streamId = { msgLocals.endpointId, 0 }; // Single stream source
+      audioUpdate->channelFormat = (msgLocals.nAudioChannels == 1) ? CTLPI_AUDIO_FORMAT_CHANNEL_MONO : CTLPI_AUDIO_FORMAT_CHANNEL_STEREO;
+      audioUpdate->sampleFormat = CTLPI_AUDIO_FORMAT_SAMPLE_INT16;
+      audioUpdate->sampleRate = Machine->sample_rate;
+      audioUpdate->bufferSize = samplesThisFrame * 2 * msgLocals.nAudioChannels;
+      audioUpdate->buffer = new uint8_t[audioUpdate->bufferSize];
+      memcpy(audioUpdate->buffer, p_buffer, audioUpdate->bufferSize);
 
-	if (_p_Config->audioFormat == PINMAME_AUDIO_FORMAT_INT16)
-		return (*(_p_Config->cb_OnAudioUpdated))((void*)p_buffer, samplesThisFrame, _p_userData);
+      msgLocals.msgApi->RunOnMainThread(msgLocals.endpointId, 0, [](void* userData) {
+         AudioUpdateMsg* msg = static_cast<AudioUpdateMsg*>(userData);
+         msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onAudioUpdateId, msg);
+         delete[] msg->buffer;
+         delete msg;
+         }, audioUpdate);
+      return samplesThisFrame;
+   }
+   else if (_p_Config->cb_OnAudioUpdated)
+   {
+      const int samplesThisFrame = mixer_samples_this_frame();
 
-	src_short_to_float_array(p_buffer, _audioData, samplesThisFrame * _audioInfo.channels);
+      if (_p_Config->audioFormat == PINMAME_AUDIO_FORMAT_INT16)
+         return (*(_p_Config->cb_OnAudioUpdated))((void*)p_buffer, samplesThisFrame, _p_userData);
 
-	return (*(_p_Config->cb_OnAudioUpdated))((void*)_audioData, samplesThisFrame, _p_userData);
+      src_short_to_float_array(p_buffer, _audioData, samplesThisFrame * _audioInfo.channels);
+
+      return (*(_p_Config->cb_OnAudioUpdated))((void*)_audioData, samplesThisFrame, _p_userData);
+   }
+   else
+   {
+      return 0;
+   }
 }
 
 /******************************************************
@@ -2585,6 +2627,19 @@ static void SetupMsgApiVideoDisplays()
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+// Audio streaming
+
+static void SetupMsgApiAudioStreaming()
+{
+   msgLocals.onAudioCmdId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_AUDIO_CMD);
+   msgLocals.onAudioUpdateId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_UPDATE_MSG);
+
+   msgLocals.audioProvider = std::make_unique<PinballPlugin::Controller::CtrlItemProvider<AudioSrcId>>(msgLocals.msgApi, msgLocals.endpointId, CTLPI_AUDIO_GET_SRC_MSG, CTLPI_AUDIO_ON_SRC_CHG_MSG);
+   msgLocals.audioProvider->SetItem({ .id = { 0, 0 }, .overrideId = { 0, 0 }, .name = "PinMAME", .desc = "PinMAME audio stream", .target = CTLPI_AUDIO_TARGET_BACKGLASS });
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 // Overall game messages
 
 static void SetupMsgApi()
@@ -2595,7 +2650,6 @@ static void SetupMsgApi()
    assert(!msgLocals.registered);
    msgLocals.registered = true;
 
-   msgLocals.onAudioCmdId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_AUDIO_CMD);
    msgLocals.onDmdCmdId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_DISPLAY_CMD);
    msgLocals.onConsoleDataId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_CONSOLE_DATA);
    msgLocals.onGetMachineStateId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_GET_MACHINE_STATE);
@@ -2603,6 +2657,7 @@ static void SetupMsgApi()
 
    msgLocals.controllerProvider = std::make_unique<PinballPlugin::Controller::CtrlItemProvider<ControllerDef>>(msgLocals.msgApi, msgLocals.endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG);
 
+   SetupMsgApiAudioStreaming();
    SetupMsgApiVideoDisplays();
    SetupMsgApiSegDisplays();
    SetupMsgApiGameStates();
@@ -2618,12 +2673,19 @@ static void ReleaseMsgApi()
    msgLocals.registered = false;
 
    msgLocals.msgApi->UnsubscribeMsg(msgLocals.onGetMachineStateId, OnGetMachineState, nullptr);
-   msgLocals.msgApi->ReleaseMsgID(msgLocals.onAudioCmdId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onDmdCmdId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onConsoleDataId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onGetMachineStateId);
 
    msgLocals.controllerProvider = nullptr;
+
+   AudioUpdateMsg audioStreamStop {};
+   audioStreamStop.sourceId = { msgLocals.endpointId, 0 };
+   audioStreamStop.streamId = { msgLocals.endpointId, 0 };
+   msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onAudioUpdateId, &audioStreamStop); // End of stream
+   msgLocals.audioProvider = nullptr;
+   msgLocals.msgApi->ReleaseMsgID(msgLocals.onAudioCmdId);
+   msgLocals.msgApi->ReleaseMsgID(msgLocals.onAudioUpdateId);
 
    msgLocals.displayProvider = nullptr;
    memset(msgLocals.displays, 0, sizeof(msgLocals.displays));
