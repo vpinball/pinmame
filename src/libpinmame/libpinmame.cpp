@@ -268,6 +268,7 @@ static struct
    unsigned int onConsoleDataId;
 
    unsigned int onGetMachineStateId;
+   unsigned int onReadMemoryId;
 
    struct MemMapState
    {
@@ -1829,6 +1830,18 @@ static void OnGetMachineState(const unsigned int eventId, void* userData, void* 
    msg->hardwareGen = core_gameData->gen;
 }
 
+static void OnReadMemory(const unsigned int eventId, void* userData, void* msgData)
+{
+   if (_isRunning != 1)
+      return;
+
+   auto msg = static_cast<PinMAMEReadMemoryMsg*>(msgData);
+   if (msg->version != 1 || msg->data == nullptr || msg->size == 0)
+      return;
+
+   msg->read = PinmameReadMainCPUMemory(msg->address, msg->data, (int)msg->size);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Device states
 
@@ -2654,6 +2667,8 @@ static void SetupMsgApi()
    msgLocals.onConsoleDataId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_CONSOLE_DATA);
    msgLocals.onGetMachineStateId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_GET_MACHINE_STATE);
    msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.onGetMachineStateId, OnGetMachineState, nullptr);
+   msgLocals.onReadMemoryId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_READ_MEMORY);
+   msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.onReadMemoryId, OnReadMemory, nullptr);
 
    msgLocals.controllerProvider = std::make_unique<PinballPlugin::Controller::CtrlItemProvider<ControllerDef>>(msgLocals.msgApi, msgLocals.endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG);
 
@@ -2673,9 +2688,11 @@ static void ReleaseMsgApi()
    msgLocals.registered = false;
 
    msgLocals.msgApi->UnsubscribeMsg(msgLocals.onGetMachineStateId, OnGetMachineState, nullptr);
+   msgLocals.msgApi->UnsubscribeMsg(msgLocals.onReadMemoryId, OnReadMemory, nullptr);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onDmdCmdId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onConsoleDataId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onGetMachineStateId);
+   msgLocals.msgApi->ReleaseMsgID(msgLocals.onReadMemoryId);
 
    msgLocals.controllerProvider = nullptr;
 
