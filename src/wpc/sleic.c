@@ -1905,25 +1905,50 @@ static const struct { int key; UINT8 col; UINT8 bit; } iomoon_pf_keys[] = {
 static SWITCH_UPDATE(SLEIC2) {
   unsigned i;
   if (inports) {
+    const UINT16 in = inports[CORE_COREINPORT];
     /* Cabinet inputs -> swMatrix[9] = Z80 port 0x03, one bit per input.  The bit -> CODE
-     * map is exact (F5/F14, see iomoon_z80_read); the bit -> BUTTON map below is what a
-     * driver has to choose without the wiring diagram, and each choice has a reason:
-     *   bit 1 -> TEST, because its code 0x3F is the one that opens the service menu (F14)
-     *   bit 0 -> COIN, because sub_125B arms a 3000-tick lockout before sending 0x3E
-     *   bit 4 -> START, because the 80188 dispatches its code 0x40 immediately next to
-     *            the menu key (D7ADA -> sub_D8066)
+     * map is exact (F5/F14, see iomoon_z80_read).  The bit -> BUTTON map is no longer a
+     * choice for four of the six: the 80188 firmware says outright what it does with each
+     * code, and for COIN and TILT it says the OPPOSITE of what this driver assumed until
+     * now.  What each code reaches, traced from the code that consumes it:
+     *
+     *   bit 5 -> COIN.  Its code 0x32 is the ONE code the NMI does not queue: D000:0190
+     *            tests for it and counts it in [4000:1144] instead.  sub_D800A D800A then
+     *            folds that count into the pulse accumulator 413C:00D5 and hands it to the
+     *            per-country pricing routine (sub_DCD9E / sub_DD03D, chosen on the country
+     *            byte [4000:1001]), which divides the pulses by the coin values at
+     *            413C:00AD/00AE/00AF, multiplies by the credit values at 413C:00A9/00AA/
+     *            00AB and calls sub_DCFAB / sub_DD1C1 to bank the result.  That is a
+     *            single-line coin validator emitting a pulse train per coin, and it is the
+     *            only path in the ROM that adds credits from a switch.  The award itself
+     *            is nvstore_write_triple_83 (F10) with the running total cached in
+     *            413C:00D4, and sub_D0B70(0x0A) is the coin sound on the partial.
+     *   bit 0 -> TILT ("falta").  Its code 0x3E dispatches through the in-game table at
+     *            CS:0527 (entry 48) to sub_D9EBB, which counts down the warning counter
+     *            [4134:0033] -- loaded at every ball start from NVRAM byte 0x42 minus one
+     *            (DBE17, DBF7F), i.e. the FALTA adjustment -- and on the last one stops the
+     *            music (fm_song_select(0)), clears both sprite and background planes,
+     *            plays sound 0x0E and pushes the driver-disable command 0xF2.  The Z80's
+     *            own 3000-tick lockout in sub_125B is the tilt debounce, not a coin
+     *            lockout.  Bike Race puts its tilt on the same port-0x03 bit 0.
+     *   bit 1 -> TEST, because its code 0x3F is the one that opens the service menu (F14).
+     *   bit 4 -> START, because code 0x40 reaches sub_D8066, which is the start handler:
+     *            it refuses in attract, refuses at 4 players, refuses on zero credits,
+     *            then decrements the NVRAM credit triple and, on the first player, calls
+     *            sub_D8154 -> mode 3 -> the in-game song.
      *   bits 3/2 -> left/right flipper: those two handlers (sub_1292 / sub_12D8) fire the
-     *            port-0x85 coil pairs directly, and Sleic Pin-Ball's verified map puts the
-     *            left flipper on the first pair.  INFERRED
-     *   bit 5 -> TILT: its 0x32 auto-repeats while held and the 80188 COUNTS it in
-     *            [4000:1144] instead of queueing it (F4), which is how a plumb bob
-     *            behaves and how Bike Race numbers its tilt.  INFERRED */
-    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 9,  0x01, 9); /* COIN  0x0200 -> bit0 (code 0x3E) */
-    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 10, 0x02, 9); /* TEST  0x0800 -> bit1 (code 0x3F) */
-    CORE_SETKEYSW(inports[CORE_COREINPORT] << 1,  0x04, 9); /* R-flip 0x0002 -> bit2            */
-    CORE_SETKEYSW(inports[CORE_COREINPORT] << 3,  0x08, 9); /* L-flip 0x0001 -> bit3            */
-    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 4,  0x10, 9); /* START 0x0100 -> bit4 (code 0x40) */
-    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 5,  0x20, 9); /* TILT  0x0400 -> bit5 (code 0x32) */
+     *            port-0x85 coil pairs directly (sub_05C7 / sub_05ED), and Sleic Pin-Ball's
+     *            verified map puts the left flipper on the first pair.  Which of the two
+     *            is left is still INFERRED; that they are the flipper buttons is not.
+     *            Their codes 0x41/0x42 are also the service menu's scroll and select
+     *            (sub_DD480's dispatch at DD501), which is what a flipper button does in
+     *            every pinball service menu. */
+    CORE_SETKEYSW(in >> 10, 0x01, 9); /* TILT   0x0400 -> bit0 (code 0x3E) */
+    CORE_SETKEYSW(in >> 10, 0x02, 9); /* TEST   0x0800 -> bit1 (code 0x3F) */
+    CORE_SETKEYSW(in << 1,  0x04, 9); /* R-flip 0x0002 -> bit2 (code 0x42) */
+    CORE_SETKEYSW(in << 3,  0x08, 9); /* L-flip 0x0001 -> bit3 (code 0x41) */
+    CORE_SETKEYSW(in >> 4,  0x10, 9); /* START  0x0100 -> bit4 (code 0x40) */
+    CORE_SETKEYSW(in >> 4,  0x20, 9); /* COIN   0x0200 -> bit5 (code 0x32) */
   }
   for (i = 0; i < sizeof(iomoon_pf_keys)/sizeof(iomoon_pf_keys[0]); i++) {
     if (keyboard_pressed(iomoon_pf_keys[i].key))

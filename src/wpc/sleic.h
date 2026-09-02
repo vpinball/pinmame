@@ -21,13 +21,17 @@
     COREPORT_BIT(     0x0020, "Key 6",     KEYCODE_6) \
     COREPORT_BIT(     0x0040, "Key 7",     KEYCODE_7) \
     COREPORT_BIT(     0x0080, "Key 8",     KEYCODE_8) \
-    /* Io Moon direct switches port 0x03 IN (bit 3 = START, bit 2 = TEST / COIN) \
-     * and port 0x04 IN (bit 0 = TILT). Mapped into swMatrix[9] / swMatrix[10] \
-     * by the SLEIC2 driver's SWITCH_UPDATE handler. */ \
-    COREPORT_BITDEF(  0x0100, IPT_START1, IP_KEY_DEFAULT) /* START -> swMatrix[9].3 */ \
-    COREPORT_BITDEF(  0x0200, IPT_COIN1,  IP_KEY_DEFAULT) /* COIN/TEST -> swMatrix[9].2 */ \
-    COREPORT_BITDEF(  0x0400, IPT_TILT,   IP_KEY_DEFAULT) /* TILT -> swMatrix[10].0 */ \
-    COREPORT_BIT(     0x0800, "Test / Service Menu", KEYCODE_END) /* Bike Race C4 Test = service-menu enter (code 0x33); F2 is grabbed by MAME UI, End avoids stale-cfg unbinding */ \
+    /* Cabinet buttons.  Every SLEIC machine here reads them on Z80 port 0x03 and every \
+     * SWITCH_UPDATE handler below maps them into swMatrix[9], one bit per button, in the \
+     * same bit order: 0 = TILT, 1 = TEST, 2 = right flipper, 3 = left flipper, 4 = START, \
+     * 5 = COIN.  The port-0x03 CODE each bit produces differs per machine (Io Moon F5: \
+     * 0x3E/0x3F/0x42/0x41/0x40/0x32), so the per-driver handler is the place that names \
+     * them; see SWITCH_UPDATE(SLEIC2) for what the Io Moon firmware does with each. \
+     * Nothing is mapped into swMatrix[10] (Io Moon's port-0x04 config byte). */ \
+    COREPORT_BITDEF(  0x0100, IPT_START1, IP_KEY_DEFAULT) /* START -> swMatrix[9].4 */ \
+    COREPORT_BITDEF(  0x0200, IPT_COIN1,  IP_KEY_DEFAULT) /* COIN  -> swMatrix[9].5 */ \
+    COREPORT_BITDEF(  0x0400, IPT_TILT,   IP_KEY_DEFAULT) /* TILT  -> swMatrix[9].0 */ \
+    COREPORT_BIT(     0x0800, "Test / Service Menu", KEYCODE_END) /* -> swMatrix[9].1; service-menu enter: Bike Race C4 Test code 0x33, Io Moon code 0x3F (F14). F2 is grabbed by MAME UI, End avoids stale-cfg unbinding */ \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
