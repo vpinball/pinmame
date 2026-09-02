@@ -543,8 +543,8 @@ extern "C" int osd_start_audio_stream(const int stereo)
 
    if (msgLocals.msgApi != nullptr)
    {
-      // Audio is streamed through the message API once registered (which happens after the mixer is started), but the mixer needs the number of samples to render per frame right away
-      return (int)(Machine->sample_rate / Machine->drv->frames_per_second);
+      // Number of samples per frame supported by the output, which we suppose to be the default of the machine
+      return static_cast<int>(Machine->sample_rate / Machine->drv->frames_per_second);
    }
    else if (_p_Config->cb_OnAudioAvailable)
    {
@@ -592,7 +592,9 @@ extern "C" int osd_update_audio_stream(INT16* p_buffer)
          delete[] msg->buffer;
          delete msg;
          }, audioUpdate);
-      return samplesThisFrame;
+
+      // Number of samples processed by the output, which we suppose to be the default of the machine (different from the callback size that can goes down to 0 when silent)
+      return static_cast<int>(Machine->sample_rate / Machine->drv->frames_per_second);
    }
    else if (_p_Config->cb_OnAudioUpdated)
    {
