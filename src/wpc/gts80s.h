@@ -13,7 +13,6 @@
       (thanks goes to Peter Hall for providing some very useful information)
 
     - System 80B Sound Board (3 generations)
-
 */
 
 /* Gottlieb System 80/80A Sound Board */

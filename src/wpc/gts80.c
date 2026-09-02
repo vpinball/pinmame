@@ -19,7 +19,6 @@
 #include "driver.h"
 #include "vidhrdw/generic.h"
 #include "cpu/m6502/m6502.h"
-#include "cpu/i86/i86.h"
 #include "machine/6532riot.h"
 #include "machine/pic8259.h"
 #include "core.h"
@@ -30,6 +29,7 @@
 #if defined(PINMAME) && defined(LISY_SUPPORT)
  #include "lisy/lisy80.h"
 #endif /* PINMAME && LISY_SUPPORT */
+// caveman has a #include "cpu/i86/i86.h" below
 
 #define GTS80_SOLSMOOTH       4 /* Smooth the Solenoids over this number of VBLANKS */
 #define GTS80_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
@@ -818,6 +818,9 @@ MACHINE_DRIVER_END
         Setting either one to off sets english text.
         (Didn't find the setting for french text yet)
 -----------------------------------------------------------------------*/
+
+#include "cpu/i86/i86.h"
+
 static VIDEO_START(gts80vid) {
   tmpbitmap = auto_bitmap_alloc(Machine->drv->screen_width,Machine->drv->screen_height);
   return (tmpbitmap == 0);
