@@ -1668,10 +1668,11 @@ MEMORY_END
  *              of F5's open gap, so the honest model is "not fitted" rather than a
  *              guessed wiring.  Turning it on is a one-bit change once that is known.
  *   bit 5 = 0  makes the command-0xED handler 2BEB answer 0x45 at once (IN ($04) / BIT 5 /
- *              JP Z,2C17).  The service manual's SW40 list (section 7.2.2.3) has exactly
- *              this function on SW5, "servicio: no se dispensan bolas" / no balls
- *              dispensed, which is documentary confirmation of what the branch is for
- *              even though the manual gives no bit numbers.
+ *              JP Z,2C17).  The service manual's SW40 list (section 7.2.2.3) has a switch
+ *              with exactly this function, SW5 "servicio: no se dispensan bolas" / no
+ *              balls dispensed.  That the FUNCTION matches is a good sign the branch is
+ *              understood; it is NOT proof that SW5 is this bit, because the manual gives
+ *              no bit numbers and only SW2-SW4's positions have been established.
  *              With bit 5 SET the handler instead loops -- strobe column 0,
  *              check the trough contacts, run the eject coil sequence sub_2CFB, repeat --
  *              and its ONLY exit is those contacts closing.  That is correct hardware
@@ -1712,7 +1713,9 @@ MEMORY_END
  * wins, the NVRAM is rewritten and the preset re-applied.  Country 5 additionally selects
  * the Spanish string and menu tables (D3277, D8048, DD406); every other value is English.
  * So this one DIP sets both the coinage and the language, exactly as the service manual's
- * "country code" row implies.
+ * "country code" row implies.  Which of SW2/SW4 is the low bit is settled by the presets
+ * themselves, not by the UK and Spain rows (both are palindromes and survive a reversal);
+ * sleic.h carries the eight-row comparison and the three rows a reversal would break.
  *
  * The other five bits stay in IOMOON_PORT04_IDLE.  Bit 5 in particular must stay 0 for
  * the reason above -- the manual's SW5 "servicio: no se dispensan bolas" is the same

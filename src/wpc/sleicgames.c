@@ -12,6 +12,15 @@
 		core_gameData = &name##GameData; \
 	}
 
+/* Io Moon only: same cabinet block, but the real SW40 DIP block instead of S1..S8,
+   because it is the one machine here whose Z80 ROM was traced for it (sleic.h) */
+#define INITGAME2(name, disptype, balls) \
+	SLEIC2_INPUT_PORTS_START(name, balls) SLEIC_INPUT_PORTS_END \
+	static core_tGameData name##GameData = {GEN_SLEIC,disptype,{FLIP_SW(FLIP_L)}}; \
+	static void init_##name(void) { \
+		core_gameData = &name##GameData; \
+	}
+
 /* Dot-Matrix display (128 x 32) */
 static core_tLCDLayout sleic_dispDMD[] = {
   {0,0,32,128,CORE_DMD,NULL,NULL}, {0}
@@ -84,7 +93,7 @@ CORE_GAMEDEFNV(sleicpin,"Sleic Pin-Ball",1993,"Sleic (Spain)",gl_mSLEIC1,0)
 /*-------------------------------------------------------------------
 / Io Moon (1994)
 /-------------------------------------------------------------------*/
-INITGAME(iomoon, sleic_dispDMD, 1)
+INITGAME2(iomoon, sleic_dispDMD, 1)
 SLEIC_ROMSTART5(iomoon, "v1_3_01.bin", CRC(df80bf4f) SHA1(29547b444cad116c9dc925d6b3112f584df37250),
 						"v1_3_02.bin", CRC(2bd589cd) SHA1(87354c76cbef8185d563266230c72a618ce6fcd7),
 						"v1_3_03.bin", CRC(334d0e20) SHA1(06b38cc7fcee633c45a9000187fcde8d7e03a51f),
