@@ -1658,7 +1658,11 @@ MEMORY_END
  *              of F5's open gap, so the honest model is "not fitted" rather than a
  *              guessed wiring.  Turning it on is a one-bit change once that is known.
  *   bit 5 = 0  makes the command-0xED handler 2BEB answer 0x45 at once (IN ($04) / BIT 5 /
- *              JP Z,2C17).  With bit 5 SET the handler instead loops -- strobe column 0,
+ *              JP Z,2C17).  The service manual's SW40 list (section 7.2.2.3) has exactly
+ *              this function on SW5, "servicio: no se dispensan bolas" / no balls
+ *              dispensed, which is documentary confirmation of what the branch is for
+ *              even though the manual gives no bit numbers.
+ *              With bit 5 SET the handler instead loops -- strobe column 0,
  *              check the trough contacts, run the eject coil sequence sub_2CFB, repeat --
  *              and its ONLY exit is those contacts closing.  That is correct hardware
  *              behaviour (a machine waiting for its balls), but it never returns to the
@@ -1667,8 +1671,9 @@ MEMORY_END
  *              honestly hold.  The 80188 side is happy either way: F14's prompt takes
  *              0x45 or 0x46 and moves on.
  *
- * The low nibble is also reported to the 80188 verbatim as 0xF0|nibble by handler 2D9D,
- * i.e. it is a configuration nibble; nothing in either ROM says what the bits mean.
+ * Bits 1-3 have since been taken OUT of this constant: they are the SW40 country switches
+ * and the firmware acts on them, so they come from the DIP bank instead -- see
+ * iomoon_port04() below.  What remains here is bits 0, 4, 5, 6 and 7.
  *
  * Two structural notes, because the read is "IDLE & ~swMatrix[10]" and an AND can only
  * ever CLEAR bits:
@@ -1680,6 +1685,31 @@ MEMORY_END
  *     selftest_wait_reset 2E42.  Nothing writes row 10 today; keep it that way unless
  *     the bit is understood. */
 #define IOMOON_PORT04_IDLE 0xdf
+
+/* Bits 1-3 of port 0x04 are the SW40 country switches SW2-SW4, and they are NOT an idle
+ * constant -- the firmware reads them and acts on them, so they are a DIP the user sets
+ * (sleic.h, DIP bank 0).  The path is a full J1 round trip on every boot: sub_D5A8B
+ * D5A8B pushes Z80 command 0xF9, handler 2D9D answers IN($04) | 0xF0, and the 80188's
+ * reader turns bits 1-3 of that byte into a country number with
+ *
+ *     D5CA3: CMP [0006], 0F0 / JNB          ; a 0xF0-or-above byte is the DIP report
+ *     D5CAC: AND AL, 00E / SUB AX, 2        ; country = (port04 >> 1) & 7
+ *     D5CC2: JMP CS:W[BX + 02DE1]           ; seven-way table at D5D01 -> [4130:0020]
+ *
+ * and then acts on it twice: sub_D69CC applies that country's coin-value preset (one of
+ * eight, D6D36/D6DDF/.../D7204) and saves it to NVRAM 0x1C4-0x1CF, and boot_init compares
+ * the DIP-derived country with the stored NVRAM 0x1BF at D664D -- if they differ the DIP
+ * wins, the NVRAM is rewritten and the preset re-applied.  Country 5 additionally selects
+ * the Spanish string and menu tables (D3277, D8048, DD406); every other value is English.
+ * So this one DIP sets both the coinage and the language, exactly as the service manual's
+ * "country code" row implies.
+ *
+ * The other five bits stay in IOMOON_PORT04_IDLE.  Bit 5 in particular must stay 0 for
+ * the reason above -- the manual's SW5 "servicio: no se dispensan bolas" is the same
+ * behaviour the 0xED handler shows, and with no ball model 0 is the state to hold. */
+static UINT8 iomoon_port04(void) {
+  return (UINT8)((IOMOON_PORT04_IDLE & ~0x0e) | (core_getDip(0) & 0x0e));
+}
 
 static READ_HANDLER(iomoon_z80_read) {
   switch (offset) {
@@ -1696,7 +1726,7 @@ static READ_HANDLER(iomoon_z80_read) {
     case 0x03: /* cabinet inputs -> swMatrix[9], active low */
       return (UINT8)~coreGlobals.swMatrix[9];
     case 0x04: /* cabinet/config byte; swMatrix[10] pulls a bit low when closed */
-      return (UINT8)(IOMOON_PORT04_IDLE & ~coreGlobals.swMatrix[10]);
+      return (UINT8)(iomoon_port04() & ~coreGlobals.swMatrix[10]);
     default:
       logerror("iomoon Z80 read port %02x\n", offset);
   }

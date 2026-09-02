@@ -32,31 +32,51 @@
     COREPORT_BITDEF(  0x0200, IPT_COIN1,  IP_KEY_DEFAULT) /* COIN  -> swMatrix[9].5 */ \
     COREPORT_BITDEF(  0x0400, IPT_TILT,   IP_KEY_DEFAULT) /* TILT  -> swMatrix[9].0 */ \
     COREPORT_BIT(     0x0800, "Test / Service Menu", KEYCODE_END) /* -> swMatrix[9].1; service-menu enter: Bike Race C4 Test code 0x33, Io Moon code 0x3F (F14). F2 is grabbed by MAME UI, End avoids stale-cfg unbinding */ \
+  /* DIP block SW40 on the Z80 I/O board, read as PinMAME DIP bank 0 (core_getDip(0)). \
+   * The FUNCTIONS are the Io Moon service manual's, section 7.2.2.3: SW1 VDB solenoid \
+   * watchdog, SW2-SW4 country code, SW5 "no balls dispensed", SW6 solenoid test, SW7 \
+   * lamp test, SW8 board self-test.  The switch -> BIT assignment is only established \
+   * for SW2-SW4, and it is established from the ROM rather than the manual, which gives \
+   * no bit numbers: Z80 command 0xF9 -> handler 2D9D reads port 0x04 and sends the low \
+   * nibble back as 0xF0|nibble, and the 80188 turns bits 1-3 of it into a country number \
+   * 0..7 (D5CA3-D5CC2, seven-way table at D5D01).  Only SLEIC2 reads any of this; the \
+   * sister machines' Z80 ROMs were not traced for it, so the rest stay plain switches. \
+   * \
+   * COUNTRY is what the manual calls the coin-value setting, and it is more than that: \
+   * it picks the pricing preset (sub_D69CC -> one of eight, saved to NVRAM 0x1C4-0x1CF) \
+   * AND the display LANGUAGE, because value 5 selects the Spanish string and menu-record \
+   * tables at three sites (D3277 attract, D8048 pricing, DD406 menu records) while every \
+   * other value gets the English ones.  Two independent checks anchor the manual's row \
+   * order to the value: value 0 (all three ON) loads exactly the manual's UK column \
+   * (30p/1, 50p/2, GBP1/5 -> divisors 3/5/10, credits 1/2/5 at D6D36), and the manual's \
+   * Spain row is SW2 OFF / SW3 ON / SW4 OFF, which with ON = 0 and SW2 as the low bit is \
+   * value 5 -- the one value the ROM special-cases.  ON = 0 is the ordinary closed-switch \
+   * convention and the Z80 reads port 0x04 without inverting it. */ \
   PORT_START /* 1 */ \
-    COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0001, "1" ) \
-    COREPORT_DIPNAME( 0x0002, 0x0000, "S2") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0002, "1" ) \
-    COREPORT_DIPNAME( 0x0004, 0x0000, "S3") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0004, "1" ) \
-    COREPORT_DIPNAME( 0x0008, 0x0000, "S4") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0008, "1" ) \
-    COREPORT_DIPNAME( 0x0010, 0x0000, "S5") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0010, "1" ) \
-    COREPORT_DIPNAME( 0x0020, 0x0000, "S6") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0020, "1" ) \
-    COREPORT_DIPNAME( 0x0040, 0x0000, "S7") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0040, "1" ) \
-    COREPORT_DIPNAME( 0x0080, 0x0000, "S8") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0080, "1" )
+    COREPORT_DIPNAME( 0x0001, 0x0001, "SW40-1 (VDB watchdog)") \
+      COREPORT_DIPSET(0x0000, "On" ) \
+      COREPORT_DIPSET(0x0001, "Off" ) \
+    COREPORT_DIPNAME( 0x000e, 0x000e, "SW40-2/3/4 Country") \
+      COREPORT_DIPSET(0x0000, "United Kingdom" ) \
+      COREPORT_DIPSET(0x0002, "France" ) \
+      COREPORT_DIPSET(0x0004, "Germany" ) \
+      COREPORT_DIPSET(0x0006, "Italy" ) \
+      COREPORT_DIPSET(0x0008, "Netherlands" ) \
+      COREPORT_DIPSET(0x000a, "Spain (Spanish text)" ) \
+      COREPORT_DIPSET(0x000c, "Belgium" ) \
+      COREPORT_DIPSET(0x000e, "Portugal" ) \
+    COREPORT_DIPNAME( 0x0010, 0x0000, "SW40-5") \
+      COREPORT_DIPSET(0x0000, "On" ) \
+      COREPORT_DIPSET(0x0010, "Off" ) \
+    COREPORT_DIPNAME( 0x0020, 0x0000, "SW40-6") \
+      COREPORT_DIPSET(0x0000, "On" ) \
+      COREPORT_DIPSET(0x0020, "Off" ) \
+    COREPORT_DIPNAME( 0x0040, 0x0000, "SW40-7") \
+      COREPORT_DIPSET(0x0000, "On" ) \
+      COREPORT_DIPSET(0x0040, "Off" ) \
+    COREPORT_DIPNAME( 0x0080, 0x0000, "SW40-8") \
+      COREPORT_DIPSET(0x0000, "On" ) \
+      COREPORT_DIPSET(0x0080, "Off" )
 
 /*-- Standard input ports --*/
 #define SLEIC_INPUT_PORTS_START(name,balls) \
