@@ -242,6 +242,33 @@ static INTERRUPT_GEN(sleic1_irq_gen) {
  * pipeline are two independent clocks on this machine (F13), which is the whole point */
 #define IOMOON_PANEL_HZ 73.0
 
+/* YM3812 (IC60) master clock phi-M.  F8 settles the ports, the write primitive and the
+ * sequencer, but it cannot settle this one: a clock is a wire, and no ROM mentions it.
+ * What the board says (011-029A inventory, IC60 row, traced on sheet 011-029-06/07) is
+ * that phi-M is fed by YACLK off the IC20 74LS393 divider in the board's 8 MHz timing
+ * domain -- the same chain whose /8192 tap is the ~977 Hz Z80 IRQ this driver already
+ * states.  A 74LS393 half offers /2 /4 /8 /16, so from 8 MHz the candidates are:
+ *
+ *     4.0 MHz (/2)   <- used here
+ *     2.0 MHz (/4)
+ *     1.0 MHz (/8), 0.5 MHz (/16)
+ *
+ * 4 MHz is picked because it is the YM3812's rated phi-M ceiling and the only tap that
+ * lands anywhere near the part's 3.58 MHz nominal -- /4 and below would run the OPL2 at
+ * half pitch or worse -- and because 4 MHz is the usual OPL2 clock in pinball (Alvin G.
+ * uses it; PinMAME's own SLEIC interface already did).  It is a WIRING INFERENCE, not a
+ * measurement: only a scope on IC60 pin 24 or the IC7 PAL dump can confirm which tap is
+ * strapped.  If the music comes out an octave low, /4 is the next candidate and this line
+ * is the whole fix.
+ *
+ * Pitch and envelope speed scale with it; musical TEMPO does not -- that comes from the
+ * sequencer's tick (F8: fm_player_tick on the INT0 odd branch, so IOMOON_INT0_HZ / 2 =
+ * 36.25 Hz here, against the ~73 Hz per visible frame IOMOON_PANEL_HZ implies on
+ * hardware).  So the emulated music runs at about half tempo for as long as INT0 has to
+ * be throttled to stay servable -- that is F3's open gap showing up in the sound, not a
+ * fault in this path, and it moves the day INT0's real rate is settled */
+#define IOMOON_YM3812_CLOCK 4000000
+
 /* Fractional tick accumulators, and one held request per source.  The request has to be
  * held because of how this i86 core delivers interrupts.  cpu_set_irq_line_and_vector does
  * not touch the CPU itself: it appends the request to a per-CPU event queue and schedules a
@@ -743,6 +770,25 @@ static struct OKIM6295interface SLEIC_okim6376_intf =
 	{ REGION_USER1 },	/* memory region */
 	{ 75 }				/* volume */
 };
+/* Io Moon (SLEIC2) YM3812 (IC60).  Same shape as the base interface, stated separately so
+ * the clock is the named constant with its derivation (IOMOON_YM3812_CLOCK) instead of a
+ * bare 4000000 shared with two machines whose boards were never traced for it.
+ *
+ * The IRQ callback stays disconnected, and for once that is a finding rather than a
+ * shrug: the OPL2's only interrupt source is its two internal timers, and NO Io Moon
+ * song stream writes registers 02, 03 or 04 -- all ten streams in the CS:0DE5 table were
+ * walked through the sequencer's own opcode rules (each 0xDD loop taken once), 22 012
+ * register writes, not one of them to a timer register -- so the chip can never assert
+ * /IRQ on this machine.  That also removes it as a candidate source for the unidentified
+ * INT0 line (F3) */
+static struct YM3812interface SLEIC2_ym3812_intf =
+{
+	1,					/* 1 chip (IC60)          */
+	IOMOON_YM3812_CLOCK,	/* phi-M -- see the constant */
+	{ 100 },			/* volume                 */
+	{ ym3812_irq },		/* never called: the firmware starts no OPL2 timer */
+};
+
 static struct OKIM6295interface SLEIC_okim6376_intf2 =
 {
 	0,					/* 1 chip (but use 0 to indicate 6376 chip) */
@@ -994,8 +1040,8 @@ static struct {
   UINT8 swCol;     /* Z80 port 0x82: switch-matrix column strobe, decoded to 0..5      */
 } iomoon_j1; //!!
 
-/* Io Moon 80188 peripheral write.  PCS0's page select (F2) and the J1 outbound half
- * (PCS1 data + the PCS4 bit-5 strobe, F6) are wired; PCS5 YM3812 (F8), PCS6 OKI (F9)
+/* Io Moon 80188 peripheral write.  PCS0's page select (F2), the J1 outbound half (PCS1
+ * data + the PCS4 bit-5 strobe, F6) and PCS5's YM3812 pair (F8) are wired; PCS6 OKI (F9)
  * and the PCS0 NVRAM gate (F10) are later tasks and are only logged */
 static WRITE_HANDLER(sleic2_periph_w) {
   switch (offset) {
@@ -1022,7 +1068,26 @@ static WRITE_HANDLER(sleic2_periph_w) {
       }
       iomoon_j1.pcs4 = data;
       return;
-    default:                          /* PCS2, PCS3, PCS5 YM3812, PCS6 OKI */
+    case 0x280: /* PCS5 with A0 = 0: the YM3812's register/index port (F8).
+                 *
+                 * Io Moon uses TWO ADDRESSES, one per port -- ES:[0280] then ES:[0281]
+                 * inside the one write primitive ym3812_write D0D99 -- so A0 comes off the
+                 * address bus and the driver decodes it here.  Neither sister machine does
+                 * it this way and both were checked before this was written: Bike Race
+                 * streams every byte at 0xA0280 and toggles A0 in hardware (sleic_periph_w
+                 * alternates), and Sleic Pin-Ball streams every byte at 0xA0280 with A0
+                 * carried on PCS0 bit 1 (sleic1_ym_a0).  Three machines, three conventions;
+                 * this one is the only one the Io Moon ROM supports, and F8 confirms these
+                 * are the only two accesses to either address in the whole ROM */
+      YM3812_control_port_0_w(0, data);
+      return;
+    case 0x281: /* PCS5 with A0 = 1: the YM3812's data port (F8).  The firmware's settling
+                 * delay between the two writes (ym3812_settle_delay D0DA9, 10 iterations)
+                 * is a real-chip timing requirement with no emulated equivalent -- the core
+                 * accepts the pair back to back -- so nothing here waits */
+      YM3812_write_port_0_w(0, data);
+      return;
+    default:                          /* PCS2, PCS3, PCS6 OKI */
 #ifdef DEBUG_SLEIC
       if (getenv("SLEIC_TRACE_PW")) fprintf(stderr, "[188->periph] PCS%d off=%03x data=%02x\n", offset>>7, offset, data);
 #endif
@@ -1030,8 +1095,8 @@ static WRITE_HANDLER(sleic2_periph_w) {
   }
 }
 
-/* Io Moon 80188 peripheral read.  The J1 half is modelled (F4/F6); the YM3812 status at
- * PCS5 0xA0280 (F8) comes with the sound work.  Deliberately NOT the base sleic_periph_r
+/* Io Moon 80188 peripheral read.  The J1 half is modelled (F4/F6) and the YM3812 status
+ * port answers at PCS5 0xA0280 (F8).  Deliberately NOT the base sleic_periph_r
  * -- its 0x37 "no event" idle is a Bike Race convention that F4 rules out here: 0xA0100
  * carries Z80 bytes and nothing else */
 static READ_HANDLER(sleic2_periph_r) {
@@ -1046,6 +1111,17 @@ static READ_HANDLER(sleic2_periph_r) {
                  * gives up for this call when it is clear, so it must report that the Z80
                  * has taken the previous byte */
       return iomoon_j1.toZ80Full ? 0x00 : 0x01;
+    case 0x280: /* PCS5: the YM3812 status port, which reads back on the same address as the
+                 * index port (A0 = 0) exactly as on any OPL2.
+                 *
+                 * The Io Moon firmware never reads it -- F8 finds only the two writes in
+                 * ym3812_write, and busy is handled by the software settling delay instead
+                 * of by polling bit 7 -- so this line changes no behaviour today.  It is
+                 * here because the hardware answers here: leaving the address to the
+                 * function's default 0 would quietly invent a chip that reports "no timer
+                 * overflow, not busy" for ever, and a patched or later ROM that does poll
+                 * would then hang against a lie rather than run against the core */
+      return YM3812_status_port_0_r(0);
   }
   return 0;
 }
@@ -1919,9 +1995,24 @@ MACHINE_DRIVER_START(SLEIC2)
   MDRV_CPU_PERIODIC_INT(SLEIC_irq_z80, 8000000/8192.)
   MDRV_CPU_PORTS(SLEIC2_Z80_readport, SLEIC2_Z80_writeport)
 
-  MDRV_SOUND_ADD(YM3812, SLEIC_ym3812_intf)
+  // Sound: two chips, both driven by the 80188 through the PACS block, and NO third
+  // device.  The YM3812 (IC60) carries the FM music at PCS5 0xA0280/0xA0281 (F8, decoded
+  // in sleic2_periph_w) and the OKI MSM6376 (IC51) the speech and effects at PCS6 (F9).
+  //
+  // The base driver's MDRV_SOUND_ADD(DAC, ...) is dropped here, and it is dropped on
+  // evidence rather than on tidiness.  Nothing on this machine is a CPU-written DAC: the
+  // only converter on board 011-029A is IC61, a YM3014B, which is the YM3812's own
+  // companion serial DAC (it takes the OPL2's serial output, not a bus byte) and is
+  // therefore already inside PinMAME's YM3812 emulation; IC62 is an LM324-class op-amp
+  // and IC63 an X9C503P digital pot for the FM-vs-OKI balance -- an output stage, not a
+  // sound source.  From the software side F8 and F9 between them enumerate every sound
+  // write the ROM makes -- 0xA0280/0xA0281, the 0xA0300 latch and the 0xA0000 bit-5
+  // /OKCS strobe -- and there is no fourth address and no sample-rate write loop anywhere
+  // for a DAC to be driven from.  Nothing in this file ever called DAC_data_w either, so
+  // the device only ever added a silent mixer channel.  (SLEIC1 and SLEIC3 keep theirs:
+  // their boards were not traced for this and are not this task's to change.)
+  MDRV_SOUND_ADD(YM3812, SLEIC2_ym3812_intf)
   MDRV_SOUND_ADD(OKIM6295, SLEIC_okim6376_intf2)
-  MDRV_SOUND_ADD(DAC, SLEIC_dac_intf)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(SLEIC3)
