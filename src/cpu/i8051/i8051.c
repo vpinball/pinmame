@@ -1608,8 +1608,24 @@ INLINE UINT8 check_interrupts(void)
 #endif
 
 	//Skip the interrupt request if currently processing is lo priority, and the new request IS NOT HI PRIORITY!
+	//A proposal that is not dispatched must not survive the call.  Every entry to
+	//check_interrupts() re-proposes from the live flags, so discarding it here
+	//loses nothing; leaving it set makes a LATER call dispatch a vector whose flag
+	//has since been cleared, because the proposals above are all gated on
+	//!i8051.int_vec (so nothing can overwrite the stale one at equal priority) and
+	//the commit below only tests that it is non-zero.  Measured on `mephisto`,
+	//whose sound ROM leaves IP = 0 so every serial interrupt takes this path: 56
+	//serial dispatches for 28 real events, i.e. the serial ISR ran twice per byte
+	//and its receive state machine saw every byte of every command packet twice.
+	//`sport2k` sets IP = 0x10 (PS), so its serial vector never reaches this return
+	//and it is bit-identical either way.  See
+	//docs/findings/2026-09-02-audio-firmware.md section 8.
+	//Only int_vec needs clearing: priority_request is already 0 on this path --
+	//that is half of the condition for taking it -- and the two are only ever set
+	//together, so int_vec == 0 on entry implies priority_request == 0 as well.
 	if(i8051.cur_irq < 0xff && !i8051.priority_request)
-		{ LOG(("low priority irq in progress already, skipping low irq request\n")); return 0; }
+		{ i8051.int_vec = 0;
+		  LOG(("low priority irq in progress already, skipping low irq request\n")); return 0; }
 
 	//No source was actually selected above, so there is nothing to dispatch.
 	//Without this, PC would be set to int_vec == 0 -- i.e. the reset vector --
