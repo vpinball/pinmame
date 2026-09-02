@@ -149,9 +149,8 @@ static INTERRUPT_GEN(sleic1_irq_gen) {
 /  The NMI is deliberately NOT generated here.  It is not periodic: F4/F6 show the Z80
 /  raises it by strobing port-0x81 bit 2, which latches one byte into PCS2 0xA0100 for the
 /  handler to read, and 0xA0100 is read in exactly one place in the whole 80188 ROM (that
-/  handler).  Until the J1 link exists the firmware never receives the Z80's boot 0x47, so
-/  after its intro it parks in the poll at D2F59 (CALL sub_D5D1B / OR AL,AL / JE) with
-/  interrupts enabled and both ISRs still running -- a wait state, not a hang.
+/  handler).  It is raised from iomoon_z80_write instead, where the real Z80 firmware
+/  strobes it -- see the J1 byte-port block further down.
 /-----------------------------------------------------------------------------------*/
 
 /* CLKOUT.  INFERRED, not measured: IC1 is an AMD N80C188-10, and the -10 is the part's
@@ -882,16 +881,94 @@ static void iomoon_set_gfx_bank(UINT8 pcs0) {
   cpu_setbank(IOMOON_GFX_BANK, memory_region(SLEIC_MEMREG_GFX) + iomoon_gfx_page_base[pcs0 & 0x07]);
 }
 
-/* Io Moon 80188 peripheral write.  Only PCS0's page-select side effect is wired up
- * here; the rest of the block (PCS1 J1 outbound, PCS2, PCS4, PCS5 YM3812, PCS6 OKI +
- * NVRAM gate) is the subject of the following driver work and is only logged for now */
+/*-------------------------------------------------------------------------------------
+/  Io Moon (SLEIC2) J1 byte port -- findings F6 (the port, both directions), F4 (what the
+/  80188 does with an inbound byte) and F5 (the switch codes the Z80 sends over it).
+/
+/  J1 is an 8-bit bidirectional byte port with handshakes: no address bus, no shared
+/  memory, no HOLD/HLDA.  Each direction is one latch plus one interrupt, and BOTH ends
+/  here run their real firmware -- the driver only carries bytes.  Nothing is synthesised:
+/  the boot 0x47, the 0x45/0x46 replies and every switch code come out of the Z80 ROM
+/  (V1 3_05.bin), and F4 rejects the old branch's invented marker stream outright.
+/
+/  Z80 -> 80188.  Two outbound channels share the data port, and both strobe the same
+/  latch (F6; 0xA0100 is the only inbound read in the whole 80188 ROM, so a second latch
+/  would be unread by construction):
+/
+/    host_send_c0fc 0116  one-byte EVENT CODE (F5)       port-0x81 bit 2
+/    host_send_c008 0144  8-bit STATE BITMASK            port-0x81 bit 5
+/
+/    IN A,($01) / BIT 1 / JR Z,self   spin until the port is free   <- port 0x01 bit 1
+/    (C001) |= 0x02, OUT ($81)        data-valid
+/    A = the byte,  OUT ($80)         onto the data lines
+/    (C001) |= 0x04, OUT ($81)        strobe: latch + 80188 NMI
+/
+/  The strobe latches the port-0x80 byte at PCS2 0xA0100 and raises the 80188 NMI, whose
+/  handler D000:016D reads that latch exactly ONCE (F4), counts the value 0x32 in
+/  [4000:1144] and appends everything else to the FIFO at 4000:1220.  The driver models
+/  the latch as a one-byte mailbox with flow control on port-0x01 bit 1: free while empty,
+/  busy from the strobe until the NMI reads 0xA0100.  That is what stops the Z80
+/  overrunning a latch the 80188 has not emptied yet -- and dropped switch bytes are
+/  exactly the failure this task exists to prevent.  It cannot deadlock: the NMI is
+/  non-maskable, the Z80's spin runs with interrupts enabled, and the send routines take
+/  the bus only after the spin.
+/
+/  80188 -> Z80.  qout_service_pcs1 D01E5, called from the INT0 ISR, writes the byte to
+/  PCS1 0xA0080 and then pulses PCS4 0xA0200 bit 6 and bit 5, releasing both after 13
+/  NOPs.  On the Z80 that strobe is an NMI (0x0066): it gates port-0x81 bit 4 on, reads
+/  IN ($00), stores into the ring at $C076 and lets host_cmd_dispatch 16D5 run the byte
+/  through the 256-entry table at $2000 (F7).  Before writing, the ISR tests PCS3
+/  0xA0180 bit 0 -- "receiver ready" -- and gives up for this call if it is clear, which
+/  is the reverse direction's flow control and is modelled the same way.
+/
+/  The Z80 NMI is taken on the bit-5 edge rather than bit 6 for a reason that is worth
+/  recording: the INBOUND NMI handler also drives PCS4, asserting bits 7, 6 and 4
+/  (OR AL,0D0) around its latch read, so bit 6 rises on every Z80->80188 byte as well and
+/  would fire a spurious Z80 NMI per inbound byte.  Bit 5 is touched by nothing but
+/  qout_service_pcs1.  WHICH J1 line each PCS4 bit actually drives is F6's own open
+/  clause (it needs the IC7/IC8 PALs); what the firmware pair needs, and what this
+/  models, is one Z80 NMI per outbound byte, after the byte is latched.
+/-----------------------------------------------------------------------------------*/
+static struct {
+  UINT8 to188;     /* Z80 port 0x80: the byte on the J1 data lines                     */
+  UINT8 latch;     /* PCS2 0xA0100: what the port-0x81 strobe captured for the 80188   */
+  UINT8 latchFull; /* set from the strobe until the NMI reads 0xA0100 (port-01 bit 1)  */
+  UINT8 ctrl;      /* Z80 port 0x81 shadow, for the bit-2 / bit-5 strobe edges         */
+  UINT8 toZ80;     /* PCS1 0xA0080: the byte the 80188 sent                            */
+  UINT8 toZ80Full; /* set until the Z80 takes it (PCS3 0xA0180 bit 0 = receiver ready) */
+  UINT8 pcs4;      /* PCS4 0xA0200 shadow, for the outbound bit-5 strobe edge          */
+  UINT8 swCol;     /* Z80 port 0x82: switch-matrix column strobe, decoded to 0..5      */
+} iomoon_j1; //!!
+
+/* Io Moon 80188 peripheral write.  PCS0's page select (F2) and the J1 outbound half
+ * (PCS1 data + the PCS4 bit-5 strobe, F6) are wired; PCS5 YM3812 (F8), PCS6 OKI (F9)
+ * and the PCS0 NVRAM gate (F10) are later tasks and are only logged */
 static WRITE_HANDLER(sleic2_periph_w) {
   switch (offset) {
     case 0x000: /* PCS0: bits 0-2 graphics page (F2), 3/4 NVRAM window gate (F10), 5 = OKI /OKCS (F9) */
       if ((data ^ iomoon_pcs0) & 0x07) iomoon_set_gfx_bank(data);
       iomoon_pcs0 = data;
       return;
-    default:                          /* PCS1 J1 outbound, PCS2, PCS3, PCS4, PCS5 YM3812, PCS6 OKI */
+    case 0x080: /* PCS1: the byte on the outbound J1 data lines (qout_service_pcs1 D020F).
+                 * Writing it does NOT start a transfer -- the PCS4 bit-5 strobe below
+                 * does.  That distinction is not academic: the boot's peripheral init
+                 * writes 0x00 here long before any queue exists, and treating that as a
+                 * byte in flight would leave "receiver ready" clear for ever and stall
+                 * the whole outbound direction */
+      iomoon_j1.toZ80 = data;
+      return;
+    case 0x200: /* PCS4: J1 handshake lines.  Bit 5 is pulsed by qout_service_pcs1 alone
+                 * (D022A/D0243) -- the inbound NMI handler asserts bits 7/6/4 but never
+                 * bit 5 -- so its rising edge is the outbound strobe, and it arrives
+                 * after the PCS1 write above.  Bit 3 (the old branch's "frame strobe")
+                 * is F13/Task 11's, not this one's */
+      if ((data & 0x20) && !(iomoon_j1.pcs4 & 0x20)) {
+        iomoon_j1.toZ80Full = 1;
+        cpu_set_irq_line(SLEIC_IO_CPU, IRQ_LINE_NMI, PULSE_LINE); /* Z80 handler 0x0066 */
+      }
+      iomoon_j1.pcs4 = data;
+      return;
+    default:                          /* PCS2, PCS3, PCS5 YM3812, PCS6 OKI */
 #ifdef DEBUG_SLEIC
       if (getenv("SLEIC_TRACE_PW")) fprintf(stderr, "[188->periph] PCS%d off=%03x data=%02x\n", offset>>7, offset, data);
 #endif
@@ -899,11 +976,23 @@ static WRITE_HANDLER(sleic2_periph_w) {
   }
 }
 
-/* Io Moon 80188 peripheral read.  Nothing in the block is modelled yet: the J1 inbound
- * byte at PCS2 0xA0100 (F4/F6) and the YM3812 status at PCS5 0xA0280 (F8) come with the
- * link and sound work.  Deliberately NOT the base sleic_periph_r -- its 0x37 "no event"
- * idle and 0xA0180 ready bit are Bike Race conventions that do not apply here */
+/* Io Moon 80188 peripheral read.  The J1 half is modelled (F4/F6); the YM3812 status at
+ * PCS5 0xA0280 (F8) comes with the sound work.  Deliberately NOT the base sleic_periph_r
+ * -- its 0x37 "no event" idle is a Bike Race convention that F4 rules out here: 0xA0100
+ * carries Z80 bytes and nothing else */
 static READ_HANDLER(sleic2_periph_r) {
+  switch (offset) {
+    case 0x100: /* PCS2: the J1 inbound latch, read exactly once per byte by the NMI
+                 * handler D018C (F4).  The read is what frees the port for the Z80's
+                 * next byte, so clear the busy flag and leave the latch itself standing
+                 * -- a hardware latch holds its last value */
+      iomoon_j1.latchFull = 0;
+      return iomoon_j1.latch;
+    case 0x180: /* PCS3 bit 0: "receiver ready".  qout_service_pcs1 tests it (D0206) and
+                 * gives up for this call when it is clear, so it must report that the Z80
+                 * has taken the previous byte */
+      return iomoon_j1.toZ80Full ? 0x00 : 0x01;
+  }
   return 0;
 }
 
@@ -1239,6 +1328,115 @@ static PORT_WRITE_START(SLEIC1_Z80_writeport)
   {0x80,0x87, sleic1_z80_write},
 MEMORY_END
 
+/*-------------------------------------------------------------------------------------
+/  Io Moon (SLEIC2) I/O Z80 ports.  The J1 half is the block above; this is the rest of
+/  the map the real V1 3_05.bin firmware drives, read out of that ROM.
+/
+/  IN  0x00  the J1 inbound byte (PCS1), taken by the NMI (0x0080, gate port-0x81 bit 4)
+/            or by the polled host_read_byte 01B6 (gate bit 6).  One latch either way
+/  IN  0x01  bit 1 = J1 port free (every host_send_* and host_read_byte spins on it,
+/            0116/0144/017E/01B6), bit 5 = the selected direct input, active LOW
+/            (direct_input_scan 0DF8/0E36)
+/  IN  0x02  switch-matrix column return, active LOW: sw_read_col0..5 2ED3..2FB9 CPL it
+/            into the per-column change masks.  6 columns x 8 = the 48 codes of F5
+/  IN  0x03  cabinet inputs, active LOW (input_port03_read 2E54 CPLs it).  Bits and the
+/            codes their handlers send: 0 -> 0x3E (sub_125B, with a 3000-tick lockout),
+/            1 -> 0x3F (sub_1278; F14: this is the byte that OPENS the service menu),
+/            4 -> 0x40 (sub_1285), 2 and 3 -> the two flipper inputs (sub_12D8 / sub_1292,
+/            which fire the port-0x85 coil pairs directly and send 0x42 / 0x41 only in
+/            test mode), 5 -> the auto-repeating 0x32 (0x33 in test mode, 0D3C/0D44)
+/  IN  0x04  cabinet/config byte -- see IOMOON_PORT04_IDLE
+/
+/  OUT 0x80  J1 data lines            OUT 0x83  lamp column strobe   } F7, Task 13
+/  OUT 0x81  J1 control (bit map F6)  OUT 0x84  lamp row data        }
+/  OUT 0x82  switch column strobe     OUT 0x85/0x86  driver latches, active low
+/                                     OUT 0x87  direct-input index + flag bits
+/-----------------------------------------------------------------------------------*/
+
+/* Port 0x04 with nothing pressed.  Three bits have to be right or the firmware misbehaves,
+ * and all three readings come from the ROM:
+ *
+ *   bit 7 = 1  selftest_wait_reset 2E42 spins on it (IN ($04) / BIT 7 / JP Z,self), so a 0
+ *              here is a hang the moment the self-test path is taken.
+ *   bit 0 = 1  disables direct_input_scan 0DBF (IN ($04) / BIT 0 / RET NZ).  That scan is
+ *              the 16-way multiplexed input behind port-0x87's low nibble and port-0x01
+ *              bit 5, sending codes 0x50-0x79; which physical contacts sit on it is part
+ *              of F5's open gap, so the honest model is "not fitted" rather than a
+ *              guessed wiring.  Turning it on is a one-bit change once that is known.
+ *   bit 5 = 0  makes the command-0xED handler 2BEB answer 0x45 at once (IN ($04) / BIT 5 /
+ *              JP Z,2C17).  With bit 5 SET the handler instead loops -- strobe column 0,
+ *              check the trough contacts, run the eject coil sequence sub_2CFB, repeat --
+ *              and its ONLY exit is those contacts closing.  That is correct hardware
+ *              behaviour (a machine waiting for its balls), but it never returns to the
+ *              command dispatcher, so the Z80 stops scanning switches entirely; with no
+ *              ball model and F5's physical map open, 0 is the state this driver can
+ *              honestly hold.  The 80188 side is happy either way: F14's prompt takes
+ *              0x45 or 0x46 and moves on.
+ *
+ * The low nibble is also reported to the 80188 verbatim as 0xF0|nibble by handler 2D9D,
+ * i.e. it is a configuration nibble; nothing in either ROM says what the bits mean */
+#define IOMOON_PORT04_IDLE 0xdf
+
+static READ_HANDLER(iomoon_z80_read) {
+  switch (offset) {
+    case 0x00: /* J1 inbound data.  Reading is what frees the outbound latch, which is
+                * what PCS3 0xA0180 bit 0 reports back to qout_service_pcs1 */
+      iomoon_j1.toZ80Full = 0;
+      return iomoon_j1.toZ80;
+    case 0x01: /* bit 1 = J1 free (clear while the 80188 has not read the latch yet),
+                * bit 5 = direct input, 1 = open.  The scan that reads bit 5 is gated off
+                * by IOMOON_PORT04_IDLE bit 0 anyway */
+      return (UINT8)((iomoon_j1.latchFull ? 0x00 : 0x02) | 0x20);
+    case 0x02: /* switch matrix: 6 columns -> swMatrix[1..6], active low */
+      return (UINT8)~coreGlobals.swMatrix[1 + iomoon_j1.swCol];
+    case 0x03: /* cabinet inputs -> swMatrix[9], active low */
+      return (UINT8)~coreGlobals.swMatrix[9];
+    case 0x04: /* cabinet/config byte; swMatrix[10] pulls a bit low when closed */
+      return (UINT8)(IOMOON_PORT04_IDLE & ~coreGlobals.swMatrix[10]);
+    default:
+      logerror("iomoon Z80 read port %02x\n", offset);
+  }
+  return 0;
+}
+
+static WRITE_HANDLER(iomoon_z80_write) {
+  switch (offset) {
+    case 0x00: /* port 0x80: the byte onto the J1 data lines (written before the strobe) */
+      iomoon_j1.to188 = data;
+      break;
+    case 0x01: /* port 0x81: J1 control.  Bit 2 (event codes) and bit 5 (the C008 state
+                * bitmask) are the two outbound strobes and reach the same latch (F6);
+                * bit 1 is data-valid, bits 4/6 gate the two inbound read paths, bit 3 is
+                * the free-running-ish toggle F3 lists as an INT0 candidate and bit 0 is
+                * unproven -- none of those four need an action here */
+      { const UINT8 rise = (UINT8)(data & ~iomoon_j1.ctrl);
+        if (rise & 0x24) {
+          iomoon_j1.latch = iomoon_j1.to188;
+          iomoon_j1.latchFull = 1;
+          cpu_set_irq_line(SLEIC_MAIN_CPU, IRQ_LINE_NMI, PULSE_LINE); /* handler D000:016D */
+        }
+      }
+      iomoon_j1.ctrl = data;
+      break;
+    case 0x02: /* port 0x82: switch-matrix column strobe, one-hot 0x01..0x20 = column 0..5 */
+      if (data) { const unsigned col = core_BitColToNum(data & -data);
+                  if (col < 6) iomoon_j1.swCol = (UINT8)col; }
+      break;
+    default:   /* 0x83/0x84 lamps, 0x85/0x86 drivers, 0x87 direct-input index: F7, Task 13.
+                * Silently ignored rather than logged -- the lamp refresh writes on every
+                * one of the Z80's ~977 interrupts per second */
+      break;
+  }
+}
+
+static PORT_READ_START(SLEIC2_Z80_readport)
+  {0x00,0x07, iomoon_z80_read},
+MEMORY_END
+
+static PORT_WRITE_START(SLEIC2_Z80_writeport)
+  {0x80,0x87, iomoon_z80_write},
+MEMORY_END
+
 static MACHINE_INIT(SLEIC) {
   /* The memset covers everything in locals -- the DMD latch and its TTL, the OKI
    * phrase/strobe state, the J1 link latches, the YM3812 A0 select and the SLEIC3
@@ -1283,6 +1481,75 @@ static MACHINE_INIT(SLEIC2) {
   iomoon_set_gfx_bank(iomoon_pcs0);
   iomoon_int0_acc = iomoon_t0_acc = 0.0;
   iomoon_int0_pend = iomoon_t0_pend = 0;
+  /* J1 idle: both latches empty, so port-0x01 bit 1 reads free for the Z80's very first
+   * send -- boot_port_init 041B calls host_send_c008_b with interrupts still off, and
+   * that routine spins on the bit before it does anything else */
+  memset(&iomoon_j1, 0, sizeof iomoon_j1);
+}
+
+/*-------------------------------------------------------------------------------------
+/  Io Moon (SLEIC2) switch input.  Where each byte comes from is F5; which physical
+/  contact sits behind each code is F5's own open gap, so what is claimed here is the
+/  code map (exact, out of the Z80 ROM) and not a contact list.
+/
+/    swMatrix[1..6]  the 6 x 8 matrix, column c selected by the port-0x82 one-hot strobe
+/                    and read back on port 0x02.  Code = 0x0A + 8c + b for c = 0..4 and
+/                    0x34 + b for c = 5 -- exactly regular, 48 positions.
+/    swMatrix[9]     the six port-0x03 cabinet inputs (bit -> code above iomoon_z80_read)
+/    swMatrix[10]    the port-0x04 config byte (see IOMOON_PORT04_IDLE); nothing is mapped
+/                    into it, because bit 7 must stay high and the rest is unknown
+/
+/  FIVE of the 48 matrix positions never produce a byte, and that is firmware, not a gap
+/  in the driver: codes 0x13 and 0x38-0x3B dispatch to sub_1348, which is a bare RET.
+/  (0x38-0x3B do reach the 80188, but only as command-table re-sends -- F5.)
+/-----------------------------------------------------------------------------------*/
+
+/* Playfield test keys, one per matrix position, so the service menu's contact test can
+ * exercise every contact standalone.  Columns 0-4 keep the Bike Race key layout; column 5
+ * only maps the four positions whose codes (0x34-0x37) the firmware actually sends */
+static const struct { int key; UINT8 col; UINT8 bit; } iomoon_pf_keys[] = {
+  {KEYCODE_Q,1,0x01},{KEYCODE_W,1,0x02},{KEYCODE_E,1,0x04},{KEYCODE_R,1,0x08}, /* col0 0x0A-0x0D */
+  {KEYCODE_Y,1,0x10},{KEYCODE_U,1,0x20},{KEYCODE_I,1,0x40},{KEYCODE_O,1,0x80}, /* col0 0x0E-0x11 */
+  {KEYCODE_A,2,0x01},{KEYCODE_S,2,0x02},{KEYCODE_D,2,0x04},{KEYCODE_F,2,0x08}, /* col1 0x12-0x15 (0x13 = RET) */
+  {KEYCODE_G,2,0x10},{KEYCODE_H,2,0x20},{KEYCODE_J,2,0x40},{KEYCODE_K,2,0x80}, /* col1 0x16-0x19 */
+  {KEYCODE_Z,3,0x01},{KEYCODE_X,3,0x02},{KEYCODE_C,3,0x04},{KEYCODE_V,3,0x08}, /* col2 0x1A-0x1D */
+  {KEYCODE_B,3,0x10},{KEYCODE_N,3,0x20},{KEYCODE_M,3,0x40},{KEYCODE_L,3,0x80}, /* col2 0x1E-0x21 */
+  {KEYCODE_0_PAD,4,0x01},{KEYCODE_1_PAD,4,0x02},{KEYCODE_2_PAD,4,0x04},{KEYCODE_3_PAD,4,0x08}, /* col3 0x22-0x25 */
+  {KEYCODE_4_PAD,4,0x10},{KEYCODE_5_PAD,4,0x20},{KEYCODE_6_PAD,4,0x40},{KEYCODE_7_PAD,4,0x80}, /* col3 0x26-0x29 */
+  {KEYCODE_0,5,0x01},{KEYCODE_2,5,0x02},{KEYCODE_3,5,0x04},{KEYCODE_4,5,0x08}, /* col4 0x2A-0x2D */
+  {KEYCODE_6,5,0x10},{KEYCODE_8,5,0x20},{KEYCODE_7,5,0x40},{KEYCODE_9,5,0x80}, /* col4 0x2E-0x31 */
+  {KEYCODE_T,6,0x01},{KEYCODE_8_PAD,6,0x02},{KEYCODE_9_PAD,6,0x04},{KEYCODE_MINUS_PAD,6,0x08}, /* col5 0x34-0x37 */
+};
+
+static SWITCH_UPDATE(SLEIC2) {
+  unsigned i;
+  if (inports) {
+    /* Cabinet inputs -> swMatrix[9] = Z80 port 0x03, one bit per input.  The bit -> CODE
+     * map is exact (F5/F14, see iomoon_z80_read); the bit -> BUTTON map below is what a
+     * driver has to choose without the wiring diagram, and each choice has a reason:
+     *   bit 1 -> TEST, because its code 0x3F is the one that opens the service menu (F14)
+     *   bit 0 -> COIN, because sub_125B arms a 3000-tick lockout before sending 0x3E
+     *   bit 4 -> START, because the 80188 dispatches its code 0x40 immediately next to
+     *            the menu key (D7ADA -> sub_D8066)
+     *   bits 3/2 -> left/right flipper: those two handlers (sub_1292 / sub_12D8) fire the
+     *            port-0x85 coil pairs directly, and Sleic Pin-Ball's verified map puts the
+     *            left flipper on the first pair.  INFERRED
+     *   bit 5 -> TILT: its 0x32 auto-repeats while held and the 80188 COUNTS it in
+     *            [4000:1144] instead of queueing it (F4), which is how a plumb bob
+     *            behaves and how Bike Race numbers its tilt.  INFERRED */
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 9,  0x01, 9); /* COIN  0x0200 -> bit0 (code 0x3E) */
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 10, 0x02, 9); /* TEST  0x0800 -> bit1 (code 0x3F) */
+    CORE_SETKEYSW(inports[CORE_COREINPORT] << 1,  0x04, 9); /* R-flip 0x0002 -> bit2            */
+    CORE_SETKEYSW(inports[CORE_COREINPORT] << 3,  0x08, 9); /* L-flip 0x0001 -> bit3            */
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 4,  0x10, 9); /* START 0x0100 -> bit4 (code 0x40) */
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 5,  0x20, 9); /* TILT  0x0400 -> bit5 (code 0x32) */
+  }
+  for (i = 0; i < sizeof(iomoon_pf_keys)/sizeof(iomoon_pf_keys[0]); i++) {
+    if (keyboard_pressed(iomoon_pf_keys[i].key))
+      coreGlobals.swMatrix[iomoon_pf_keys[i].col] |=  iomoon_pf_keys[i].bit;
+    else
+      coreGlobals.swMatrix[iomoon_pf_keys[i].col] &= ~iomoon_pf_keys[i].bit;
+  }
 }
 
 /* Bike Race (SLEIC3) playfield-matrix test keys. The 40 matrix positions (Z80 switch
@@ -1449,6 +1716,12 @@ MACHINE_DRIVER_START(SLEIC2)
   MDRV_IMPORT_FROM(SLEIC)
   MDRV_CORE_INIT_RESET_STOP(SLEIC2,NULL,NULL)
 
+  // Io Moon switch input: the 6x8 matrix on swMatrix[1..6] (Z80 port-0x82 column strobe,
+  // port 0x02 return), the six cabinet inputs on swMatrix[9] (port 0x03) and the port-0x04
+  // config byte on swMatrix[10].  Replaces the base handler, which only fills swMatrix[0]
+  // -- a row nothing on this machine reads
+  MDRV_SWITCH_UPDATE(SLEIC2)
+
   // Io Moon main CPU: the 80C188 at IC1 is an N80C188-10, and CLKOUT = 10 MHz is what
   // the timer-0 rate below is computed from, so the emulated clock matches it rather
   // than the base driver's 8 MHz.  REPLACE only re-states type and clock; the map is
@@ -1478,8 +1751,15 @@ MACHINE_DRIVER_START(SLEIC2)
   // 8000000/8192 to keep that derivation visible.  (Both ROMs are silent on it -- the
   // source is external to each -- so this is the board inventory's reading, not the
   // disassembly's.)  It replaces the inherited 2500000/2048 Bike Race / Sleic Pin-Ball rate
+  //
+  // The I/O Z80 also gets its own port map: the J1 byte-port link to the 80188 (port 0x80
+  // data + the port-0x81 strobes in, port 0x00 + the PCS1/PCS4 pair out) and the switch
+  // matrix.  The base map's z80_read_port returns 0 for port 0x04, whose bit 7 the Z80
+  // spins on in selftest_wait_reset, and 0 for port 0x01, whose bit 1 every J1 send waits
+  // for -- either alone hangs the I/O board before it can announce itself
   MDRV_CPU_MODIFY("icpu")
   MDRV_CPU_PERIODIC_INT(SLEIC_irq_z80, 8000000/8192.)
+  MDRV_CPU_PORTS(SLEIC2_Z80_readport, SLEIC2_Z80_writeport)
 
   MDRV_SOUND_ADD(YM3812, SLEIC_ym3812_intf)
   MDRV_SOUND_ADD(OKIM6295, SLEIC_okim6376_intf2)
