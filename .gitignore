@@ -1,6 +1,8 @@
+.DS_Store
 .project
 build/
 /CMakeLists.txt
+/.cache/
 /.vs/
 /obj/
 /release/
