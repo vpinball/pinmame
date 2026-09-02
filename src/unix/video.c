@@ -908,7 +908,10 @@ void osd_update_video_and_audio(struct mame_display *display)
 	skip_this_frame = skip_next_frame;
 	skip_next_frame = (*skip_next_frame_functions[frameskipper])();
 
-	if (sound_stream && sound_enabled)
+	/* While the debugger has focus the emulation is stopped and no new samples
+	   arrive; updating the stream would just replay its last buffer over and
+	   over, so let the device run dry (silence) instead */
+	if (sound_stream && sound_enabled && !debugger_has_focus)
 		sound_stream_update(sound_stream);
 
 	/* if the visible area has changed, update it */
