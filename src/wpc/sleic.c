@@ -11,7 +11,7 @@
 		         Z80 for I/O (switches/lamps/solenoids; forwards sound cmds over J1)
 		DISPLAY: DMD 128x32
 		SOUND:   YM3812 (OPL2 FM music) + OKI MSM6376 (ADPCM speech/FX),
-		         both driven by the 80188.
+		         both driven by the 80188
  ************************************************************************************************/
 
 #include "driver.h"
@@ -21,6 +21,8 @@
 #include "sound/3812intf.h"
 #include "sleic.h"
 #include <stdlib.h>
+
+//#define DEBUG_SLEIC // enable for environment var support (see getenv's), etc
 
 /*----------------
 /  Local variables
@@ -34,9 +36,10 @@ static struct {
   UINT8  rawDMD[128 * 32];
 } locals;
 
-/* DEBUG: env-gated DMD frame capture for headless verification.
+#ifdef DEBUG_SLEIC
+/* env-gated DMD frame capture for headless verification.
  * Set SLEIC_DMD_DUMP=/path/prefix to append one PGM (P5, 128x32) per submitted
- * frame as /path/prefix.<seq>.pgm. No env var set = no-op. */
+ * frame as /path/prefix.<seq>.pgm. No env var set = no-op */
 static void sleic_dmd_dump(const UINT8 *frame) {
   const char *pfx = getenv("SLEIC_DMD_DUMP");
   static int seq = 0;
@@ -53,8 +56,9 @@ static void sleic_dmd_dump(const UINT8 *frame) {
   }
   fclose(fp);
 }
+#endif
 
-// switches start at 50 for column 1, and each column adds 10.
+// switches start at 50 for column 1, and each column adds 10
 static int SLEIC_sw2m(int no) { return (no/10 - 4)*8 + no%10; }
 static int SLEIC_m2sw(int col, int row) { return 40 + col*10 + row; }
 
@@ -66,11 +70,11 @@ static INTERRUPT_GEN(SLEIC_irq_i80188) {
  * Timer0 interrupt (reset PCB init at F000:FEAC: T0CON=0xE003 enable+int, T0CMPA/B=
  * 0x4000, TCUCON=0x0003 unmasked; INT0-3/DMA0-1 all masked).  Timer0 clocks at
  * CPU/4 = 2 MHz, so it fires ~122 Hz, vector type 0x08 -> ISR F000:DF7F, which
- * decrements the firmware's delay counters ([0x4DF] etc.).  The PinMAME i188 core
+ * decrements the firmware's delay counters ([0x4DF] etc.).  The i188 core
  * does not emulate the internal timer, so we must inject the Timer0 vector here.
  * The base SLEIC_irq_i80188 pulses IRQ0 WITHOUT a vector, so the ISR never runs and
  * the post-boot delay loops (e.g. E000:0050 'mov [0x4DF],0x12C; spin until 0') hang
- * forever -> blank DMD.  Deliver vector 0x08 like the working Bike Race path. */
+ * forever -> blank DMD.  Deliver vector 0x08 like the working Bike Race path */
 static INTERRUPT_GEN(sleic1_irq_gen) {
   cpu_set_irq_line_and_vector(SLEIC_MAIN_CPU, 0, HOLD_LINE, 0x08);
 }
@@ -79,8 +83,8 @@ static INTERRUPT_GEN(sleic1_irq_gen) {
  * (type 0x0C) = 72.5 Hz frame strobe (the 145 Hz DMD wire rate / 2 bitplanes);
  * NMI (type 0x02) is the J1-byte-arrival interrupt, strobe-driven from
  * sleic3_z80_write (not periodic). No IVT memcpy here: bkcpu04 copies its own
- * IVT (CS:00C4) to physical 0 before STI, so physical 0 must not be clobbered. */
-static double sleic3_int0_acc, sleic3_t0_acc;
+ * IVT (CS:00C4) to physical 0 before STI, so physical 0 must not be clobbered */
+static double sleic3_int0_acc, sleic3_t0_acc; //!!
 static INTERRUPT_GEN(sleic3_irq_gen) {
   sleic3_t0_acc   += 99.18 / 244.0;
   sleic3_int0_acc += 72.5 / 244.0;
@@ -107,20 +111,22 @@ static INTERRUPT_GEN(sleic3_irq_gen) {
  *     that field 2 does not have at all, so the fields are strongly asymmetric and the
  *     pair really is a weighted 2-bit value.  Keep the 4-level mapping there.
  *
- * Set in MACHINE_INIT; SLEIC1 (Sleic Pin-Ball) overrides it. */
-static int sleic_dmd_equal_fields;
+ * Set in MACHINE_INIT; SLEIC1 (Sleic Pin-Ball) overrides it */
+static int sleic_dmd_equal_fields; //!!
 
 /* Decode the 2-bitplane frame buffer at 0x60410 into a 128x32 brightness grid.
- * See the plane/weighting notes in SLEIC_irq_i8039 below. */
+ * See the plane/weighting notes in SLEIC_irq_i8039 below */
 static void sleic3_build_dmd_frame(UINT8 *dst) {
-  int ii, jj, kk;
-  const UINT8 *buf = memory_region(SLEIC_MEMREG_CPU) + 0x60410;
+  int ii;
+  const UINT8 * const buf = memory_region(SLEIC_MEMREG_CPU) + 0x60410;
   for (ii = 0; ii < 32; ii++) {
     UINT8 *line = dst + ii * 128;
-    const UINT8 *src = buf + ii * 32;
+    const UINT8 * const src = buf + ii * 32;
+    int jj;
     for (jj = 0; jj < 16; jj++) {
-      UINT8 f1 = src[jj];            /* plane lit by raster field 1 (rows 0x00-0x1F) */
-      UINT8 f2 = src[jj + 0x800];    /* plane lit by raster field 2 (rows 0x20-0x3F) */
+      UINT8 f1 = src[jj];         /* plane lit by raster field 1 (rows 0x00-0x1F) */
+      UINT8 f2 = src[jj + 0x800]; /* plane lit by raster field 2 (rows 0x20-0x3F) */
+      int kk;
       for (kk = 7; kk >= 0; kk--) {
         int a = (f1 >> kk) & 1, b = (f2 >> kk) & 1;
         *line++ = sleic_dmd_equal_fields ? (a | b ? (a & b ? 3 : 2) : 0)  /* 3 levels  */
@@ -144,10 +150,10 @@ static void sleic3_build_dmd_frame(UINT8 *dst) {
  * frame.  So a strobe only claims the next second of ticks: if the strobes keep coming
  * the latch stays in charge (V4.1 strobes every ~90 ms), and if they stop we fall back
  * to sampling the buffer directly, which is safe precisely because a redraw is always
- * followed by a strobe. */
-#define SLEIC3_DMD_LATCH_TICKS 244       /* ~1 s at the 244 Hz I8039 tick */
-static UINT8 sleic3_dmd_latch[128 * 32];
-static int   sleic3_dmd_latch_ttl;
+ * followed by a strobe */
+#define SLEIC3_DMD_LATCH_TICKS 244 /* ~1 s at the 244 Hz I8039 tick */
+static UINT8 sleic3_dmd_latch[128 * 32]; //!!
+static int   sleic3_dmd_latch_ttl; //!!
 
 static INTERRUPT_GEN(SLEIC_irq_i8039) {
   cpu_set_irq_line(SLEIC_DISPLAY_CPU, 0, PULSE_LINE);
@@ -189,14 +195,16 @@ static INTERRUPT_GEN(SLEIC_irq_i8039) {
    * MSB.  (A statistic over the attract animation appears to favour the opposite
    * assignment by counting single-level pixel steps; it does not, because it assumes
    * fades are done by toggling the LSB when this firmware fades by toggling the main
-   * plane, which is a two-level step.) */
-  if (sleic3_dmd_latch_ttl > 0) {        /* firmware is announcing completed frames */
+   * plane, which is a two-level step) */
+  if (sleic3_dmd_latch_ttl > 0) { /* firmware is announcing completed frames */
     sleic3_dmd_latch_ttl--;
     memcpy(locals.rawDMD, sleic3_dmd_latch, sizeof locals.rawDMD);
   }
   else
     sleic3_build_dmd_frame(locals.rawDMD);
+#ifdef DEBUG_SLEIC
   sleic_dmd_dump(locals.rawDMD);
+#endif
   core_dmd_submit_frame(core_gameData->lcdLayout->importedLayout ? core_gameData->lcdLayout->importedLayout : core_gameData->lcdLayout, locals.rawDMD, 1);
 }
 
@@ -228,7 +236,7 @@ static void showData(int data) {
 }
 #endif /* MAME_DEBUG */
 
-/* DEBUG: env-gated headless test harness.  Nothing below has any effect unless the
+/* env-gated headless test harness.  Nothing below has any effect unless the
  * matching environment variable is set -- in normal use the frontend (Visual Pinball)
  * supplies ball and switch state, and standalone play uses the key maps further down.
  *
@@ -243,6 +251,7 @@ static void showData(int data) {
  *                           coin, start, test, lflip, rflip, tilt
  *   SLEIC_HOLD=<frames>     how long each scripted press is held (default 10)
  */
+#ifdef DEBUG_SLEIC
 static void sleic_debug_switches(int troughCol, UINT8 troughDefault) {
   static int frame = 0;
   const char *e, *col, *bit;
@@ -261,7 +270,7 @@ static void sleic_debug_switches(int troughCol, UINT8 troughDefault) {
     const int from = at ? (int)strtol(at, NULL, 10) : 400;
     /* The optos are only closed between BALLSAT and TROUGHOFF: a ball that never leaves
      * the trough is a ball that never reaches play, so holding them shut for the whole
-     * run keeps the game out of ball-in-play (and therefore silent). */
+     * run keeps the game out of ball-in-play (and therefore silent) */
     const int to = off ? (int)strtol(off, NULL, 10) : 0;
     if (frame >= from && (!to || frame < to))
       coreGlobals.swMatrix[troughCol] |= mask;
@@ -269,7 +278,7 @@ static void sleic_debug_switches(int troughCol, UINT8 troughDefault) {
 
   /* SLEIC_SWEEP=<col-lo>-<col-hi> pulses each matrix position in turn from SLEIC_SWEEPAT
    * (default 1500), SLEIC_SWEEPHOLD frames each (default 6): playfield activity that a
-   * cabinet button alone cannot produce, so the game actually scores. */
+   * cabinet button alone cannot produce, so the game actually scores */
   if ((e = getenv("SLEIC_SWEEP"))) {
     const char *at = getenv("SLEIC_SWEEPAT"), *hd = getenv("SLEIC_SWEEPHOLD");
     const int from = at ? (int)strtol(at, NULL, 10) : 1500;
@@ -308,6 +317,7 @@ static void sleic_debug_switches(int troughCol, UINT8 troughDefault) {
     }
   }
 }
+#endif
 
 static SWITCH_UPDATE(SLEIC) {
 #ifdef MAME_DEBUG
@@ -333,7 +343,9 @@ static SWITCH_UPDATE(SLEIC) {
 }
 
 static WRITE_HANDLER(pic_w) {
-  if (getenv("SLEIC_TRACE_PW")) fprintf(stderr, "[188->periph] PCS%d off=%03x data=%02x\n", offset>>7, offset, data); /* DEBUG */
+#ifdef DEBUG_SLEIC
+  if (getenv("SLEIC_TRACE_PW")) fprintf(stderr, "[188->periph] PCS%d off=%03x data=%02x\n", offset>>7, offset, data);
+#endif
   logerror("PIC W(%03x->%2x) = %02x\n", offset, offset>>7, data);
 }
 
@@ -345,39 +357,43 @@ static WRITE_HANDLER(pic_w) {
  * display CPU.  (Bike Race V4.1 made this visible: it clears and redraws the panel
  * every frame and strobes PCS4 bit 3 each time -- 114 strobes in a 600-frame run,
  * against a single one from the 1992 sets -- so the bogus frames swamped the real
- * ones and the DMD showed garbage.) */
-static int sleic_dmd_from_ptr;
+ * ones and the DMD showed garbage) */
+static int sleic_dmd_from_ptr; //!!
 
 /* Snapshot the 2-bitplane DMD frame buffer and submit the 128x32 brightness
- * grid to PinMAME's DMD core. Each plane is 512 bytes (32 rows x 16 bytes,
+ * grid to the DMD core. Each plane is 512 bytes (32 rows x 16 bytes,
  * MSB = leftmost pixel); plane 0 weighted x2, plane 1 x1 -> 4 grey levels.
- * cpu_readmem20 routes through the 80188 memory map (per docs/dmd_graphics.md). */
+ * cpu_readmem20 routes through the 80188 memory map (per docs/dmd_graphics.md) */
 static void sleic_submit_dmd_frame(void) {
-  int row, byte_idx, bit;
-  UINT8 *dst = locals.rawDMD;
+  int row;
+  UINT8 * __restrict dst = locals.rawDMD;
   unsigned p1ptr, s1ptr, base;
   const core_tLCDLayout *layout = core_gameData->lcdLayout->importedLayout
-                                    ? core_gameData->lcdLayout->importedLayout
-                                    : core_gameData->lcdLayout;
+                                ? core_gameData->lcdLayout->importedLayout
+                                : core_gameData->lcdLayout;
   /* The 80188 draws the DMD into the buffer addressed by the display pointer at
    * 4000:1150 (offset p1, segment s1); the PIC rasters from there. seg 7000h is
-   * only a clear/staging area (always zero). Plane 0 = base, plane 1 = base+0x200. */
+   * only a clear/staging area (always zero). Plane 0 = base, plane 1 = base+0x200 */
   p1ptr = cpu_readmem20(0x41150) | (cpu_readmem20(0x41151) << 8);
   s1ptr = cpu_readmem20(0x41152) | (cpu_readmem20(0x41153) << 8);
   base  = (s1ptr << 4) + p1ptr;
   for (row = 0; row < 32; row++) {
     int row_offset = row * 16;
+    int byte_idx;
     for (byte_idx = 0; byte_idx < 16; byte_idx++) {
-      UINT8 b0 = cpu_readmem20(base + row_offset + byte_idx);
-      UINT8 b1 = cpu_readmem20(base + 0x200 + row_offset + byte_idx);
+      const UINT8 b0 = cpu_readmem20(base + row_offset + byte_idx);
+      const UINT8 b1 = cpu_readmem20(base + 0x200 + row_offset + byte_idx);
+      int bit;
       for (bit = 7; bit >= 0; bit--) {
         UINT8 p0 = (b0 >> bit) & 1;
         UINT8 p1 = (b1 >> bit) & 1;
-        *dst++ = (p0 << 1) | p1;          /* plane 0 = MSB, plane 1 = LSB */
+        *dst++ = (p0 << 1) | p1;    /* plane 0 = MSB, plane 1 = LSB */
       }
     }
   }
+#ifdef DEBUG_SLEIC
   sleic_dmd_dump(locals.rawDMD);
+#endif
   core_dmd_submit_frame(layout, locals.rawDMD, 1);
 }
 
@@ -393,60 +409,65 @@ static void sleic_submit_dmd_frame(void) {
  *
  * YM3812 (IC60) = in-game FM music; OKI MSM6376 (IC51) = speech/FX. OKI trigger
  * model (exact latch bits await the IC7 PAL dump): a non-zero phrase written to
- * 0xA0300 ARMS a phrase, the next /OKCS rising edge (0xA0000 bit 5) STARTS it. */
-static UINT8 sleic_oki_latch;        /* last byte written to PCS6 (0xA0300)          */
-static UINT8 sleic_oki_prev_strobe;  /* last byte written to PCS0 (0xA0000) for edge */
-static int   sleic_oki_pending;      /* a real phrase number is armed at 0xA0300     */
+ * 0xA0300 ARMS a phrase, the next /OKCS rising edge (0xA0000 bit 5) STARTS it */
+static UINT8 sleic_oki_latch;       /* last byte written to PCS6 (0xA0300)          */ //!!
+static UINT8 sleic_oki_prev_strobe; /* last byte written to PCS0 (0xA0000) for edge */
+static int   sleic_oki_pending;     /* a real phrase number is armed at 0xA0300     */
 
 /* J1 inbound byte latch (IC43 at 80188 PCS2 = 0xA0100): the last byte the Z80 strobed
  * across the J1 port. The Z80's port-0x81 bit-2 strobe latches the byte AND raises the
  * 80188 NMI; the NMI handler dmd_vblank_isr (D000:016D = IVT type 0x02) reads 0xA0100,
  * pushes the byte into the display command queue at 4000:1220 and sets the frame-pending
- * flag [4000:1147] that vsync_check (D000:5D1B) waits on. */
-static UINT8 sleic_j1_inbound;       /* PCS2 0xA0100 latch: last byte strobed by the Z80 */
-static UINT8 sleic_j1_fresh;         /* a new Z80 byte is waiting to be read by the 80188 */
-static UINT8 sleic_j1_prev_ctrl;     /* port 0x81 shadow for bit-2 strobe edge         */
-static UINT8 sleic_188_cmd;          /* Bike Race: the byte the 80188 wrote to PCS1 0xA0080, latched
-                                       * for the Z80 to read via IN port 0x00 in its NMI handler. */
+ * flag [4000:1147] that vsync_check (D000:5D1B) waits on */
+static UINT8 sleic_j1_inbound;      /* PCS2 0xA0100 latch: last byte strobed by the Z80  */ //!!
+static UINT8 sleic_j1_fresh;        /* a new Z80 byte is waiting to be read by the 80188 */
+static UINT8 sleic_j1_prev_ctrl;    /* port 0x81 shadow for bit-2 strobe edge            */
+static UINT8 sleic_188_cmd;         /* Bike Race: the byte the 80188 wrote to PCS1 0xA0080, latched
+                                     * for the Z80 to read via IN port 0x00 in its NMI handler */
 
 static void sleic_oki_trigger(void) {
-  UINT8 sample = sleic_oki_latch & 0x7f;                 /* phrase number      */
-  UINT8 voice  = (sleic_oki_latch & 0x80) ? 0x1 : 0x2;   /* ch A=v0 / ch B=v1  */
+  UINT8 sample = sleic_oki_latch & 0x7f;               /* phrase number     */
+  UINT8 voice  = (sleic_oki_latch & 0x80) ? 0x1 : 0x2; /* ch A=v0 / ch B=v1 */
   sleic_oki_pending = 0;
   if (!sample) return;
-  if (getenv("SLEIC_TRACE_SND")) fprintf(stderr, "[oki] phrase %02x\n", sample); /* DEBUG */
-  OKIM6376_data_0_w(0, 0x80 | sample);   /* latch phrase number          */
-  OKIM6376_data_0_w(0, voice << 4);      /* trigger playback on the voice */
+#ifdef DEBUG_SLEIC
+  if (getenv("SLEIC_TRACE_SND")) fprintf(stderr, "[oki] phrase %02x\n", sample);
+#endif
+  OKIM6376_data_0_w(0, 0x80 | sample); /* latch phrase number           */
+  OKIM6376_data_0_w(0, voice << 4);    /* trigger playback on the voice */
 }
 
 static WRITE_HANDLER(sleic_periph_w) {
-  if (getenv("SLEIC_TRACE_PW")) fprintf(stderr, "[188->periph] PCS%d off=%03x data=%02x\n", offset>>7, offset, data); /* DEBUG */
+#ifdef DEBUG_SLEIC
+  if (getenv("SLEIC_TRACE_PW")) fprintf(stderr, "[188->periph] PCS%d off=%03x data=%02x\n", offset>>7, offset, data);
+#endif
   switch (offset) {
-    case 0x280:                          /* PCS5: YM3812 port */
+    case 0x280:                        /* PCS5: YM3812 port */
       /* Bike Race wires the YM3812 to the single address 0xA0280 and toggles A0 in hardware
-       * per write, so it streams (register,value) pairs all to 0xA0280. */
+       * per write, so it streams (register,value) pairs all to 0xA0280 */
       {
-        static int ym_a0 = 0;
-        if (getenv("SLEIC_TRACE_SND")) fprintf(stderr, "[ym] %s %02x\n", ym_a0?"data":"reg ", data); /* DEBUG */
+        static int ym_a0 = 0; //!!
+#ifdef DEBUG_SLEIC
+        if (getenv("SLEIC_TRACE_SND")) fprintf(stderr, "[ym] %s %02x\n", ym_a0 ? "data":"reg ", data);
+#endif
         if (ym_a0) YM3812_write_port_0_w(0, data); else YM3812_control_port_0_w(0, data);
         ym_a0 ^= 1;
       }
       return;
-    case 0x300:                          /* PCS6: DMD enable + OKI ctrl latch */
+    case 0x300:                        /* PCS6: DMD enable + OKI ctrl latch */
       sleic_oki_latch = data;
-      if (data & 0x7f) sleic_oki_pending = 1;  /* real phrase (not 0x80 DMD-enable) */
+      if (data & 0x7f) sleic_oki_pending = 1; /* real phrase (not 0x80 DMD-enable) */
       break;
-    case 0x000:                          /* PCS0: OKI /OKCS strobe (bit 4) */
+    case 0x000:                        /* PCS0: OKI /OKCS strobe (bit 4) */
       {
-        /* /OKCS strobe: Bike Race pulses PCS0 bit 4 (0x10). (Exact decode awaits
-         * the IC7 PAL20L10 dump.) */
+        /* /OKCS strobe: Bike Race pulses PCS0 bit 4 (0x10). (Exact decode awaits the IC7 PAL20L10 dump) */
         const UINT8 okcs = 0x10;
         if (sleic_oki_pending && (data & okcs) && !(sleic_oki_prev_strobe & okcs))
           sleic_oki_trigger();
       }
       sleic_oki_prev_strobe = data;
       break;
-    case 0x080:                          /* PCS1: command byte the 80188 sends to the I/O side */
+    case 0x080:                        /* PCS1: command byte the 80188 sends to the I/O side */
       /* Boot-init 3-gate handshake over the J1 queue:
        *   gate A: wait for 0x5F ("I/O ready", sent once by the Z80 at boot);
        *   gate B: send cmd 0xD4, wait for a byte >0xF0 (else trap "IMPOSIBLE SEGUIR");
@@ -454,15 +475,15 @@ static WRITE_HANDLER(sleic_periph_w) {
       /* Bike Race: deliver the command to the real Z80 firmware (bkio07) and assert its NMI.
        * The Z80's NMI handler (0x0066) reads it via IN 0x00; cmd 0xD4 -> reply IN(0x04)|0xF0
        * (gate B), cmd 0xD5 -> reply ball-status 0x5B/5C/5D (gate C), via the Z80's normal
-       * send path (port 0x80 + strobe -> 0xA0100). */
+       * send path (port 0x80 + strobe -> 0xA0100) */
       sleic_188_cmd = data;
       cpu_set_irq_line(SLEIC_IO_CPU, IRQ_LINE_NMI, PULSE_LINE);
       break;
-    case 0x200:                          /* PCS4: DMD mode; bit 3 = frame swap */
+    case 0x200:                        /* PCS4: DMD mode; bit 3 = frame swap */
       if (data & 0x08) {
         if (sleic_dmd_from_ptr)
-          sleic_submit_dmd_frame();      /* Io Moon: buffer-swap ack is emitted by the PIC phase machine */
-        else {                           /* I8039 machines: latch the finished 0x60410 frame */
+          sleic_submit_dmd_frame();    /* Io Moon: buffer-swap ack is emitted by the PIC phase machine */
+        else {                         /* I8039 machines: latch the finished 0x60410 frame */
           sleic3_build_dmd_frame(sleic3_dmd_latch);
           sleic3_dmd_latch_ttl = SLEIC3_DMD_LATCH_TICKS;
         }
@@ -475,20 +496,20 @@ static WRITE_HANDLER(sleic_periph_w) {
 }
 
 static READ_HANDLER(sleic_periph_r) {
-  if (offset == 0x100) {                 /* PCS2: Z80->J1 inbound byte latch (IC43 74LS244) */
+  if (offset == 0x100) {              /* PCS2: Z80->J1 inbound byte latch (IC43 74LS244) */
     /* Consume-on-read: return the fresh Z80 byte if one was strobed over J1, else the
-     * idle value 0x37 (Bike Race's NMI treats 0x37 as "no event"). */
+     * idle value 0x37 (Bike Race's NMI treats 0x37 as "no event") */
     { UINT8 v;
-      if (sleic_j1_fresh) { sleic_j1_fresh = 0; v = sleic_j1_inbound; }   /* a freshly strobed Z80 byte */
-      else v = 0x37;                                                          /* idle: "no event" */
+      if (sleic_j1_fresh) { sleic_j1_fresh = 0; v = sleic_j1_inbound; } /* a freshly strobed Z80 byte */
+      else v = 0x37;                                                    /* idle: "no event" */
       return v;
     }
   }
-  if (offset == 0x180)                   /* PCS1: DMD controller status -- bit 0 = ready for a command */
+  if (offset == 0x180)                /* PCS1: DMD controller status -- bit 0 = ready for a command */
     return 0x01;
-  if (offset == 0x280)                   /* PCS5: YM3812 status */
+  if (offset == 0x280)                /* PCS5: YM3812 status */
     return YM3812_status_port_0_r(0);
-  return 0;                              /* PCS3 /OKBUSY etc. -- report not-busy */
+  return 0;                           /* PCS3 /OKBUSY etc. -- report not-busy */
 }
 
 /* handler called by the 3812 when the internal timers cause an IRQ */
@@ -499,10 +520,10 @@ static void ym3812_irq(int irq) {
 /*Interfaces*/
 static struct YM3812interface SLEIC_ym3812_intf =
 {
-	1,						/* 1 chip */
-	4000000,				/* 4 MHz */
-	{ 100 },				/* volume */
-	{ ym3812_irq },			/* IRQ Callback */
+	1,					/* 1 chip */
+	4000000,			/* 4 MHz */
+	{ 100 },			/* volume */
+	{ ym3812_irq },		/* IRQ Callback */
 };
 static struct OKIM6295interface SLEIC_okim6376_intf =
 {
@@ -544,15 +565,15 @@ MEMORY_END
  * firmware's boot-time self-repair can never be read back -> the boot's signature
  * re-validation always fails -> "Memoria EEPROM en mal estado / Imposible Seguir".
  * (Boot: validate F000:80F5, on fail call factory-init F000:818D, re-validate,
- *  still-fail -> error F000:49E8 + halt.  See research/sleicpin_disasm/eeprom_findings.md.)
+ *  still-fail -> error F000:49E8 + halt)
  * Fix: one coherent buffer for both reads and writes, persisted by NVRAM_HANDLER.
  * The 80188 accesses NVRAM in segment 0x1000; the factory-init clears offset
  * 0x000-0xFFF and writes signature/config blocks, so map the full 28C64A-class
  * 8 KB window 0x10000-0x11FFF.  No embedded factory image is needed: on a fresh
- * boot the firmware seeds valid defaults itself, then core_nvram persists them. */
+ * boot the firmware seeds valid defaults itself, then core_nvram persists them */
 #define SLEIC1_NVRAM_BASE 0x10000
 #define SLEIC1_NVRAM_SIZE 0x2000
-static UINT8 sleic1_nvram[SLEIC1_NVRAM_SIZE];
+static UINT8 sleic1_nvram[SLEIC1_NVRAM_SIZE]; //!!
 static READ_HANDLER(sleic1_nvram_r)  { return sleic1_nvram[offset]; }
 static WRITE_HANDLER(sleic1_nvram_w) { sleic1_nvram[offset] = data; }
 static NVRAM_HANDLER(SLEIC1) {
@@ -563,8 +584,8 @@ static NVRAM_HANDLER(SLEIC1) {
  * port, 1 = data port.  sleicpin streams (register,value) pairs all to ONE address
  * 0xA0280 and selects register-vs-data via PCS0 bit 1 (set by the FM write primitive
  * at sp03 file 0x1E5E just before each 0xA0280 write) -- NOT 0x280/0x281 (IO Moon) and
- * NOT simple per-write alternation (Bike Race). */
-static UINT8 sleic1_ym_a0;
+ * NOT simple per-write alternation (Bike Race) */
+static UINT8 sleic1_ym_a0; //!!
 
 /* Sleic Pin-Ball (SLEIC1) 80188 peripheral write.  Two roles confirmed against sp03:
  *
@@ -583,32 +604,35 @@ static UINT8 sleic1_ym_a0;
  *                      0x1B6B), bit3 (0x08) = OKI channel.
  *
  * PCS4 (0xA0200) is the DMD frame strobe (shadow [0x4de]) -- left alone, since the
- * I8039 renders sleicpin's DMD from 0x60410 (calling sleic_submit_dmd_frame would
- * corrupt it). */
+ * I8039 renders sleicpin's DMD from 0x60410 (calling sleic_submit_dmd_frame would corrupt it) */
 static WRITE_HANDLER(sleic1_periph_w) {
   switch (offset) {
-    case 0x080:                          /* PCS1: 80188 -> Z80 command (reverse path) */
+    case 0x080:                       /* PCS1: 80188 -> Z80 command (reverse path) */
       sleic_188_cmd = data;
       cpu_set_irq_line(SLEIC_IO_CPU, IRQ_LINE_NMI, PULSE_LINE);
       return;
-    case 0x280:                          /* PCS5: YM3812 (FM music) register or data */
-      if (getenv("SLEIC_TRACE_SND")) fprintf(stderr, "[ym] %s %02x\n", sleic1_ym_a0?"data":"reg ", data);
+    case 0x280:                       /* PCS5: YM3812 (FM music) register or data */
+#ifdef DEBUG_SLEIC	
+      if (getenv("SLEIC_TRACE_SND")) fprintf(stderr, "[ym] %s %02x\n", sleic1_ym_a0 ? "data":"reg ", data);
+#endif
       if (sleic1_ym_a0) YM3812_write_port_0_w(0, data);
       else              YM3812_control_port_0_w(0, data);
       return;
-    case 0x300:                          /* PCS6: OKI MSM6376 phrase latch */
+    case 0x300:                       /* PCS6: OKI MSM6376 phrase latch */
       sleic_oki_latch = data;
       if (data & 0x7f) sleic_oki_pending = 1;
       return;
-    case 0x000:                          /* PCS0: shared control (bit1 YM A0, bit4 /OKCS) */
+    case 0x000:                       /* PCS0: shared control (bit1 YM A0, bit4 /OKCS) */
       sleic1_ym_a0 = (data >> 1) & 1;
       if (sleic_oki_pending && (data & 0x10) && !(sleic_oki_prev_strobe & 0x10)) {
         sleic_oki_trigger();
       }
       sleic_oki_prev_strobe = data;
       return;
-    default:                             /* PCS3 / PCS4 DMD strobe (I8039 renders) / etc. */
+    default:                          /* PCS3 / PCS4 DMD strobe (I8039 renders) / etc. */
+#ifdef DEBUG_SLEIC
       if (getenv("SLEIC_TRACE_PW")) fprintf(stderr, "[188->periph] PCS%d off=%03x data=%02x\n", offset>>7, offset, data);
+#endif
       return;
   }
 }
@@ -616,7 +640,7 @@ static WRITE_HANDLER(sleic1_periph_w) {
 static MEMORY_READ_START(SLEIC1_80188_readmem)
   {0x00000,0x01fff, MRA_RAM},
   {SLEIC1_NVRAM_BASE, SLEIC1_NVRAM_BASE+SLEIC1_NVRAM_SIZE-1, sleic1_nvram_r}, /* 28C64A NVRAM (seg 0x1000) */
-  {0xa0000,0xa0fff, sleic_periph_r},                                         /* PACS peripheral read; PCS2 0xA0100 = J1 inbound switch latch (NMI F000:DF20) */
+  {0xa0000,0xa0fff, sleic_periph_r},                                          /* PACS peripheral read; PCS2 0xA0100 = J1 inbound switch latch (NMI F000:DF20) */
   {0x60410,0x6340f, MRA_RAM},
   {0x80000,0xfffff, MRA_ROM},
 MEMORY_END
@@ -624,7 +648,7 @@ MEMORY_END
 static MEMORY_WRITE_START(SLEIC1_80188_writemem)
   {0x00000,0x01fff, MWA_RAM},
   {SLEIC1_NVRAM_BASE, SLEIC1_NVRAM_BASE+SLEIC1_NVRAM_SIZE-1, sleic1_nvram_w}, /* 28C64A NVRAM (seg 0x1000) */
-  {0xa0000,0xa0fff, sleic1_periph_w},                                        /* PACS write; PCS1 0xA0080 = 80188->Z80 cmd (Z80 NMI reverse path) */
+  {0xa0000,0xa0fff, sleic1_periph_w},                                         /* PACS write; PCS1 0xA0080 = 80188->Z80 cmd (Z80 NMI reverse path) */
   {0x60410,0x6340f, MWA_RAM},
 MEMORY_END
 
@@ -649,8 +673,8 @@ MEMORY_END
  * coin/credit (0x230-0x23B), high-score and audit tables itself (E9805+).  That is what a
  * real machine does with a new battery-backed chip, so it is what the driver does: press
  * START once at the prompt and the game seeds itself, persisting to the .nv from then on.
- * (Sleic Pin-Ball differs -- its boot repairs a blank NVRAM silently at F000:818D.) */
-static UINT8 sleic3_nvram[0x2000];
+ * (Sleic Pin-Ball differs -- its boot repairs a blank NVRAM silently at F000:818D) */
+static UINT8 sleic3_nvram[0x2000]; //!!
 static READ_HANDLER(sleic3_nvram_r)  { return sleic3_nvram[offset]; }
 static WRITE_HANDLER(sleic3_nvram_w) { sleic3_nvram[offset] = data; }
 static NVRAM_HANDLER(SLEIC3) {
@@ -658,21 +682,21 @@ static NVRAM_HANDLER(SLEIC3) {
 }
 
 static MEMORY_READ_START(SLEIC3_80188_readmem)
-  {0x00000,0x103ff, MRA_RAM},                  /* MCS0: work RAM (IVT@0, stack, data) */
-  {0x10400,0x123ff, sleic3_nvram_r},           /* MCS0: 28C64A 8KB NVRAM (persisted by NVRAM_HANDLER(SLEIC3)) */
-  {0x12400,0x1ffff, MRA_RAM},                  /* MCS0: work RAM (rest) */
-  {0x20000,0x5ffff, MRA_ROM},                  /* MCS1/MCS2: graphics ROM (bkcpu06/05)     */
-  {0x60000,0x7ffff, MRA_RAM},                  /* MCS3: DMD / video frame buffer (0x60410) */
-  {0xa0000,0xa0fff, sleic_periph_r},          /* PACS peripheral block: J1+OKI+YM3812 */
-  {0xe0000,0xfffff, MRA_ROM},                  /* bkcpu04 game/sound code (E000/F000) */
+  {0x00000,0x103ff, MRA_RAM},        /* MCS0: work RAM (IVT@0, stack, data)      */
+  {0x10400,0x123ff, sleic3_nvram_r}, /* MCS0: 28C64A 8KB NVRAM (persisted by NVRAM_HANDLER(SLEIC3)) */
+  {0x12400,0x1ffff, MRA_RAM},        /* MCS0: work RAM (rest)                    */
+  {0x20000,0x5ffff, MRA_ROM},        /* MCS1/MCS2: graphics ROM (bkcpu06/05)     */
+  {0x60000,0x7ffff, MRA_RAM},        /* MCS3: DMD / video frame buffer (0x60410) */
+  {0xa0000,0xa0fff, sleic_periph_r}, /* PACS peripheral block: J1+OKI+YM3812     */
+  {0xe0000,0xfffff, MRA_ROM},        /* bkcpu04 game/sound code (E000/F000)      */
 MEMORY_END
 
 static MEMORY_WRITE_START(SLEIC3_80188_writemem)
-  {0x00000,0x103ff, MWA_RAM},                  /* MCS0: work RAM (IVT@0, stack, data) */
-  {0x10400,0x123ff, sleic3_nvram_w},           /* MCS0: 28C64A 8KB NVRAM (seg 0x1040) */
-  {0x12400,0x1ffff, MWA_RAM},                  /* MCS0: work RAM (rest) */
-  {0x60000,0x7ffff, MWA_RAM},                  /* MCS3: DMD / video frame buffer */
-  {0xa0000,0xa0fff, sleic_periph_w},          /* PACS peripheral block: J1+OKI+YM3812 */
+  {0x00000,0x103ff, MWA_RAM},        /* MCS0: work RAM (IVT@0, stack, data)  */
+  {0x10400,0x123ff, sleic3_nvram_w}, /* MCS0: 28C64A 8KB NVRAM (seg 0x1040)  */
+  {0x12400,0x1ffff, MWA_RAM},        /* MCS0: work RAM (rest)                */
+  {0x60000,0x7ffff, MWA_RAM},        /* MCS3: DMD / video frame buffer       */
+  {0xa0000,0xa0fff, sleic_periph_w}, /* PACS peripheral block: J1+OKI+YM3812 */
 MEMORY_END
 
 static MEMORY_READ_START(SLEIC_8039_readmem)
@@ -694,7 +718,7 @@ MEMORY_END
 static WRITE_HANDLER(i80188_write_port) {
   /* 80188 internal Peripheral Control Block writes (chip-selects at 0xFFA0+, timer/
    * interrupt-controller config, EOI at 0xFF2C). The I188 core does not model these;
-   * they are no-ops here. The interrupt sources are generated by sleic3_irq_gen. */
+   * they are no-ops here. The interrupt sources are generated by sleic3_irq_gen */
 }
 
 static READ_HANDLER(i8039_read_test) {
@@ -704,7 +728,7 @@ static READ_HANDLER(i8039_read_test) {
 
 static WRITE_HANDLER(i8039_write_port) {
 /*
-  static UINT8 pos = 1;
+  static UINT8 pos = 1; //!!
   UINT8 *line;
   if (!offset)
     pos = data;
@@ -747,13 +771,13 @@ static WRITE_HANDLER(z80_write_port) {
   }
 }
 
-/* Z80 I/O processor state shadow (Bike Race port handlers below). */
+/* Z80 I/O processor state shadow (Bike Race port handlers below) */
 static struct {
-  UINT8 swStrobe;      /* port 0x82: switch matrix column strobe (0..5 after decode) */
-  UINT8 lampCol;       /* lamp matrix column (after decode) */
-  UINT8 lampRow;       /* port 0x84: lamp row byte, latched until the 0x83 column strobe */
-  UINT8 ctrl;          /* port 0x81: control register shadow                    */
-  UINT8 sndData;       /* port 0x80: last byte written                          */
+  UINT8 swStrobe; /* port 0x82: switch matrix column strobe (0..5 after decode) */
+  UINT8 lampCol;  /* lamp matrix column (after decode) */
+  UINT8 lampRow;  /* port 0x84: lamp row byte, latched until the 0x83 column strobe */
+  UINT8 ctrl;     /* port 0x81: control register shadow */
+  UINT8 sndData;  /* port 0x80: last byte written */
 } sleic_io;
 
 /* Bike Race (SLEIC3) Z80 I/O processor ports.  Port map from the bkio07
@@ -762,14 +786,13 @@ static struct {
  * loop at Z80 0x29AE and never announces readiness; the switch-matrix column
  * strobe is port 0x82 (lamp rows on 0x83/0x84, the IRQ-timed row strobe on
  * 0x87).  At boot (Z80 0x012A) the Z80 sends an 0x5F "I/O board ready" byte
- * over J1, which is what the 80188's "ESPERANDO" (waiting) attract poll is
- * waiting to receive. */
+ * over J1, which is what the 80188's "ESPERANDO" (waiting) attract poll is waiting to receive */
 static READ_HANDLER(sleic3_z80_read) {
   switch (offset) {
-    case 0x00:                                                   /* J1 inbound: 80188 command byte (NMI reads it) */
+    case 0x00:                                                      /* J1 inbound: 80188 command byte (NMI reads it) */
       return sleic_188_cmd;
-    case 0x01: return 0x20;   /* status: bit 5 = J1 "80188 ready" (bkio07 polls bit 5); always-ready */
-    case 0x02: return ~coreGlobals.swMatrix[1 + sleic_io.swStrobe];/* switch-matrix column return (active-low)  */
+    case 0x01: return 0x20;                                         /* status: bit 5 = J1 "80188 ready" (bkio07 polls bit 5); always-ready */
+    case 0x02: return ~coreGlobals.swMatrix[1 + sleic_io.swStrobe]; /* switch-matrix column return (active-low)  */
     case 0x03: return ~coreGlobals.swMatrix[9];                     /* all 6 direct/cabinet buttons (active-low); see SWITCH_UPDATE */
     case 0x04: return 0xff;                                         /* idle: bit7=1 normal boot, bit4=1 trough-query enable      */
     default:   logerror("bikerace Z80 read port %02x\n", offset);
@@ -789,7 +812,7 @@ static WRITE_HANDLER(sleic3_z80_write) {
         sleic_j1_fresh = 1;
         /* The port-0x81 bit-2 strobe latches the byte into PCS2 (0xA0100) AND raises the
          * 80188 NMI. The NMI handler (E000:0272) consumes exactly ONE J1 byte per assertion,
-         * so the NMI MUST be strobe-driven here, not periodic (see sleic3_irq_gen). */
+         * so the NMI MUST be strobe-driven here, not periodic (see sleic3_irq_gen) */
         cpu_set_irq_line(SLEIC_MAIN_CPU, IRQ_LINE_NMI, PULSE_LINE);
       }
       sleic_j1_prev_ctrl = data;
@@ -801,7 +824,7 @@ static WRITE_HANDLER(sleic3_z80_write) {
       break;
     case 0x03:  /* port 0x83: lamp-matrix COLUMN strobe (one-hot 0x01..0x80 = COL0..COL7).
                  * The lamp refresh writes the row byte to 0x84 first, then pulses the column
-                 * here, so commit on this strobe with the row from the preceding 0x84. 8x8 = 64. */
+                 * here, so commit on this strobe with the row from the preceding 0x84. 8x8 = 64 */
       if (data) coreGlobals.tmpLampMatrix[core_BitColToNum(data & -data)] = sleic_io.lampRow;
       break;
     case 0x04:  /* port 0x84: lamp-matrix ROW data (bit b = FILA b); latched, committed on 0x83 */
@@ -809,14 +832,14 @@ static WRITE_HANDLER(sleic3_z80_write) {
       break;
     case 0x05:  /* port 0x85: solenoid bank 1 (active-low) */
       /* Write the driver-local shadow, not coreGlobals.solenoids: the VBLANK handler
-       * (SLEIC_interface_update) copies locals.solenoids -> coreGlobals.solenoids each frame. */
+       * (SLEIC_interface_update) copies locals.solenoids -> coreGlobals.solenoids each frame */
       locals.solenoids = (locals.solenoids & 0xffff00) | (data ^ 0xff);
       break;
     case 0x06:  /* port 0x86: solenoid bank 2 (active-low) */
       locals.solenoids = (locals.solenoids & 0xff00ff) | ((data ^ 0xff) << 8);
       break;
     case 0x07:  /* port 0x87: switch-matrix row strobe / Z80 control bits (NOT the lamp column).
-                 * Switches are read via the 0x82 column strobe + port-0x02 data, so no action here. */
+                 * Switches are read via the 0x82 column strobe + port-0x02 data, so no action here */
       break;
     default:
       logerror("bikerace Z80 write port %02x = %02x\n", 0x80 + offset, data);
@@ -860,15 +883,14 @@ MEMORY_END
  * Z80 sends each switch code over J1 via port 0x80 + a port-0x81 bit-2 strobe
  * (sub_082a: out 0x80; (0x81|0x04); 0x81) which latches the byte at the 80188 PCS2
  * (0xA0100) and raises the 80188 NMI.  Boot gate (Z80 0x1744) spins until port-0x04
- * bit 7 = 1; port-0x01 bit 5 is the J1 ready status.  See
- * research/sleicpin_disasm/sleicpin_input_switches.md + sleicpin_switch_map.md. */
+ * bit 7 = 1; port-0x01 bit 5 is the J1 ready status */
 static READ_HANDLER(sleic1_z80_read) {
   switch (offset) {
-    case 0x00: return sleic_188_cmd;                                 /* J1 inbound: 80188->Z80 cmd (Z80 NMI reads it) */
-    case 0x01: return 0x20;                                          /* status: bit 5 = J1 ready (sp04 0x03f6 tests bit 5) */
-    case 0x02: return ~coreGlobals.swMatrix[1 + sleic_io.swStrobe];  /* matrix retorno data for the selected comun (active-low) */
-    case 0x03: return ~coreGlobals.swMatrix[9];                      /* direct/cabinet buttons C31-C36 (active-low, CPL'd at 0x1757) */
-    case 0x04: return 0xff;                                          /* bit 7 = 1 (boot gate 0x1744), bit 0 = 1 */
+    case 0x00: return sleic_188_cmd;                                /* J1 inbound: 80188->Z80 cmd (Z80 NMI reads it) */
+    case 0x01: return 0x20;                                         /* status: bit 5 = J1 ready (sp04 0x03f6 tests bit 5) */
+    case 0x02: return ~coreGlobals.swMatrix[1 + sleic_io.swStrobe]; /* matrix retorno data for the selected comun (active-low) */
+    case 0x03: return ~coreGlobals.swMatrix[9];                     /* direct/cabinet buttons C31-C36 (active-low, CPL'd at 0x1757) */
+    case 0x04: return 0xff;                                         /* bit 7 = 1 (boot gate 0x1744), bit 0 = 1 */
     default:   logerror("sleicpin Z80 read port %02x\n", offset);
   }
   return 0;
@@ -876,49 +898,53 @@ static READ_HANDLER(sleic1_z80_read) {
 
 static WRITE_HANDLER(sleic1_z80_write) {
   switch (offset) {
-    case 0x00:  /* port 0x80: byte onto the J1 data lines toward the 80188 */
+    case 0x00: /* port 0x80: byte onto the J1 data lines toward the 80188 */
       sleic_io.sndData = data;
       sleic_j1_inbound = data;
       break;
-    case 0x01:  /* port 0x81: control; bit-2 rising edge latches the J1 byte into 80188 PCS2 (0xA0100) and raises the NMI */
+    case 0x01: /* port 0x81: control; bit-2 rising edge latches the J1 byte into 80188 PCS2 (0xA0100) and raises the NMI */
       if ((data & 0x04) && !(sleic_j1_prev_ctrl & 0x04)) {
         sleic_j1_inbound = sleic_io.sndData;
         sleic_j1_fresh = 1;
-        if (getenv("SLEIC_TRACE_SW")) fprintf(stderr, "[SW->188] code=%02x\n", sleic_j1_inbound); /* DEBUG */
-        cpu_set_irq_line(SLEIC_MAIN_CPU, IRQ_LINE_NMI, PULSE_LINE);   /* NMI handler F000:DF20 reads 0xA0100 */
+#ifdef DEBUG_SLEIC
+        if (getenv("SLEIC_TRACE_SW")) fprintf(stderr, "[SW->188] code=%02x\n", sleic_j1_inbound);
+#endif
+        cpu_set_irq_line(SLEIC_MAIN_CPU, IRQ_LINE_NMI, PULSE_LINE); /* NMI handler F000:DF20 reads 0xA0100 */
       }
       sleic_j1_prev_ctrl = data;
       sleic_io.ctrl = data;
-      coreGlobals.diagnosticLed = (data >> 4) & 1;                    /* bit 4 = NMI-ack / diag LED */
+      coreGlobals.diagnosticLed = (data >> 4) & 1;                  /* bit 4 = NMI-ack / diag LED */
       break;
-    case 0x02:  /* port 0x82: switch-matrix comun strobe (one-hot 0x01..0x80 = comun 0..7) */
+    case 0x02: /* port 0x82: switch-matrix comun strobe (one-hot 0x01..0x80 = comun 0..7) */
       if (data) sleic_io.swStrobe = core_BitColToNum(data & -data);
       break;
-    case 0x03:  /* port 0x83: lamp-matrix column strobe; commit the row byte from the preceding 0x84 */
+    case 0x03: /* port 0x83: lamp-matrix column strobe; commit the row byte from the preceding 0x84 */
       if (data) {
-        if (getenv("SLEIC_TRACE_LAMP") && sleic_io.lampRow) fprintf(stderr, "[lamp] col=%d row=%02x\n", core_BitColToNum(data & -data), sleic_io.lampRow); /* DEBUG */
+#ifdef DEBUG_SLEIC
+        if (getenv("SLEIC_TRACE_LAMP") && sleic_io.lampRow) fprintf(stderr, "[lamp] col=%d row=%02x\n", core_BitColToNum(data & -data), sleic_io.lampRow);
+#endif
         coreGlobals.tmpLampMatrix[core_BitColToNum(data & -data)] = sleic_io.lampRow;
       }
       break;
-    case 0x04:  /* port 0x84: lamp-matrix row data; latched, committed on the 0x83 strobe */
+    case 0x04: /* port 0x84: lamp-matrix row data; latched, committed on the 0x83 strobe */
       sleic_io.lampRow = data;
       break;
-    case 0x05:  /* port 0x85: flipper coil windings (active-low, fired bit-cleared).
-                 * Verified vs sp04: bit0=bobina 01 Flipper Izq Fuerza (sub_024a),
-                 * bit1=02 Flipper Izq Mantenimiento, bit2=03 Flipper Der Fuerza (sub_0266),
-                 * bit3=04 Flipper Der Mantenimiento; bits 4-7 unused.  -> solenoids 1-4. */
+    case 0x05: /* port 0x85: flipper coil windings (active-low, fired bit-cleared).
+                * Verified vs sp04: bit0=bobina 01 Flipper Izq Fuerza (sub_024a),
+                * bit1=02 Flipper Izq Mantenimiento, bit2=03 Flipper Der Fuerza (sub_0266),
+                * bit3=04 Flipper Der Mantenimiento; bits 4-7 unused.  -> solenoids 1-4 */
       locals.solenoids = (locals.solenoids & ~(UINT32)0x00f) | ((UINT32)(data ^ 0xff) & 0x0f);
       break;
-    case 0x06:  /* port 0x86: playfield coils (active-low).  Verified vs sp04 + the service
-                 * manual BOBINAS list (FIGURA 4): bit0=05 Bancada Izquierda, bit1=06 Bancada
-                 * Derecha, bit2=07 Bumper Izquierdo, bit3=08 Bumper Derecho, bit4=09 Expulsor
-                 * Izquierdo, bit5=10 Expulsor Derecho, bit6=11 Salida Bolas, bit7=12 Taca.
-                 * Mapped to solenoids 5-12 so PinMAME sol# == the manual's bobina #
-                 * (Bike Race used bits 8-15; sleicpin's 12-coil layout differs). */
+    case 0x06: /* port 0x86: playfield coils (active-low).  Verified vs sp04 + the service
+                * manual BOBINAS list (FIGURA 4): bit0=05 Bancada Izquierda, bit1=06 Bancada
+                * Derecha, bit2=07 Bumper Izquierdo, bit3=08 Bumper Derecho, bit4=09 Expulsor
+                * Izquierdo, bit5=10 Expulsor Derecho, bit6=11 Salida Bolas, bit7=12 Taca.
+                * Mapped to solenoids 5-12 so PinMAME sol# == the manual's bobina #
+                * (Bike Race used bits 8-15; sleicpin's 12-coil layout differs) */
       locals.solenoids = (locals.solenoids & ~(UINT32)0xff0) | (((UINT32)(data ^ 0xff) & 0xff) << 4);
       break;
-    case 0x07:  /* port 0x87: VDB (coil-current watchdog) scan / Z80 control bits; not a coil
-                 * output and not the matrix column (matrix uses 0x82). */
+    case 0x07: /* port 0x87: VDB (coil-current watchdog) scan / Z80 control bits; not a coil
+                * output and not the matrix column (matrix uses 0x82) */
       break;
     default:
       logerror("sleicpin Z80 write port %02x = %02x\n", 0x80 + offset, data);
@@ -935,10 +961,9 @@ MEMORY_END
 
 static MACHINE_INIT(SLEIC) {
   memset(&locals, 0, sizeof locals);
-  /* Only Io Moon lacks the I8039 display CPU, and only Io Moon uses the 4000:1150
-   * display-pointer submit on the PCS4 bit-3 strobe. */
+  /* Only Io Moon lacks the I8039 display CPU, and only Io Moon uses the 4000:1150 display-pointer submit on the PCS4 bit-3 strobe */
   sleic_dmd_from_ptr = (Machine->drv->cpu[SLEIC_DISPLAY_CPU].cpu_type == CPU_DUMMY);
-  sleic_dmd_equal_fields = 0;        /* Bike Race weighting; SLEIC1 overrides below */
+  sleic_dmd_equal_fields = 0; /* Bike Race weighting; SLEIC1 overrides below */
   memset(sleic3_dmd_latch, 0, sizeof sleic3_dmd_latch);
   sleic3_dmd_latch_ttl = 0;
   memset(&sleic_io, 0, sizeof sleic_io);
@@ -959,12 +984,12 @@ static MACHINE_INIT(SLEIC) {
    *     (combos 0x20+0x40 or 0x40+0x80), so standalone-test by holding key 7 with 8 or 9;
    *     holding only 8+9 (no 7) never reports OK. (Verified against the disassembly of both
    *     Z80 ROMs; the key bindings already exist in sleic3_pf_keys below.)
-   * The driver does not fabricate the ball complement -- the frontend (Visual Pinball)
-   * supplies trough state; the keys above are only for standalone testing. */
+   * The driver does not fabricate the ball complement -- the frontend (e.g. VPX)
+   * supplies trough state; the keys above are only for standalone testing */
 }
 
 /* Sleic Pin-Ball's display ROM lights both raster fields for the same time, so its panel
- * has three levels rather than four -- see sleic_dmd_equal_fields above. */
+ * has three levels rather than four -- see sleic_dmd_equal_fields above */
 static MACHINE_INIT(SLEIC1) {
   machine_init_SLEIC();
   sleic_dmd_equal_fields = 1;
@@ -977,18 +1002,18 @@ static MACHINE_INIT(SLEIC1) {
  * is the trough column. The Z80 cmd-0xD5 ball-status handler monitors COL4 bits 0x04
  * (code 0x2C, key 3), 0x20 = C7 (key 8) and 0x80 = C8 (key 9) on BOTH versions, plus
  * bit 0x40 (code 0x30, key 7) on bikerac2 only; see the per-version breakdown in the
- * MACHINE_INIT trough comment above. */
+ * MACHINE_INIT trough comment above */
 static const struct { int key; UINT8 col; UINT8 bit; } sleic3_pf_keys[] = {
-  {KEYCODE_Q,1,0x01},{KEYCODE_W,1,0x02},{KEYCODE_E,1,0x04},{KEYCODE_R,1,0x08},        /* COL0 0x0A-0x0D */
-  {KEYCODE_Y,1,0x10},{KEYCODE_U,1,0x20},{KEYCODE_I,1,0x40},{KEYCODE_O,1,0x80},        /* COL0 0x0E-0x11 */
-  {KEYCODE_A,2,0x01},{KEYCODE_S,2,0x02},{KEYCODE_D,2,0x04},{KEYCODE_F,2,0x08},        /* COL1 0x12-0x15 */
-  {KEYCODE_G,2,0x10},{KEYCODE_H,2,0x20},{KEYCODE_J,2,0x40},{KEYCODE_K,2,0x80},        /* COL1 0x16-0x19 */
-  {KEYCODE_Z,3,0x01},{KEYCODE_X,3,0x02},{KEYCODE_C,3,0x04},{KEYCODE_V,3,0x08},        /* COL2 0x1A-0x1D */
-  {KEYCODE_B,3,0x10},{KEYCODE_N,3,0x20},{KEYCODE_M,3,0x40},{KEYCODE_L,3,0x80},        /* COL2 0x1E-0x21 */
+  {KEYCODE_Q,1,0x01},{KEYCODE_W,1,0x02},{KEYCODE_E,1,0x04},{KEYCODE_R,1,0x08}, /* COL0 0x0A-0x0D */
+  {KEYCODE_Y,1,0x10},{KEYCODE_U,1,0x20},{KEYCODE_I,1,0x40},{KEYCODE_O,1,0x80}, /* COL0 0x0E-0x11 */
+  {KEYCODE_A,2,0x01},{KEYCODE_S,2,0x02},{KEYCODE_D,2,0x04},{KEYCODE_F,2,0x08}, /* COL1 0x12-0x15 */
+  {KEYCODE_G,2,0x10},{KEYCODE_H,2,0x20},{KEYCODE_J,2,0x40},{KEYCODE_K,2,0x80}, /* COL1 0x16-0x19 */
+  {KEYCODE_Z,3,0x01},{KEYCODE_X,3,0x02},{KEYCODE_C,3,0x04},{KEYCODE_V,3,0x08}, /* COL2 0x1A-0x1D */
+  {KEYCODE_B,3,0x10},{KEYCODE_N,3,0x20},{KEYCODE_M,3,0x40},{KEYCODE_L,3,0x80}, /* COL2 0x1E-0x21 */
   {KEYCODE_0_PAD,4,0x01},{KEYCODE_1_PAD,4,0x02},{KEYCODE_2_PAD,4,0x04},{KEYCODE_3_PAD,4,0x08}, /* COL3 0x22-0x25 */
   {KEYCODE_4_PAD,4,0x10},{KEYCODE_5_PAD,4,0x20},{KEYCODE_6_PAD,4,0x40},{KEYCODE_7_PAD,4,0x80}, /* COL3 0x26-0x29 */
-  {KEYCODE_0,5,0x01},{KEYCODE_2,5,0x02},{KEYCODE_3,5,0x04},{KEYCODE_4,5,0x08},        /* COL4 0x2A-0x2D */
-  {KEYCODE_6,5,0x10},{KEYCODE_8,5,0x20},{KEYCODE_7,5,0x40},{KEYCODE_9,5,0x80},        /* COL4 0x2E; trough optos: 0x2F=C7(key8) 0x31=C8(key9) both versions, 0x30=key7 bikerac2-only (+0x2C=key3); see trough notes above */
+  {KEYCODE_0,5,0x01},{KEYCODE_2,5,0x02},{KEYCODE_3,5,0x04},{KEYCODE_4,5,0x08}, /* COL4 0x2A-0x2D */
+  {KEYCODE_6,5,0x10},{KEYCODE_8,5,0x20},{KEYCODE_7,5,0x40},{KEYCODE_9,5,0x80}, /* COL4 0x2E; trough optos: 0x2F=C7(key8) 0x31=C8(key9) both versions, 0x30=key7 bikerac2-only (+0x2C=key3); see trough notes above */
 };
 
 static SWITCH_UPDATE(SLEIC3) {
@@ -1001,7 +1026,7 @@ static SWITCH_UPDATE(SLEIC3) {
      *   bit3 = C1  Left flipper (code 0x35, menu scroll DOWN)
      *   bit4 = C2  Start        (code 0x36)
      *   bit5 = C3  Coin/Monedero(code 0x37/0x39) */
-    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 10, 0x01, 9); /* TILT(T)   0x400 -> bit0 (C17 tilt, code 0x32)        */
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 10, 0x01, 9); /* TILT(T)   0x400 -> bit0 (C17 tilt, code 0x32) */
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 10, 0x02, 9); /* TEST(End) 0x800 -> bit1 (C4 Test, code 0x33 = menu ENTER) */
     CORE_SETKEYSW(inports[CORE_COREINPORT] << 1,  0x04, 9); /* R-Shift 0x002 -> bit2 (C5 right flipper) */
     CORE_SETKEYSW(inports[CORE_COREINPORT] << 3,  0x08, 9); /* L-Shift 0x001 -> bit3 (C1 left flipper)  */
@@ -1015,23 +1040,23 @@ static SWITCH_UPDATE(SLEIC3) {
     else
       coreGlobals.swMatrix[sleic3_pf_keys[i].col] &= ~sleic3_pf_keys[i].bit;
   }
+#ifdef DEBUG_SLEIC
   sleic_debug_switches(5, 0xE0); /* COL4: C7 0x20 | key-7 sensor 0x40 (bikerac2) | C8 0x80 */
+#endif
 }
 
 /* Sleic Pin-Ball (SLEIC1) playfield-matrix test keys.  The 8 comun x 4 retorno
- * matrix (FIGURA 24 of the service manual) -> swMatrix[1..8] (comun 0..7), bit r =
- * retorno r.  Mapping each populated position to a key lets the CONTACTOS self-test
- * verify every contact.  Cell -> C-number from research/sleicpin_disasm/
- * sleicpin_switch_map.md. */
+ * matrix (FIGURA 24 of the service manual) -> swMatrix[1..8] (comun 0..7), bit r = retorno r.
+ * Mapping each populated position to a key lets the CONTACTOS self-test verify every contact */
 static const struct { int key; UINT8 col; UINT8 bit; } sleic1_pf_keys[] = {
-  {KEYCODE_Q,1,0x01},{KEYCODE_W,1,0x02},{KEYCODE_E,1,0x04},{KEYCODE_R,1,0x08},  /* comun0: C1,C28,C29,C6  */
-  {KEYCODE_A,2,0x01},{KEYCODE_S,2,0x02},{KEYCODE_D,2,0x04},{KEYCODE_F,2,0x08},  /* comun1: C2,C23,C27,C18 */
-  {KEYCODE_Z,3,0x01},{KEYCODE_X,3,0x02},{KEYCODE_C,3,0x04},{KEYCODE_V,3,0x08},  /* comun2: C14,C24,C10,C15*/
-  {KEYCODE_Y,4,0x01},{KEYCODE_U,4,0x02},{KEYCODE_I,4,0x04},{KEYCODE_O,4,0x08},  /* comun3: C17,C25,C11,C13*/
-  {KEYCODE_G,5,0x01},{KEYCODE_H,5,0x02},{KEYCODE_J,5,0x04},{KEYCODE_K,5,0x08},  /* comun4: C16,C7,C19,C30 */
-                     {KEYCODE_B,6,0x02},{KEYCODE_N,6,0x04},{KEYCODE_M,6,0x08},  /* comun5: C8,C20,C3      */
-                     {KEYCODE_1_PAD,7,0x02},{KEYCODE_2_PAD,7,0x04},{KEYCODE_3_PAD,7,0x08}, /* comun6: C9,C21,C4 */
-                     {KEYCODE_4_PAD,8,0x02},{KEYCODE_5_PAD,8,0x04},{KEYCODE_6_PAD,8,0x08}, /* comun7: C26,C22,C5*/
+  {KEYCODE_Q,1,0x01},{KEYCODE_W,1,0x02},{KEYCODE_E,1,0x04},{KEYCODE_R,1,0x08}, /* comun0: C1, C28,C29,C6  */
+  {KEYCODE_A,2,0x01},{KEYCODE_S,2,0x02},{KEYCODE_D,2,0x04},{KEYCODE_F,2,0x08}, /* comun1: C2, C23,C27,C18 */
+  {KEYCODE_Z,3,0x01},{KEYCODE_X,3,0x02},{KEYCODE_C,3,0x04},{KEYCODE_V,3,0x08}, /* comun2: C14,C24,C10,C15 */
+  {KEYCODE_Y,4,0x01},{KEYCODE_U,4,0x02},{KEYCODE_I,4,0x04},{KEYCODE_O,4,0x08}, /* comun3: C17,C25,C11,C13 */
+  {KEYCODE_G,5,0x01},{KEYCODE_H,5,0x02},{KEYCODE_J,5,0x04},{KEYCODE_K,5,0x08}, /* comun4: C16,C7, C19,C30 */
+                     {KEYCODE_B,6,0x02},{KEYCODE_N,6,0x04},{KEYCODE_M,6,0x08}, /* comun5: C8, C20,C3      */
+                     {KEYCODE_1_PAD,7,0x02},{KEYCODE_2_PAD,7,0x04},{KEYCODE_3_PAD,7,0x08}, /* comun6: C9, C21,C4 */
+                     {KEYCODE_4_PAD,8,0x02},{KEYCODE_5_PAD,8,0x04},{KEYCODE_6_PAD,8,0x08}, /* comun7: C26,C22,C5 */
 };
 
 static SWITCH_UPDATE(SLEIC1) {
@@ -1049,13 +1074,13 @@ static SWITCH_UPDATE(SLEIC1) {
      *   bit4 -> code 0x05 = C33 Pulsador Start (start key '1').
      *   bit5 -> code 0x06 = C34 Monedero / coin (coin key '5').
      * (Flippers also fire their coils in real time; codes 0x03/0x04 are only sent in
-     * menu mode for navigation.) */
-    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 10, 0x01, 9); /* TILT  -> bit0 (C35 Falta)        */
-    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 10, 0x02, 9); /* TEST  -> bit1 (C36 Test)         */
-    CORE_SETKEYSW(inports[CORE_COREINPORT] << 1,  0x04, 9); /* R-flip-> bit2 (C32 Flipper Der)  */
-    CORE_SETKEYSW(inports[CORE_COREINPORT] << 3,  0x08, 9); /* L-flip-> bit3 (C31 Flipper Izq)  */
-    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 4,  0x10, 9); /* START -> bit4 (C33 Start)        */
-    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 4,  0x20, 9); /* COIN  -> bit5 (C34 Monedero)     */
+     * menu mode for navigation) */
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 10, 0x01, 9); /* TILT  -> bit0 (C35 Falta)       */
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 10, 0x02, 9); /* TEST  -> bit1 (C36 Test)        */
+    CORE_SETKEYSW(inports[CORE_COREINPORT] << 1,  0x04, 9); /* R-flip-> bit2 (C32 Flipper Der) */
+    CORE_SETKEYSW(inports[CORE_COREINPORT] << 3,  0x08, 9); /* L-flip-> bit3 (C31 Flipper Izq) */
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 4,  0x10, 9); /* START -> bit4 (C33 Start)       */
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 4,  0x20, 9); /* COIN  -> bit5 (C34 Monedero)    */
   }
   for (i = 0; i < sizeof(sleic1_pf_keys)/sizeof(sleic1_pf_keys[0]); i++) {
     if (keyboard_pressed(sleic1_pf_keys[i].key))
@@ -1063,7 +1088,9 @@ static SWITCH_UPDATE(SLEIC1) {
     else
       coreGlobals.swMatrix[sleic1_pf_keys[i].col] &= ~sleic1_pf_keys[i].bit;
   }
+#ifdef DEBUG_SLEIC
   sleic_debug_switches(1, 0x04); /* comun0 bit2 = C29 Salida Bolas (ball trough) */
+#endif
 }
 
 static MACHINE_DRIVER_START(SLEIC)
@@ -1094,23 +1121,23 @@ MACHINE_DRIVER_START(SLEIC1)
   MDRV_CORE_INIT_RESET_STOP(SLEIC1,NULL,NULL)
 
   // Sleic Pin-Ball cabinet/direct switches (C31-C36) -> swMatrix[9]; playfield
-  // matrix via sleic1_pf_keys -> swMatrix[1..8].
+  // matrix via sleic1_pf_keys -> swMatrix[1..8]
   MDRV_SWITCH_UPDATE(SLEIC1)
 
   // Battery-backed NVRAM (28C64A): persisted by NVRAM_HANDLER(SLEIC1) and mapped
   // read==write to one buffer so the firmware's boot-time self-repair sticks and
   // the signature re-validation passes (clears "Memoria EEPROM en mal estado").
   // REPLACE wipes the inherited mcpu map/ports/IRQ, so all are re-stated; only the
-  // 80188 memory map changes vs. the base SLEIC (SLEIC2/iomoon keep the base map).
+  // 80188 memory map changes vs. the base SLEIC (SLEIC2/iomoon keep the base map)
   MDRV_NVRAM_HANDLER(SLEIC1)
   MDRV_CPU_REPLACE("mcpu", I188, 8000000)
   MDRV_CPU_MEMORY(SLEIC1_80188_readmem, SLEIC1_80188_writemem)
   MDRV_CPU_PORTS(SLEIC_80188_readport, SLEIC_80188_writeport)
   MDRV_CPU_VBLANK_INT(SLEIC_interface_update, 1)
-  MDRV_CPU_PERIODIC_INT(sleic1_irq_gen, 122)   // internal Timer0 (vector 0x08) ~122 Hz
+  MDRV_CPU_PERIODIC_INT(sleic1_irq_gen, 122) // internal Timer0 (vector 0x08) ~122 Hz
 
   // I/O Z80: drive the switch matrix / cabinet / lamps / solenoids and the J1
-  // byte-port (port-0x81 bit-2 strobe latches a switch byte + raises the 80188 NMI).
+  // byte-port (port-0x81 bit-2 strobe latches a switch byte + raises the 80188 NMI)
   MDRV_CPU_MODIFY("icpu")
   MDRV_CPU_PORTS(SLEIC1_Z80_readport, SLEIC1_Z80_writeport)
 
@@ -1135,16 +1162,16 @@ MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(SLEIC3)
   MDRV_IMPORT_FROM(SLEIC)
-  MDRV_SWITCH_UPDATE(SLEIC3)   // Bike Race cabinet/direct switches -> swMatrix[9]/[10]
+  MDRV_SWITCH_UPDATE(SLEIC3) // Bike Race cabinet/direct switches -> swMatrix[9]/[10]
 
   // Battery-backed NVRAM (28C64A): persisted by NVRAM_HANDLER(SLEIC3), zero-filled by
   // core_nvram on a fresh boot.  A blank chip makes the firmware ask for an operator
-  // START at its FABRICA prompt and then seed itself, as on real hardware.
+  // START at its FABRICA prompt and then seed itself, as on real hardware
   MDRV_NVRAM_HANDLER(SLEIC3)
 
   // Bike Race main CPU: 80C188 at 10 MHz (work RAM at seg 0, peripherals at
   // 0xA0000, code at 0xE0000). REPLACE wipes the inherited
-  // map/IRQ, so memory, ports and the IRQ generator are all re-stated.
+  // map/IRQ, so memory, ports and the IRQ generator are all re-stated
   MDRV_CPU_REPLACE("mcpu", I188, 10000000)
   MDRV_CPU_MEMORY(SLEIC3_80188_readmem, SLEIC3_80188_writemem)
   MDRV_CPU_PORTS(SLEIC_80188_readport, SLEIC_80188_writeport)
@@ -1154,7 +1181,7 @@ MACHINE_DRIVER_START(SLEIC3)
   // Bike Race I/O CPU: Z80 with the bkio07 port map (J1 byte-port link to the
   // 80188).  The base SLEIC map's generic z80_read_port returns 0 for port 0x04,
   // whose bit 7 must be 1 or the Z80 hangs in its service loop and never sends
-  // the 0x5F "ready" byte the 80188 waits for ("ESPERANDO").
+  // the 0x5F "ready" byte the 80188 waits for ("ESPERANDO")
   MDRV_CPU_MODIFY("icpu")
   MDRV_CPU_PORTS(SLEIC3_Z80_readport, SLEIC3_Z80_writeport)
 
