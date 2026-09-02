@@ -1591,8 +1591,8 @@ static MACHINE_INIT(sam) {
 	// Defaults to 2 state legacy integrator for better backward compatibility
 	if ((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) == 0)
 		for (int i = 0; i < coreGlobals.nSolenoids; i++)
-			if (coreGlobals.physicOutputState[i].type != CORE_MODOUT_SOL_2_STATE)
-				core_set_pwm_output_type(CORE_MODOUT_SOL0, 1, CORE_MODOUT_LEGACY_SOL_2_STATE);
+			if (coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].type != CORE_MODOUT_SOL_2_STATE)
+				core_set_pwm_output_type(CORE_MODOUT_SOL0 + i, 1, CORE_MODOUT_LEGACY_SOL_2_STATE);
 }
 
 void sam_init(void)
