@@ -208,6 +208,24 @@ static INTERRUPT_GEN(sleic1_irq_gen) {
  * this constant, which is why it stays one named number */
 #define IOMOON_INT0_HZ 72.5
 
+/* I/O Z80 clock.  This is the INHERITED Bike Race / Sleic Pin-Ball figure, not an Io Moon
+ * reading, and it is named here only so that it stops being invisible: the SLEIC2 block
+ * used to reach the Z80 through MDRV_CPU_MODIFY, which leaves the base MDRV_CPU_ADD_TAG's
+ * 2.5 MHz standing while the comment beside it talks about an 8 MHz crystal.
+ *
+ * The likely correction is 4 MHz, and the argument is short: IC1 on the I/O board is a
+ * Goldstar Z8400A, i.e. a Z80A, whose speed GRADE is 4 MHz -- so the board inventory's
+ * "8 MHz" cannot be the CPU clock.  It is X10, the board crystal, and halving it is the
+ * ordinary arrangement; the same crystal divided by 8192 gives the ~977 Hz Z80 IRQ this
+ * driver already states.  Neither ROM says anything about either figure.
+ *
+ * It is deliberately NOT changed yet.  Everything measured for the J1 link -- the switch
+ * scan cadence, the handshake spins, the byte rates -- was measured at 2.5 MHz, and a 1.6x
+ * change to the I/O board's speed re-times all of it at once.  Revisit it against the real
+ * machine (or a scope on X10) as its own step, with the switch-delivery probe re-run
+ * either side of the change; that is an owner checkpoint, not a silent edit */
+#define IOMOON_Z80_CLOCK 2500000
+
 /* One periodic generator drives both sources, and it has to tick a good deal faster than
  * their sum: a request that comes due while the firmware is inside an ISR can only be
  * handed over on a later tick (see the note on the accumulators below), so the tick period
@@ -909,9 +927,16 @@ static void iomoon_set_gfx_bank(UINT8 pcs0) {
 /  the latch as a one-byte mailbox with flow control on port-0x01 bit 1: free while empty,
 /  busy from the strobe until the NMI reads 0xA0100.  That is what stops the Z80
 /  overrunning a latch the 80188 has not emptied yet -- and dropped switch bytes are
-/  exactly the failure this task exists to prevent.  It cannot deadlock: the NMI is
-/  non-maskable, the Z80's spin runs with interrupts enabled, and the send routines take
-/  the bus only after the spin.
+/  exactly the failure this task exists to prevent.
+/
+/  It cannot deadlock, and NOT because of anything on the Z80 side: host_send_c0fc is
+/  reached from the IRQ handler as well, so its spin can run with IFF1 = 0 and no Z80
+/  interrupt will break it.  What clears the latch is the other CPU, on two mechanisms
+/  that hold regardless: (a) the 80188 NMI is non-maskable, so the handler that reads
+/  0xA0100 always runs; and (b) cpu_set_irq_line called from Z80 context queues the
+/  request for CPU 0 and schedules it with timer_set(TIME_NOW), which calls
+/  activecpu_abort_timeslice (src/timer.c) -- so the 80188 is given the CPU almost
+/  immediately, long before the Z80 has spun for any meaningful time.
 /
 /  80188 -> Z80.  qout_service_pcs1 D01E5, called from the INT0 ISR, writes the byte to
 /  PCS1 0xA0080 and then pulses PCS4 0xA0200 bit 6 and bit 5, releasing both after 13
@@ -1374,7 +1399,17 @@ MEMORY_END
  *              0x45 or 0x46 and moves on.
  *
  * The low nibble is also reported to the 80188 verbatim as 0xF0|nibble by handler 2D9D,
- * i.e. it is a configuration nibble; nothing in either ROM says what the bits mean */
+ * i.e. it is a configuration nibble; nothing in either ROM says what the bits mean.
+ *
+ * Two structural notes, because the read is "IDLE & ~swMatrix[10]" and an AND can only
+ * ever CLEAR bits:
+ *   - swMatrix[10] cannot RAISE bit 5.  Modelling the trough therefore means changing
+ *     this CONSTANT to 0xFF, not mapping a switch -- and that is the change to make once
+ *     the trough contacts are identified (F5's open gap), since bit 5 = 1 is what puts
+ *     the 0xED handler on its real "wait for the balls" path.
+ *   - anything mapped into swMatrix[10] bit 7 would pull that bit low and hang
+ *     selftest_wait_reset 2E42.  Nothing writes row 10 today; keep it that way unless
+ *     the bit is understood. */
 #define IOMOON_PORT04_IDLE 0xdf
 
 static READ_HANDLER(iomoon_z80_read) {
@@ -1411,6 +1446,13 @@ static WRITE_HANDLER(iomoon_z80_write) {
                 * unproven -- none of those four need an action here */
       { const UINT8 rise = (UINT8)(data & ~iomoon_j1.ctrl);
         if (rise & 0x24) {
+          /* A strobe arriving on a latch the NMI has not read yet would overwrite an
+           * undelivered byte -- a lost switch code, silently.  Port-0x01 bit 1 is what
+           * stops the firmware getting here, so this is unreachable as the ROM stands;
+           * it is a tripwire for any future change to the port-0x81 handling */
+          if (iomoon_j1.latchFull)
+            logerror("iomoon J1: strobe %02x over undelivered byte %02x\n",
+                     iomoon_j1.to188, iomoon_j1.latch);
           iomoon_j1.latch = iomoon_j1.to188;
           iomoon_j1.latchFull = 1;
           cpu_set_irq_line(SLEIC_MAIN_CPU, IRQ_LINE_NMI, PULSE_LINE); /* handler D000:016D */
@@ -1717,9 +1759,10 @@ MACHINE_DRIVER_START(SLEIC2)
   MDRV_CORE_INIT_RESET_STOP(SLEIC2,NULL,NULL)
 
   // Io Moon switch input: the 6x8 matrix on swMatrix[1..6] (Z80 port-0x82 column strobe,
-  // port 0x02 return), the six cabinet inputs on swMatrix[9] (port 0x03) and the port-0x04
-  // config byte on swMatrix[10].  Replaces the base handler, which only fills swMatrix[0]
-  // -- a row nothing on this machine reads
+  // port 0x02 return) and the six cabinet inputs on swMatrix[9] (port 0x03).  Row 10 backs
+  // the port-0x04 config byte but nothing is mapped into it -- see IOMOON_PORT04_IDLE for
+  // why, and for what has to change instead.  Replaces the base handler, which only fills
+  // swMatrix[0] -- a row nothing on this machine reads
   MDRV_SWITCH_UPDATE(SLEIC2)
 
   // Io Moon main CPU: the 80C188 at IC1 is an N80C188-10, and CLKOUT = 10 MHz is what
@@ -1757,7 +1800,14 @@ MACHINE_DRIVER_START(SLEIC2)
   // matrix.  The base map's z80_read_port returns 0 for port 0x04, whose bit 7 the Z80
   // spins on in selftest_wait_reset, and 0 for port 0x01, whose bit 1 every J1 send waits
   // for -- either alone hangs the I/O board before it can announce itself
-  MDRV_CPU_MODIFY("icpu")
+  //
+  // REPLACE rather than MODIFY, purely so the CLOCK is stated.  In this tree REPLACE sets
+  // the CPU type and clock and nothing else (driver.h), so the map, ports and IRQ are
+  // unaffected -- but MODIFY left the Z80 running on the base block's 2.5 MHz Bike Race
+  // figure, silently, three lines under a comment about an 8 MHz crystal.  The value is
+  // unchanged; IOMOON_Z80_CLOCK is where it now lives, with why 4 MHz is the likely
+  // correction and why it is not being made in the same breath
+  MDRV_CPU_REPLACE("icpu", Z80, IOMOON_Z80_CLOCK)
   MDRV_CPU_PERIODIC_INT(SLEIC_irq_z80, 8000000/8192.)
   MDRV_CPU_PORTS(SLEIC2_Z80_readport, SLEIC2_Z80_writeport)
 
