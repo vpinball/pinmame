@@ -1213,7 +1213,17 @@ static WRITE_HANDLER(sleic2_periph_w) {
                  * (D022A/D0243) -- the inbound NMI handler asserts bits 7/6/4 but never
                  * bit 5 -- so its rising edge is the outbound strobe, and it arrives
                  * after the PCS1 write above.  Bit 3 (the old branch's "frame strobe")
-                 * is F13/Task 11's, not this one's */
+                 * is F13/Task 11's, not this one's.
+                 *
+                 * Bits 0-2 are deliberately ignored: sub_D03C0 / sub_D0401 bit-bang them
+                 * as a three-wire serial port (CS, U/D, INC) for the X9C503P digital
+                 * potentiometer IC63, which is the service menu's VOLUME page.  That part
+                 * is an ANALOGUE attenuator on the YM3014B's output, not a register the
+                 * sound core has: PinMAME has no device for it, and the mixer level here
+                 * is the driver's own MDRV volume.  The page still works -- it draws its
+                 * bar and stores the setting in NVRAM 0x1BC-0x1BE (sub_D098C) -- it just
+                 * does not change what comes out, and modelling it would mean scaling the
+                 * YM3812 channel by a wiper position the schematic has not been read for */
       if ((data & 0x20) && !(iomoon_j1.pcs4 & 0x20)) {
         iomoon_j1.toZ80Full = 1;
         cpu_set_irq_line(SLEIC_IO_CPU, IRQ_LINE_NMI, PULSE_LINE); /* Z80 handler 0x0066 */
