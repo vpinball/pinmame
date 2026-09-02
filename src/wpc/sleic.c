@@ -17,6 +17,7 @@
 #include "driver.h"
 #include "core.h"
 #include "cpu/i8039/i8039.h"
+#include "cpu/i86/i86intf.h" /* I86_FLAGS: the IF bit gates Io Moon's interrupt delivery */
 #include "sound/adpcm.h"
 #include "sound/3812intf.h"
 #include "sleic.h"
@@ -105,6 +106,132 @@ static INTERRUPT_GEN(SLEIC_irq_i80188) {
  * forever -> blank DMD.  Deliver vector 0x08 like the working Bike Race path */
 static INTERRUPT_GEN(sleic1_irq_gen) {
   cpu_set_irq_line_and_vector(SLEIC_MAIN_CPU, 0, HOLD_LINE, 0x08);
+}
+
+/*-------------------------------------------------------------------------------------
+/  Io Moon (SLEIC2) interrupt model -- findings F1 (the timer programming) and F3 (the
+/  vectors and what each handler does).
+/
+/  The IVT is RESIDENT IN ROM at physical 0, inside the LMCS window (F2/F3): the firmware
+/  installs nothing, and the image contains no IVT copy loop at all (no MOVSW/MOVSB
+/  anywhere).  So the driver must NOT seed a table -- the vectors are simply read out of
+/  ROM1, and the three live ones are:
+/
+/    type 02  NMI     -> D000:016D  inbound J1 byte: reads PCS2 0xA0100, counts 0x32,
+/                                   appends everything else to the 4000:1220 FIFO
+/    type 08  timer 0 -> D000:024F  OKI duration counters, deferred triggers and the
+/                                   general down-counters [1139]/[113B]/[113D]/[113F]/[1140]
+/    type 0C  INT0    -> D000:0343  alternating half-frames ([4000:1142] toggles on entry):
+/                                   even = DMD blit + animation dispatch, odd = DMD
+/                                   composite + fm_player_tick + qout_service_pcs1
+/
+/  Only these two vectored sources exist, because the boot table unmasks only timer 0 and
+/  INT0 (F1: IMASK/priority words FF32 = 0001 for the timer, FF38 = 0000 for INT0 --
+/  edge-triggered and the HIGHER priority of the two, since 0 is the top level -- with
+/  DMA0/DMA1/INT1/INT2/INT3 all masked and PRIMSK FF2A = 1) and nothing reprograms any of
+/  it after boot.  The two handlers agree: the one entered from vector 08 clears INSERV
+/  bit 0 (the timer) and the one entered from vector 0C clears INSERV bit 4 (INT0).
+/
+/  Timer 0's rate is fixed by that same boot table and is arithmetic, not a guess:
+/    T0CON  FF56 = E003 = EN | INH | INT, CONT=1, ALT=1, and prescaler bit 3 = 0, so the
+/                  counter is clocked at CLKOUT/4 and requests an interrupt on every
+/                  terminal count;
+/    T0CMPA FF52 = T0CMPB FF54 = 0x6276 = 25206 -- both max counts are loaded with the
+/                  same value, so alternating between them does not change the period;
+/    timers 1 and 2 are disabled (FF5E = FF66 = 0).
+/  =>  (10 MHz / 4) / 25206  =  2 500 000 / 25206  =  99.18 Hz.
+/  The divisor and the count are confirmed; the frequency inherits the CLKOUT = 10 MHz
+/  reading of IC1 (an AMD N80C188-10), which no ROM states -- hence IOMOON_CPU_CLOCK is
+/  the one place to change if the crystal ever turns out to be something else.
+/
+/  INT0's rate is the one genuinely open number in the model -- see IOMOON_INT0_HZ.
+/
+/  The NMI is deliberately NOT generated here.  It is not periodic: F4/F6 show the Z80
+/  raises it by strobing port-0x81 bit 2, which latches one byte into PCS2 0xA0100 for the
+/  handler to read, and 0xA0100 is read in exactly one place in the whole 80188 ROM (that
+/  handler).  Until the J1 link exists the firmware never receives the Z80's boot 0x47, so
+/  after its intro it parks in the poll at D2F59 (CALL sub_D5D1B / OR AL,AL / JE) with
+/  interrupts enabled and both ISRs still running -- a wait state, not a hang.
+/-----------------------------------------------------------------------------------*/
+
+/* IC1 is an AMD N80C188-10; CLKOUT = 10 MHz is what the timer-0 arithmetic above assumes,
+ * so the emulated CPU runs at the same figure rather than the base driver's 8 MHz */
+#define IOMOON_CPU_CLOCK   10000000
+#define IOMOON_T0_MAXCOUNT 0x6276  /* 25206, T0CMPA = T0CMPB from the boot table */
+#define IOMOON_TIMER0_HZ   ((IOMOON_CPU_CLOCK / 4.0) / (double)IOMOON_T0_MAXCOUNT) /* 99.18 */
+
+/* INT0 (vector 0x0C) rate.  NOT CONFIRMED, and the one genuinely open number in the model
+ * -- findings F3 lists the INT0 source as its unresolved gap: neither ROM says which line
+ * feeds INT0, and the three candidates imply very different rates (IC23's per-plane pulse
+ * ~290 Hz, its per-frame pulse ~145 Hz, or the Z80's port-0x81 bit-3 toggle, which is not
+ * even free-running).  F3 recommends the per-plane pulse at ~290 Hz, because the handler's
+ * two alternating bodies are exactly blit-then-composite -- one interrupt per DMD plane --
+ * and because it is the only candidate whose implied outbound J1 byte rate (INT0/8, see
+ * qout_service_pcs1) carries 64 lamps and 13 drivers at a playable rate.
+ *
+ * That recommendation cannot stand as a rate, and the firmware's own handler is what
+ * refutes it.  The composite branch sub_F08A5 is two 512-iteration byte loops of 7-9
+ * instructions each -- about 65 000 clocks, 6.5 ms at 10 MHz -- and the blit branch
+ * sub_F08EB is a 512-iteration loop plus the animation dispatch.  Measured over a headless
+ * boot the handler averages 7.5 ms, so a 290 Hz (3.45 ms) or even a 145 Hz (6.9 ms) period
+ * cannot contain it.  Nothing about that is an emulation artefact: the same instruction
+ * count on a real 80186 gives the same milliseconds, and the 80188's 8-bit bus makes it
+ * slower still.  And because INT0 outranks the timer on the interrupt controller, a
+ * permanently-pending INT0 does not merely run late, it starves timer 0 completely -- at
+ * 290 Hz the driver measures timer 0 at 0 interrupts per second and the firmware never
+ * leaves its frame-delay loop at D5611, which is a hang, not a slow machine.
+ *
+ * So this ships at the rate the firmware can actually sustain: 72.5 Hz, the 145 Hz DMD
+ * wire rate divided by the two bitplanes -- which is also the INT0 rate the Bike Race
+ * machine in this same driver uses.  There the handler is serviced in full, timer 0 runs
+ * at 92 of its 99.18 Hz, the CPU spends 55% of its time in ISRs, and the firmware boots
+ * through its intro to the J1 wait.  DMD refresh, FM tempo and the outbound queue rate all
+ * scale with this number, which is why it is one named constant: an IC23 dump, a scope on
+ * the line, or the frame-clock work is what would settle it */
+#define IOMOON_INT0_HZ 72.5
+
+/* One periodic generator drives both sources, and it has to tick a good deal faster than
+ * their sum: a request that comes due while the firmware is inside an ISR can only be
+ * handed over on a later tick (see the note on the accumulators below), so the tick period
+ * is also the delay between an ISR returning and the next interrupt being delivered.
+ * 2 kHz = 0.5 ms of granularity against ISRs measured in milliseconds */
+#define IOMOON_IRQ_TICK_HZ 2000.0
+
+/* Fractional tick accumulators, and one held request per source.  The request has to be
+ * held because of how this i86 core delivers interrupts: it takes a vectored interrupt at
+ * the instant the line is asserted -- inside cpu_set_irq_line_and_vector -- and only if IF
+ * is set right then; it never re-examines the line afterwards, so HOLD_LINE does not
+ * actually hold anything and a request raised while an ISR is running would just vanish.
+ * That is not what the 80188's interrupt controller does: it latches the request and
+ * serves it when the firmware re-enables interrupts.  Measured on Io Moon the difference
+ * is not cosmetic -- the INT0 handler's DMD work is long enough that raising the two
+ * sources blind loses about two thirds of the timer-0 ticks, which would stretch every
+ * firmware timeout by the same factor.  So: integrate time every tick, latch at most one
+ * request per source (as the hardware does -- a second one arriving before the first is
+ * served is lost, not queued), and hand it over on the first tick where IF is set */
+static double iomoon_int0_acc, iomoon_t0_acc; //!!
+static int    iomoon_int0_pend, iomoon_t0_pend; //!!
+
+static INTERRUPT_GEN(iomoon_irq_gen) {
+  iomoon_int0_acc += IOMOON_INT0_HZ   / IOMOON_IRQ_TICK_HZ;
+  iomoon_t0_acc   += IOMOON_TIMER0_HZ / IOMOON_IRQ_TICK_HZ;
+  if (iomoon_int0_acc >= 1.0) { iomoon_int0_acc -= 1.0; iomoon_int0_pend = 1; }
+  if (iomoon_t0_acc   >= 1.0) { iomoon_t0_acc   -= 1.0; iomoon_t0_pend   = 1; }
+
+  /* IF clear = the firmware is inside an ISR: keep both requests latched and try again */
+  if (!(activecpu_get_reg(I86_FLAGS) & 0x200)) return;
+
+  /* Only one vector can be delivered at a time, so when both are pending INT0 goes first:
+   * it is the higher-priority source on the real controller (level 0 against the timer's
+   * 1), and the timer takes the next tick */
+  if (iomoon_int0_pend) {
+    iomoon_int0_pend = 0;
+    cpu_set_irq_line_and_vector(SLEIC_MAIN_CPU, 0, HOLD_LINE, 0x0c); /* INT0    -> D000:0343 */
+  }
+  else if (iomoon_t0_pend) {
+    iomoon_t0_pend = 0;
+    cpu_set_irq_line_and_vector(SLEIC_MAIN_CPU, 0, HOLD_LINE, 0x08); /* timer 0 -> D000:024F */
+  }
 }
 
 /* Bike Race (SLEIC3): Timer0 (type 0x08) = 99.18 Hz (T0CON/T0CMP); INT0
@@ -741,11 +868,10 @@ static WRITE_HANDLER(sleic2_periph_w) {
       if ((data ^ iomoon_pcs0) & 0x07) iomoon_set_gfx_bank(data);
       iomoon_pcs0 = data;
       return;
-    default:
+    default:                          /* PCS1 J1 outbound, PCS2, PCS3, PCS4, PCS5 YM3812, PCS6 OKI */
 #ifdef DEBUG_SLEIC
       if (getenv("SLEIC_TRACE_PW")) fprintf(stderr, "[188->periph] PCS%d off=%03x data=%02x\n", offset>>7, offset, data);
 #endif
-      logerror("iomoon periph A000:%03X = %02x\n", offset, data);
       return;
   }
 }
@@ -760,7 +886,10 @@ static READ_HANDLER(sleic2_periph_r) {
 
 static MEMORY_READ_START(SLEIC2_80188_readmem)
   {0x00000,0x3ffff, MRA_ROM},         /* LMCS: ROM1 low half -- resident IVT + animation data */
-  {0x40000,0x4ffff, MRA_RAM},         /* MCS0: work RAM (UM62256 IC12)                        */
+  {0x40000,0x4ffff, MRA_RAM},         /* MCS0: work RAM.  The chip-select block is 64 KB; the
+                                       * UM62256 at IC12 behind it is 32 KB, so this window is
+                                       * a superset -- harmless, because the firmware's highest
+                                       * work-RAM segment is 413C (flat 0x41496, F5)           */
   {IOMOON_NVRAM_BASE,IOMOON_NVRAM_BASE+IOMOON_NVRAM_SIZE-1, iomoon_nvram_r}, /* MCS1: seg 5040 store */
   {0x60000,0x6ffff, MRA_BANK1},       /* MCS2: graphics ROM page (IOMOON_GFX_BANK, PCS0 bits 0-2) */
   {0x70000,0x7ffff, MRA_RAM},         /* MCS3: DMD staging (7000:0000-03FF)                   */
@@ -1129,6 +1258,8 @@ static MACHINE_INIT(SLEIC2) {
   machine_init_SLEIC();
   iomoon_pcs0 = 0x28;
   iomoon_set_gfx_bank(iomoon_pcs0);
+  iomoon_int0_acc = iomoon_t0_acc = 0.0;
+  iomoon_int0_pend = iomoon_t0_pend = 0;
 }
 
 /* Bike Race (SLEIC3) playfield-matrix test keys. The 40 matrix positions (Z80 switch
@@ -1264,7 +1395,8 @@ MACHINE_DRIVER_START(SLEIC1)
   // read==write to one buffer so the firmware's boot-time self-repair sticks and
   // the signature re-validation passes (clears "Memoria EEPROM en mal estado").
   // REPLACE wipes the inherited mcpu map/ports/IRQ, so all are re-stated; only the
-  // 80188 memory map changes vs. the base SLEIC (SLEIC2/iomoon keep the base map)
+  // 80188 memory map changes vs. the base SLEIC (Bike Race and Io Moon each state
+  // their own map in the SLEIC3 / SLEIC2 blocks below)
   MDRV_NVRAM_HANDLER(SLEIC1)
   MDRV_CPU_REPLACE("mcpu", I188, 8000000)
   MDRV_CPU_MEMORY(SLEIC1_80188_readmem, SLEIC1_80188_writemem)
@@ -1292,18 +1424,37 @@ MACHINE_DRIVER_START(SLEIC2)
   MDRV_IMPORT_FROM(SLEIC)
   MDRV_CORE_INIT_RESET_STOP(SLEIC2,NULL,NULL)
 
-  // Io Moon 80188 map: LMCS ROM at 0, UMCS ROM at 0xC0000, the four MMCS blocks
-  // (work RAM / non-volatile store / banked graphics page / DMD staging) and the
-  // PACS peripheral block.  See the SLEIC2_80188_readmem comment block for the
-  // chip-select values this hard-wires and where they come from
-  MDRV_CPU_MODIFY("mcpu")
+  // Io Moon main CPU: the 80C188 at IC1 is an N80C188-10, and CLKOUT = 10 MHz is what
+  // the timer-0 rate below is computed from, so the emulated clock matches it rather
+  // than the base driver's 8 MHz.  REPLACE only re-states type and clock; the map is
+  // set separately: LMCS ROM at 0, UMCS ROM at 0xC0000, the four MMCS blocks (work RAM /
+  // non-volatile store / banked graphics page / DMD staging) and the PACS peripheral
+  // block -- see the SLEIC2_80188_readmem comment block for the chip-select values this
+  // hard-wires and where they come from.
+  //
+  // Interrupts: iomoon_irq_gen replaces the base driver's vector-less 120 Hz IRQ0 pulse
+  // (which, having no vector, took an IVT filler entry and derailed the boot) with the
+  // real model of findings F1/F3 -- timer 0 on vector 0x08 at 99.18 Hz and INT0 on
+  // vector 0x0C at IOMOON_INT0_HZ, both interleaved on one tick.  The NMI is not
+  // periodic and is not generated here; see the comment block above iomoon_irq_gen
+  MDRV_CPU_REPLACE("mcpu", I188, IOMOON_CPU_CLOCK)
   MDRV_CPU_MEMORY(SLEIC2_80188_readmem, SLEIC2_80188_writemem)
+  MDRV_CPU_PERIODIC_INT(iomoon_irq_gen, IOMOON_IRQ_TICK_HZ)
 
   // Non-volatile store at segment 5040 (F10), persisted by NVRAM_HANDLER(SLEIC2) and
   // zero-filled on a fresh boot, which is what makes the firmware seed its own factory
   // defaults.  Replaces the base driver's generic_0fill, whose generic_nvram buffer
   // this map does not reference
   MDRV_NVRAM_HANDLER(SLEIC2)
+
+  // I/O Z80 periodic IRQ, ~977 Hz.  The rate is not derived from the Z80's own clock: it
+  // is the 8 MHz board crystal divided by 8192 in the IC20/IC21 (74LS393) + IC22 (74LS27)
+  // chain on the 16-bit board, delivered to the Z80 board over J3, so it is stated as
+  // 8000000/8192 to keep that derivation visible.  (Both ROMs are silent on it -- the
+  // source is external to each -- so this is the board inventory's reading, not the
+  // disassembly's.)  It replaces the inherited 2500000/2048 Bike Race / Sleic Pin-Ball rate
+  MDRV_CPU_MODIFY("icpu")
+  MDRV_CPU_PERIODIC_INT(SLEIC_irq_z80, 8000000/8192.)
 
   MDRV_SOUND_ADD(YM3812, SLEIC_ym3812_intf)
   MDRV_SOUND_ADD(OKIM6295, SLEIC_okim6376_intf2)
