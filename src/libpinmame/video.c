@@ -19,7 +19,7 @@
 #include "menu.h"
 #endif
 
-extern void libpinmame_drain_pending_writes(void);
+extern void libpinmame_drain_pending_memory_ops(void);
 extern void libpinmame_log_info(const char* format, ...);
 
 //============================================================
@@ -670,7 +670,7 @@ void osd_update_video_and_audio(struct mame_display *display)
 
 	/* Runs once per frame on the emulation thread, which is where queued writes
 	   have to be applied. */
-	libpinmame_drain_pending_writes();
+	libpinmame_drain_pending_memory_ops();
 
 	// if this is the first time through, initialize the previous time value
 	if (warming_up)

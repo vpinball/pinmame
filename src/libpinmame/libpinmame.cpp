@@ -1753,64 +1753,6 @@ PINMAMEAPI int PinmameGetChangedNVRAM(PinmameNVRAMState* const p_nvramStates)
 }
 
 /******************************************************
- * PinmameReadMainCPUByte
- ******************************************************/
-
-PINMAMEAPI int PinmameReadMainCPUByte(const uint32_t address, uint8_t* const p_value)
-{
-	return PinmameReadMainCPUMemory(address, p_value, 1);
-}
-
-/* A NULL from memory_get_read_ptr() means the read table holds a handler rather than
-   a direct pointer, not that the address is unreadable at all, se.c routes all of
-   Whitestar/Sega main RAM through ram_r. memory_find_base() has no bounds check. */
-
-static int ReadThroughRamBase(const uint32_t address, uint8_t* const p_buffer, const int size)
-{
-	const size_t regionLength = memory_region_length(REGION_CPU1);
-	if (address >= regionLength)
-	{
-		return 0;
-	}
-
-	const uint8_t* const p_base = static_cast<const uint8_t*>(memory_find_base(0, address));
-	if (p_base == nullptr)
-	{
-		return 0;
-	}
-
-	const int available = (int)std::min((size_t)size, regionLength - address);
-	memcpy(p_buffer, p_base, available);
-
-	return available;
-}
-
-/******************************************************
- * PinmameReadMainCPUMemory
- ******************************************************/
-
-PINMAMEAPI int PinmameReadMainCPUMemory(const uint32_t address, uint8_t* const p_buffer, const int size)
-{
-	if (!_isRunning || p_buffer == nullptr || size <= 0)
-	{
-		return 0;
-	}
-
-	for (int i = 0; i < size; i++)
-	{
-		uint8_t* p_memory = static_cast<uint8_t*>(memory_get_read_ptr(0, address + i));
-		if (p_memory == nullptr)
-		{
-			return i > 0 ? i : ReadThroughRamBase(address, p_buffer, size);
-		}
-
-		p_buffer[i] = *p_memory;
-	}
-
-	return size;
-}
-
-/******************************************************
  * PinmameWriteMainCPUMemory
  ******************************************************/
 
@@ -1823,9 +1765,21 @@ struct PendingWrite
 	bool done;
 };
 
+struct PendingRead
+{
+	uint32_t address;
+	uint8_t* buffer;
+	int size;
+	int read;
+	bool done;
+};
+
+/* One mutex and one condition variable serve both queues: they are drained together, writes
+   first, so a read queued after a write observes it. */
 std::mutex g_writeMutex;
 std::condition_variable g_writeCv;
 std::vector<PendingWrite*> g_writeQueue;
+std::vector<PendingRead*> g_readQueue;
 
 } /* anonymous namespace */
 
@@ -1854,32 +1808,135 @@ static void ApplyWrites(const std::vector<PendingWrite*>& batch)
 	cpuintrf_pop_context();
 }
 
-/* Called once per frame from osd_update_video_and_audio(), on the emulation thread. */
-extern "C" void libpinmame_drain_pending_writes(void)
+/* Reads go the same way, for two reasons a pointer read cannot satisfy. First, the memory
+   map's bank tables are switched by memory_set_context() every time the emulation moves
+   between CPUs, so a pointer resolved on another thread points into whichever CPU is active
+   at that instant: on WPC a read of fixed ROM at 0x8000-0xFFFF intermittently returns a
+   whole 256-byte chunk of zeros while reporting success. Second, read handlers carry
+   platform semantics: Whitestar and Sega route all of main RAM through ram_r, so
+   memory_get_read_ptr() has nothing to return there and every read came back short. On the
+   emulation thread, between time slices, the CPU context is valid and cpunum_read_byte()
+   dispatches through the map exactly as the CPU itself would. The cost is that a caller on
+   another thread waits for the next frame, the same as a write. Reading a register through
+   its handler can have the side effect the hardware has; callers read RAM, NVRAM and ROM. */
+
+static void ApplyReads(const std::vector<PendingRead*>& batch)
 {
-	static std::vector<PendingWrite*> batch;   /* static, so the queue keeps its capacity */
+	const uint32_t addressSpace = 1u << cpunum_address_bits(0);
+
+	cpuintrf_push_context(0);
+
+	for (PendingRead* r : batch)
+	{
+		r->read = 0;
+		for (int i = 0; i < r->size; i++)
+		{
+			const uint32_t address = r->address + (uint32_t)i;
+			if (address >= addressSpace)
+			{
+				break;
+			}
+			r->buffer[i] = cpunum_read_byte(0, address);
+			r->read = i + 1;
+		}
+	}
+
+	cpuintrf_pop_context();
+}
+
+/* Called once per frame from osd_update_video_and_audio(), on the emulation thread.
+   Writes are applied before reads so that a read queued after a write observes it. */
+extern "C" void libpinmame_drain_pending_memory_ops(void)
+{
+	static std::vector<PendingWrite*> writes;   /* static, so the queues keep their capacity */
+	static std::vector<PendingRead*> reads;
 
 	{
 		std::lock_guard<std::mutex> lock(g_writeMutex);
-		if (g_writeQueue.empty())
+		if (g_writeQueue.empty() && g_readQueue.empty())
 		{
 			return;
 		}
-		batch.swap(g_writeQueue);
+		writes.swap(g_writeQueue);
+		reads.swap(g_readQueue);
 	}
 
-	ApplyWrites(batch);
+	if (!writes.empty())
+	{
+		ApplyWrites(writes);
+	}
+	if (!reads.empty())
+	{
+		ApplyReads(reads);
+	}
 
 	{
 		std::lock_guard<std::mutex> lock(g_writeMutex);
-		for (PendingWrite* w : batch)
+		for (PendingWrite* w : writes)
 		{
 			w->done = true;
 		}
+		for (PendingRead* r : reads)
+		{
+			r->done = true;
+		}
 	}
 
-	batch.clear();
+	writes.clear();
+	reads.clear();
 	g_writeCv.notify_all();
+}
+
+static int SubmitRead(const uint32_t address, uint8_t* const p_buffer, const int size)
+{
+	PendingRead r { address, p_buffer, size, 0, false };
+
+	/* Already on the emulation thread: read directly rather than waiting for our own drain. */
+	if (_p_gameThread && std::this_thread::get_id() == _p_gameThread->get_id())
+	{
+		ApplyReads({ &r });
+		return r.read;
+	}
+
+	std::unique_lock<std::mutex> lock(g_writeMutex);
+	g_readQueue.push_back(&r);
+
+	/* Bounded, so a stalled or paused emulator cannot hang the caller. */
+	if (!g_writeCv.wait_for(lock, std::chrono::milliseconds(250), [&r] { return r.done; }))
+	{
+		std::erase(g_readQueue, &r);
+		return 0;
+	}
+
+	return r.read;
+}
+
+/******************************************************
+ * PinmameReadMainCPUByte
+ ******************************************************/
+
+PINMAMEAPI int PinmameReadMainCPUByte(const uint32_t address, uint8_t* const p_value)
+{
+	if (!_isRunning || p_value == nullptr)
+	{
+		return 0;
+	}
+
+	return SubmitRead(address, p_value, 1);
+}
+
+/******************************************************
+ * PinmameReadMainCPUMemory
+ ******************************************************/
+
+PINMAMEAPI int PinmameReadMainCPUMemory(const uint32_t address, uint8_t* const p_buffer, const int size)
+{
+	if (!_isRunning || p_buffer == nullptr || size <= 0)
+	{
+		return 0;
+	}
+
+	return SubmitRead(address, p_buffer, size);
 }
 
 static bool SubmitWrite(const PinMAMEWriteMemoryOp* const ops, const uint32_t count)

@@ -36,6 +36,11 @@ typedef struct PinMAMEMachineStateMsg
 
 #define PMPI_READ_MEMORY                     "ReadMemory"
 
+// The read is performed on the emulation thread between time slices, dispatched through the
+// memory map like a CPU read, so handler-backed RAM reads correctly and the result cannot be
+// torn by the running emulation or resolved against another CPU's bank tables. The caller
+// waits for the next frame (bounded, typically under 20 ms). 'read' is short only when the
+// range runs past the end of the address space.
 typedef struct PinMAMEReadMemoryMsg
 {
    int version;         // Always 1 (to allow upgrading this message in later revisions)
