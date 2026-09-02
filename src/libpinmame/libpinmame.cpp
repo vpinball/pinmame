@@ -1578,7 +1578,8 @@ PINMAMEAPI int PinmameGetMech(const int mechNo)
 
 PINMAMEAPI PINMAME_STATUS PinmameSetMech(const int mechNo, const PinmameMechConfig* const p_mechConfig)
 {
-	if (g_fHandleMechanics)
+   // Note that g_fHandleMechanics is also used with negative value to request a reset that will turn back to 0 after the reset is done. So we only check for > 0 here (see BOP for example).
+	if (g_fHandleMechanics > 0)
 		return PINMAME_STATUS_MECH_HANDLE_MECHANICS;
 
 	if (mechNo < 1 || mechNo > (MECH_MAXMECH / 2))
