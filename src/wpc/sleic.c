@@ -135,14 +135,14 @@ static INTERRUPT_GEN(sleic1_irq_gen) {
 /  Timer 0's rate is fixed by that same boot table and is arithmetic, not a guess:
 /    T0CON  FF56 = E003 = EN | INH | INT, CONT=1, ALT=1, and prescaler bit 3 = 0, so the
 /                  counter is clocked at CLKOUT/4 and requests an interrupt on every
-/                  terminal count;
+/                  terminal count (an assumption -- see IOMOON_T0_MAXCOUNT);
 /    T0CMPA FF52 = T0CMPB FF54 = 0x6276 = 25206 -- both max counts are loaded with the
 /                  same value, so alternating between them does not change the period;
 /    timers 1 and 2 are disabled (FF5E = FF66 = 0).
 /  =>  (10 MHz / 4) / 25206  =  2 500 000 / 25206  =  99.18 Hz.
-/  The divisor and the count are confirmed; the frequency inherits the CLKOUT = 10 MHz
-/  reading of IC1 (an AMD N80C188-10), which no ROM states -- hence IOMOON_CPU_CLOCK is
-/  the one place to change if the crystal ever turns out to be something else.
+/  The divisor and the count are confirmed.  The two things that are not are the CLKOUT
+/  figure (see IOMOON_CPU_CLOCK) and the every-terminal-count reading of ALT mode (see
+/  IOMOON_T0_MAXCOUNT); each is a clean factor on the result.
 /
 /  INT0's rate is the one genuinely open number in the model -- see IOMOON_INT0_HZ.
 /
@@ -154,10 +154,19 @@ static INTERRUPT_GEN(sleic1_irq_gen) {
 /  interrupts enabled and both ISRs still running -- a wait state, not a hang.
 /-----------------------------------------------------------------------------------*/
 
-/* IC1 is an AMD N80C188-10; CLKOUT = 10 MHz is what the timer-0 arithmetic above assumes,
- * so the emulated CPU runs at the same figure rather than the base driver's 8 MHz */
+/* CLKOUT.  INFERRED, not measured: IC1 is an AMD N80C188-10, and the -10 is the part's
+ * speed GRADE -- the maximum clock it is rated for -- not a reading of the crystal fitted
+ * on this board, and no ROM states the clock.  10 MHz is what the timer-0 arithmetic above
+ * assumes, so the emulated CPU is given the same figure rather than the base driver's
+ * 8 MHz, and this one constant moves both together if the crystal is ever measured */
 #define IOMOON_CPU_CLOCK   10000000
-#define IOMOON_T0_MAXCOUNT 0x6276  /* 25206, T0CMPA = T0CMPB from the boot table */
+
+/* 25206 = T0CMPA = T0CMPB, straight out of the boot table.  The period it implies rests on
+ * one ASSUMPTION, which findings F1 makes too: that with ALT = 1 the timer requests an
+ * interrupt on EVERY terminal count, so one max count is one period.  If the part instead
+ * only interrupts on max count B, the rate halves to 49.59 Hz -- a factor of two, not a
+ * detail.  Both max counts hold the same value here, so nothing else would change */
+#define IOMOON_T0_MAXCOUNT 0x6276
 #define IOMOON_TIMER0_HZ   ((IOMOON_CPU_CLOCK / 4.0) / (double)IOMOON_T0_MAXCOUNT) /* 99.18 */
 
 /* INT0 (vector 0x0C) rate.  NOT CONFIRMED, and the one genuinely open number in the model
@@ -169,25 +178,35 @@ static INTERRUPT_GEN(sleic1_irq_gen) {
  * and because it is the only candidate whose implied outbound J1 byte rate (INT0/8, see
  * qout_service_pcs1) carries 64 lamps and 13 drivers at a playable rate.
  *
- * That recommendation cannot stand as a rate, and the firmware's own handler is what
- * refutes it.  The composite branch sub_F08A5 is two 512-iteration byte loops of 7-9
- * instructions each -- about 65 000 clocks, 6.5 ms at 10 MHz -- and the blit branch
- * sub_F08EB is a 512-iteration loop plus the animation dispatch.  Measured over a headless
- * boot the handler averages 7.5 ms, so a 290 Hz (3.45 ms) or even a 145 Hz (6.9 ms) period
- * cannot contain it.  Nothing about that is an emulation artefact: the same instruction
- * count on a real 80186 gives the same milliseconds, and the 80188's 8-bit bus makes it
- * slower still.  And because INT0 outranks the timer on the interrupt controller, a
- * permanently-pending INT0 does not merely run late, it starves timer 0 completely -- at
- * 290 Hz the driver measures timer 0 at 0 interrupts per second and the firmware never
- * leaves its frame-delay loop at D5611, which is a hang, not a slow machine.
+ * Neither of the two PIC rates can be run here, and the handler they would be driving is
+ * why.  The composite branch sub_F08A5 is two 512-iteration byte loops of 7-9 instructions
+ * each -- about 65 000 clocks, 6.5 ms at 10 MHz -- and the blit branch sub_F08EB is a
+ * 512-iteration loop plus the animation dispatch; measured over a headless boot the
+ * handler averages 7.5 ms.  A 290 Hz period is 3.45 ms and a 145 Hz period 6.9 ms, so
+ * neither contains it, and because INT0 outranks timer 0 on the controller a
+ * permanently-pending INT0 does not merely run late -- it starves the timer outright.  At
+ * 290 Hz the probe measures timer 0 at zero interrupts per second and the firmware never
+ * leaves its frame-delay loop at D5611: a hang, not a slow machine.
  *
- * So this ships at the rate the firmware can actually sustain: 72.5 Hz, the 145 Hz DMD
- * wire rate divided by the two bitplanes -- which is also the INT0 rate the Bike Race
- * machine in this same driver uses.  There the handler is serviced in full, timer 0 runs
- * at 92 of its 99.18 Hz, the CPU spends 55% of its time in ISRs, and the firmware boots
- * through its intro to the J1 wait.  DMD refresh, FM tempo and the outbound queue rate all
- * scale with this number, which is why it is one named constant: an IC23 dump, a scope on
- * the line, or the frame-clock work is what would settle it */
+ * So what ships here is 72.5 Hz, and it is important to be plain about what that number is
+ * and is not.  It is an EMULATION-SERVICEABILITY figure that corresponds to NO F3
+ * candidate and is not derived from the panel at all.  It cannot be: a per-plane pulse
+ * MULTIPLIES the frame rate rather than dividing it, which is precisely why F3's
+ * per-plane candidate is 290 Hz -- twice the 145 Hz wire rate -- and half of 145 is not a
+ * rate any candidate produces.  72.5 Hz was chosen empirically, by sweeping the rate and
+ * taking the highest one at which both handlers stay served: timer 0 falls to 66/s at
+ * INT0 = 100 Hz, to 34/s at 145 Hz and to nothing at 290 Hz, whereas at 72.5 Hz INT0 is
+ * serviced in full, timer 0 runs at 92 of its 99.18 Hz, the CPU spends 55% of its time in
+ * ISRs, and the firmware boots through its intro to the J1 wait.
+ *
+ * The corollary points past the rate, and is the more interesting half.  If the handler
+ * costs anything like 7 ms on silicon as well -- and the instruction count says it should,
+ * since a real 80186 needs the same clocks and the 80188's 8-bit bus needs more -- then no
+ * ~290 Hz source can be driving it, so the measurement weakens F3's SOURCE hypothesis (the
+ * PIC per-plane pulse) and not just its number.  That is an emulation-side result, so it
+ * does not close F3's gap: what would settle the source and the rate is an IC23 dump or a
+ * scope on the line.  DMD refresh, FM tempo and the outbound queue rate all scale with
+ * this constant, which is why it stays one named number */
 #define IOMOON_INT0_HZ 72.5
 
 /* One periodic generator drives both sources, and it has to tick a good deal faster than
@@ -198,10 +217,14 @@ static INTERRUPT_GEN(sleic1_irq_gen) {
 #define IOMOON_IRQ_TICK_HZ 2000.0
 
 /* Fractional tick accumulators, and one held request per source.  The request has to be
- * held because of how this i86 core delivers interrupts: it takes a vectored interrupt at
- * the instant the line is asserted -- inside cpu_set_irq_line_and_vector -- and only if IF
- * is set right then; it never re-examines the line afterwards, so HOLD_LINE does not
- * actually hold anything and a request raised while an ISR is running would just vanish.
+ * held because of how this i86 core delivers interrupts.  cpu_set_irq_line_and_vector does
+ * not touch the CPU itself: it appends the request to a per-CPU event queue and schedules a
+ * TIME_NOW timer, and cpu_empty_event_queue (src/cpuint.c) is what asserts the line --
+ * still before the CPU executes another instruction, which is why testing IF in this
+ * generator is a valid proxy for IF at delivery.  i86_set_irq_line then takes the interrupt
+ * right there if IF is set, and otherwise does nothing at all: the execute loop never
+ * re-examines irq_state, so HOLD_LINE does not actually hold anything and a request raised
+ * while an ISR is running would just vanish.
  * That is not what the 80188's interrupt controller does: it latches the request and
  * serves it when the firmware re-enables interrupts.  Measured on Io Moon the difference
  * is not cosmetic -- the INT0 handler's DMD work is long enough that raising the two
@@ -1394,9 +1417,11 @@ MACHINE_DRIVER_START(SLEIC1)
   // Battery-backed NVRAM (28C64A): persisted by NVRAM_HANDLER(SLEIC1) and mapped
   // read==write to one buffer so the firmware's boot-time self-repair sticks and
   // the signature re-validation passes (clears "Memoria EEPROM en mal estado").
-  // REPLACE wipes the inherited mcpu map/ports/IRQ, so all are re-stated; only the
-  // 80188 memory map changes vs. the base SLEIC (Bike Race and Io Moon each state
-  // their own map in the SLEIC3 / SLEIC2 blocks below)
+  // REPLACE only re-states the CPU type and clock (driver.h: it assigns cpu_type and
+  // cpu_clock and nothing else) -- the inherited map, ports and IRQ survive it.  They are
+  // spelled out again below anyway, because only the 80188 memory map actually differs
+  // from the base SLEIC (Bike Race and Io Moon each state their own map in the SLEIC3 /
+  // SLEIC2 blocks below)
   MDRV_NVRAM_HANDLER(SLEIC1)
   MDRV_CPU_REPLACE("mcpu", I188, 8000000)
   MDRV_CPU_MEMORY(SLEIC1_80188_readmem, SLEIC1_80188_writemem)
@@ -1471,8 +1496,9 @@ MACHINE_DRIVER_START(SLEIC3)
   MDRV_NVRAM_HANDLER(SLEIC3)
 
   // Bike Race main CPU: 80C188 at 10 MHz (work RAM at seg 0, peripherals at
-  // 0xA0000, code at 0xE0000). REPLACE wipes the inherited
-  // map/IRQ, so memory, ports and the IRQ generator are all re-stated
+  // 0xA0000, code at 0xE0000). REPLACE only re-states the CPU type and clock; the
+  // memory, ports and IRQ generator below are stated because they all differ from
+  // the base SLEIC, not because REPLACE cleared them
   MDRV_CPU_REPLACE("mcpu", I188, 10000000)
   MDRV_CPU_MEMORY(SLEIC3_80188_readmem, SLEIC3_80188_writemem)
   MDRV_CPU_PORTS(SLEIC_80188_readport, SLEIC_80188_writeport)
