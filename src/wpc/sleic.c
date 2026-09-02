@@ -261,12 +261,17 @@ static INTERRUPT_GEN(sleic1_irq_gen) {
  * strapped.  If the music comes out an octave low, /4 is the next candidate and this line
  * is the whole fix.
  *
- * Pitch and envelope speed scale with it; musical TEMPO does not -- that comes from the
- * sequencer's tick (F8: fm_player_tick on the INT0 odd branch, so IOMOON_INT0_HZ / 2 =
- * 36.25 Hz here, against the ~73 Hz per visible frame IOMOON_PANEL_HZ implies on
- * hardware).  So the emulated music runs at about half tempo for as long as INT0 has to
- * be throttled to stay servable -- that is F3's open gap showing up in the sound, not a
- * fault in this path, and it moves the day INT0's real rate is settled */
+ * Pitch and envelope speed scale with it; musical TEMPO does not.  Tempo comes from the
+ * sequencer's tick, which F8 puts on the INT0 handler's odd branch: IOMOON_INT0_HZ / 2 =
+ * 36.25 Hz here, and that half is MEASURED (SLEIC_PROBE_IRQ reports INT0 served at 72.5/s).
+ * How far off hardware that is depends entirely on F3's open INT0 source, so it is stated
+ * as a range and not as a number: 2x slow if INT0 is the per-FRAME candidate (~145 Hz),
+ * 4x slow under F3's per-PLANE recommendation (~290 Hz).  Deliberately NOT derived from
+ * IOMOON_PANEL_HZ -- the panel raster and the firmware's tick are independent clocks
+ * (F13), and F3's addendum warns in as many words that 72.5 is a serviceability constant
+ * and not "145 / 2 planes".  What will settle it is the OWNER'S SOUND CHECKPOINT: play a
+ * track on the real machine beside this one and the tempo ratio names INT0's rate
+ * directly, which makes that listening test a measurement rather than an opinion */
 #define IOMOON_YM3812_CLOCK 4000000
 
 /* Fractional tick accumulators, and one held request per source.  The request has to be
@@ -1999,8 +2004,11 @@ MACHINE_DRIVER_START(SLEIC2)
   // device.  The YM3812 (IC60) carries the FM music at PCS5 0xA0280/0xA0281 (F8, decoded
   // in sleic2_periph_w) and the OKI MSM6376 (IC51) the speech and effects at PCS6 (F9).
   //
-  // The base driver's MDRV_SOUND_ADD(DAC, ...) is dropped here, and it is dropped on
-  // evidence rather than on tidiness.  Nothing on this machine is a CPU-written DAC: the
+  // The MDRV_SOUND_ADD(DAC, ...) line this block used to carry is gone, and it is dropped
+  // on evidence rather than on tidiness.  (It was this block's own line, not something
+  // inherited: MACHINE_DRIVER_START(SLEIC) adds no sound device at all -- each of SLEIC1,
+  // SLEIC2 and SLEIC3 states its own set, which is why removing it here changes nothing
+  // for the other two.)  Nothing on this machine is a CPU-written DAC: the
   // only converter on board 011-029A is IC61, a YM3014B, which is the YM3812's own
   // companion serial DAC (it takes the OPL2's serial output, not a bus byte) and is
   // therefore already inside PinMAME's YM3812 emulation; IC62 is an LM324-class op-amp
