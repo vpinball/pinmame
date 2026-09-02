@@ -1194,7 +1194,9 @@ static WRITE_HANDLER(z80_write_port) {
   }
 }
 
-/* Z80 I/O processor state shadow (Bike Race port handlers below) */
+/* Z80 I/O processor state shadow, shared by the SLEIC1 / SLEIC2 / SLEIC3 port handlers
+ * (all three I/O ROMs drive the same latch conventions; Io Moon uses lampRow and keeps
+ * its own J1 and switch-column state in iomoon_j1) */
 static struct {
   UINT8 swStrobe; /* port 0x82: switch matrix column strobe (0..5 after decode) */
   UINT8 lampCol;  /* lamp matrix column (after decode) */
@@ -1401,10 +1403,15 @@ MEMORY_END
 /            test mode), 5 -> the auto-repeating 0x32 (0x33 in test mode, 0D3C/0D44)
 /  IN  0x04  cabinet/config byte -- see IOMOON_PORT04_IDLE
 /
-/  OUT 0x80  J1 data lines            OUT 0x83  lamp column strobe   } F7, Task 13
-/  OUT 0x81  J1 control (bit map F6)  OUT 0x84  lamp row data        }
-/  OUT 0x82  switch column strobe     OUT 0x85/0x86  driver latches, active low
+/  OUT 0x80  J1 data lines            OUT 0x83  lamp column strobe, one-hot 0x01..0x80
+/  OUT 0x81  J1 control (bit map F6)  OUT 0x84  lamp row data, active HIGH, latched
+/  OUT 0x82  switch column strobe     OUT 0x85/0x86  driver latches, active LOW
 /                                     OUT 0x87  direct-input index + flag bits
+/
+/  The three output groups are F7: 8 columns x 8 bits = 64 lamps (row byte on 0x84, then
+/  the column strobe on 0x83), and TWO 8-bit driver latches = 16 driver bits -- not the
+/  "7 columns x 16 rows" and "18 solenoids" of the service manual's summary, both of which
+/  the I/O ROM contradicts.
 /-----------------------------------------------------------------------------------*/
 
 /* Port 0x04 with nothing pressed.  Three bits have to be right or the firmware misbehaves,
@@ -1493,10 +1500,52 @@ static WRITE_HANDLER(iomoon_z80_write) {
       if (data) { const unsigned col = core_BitColToNum(data & -data);
                   if (col < 6) iomoon_j1.swCol = (UINT8)col; }
       break;
-    default:   /* 0x83/0x84 lamps, 0x85/0x86 drivers, 0x87 direct-input index: F7, Task 13.
-                * Silently ignored rather than logged -- the lamp refresh writes on every
-                * one of the Z80's ~977 interrupts per second */
+    case 0x03: /* port 0x83: lamp-matrix COLUMN strobe, one-hot 0x01..0x80 = column 0..7.
+                * lamp_colN_out (Z80 3457..34C7, one column per lamp_scan_tick, so the whole
+                * matrix is refreshed every 8 Z80 interrupts) writes the row byte to 0x84
+                * FIRST and pulses the column here second, so the pair commits on this
+                * strobe with the row latched by the preceding 0x84 */
+      if (data) coreGlobals.tmpLampMatrix[core_BitColToNum(data & -data)] = sleic_io.lampRow;
       break;
+    case 0x04: /* port 0x84: lamp-matrix ROW data, ACTIVE HIGH -- no inversion.  The byte is
+                * one of C10F..C116, which sub_353A fills either verbatim from the "lit" bank
+                * C0FF..C106 or as that bank ANDed with the "steady" bank C107..C10E on its
+                * alternate phase (the blink model: lit+steady = on, lit only = blinking),
+                * so a 1 bit is a lamp that is on; boot_port_init 043A starts it at 0x00.
+                * Latched here, committed on the 0x83 strobe */
+      sleic_io.lampRow = data;
+      break;
+    case 0x05: /* port 0x85: driver latch A -> solenoids 1-8.  ACTIVE LOW, so the byte is
+                * inverted here and coreGlobals carries positive logic: boot_port_init 0427
+                * writes 0xFF (everything off) and every driver routine CLEARS its bit to
+                * fire (AND #~bit at 05D7, 05FD, 0623, ...) and SETs it to release (OR #bit).
+                * Writing the driver-local shadow rather than coreGlobals.solenoids is
+                * deliberate: SLEIC_interface_update copies it over once a VBLANK.
+                *
+                * Bits 0/1, 2/3 and 4/5 are three COMPLEMENTARY PAIRS, bits 6 and 7 two
+                * singles (F7).  Each pair is one dual-wound flipper driven one winding at a
+                * time -- the button handlers sub_1292 / sub_12D8 choose between the two on
+                * that flipper's EOS contact (C0DB bit 6 / bit 7), i.e. one winding while it
+                * is travelling and the other to hold it up, and sub_064D / sub_06C2 release
+                * both.  WHICH physical coil sits on each bit is in neither ROM, so the
+                * mapping is the plain one, driver bit b -> solenoid b+1, and no coil is
+                * named here -- unlike Sleic Pin-Ball, whose manual numbering is verified */
+      locals.solenoids = (locals.solenoids & ~(UINT32)0x00ff) | (UINT32)(data ^ 0xff);
+      break;
+    case 0x06: /* port 0x86: driver latch B -> solenoids 9-16.  Same active-low convention
+                * (boot_port_init 042C also writes 0xFF), but all eight bits are independent:
+                * fired at 0706-07D1, released at 081B-0892, plus the timed auto-release path
+                * at 0ADA-0C51 inside the Z80's IRQ handler (F7) */
+      locals.solenoids = (locals.solenoids & ~(UINT32)0xff00) | ((UINT32)(data ^ 0xff) << 8);
+      break;
+    case 0x07: /* port 0x87: NOT a driver output.  Low nibble = direct_input_scan's 16-way
+                * mux index (0DEA-0E01; the selected input comes back on port-0x01 bit 5, and
+                * the scan is gated off entirely by IOMOON_PORT04_IDLE bit 0), bits 4 and 5
+                * are firmware flags (2851/2831 and port87_bit5_set/_clear), and
+                * boot_port_init 0420 starts the port at 0x30.  Nothing to drive */
+      break;
+    default:
+      logerror("iomoon Z80 write port %02x = %02x\n", 0x80 + offset, data);
   }
 }
 
