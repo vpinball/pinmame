@@ -274,6 +274,37 @@ static INTERRUPT_GEN(sleic1_irq_gen) {
  * directly, which makes that listening test a measurement rather than an opinion */
 #define IOMOON_YM3812_CLOCK 4000000
 
+/* Io Moon OKI MSM6376 (IC51) playback rate, in Hz -- the rate the driver hands the core as
+ * the voice stream's sample rate, so it is what sets speech PITCH and duration.
+ *
+ * Unlike the YM3812's clock this one is MEASURED, out of the firmware and the sample ROMs,
+ * and it does not need the OKI's crystal to be traced.  The firmware pairs every phrase
+ * with a playing time: oki_trigger_a/b (F9) load the duration table CS:0C1F+2*(n-1) into
+ * [12FD]/[1300] and the timer-0 ISR counts it down at IOMOON_TIMER0_HZ, freeing the channel
+ * when it hits zero -- i.e. the table is the machine's own statement of how long phrase n
+ * lasts.  The sample ROMs state the same thing in nibbles: phrase n's chained ADPCM blocks
+ * (table entry n*4, see the region note in sleic.h) are 2 nibbles per byte.  Dividing one by
+ * the other over ALL 28 phrases gives the rate the two agree on:
+ *
+ *     phrase 1   292 ticks = 2.944 s   93 496 nibbles  ->  31 757 Hz
+ *     phrase 13  449 ticks = 4.527 s  143 818 nibbles  ->  31 768 Hz
+ *     phrase 28  449 ticks = 4.527 s  143 690 nibbles  ->  31 740 Hz
+ *     ... 28 of 28 inside 31 526 - 32 176 Hz; the long phrases (where a +-0.5 tick rounding
+ *     is negligible) cluster at 31 700 - 31 770 Hz, aggregate 31 747 Hz.
+ *
+ * That is 0.8 % under 32 kHz and 1.6 % over 31.25 kHz, the two rates a 6376 is normally
+ * strapped for (4.096 MHz and 4 MHz divided by 128), and the residual is inside the error
+ * IOMOON_TIMER0_HZ carries from IOMOON_CPU_CLOCK -- a 10.08 MHz part instead of the assumed
+ * 10 MHz makes the fit exactly 32 000.  So 32 kHz is the round value the evidence names,
+ * and it is independently what the reverse-engineering side's sample extractor
+ * (scripts/extract-oki-msm6376.py) defaults to.
+ *
+ * It is stated here rather than reusing SLEIC_okim6376_intf2's 4000000/132: that divisor is
+ * the OKIM6295's (pin 7) and belongs to Bike Race's interface, it is 4.7 % slow against the
+ * measurement above, and sharing the struct would mean any pitch correction from the owner's
+ * sound checkpoint silently retuned Bike Race as well */
+#define IOMOON_OKI_SAMPLE_RATE 32000
+
 /* Fractional tick accumulators, and one held request per source.  The request has to be
  * held because of how this i86 core delivers interrupts.  cpu_set_irq_line_and_vector does
  * not touch the CPU itself: it appends the request to a per-CPU event queue and schedules a
@@ -801,6 +832,22 @@ static struct OKIM6295interface SLEIC_okim6376_intf2 =
 	{ REGION_USER1 },	/* memory region */
 	{ 75 }				/* volume */
 };
+/* Io Moon (SLEIC2) OKI MSM6376 (IC51).  Same shape as the interface above and the same
+ * region -- REGION_USER1 holds V1 3_03.bin at 0x00000 and V1 3_04.bin at 0x80000, which is
+ * where the firmware's own phrase table says the samples are (sleic.h's SLEIC_ROMSTART5
+ * note) -- but the stream rate is Io Moon's measured one rather than Bike Race's assumed
+ * 4 MHz/132.  See IOMOON_OKI_SAMPLE_RATE for the derivation; it is the one knob the owner's
+ * speech pitch/tempo A/B lands on, and having it here keeps that A/B off Bike Race.
+ *
+ * num = 0 is not "no chips": it is how PinMAME's OKIM6295 core is told this is a 6376 --
+ * two voices instead of four, and generate_adpcm_6376's chained-block decoder (adpcm.c) */
+static struct OKIM6295interface SLEIC2_okim6376_intf =
+{
+	0,								/* 6376 marker: 1 chip (IC51), 2 voices        */
+	{ IOMOON_OKI_SAMPLE_RATE },		/* playback rate -- measured, see the constant */
+	{ REGION_USER1 },				/* V1 3_03.bin + V1 3_04.bin, contiguous 1 MB  */
+	{ 75 }							/* volume                                      */
+};
 static struct DACinterface SLEIC_dac_intf = { 1, { 25 }};
 
 static READ_HANDLER(read_0) {
@@ -1045,13 +1092,93 @@ static struct {
   UINT8 swCol;     /* Z80 port 0x82: switch-matrix column strobe, decoded to 0..5      */
 } iomoon_j1; //!!
 
-/* Io Moon 80188 peripheral write.  PCS0's page select (F2), the J1 outbound half (PCS1
- * data + the PCS4 bit-5 strobe, F6) and PCS5's YM3812 pair (F8) are wired; PCS6 OKI (F9)
- * and the PCS0 NVRAM gate (F10) are later tasks and are only logged */
+/*-------------------------------------------------------------------------------------
+/  Io Moon (SLEIC2) OKI MSM6376 speech and effects -- finding F9.
+/
+/  The whole chip is driven by two addresses, and F9 accounts for every write the ROM makes
+/  to either of them (5 writes to PCS6, 8 to PCS0, all enumerated):
+/
+/    PCS6 0xA0300   an 8-bit latch on the OKI's data pins.  Bits 0-6 are the phrase number;
+/                   bit 7 is the CHANNEL, and the driver reads it as the chip's CH2 pin.
+/    PCS0 0xA0000   bit 5 is /OKCS, the chip's start (ST) input: idle HIGH, pulsed low then
+/                   high by okcs_strobe D0CE2.  The other PCS0 bits belong to F2 and F10.
+/
+/  The three sequences, verbatim from F9:
+/
+/    oki_trigger_a D0C57   0xA0300 <- 0x80|n   then strobe            (bit 7 SET)
+/    oki_trigger_b D0C84   0xA0300 <- n&0x7F   then strobe,           (bit 7 CLEAR)
+/                          then 0xA0300 <- 0x80|n with NO second strobe
+/    sub_D0CB8             0xA0300 <- 0        then bit 5 LOW and left low  (silence/reset)
+/
+/  Reading bit 7 as CH2 is what makes those three coherent, and it is the reading the code
+/  argues for rather than an analogy with the sister machines: trigger_b drives bit 7 low
+/  only across its strobe and RESTORES it immediately after, which is a level a pin is held
+/  at for the duration of an event, not a data byte -- a data byte would have no reason to
+/  be rewritten once latched.  Boot leaves the latch at 0x80 (D00C4/D00C6) and the shadow at
+/  0x28, i.e. the idle state is "channel 2 selected, ST released".
+/
+/  PinMAME's core speaks the 6295-style two-byte protocol instead of ST/CH2 (adpcm.c
+/  OKIM6376_data_w: a byte with bit 7 set latches the phrase, the next byte starts the
+/  voices named by its bits 4-5), so a strobe is translated into that pair here.  Three
+/  details of the translation are deliberate:
+/
+/   - WHICH EDGE.  The falling one.  For both trigger routines it makes no difference --
+/     the latch holds the same value at both edges, because trigger_b's rewrite comes after
+/     the pulse -- so the choice is settled by the third sequence: sub_D0CB8 drives ST low
+/     and leaves it there, so only the falling edge sees the silence request at all.
+/     A consequence worth stating: a strobe issued while ST is ALREADY low fires nothing
+/     here.  That is not a hole in the model, it is the pin -- a level that does not move
+/     is an edge the chip does not see either -- and the firmware never does it: after
+/     sub_D0CB8 it sets [1303] = 0xFF, and the timer-0 ISR restores ST high through
+/     pcs0_bit5_set_far (D0284) BEFORE it starts the parked sample.
+/   - PHRASE 0 = STOP BOTH VOICES.  That is sub_D0CB8's whole purpose: it is called when a
+/     priority sample arrives and both channels are busy (D0BBE), and it then parks the
+/     sample for the timer-0 ISR to start a tick later.  Stopping only the CH2-selected
+/     voice would leave the other one playing, and the core would then REFUSE the parked
+/     sample ("requested to play sample on non-stopped voice") -- the priority path would
+/     drop exactly the sound it exists to make room for.
+/   - RETRIGGER STOPS FIRST.  A real ST pulse restarts a channel whatever it was doing; the
+/     core instead refuses a start on a voice still playing.  The firmware's own busy model
+/     is software (F9: the duration counters, no BUSY pin is read anywhere), and those
+/     durations match the sample lengths to about 1 % -- see IOMOON_OKI_SAMPLE_RATE -- so a
+/     re-trigger landing a few milliseconds early is expected, and without the explicit stop
+/     it would be silently dropped instead of restarting.
+/
+/  Not modelled, and stated rather than hidden: WHICH physical channel bit 7 = 1 is.  Both
+/  voices mix to the same output at the same volume and the firmware never reads the chip
+/  back, so swapping them changes nothing audible -- only which voice number a phrase
+/  occupies -- and no dump is needed to settle something with no observable difference.
+/-----------------------------------------------------------------------------------*/
+static UINT8 iomoon_oki_latch; /* PCS6 0xA0300: bit 7 = CH2, bits 0-6 = phrase number */ //!!
+
+static void iomoon_oki_strobe(void) {
+  const UINT8 phrase = iomoon_oki_latch & 0x7f;
+  /* CH2 -> the core's voice bit: bit 4 = voice 0, bit 5 = voice 1 (adpcm.c, data >> 4) */
+  const UINT8 voice  = (iomoon_oki_latch & 0x80) ? 1 : 0;
+
+  if (!phrase) {                      /* sub_D0CB8: latch 0, ST low -- silence both */
+    OKIM6376_data_0_w(0, 0x18);       /* no command pending -> bits 3,4 = stop voices 0,1 */
+    return;
+  }
+  OKIM6376_data_0_w(0, (UINT8)(0x08 << voice));   /* abort this channel first (see above) */
+  OKIM6376_data_0_w(0, (UINT8)(0x80 | phrase));   /* phrase number on D0-D6              */
+  OKIM6376_data_0_w(0, (UINT8)(0x10 << voice));   /* start it on the CH2-selected voice  */
+}
+
+/* Io Moon 80188 peripheral write.  PCS0's page select (F2) and /OKCS strobe (F9), the J1
+ * outbound half (PCS1 data + the PCS4 bit-5 strobe, F6), PCS5's YM3812 pair (F8) and PCS6's
+ * OKI latch (F9) are wired; the PCS0 NVRAM gate bits (F10) need no action -- the window
+ * they open is mapped unconditionally, see IOMOON_NVRAM_BASE */
 static WRITE_HANDLER(sleic2_periph_w) {
   switch (offset) {
     case 0x000: /* PCS0: bits 0-2 graphics page (F2), 3/4 NVRAM window gate (F10), 5 = OKI /OKCS (F9) */
       if ((data ^ iomoon_pcs0) & 0x07) iomoon_set_gfx_bank(data);
+      /* bit 5 = the OKI's ST input, idle high (F9).  Only the three OKI routines ever move
+       * it -- okcs_strobe D0CE2, pcs0_bit5_clear D0CFC and pcs0_bit5_set_far D0D09 -- while
+       * the page select F00A0 and the NVRAM gate D0596/D05B7 write the same shadow byte
+       * with bit 5 untouched, so an edge here is always an OKI event and never a side
+       * effect of the other two fields sharing this register */
+      if ((iomoon_pcs0 & 0x20) && !(data & 0x20)) iomoon_oki_strobe();
       iomoon_pcs0 = data;
       return;
     case 0x080: /* PCS1: the byte on the outbound J1 data lines (qout_service_pcs1 D020F).
@@ -1092,7 +1219,12 @@ static WRITE_HANDLER(sleic2_periph_w) {
                  * accepts the pair back to back -- so nothing here waits */
       YM3812_write_port_0_w(0, data);
       return;
-    default:                          /* PCS2, PCS3, PCS6 OKI */
+    case 0x300: /* PCS6: the OKI MSM6376's data/CH2 latch (F9).  Latching alone starts
+                 * nothing -- the PCS0 bit-5 pulse above does -- which is why the boot's
+                 * 0x80 (D00C6) and trigger_b's trailing rewrite (D0CAE) are silent here */
+      iomoon_oki_latch = data;
+      return;
+    default:                          /* PCS2, PCS3 */
 #ifdef DEBUG_SLEIC
       if (getenv("SLEIC_TRACE_PW")) fprintf(stderr, "[188->periph] PCS%d off=%03x data=%02x\n", offset>>7, offset, data);
 #endif
@@ -1678,6 +1810,10 @@ static MACHINE_INIT(SLEIC2) {
   machine_init_SLEIC();
   iomoon_pcs0 = 0x28;
   iomoon_set_gfx_bank(iomoon_pcs0);
+  /* The OKI latch starts empty rather than at the 0x80 boot_init writes: 0x28 above already
+   * has ST released, so nothing can be triggered before the firmware's own D00C6 write
+   * arrives, and phrase 0 would be a stop in any case */
+  iomoon_oki_latch = 0;
   iomoon_int0_acc = iomoon_t0_acc = 0.0;
   iomoon_int0_pend = iomoon_t0_pend = 0;
   iomoon_panel_acc = 0.0;
@@ -2020,7 +2156,7 @@ MACHINE_DRIVER_START(SLEIC2)
   // the device only ever added a silent mixer channel.  (SLEIC1 and SLEIC3 keep theirs:
   // their boards were not traced for this and are not this task's to change.)
   MDRV_SOUND_ADD(YM3812, SLEIC2_ym3812_intf)
-  MDRV_SOUND_ADD(OKIM6295, SLEIC_okim6376_intf2)
+  MDRV_SOUND_ADD(OKIM6295, SLEIC2_okim6376_intf)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(SLEIC3)
