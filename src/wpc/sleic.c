@@ -668,6 +668,116 @@ static MEMORY_WRITE_START(SLEIC1_80188_writemem)
   {0x60410,0x6340f, MWA_RAM},
 MEMORY_END
 
+/*----------------------------------------------------------------------------------
+/  Io Moon (SLEIC2) 80188 memory map.
+/
+/  PinMAME's i86/i188 core does not emulate the 80188's internal peripheral control
+/  block, so the firmware's OUT DX,AX writes to 0xFFA0.. are inert (they land in
+/  i80188_write_port, a no-op) and the windows below are hard-wired to exactly the
+/  values the boot table programs -- the 30-entry table at D000:0041, findings F1:
+/
+/    UMCS  FFA0 = C03C   0xC0000-0xFFFFF   ROM1 code half + the reset vector (FFFF0)
+/    LMCS  FFA2 = 3FFC   0x00000-0x3FFFF   ROM1 low half: the IVT is RESIDENT IN ROM at
+/                                          physical 0 (nothing copies it), followed by the
+/                                          animation data the F5183 far-pointer table
+/                                          addresses.  Not banked (F2)
+/    PACS  FFA4 = A03C   0xA0000           peripheral block, PCS0..PCS6 on 0x80 spacing
+/    MMCS  FFA6 = 41FC   mid-range memory based at 0x40000, and MPCS FFA8 = A0FC makes
+/    MPCS  FFA8 = A0FC   that four 64 KB blocks MCS0-MCS3:
+/                          MCS0 0x40000  work RAM (UM62256 IC12; stack SS:SP = 4152:0205)
+/                          MCS1 0x50000  non-volatile store, window at 0x50400 (F10)
+/                          MCS2 0x60000  ONE 64 KB page of the graphics ROM (F2)
+/                          MCS3 0x70000  DMD staging buffer 7000:0000-03FF (F13)
+/
+/  Segments the firmware actually loads confirm the map is complete: 0000/1000/3000
+/  (LMCS), 4000/4130/4134/4137/413C (MCS0), 5040 (MCS1), 7000 (MCS3), A000 (PACS) --
+/  and 6000 never as an immediate, only through the far pointers F2 describes.
+/---------------------------------------------------------------------------------*/
+
+/* Io Moon non-volatile store (F10): a window at segment 5040 = flat 0x50400 inside
+ * MCS1, gated by the complementary PCS0 bits 3/4 (pcs0_window_open D057E /
+ * pcs0_window_close D059F).  Every access in the ROM is bracketed by that pair, so the
+ * window is mapped unconditionally here -- modelling the gate could only ever turn a
+ * correctly bracketed access into a lost one.  The part is inferred to be the 28C64A
+ * (8 KB) on the board inventory; the firmware's highest offset is 0x31D, so 8 KB backs
+ * everything it touches.  Zero-filled on a fresh boot: sub_D05C0 finds no signature,
+ * sub_D622C writes the factory defaults, and core_nvram persists them from then on */
+#define IOMOON_NVRAM_BASE 0x50400
+#define IOMOON_NVRAM_SIZE 0x2000
+static UINT8 iomoon_nvram[IOMOON_NVRAM_SIZE]; //!!
+static READ_HANDLER(iomoon_nvram_r)  { return iomoon_nvram[offset]; }
+static WRITE_HANDLER(iomoon_nvram_w) { iomoon_nvram[offset] = data; }
+static NVRAM_HANDLER(SLEIC2) {
+  core_nvram(file, read_or_write, iomoon_nvram, sizeof iomoon_nvram, 0x00);
+}
+
+/* Io Moon graphics bank (F2).  PCS0 bits 0-2 are a 3-bit page register (sub_F00A0 at
+ * F00A0, shadow [4000:1134], 17 call sites all pushing an immediate 0..6) that pages
+ * one 64 KB page of V1 3_02.bin into segment 6000.  All seven populated pages start
+ * with the same 32-row / 16-byte / 0x200-stride header anim_stream_open reads, and
+ * page 7 is blank, which is what makes page = file offset >> 16 the natural reading.
+ *
+ * That page->offset mapping is CONFIRMED; the BIT ORDER of the selector (whether bit 0
+ * is A16 or A18) is INFERRED -- only the IC7 PAL20L10 or a scope can settle the wiring.
+ * It therefore lives in this table: if the attract animations come out wrong, permuting
+ * these seven bases is the one-line fix, and nothing else has to change */
+#define IOMOON_GFX_BANK 1
+static const UINT32 iomoon_gfx_page_base[8] = {
+  0x00000, 0x10000, 0x20000, 0x30000, 0x40000, 0x50000, 0x60000,
+  0x70000  /* page 7: blank in V1 3_02.bin and never selected */
+};
+static UINT8 iomoon_pcs0; /* PCS0 (0xA0000) output shadow; boot leaves it at 0x28 */ //!!
+
+static void iomoon_set_gfx_bank(UINT8 pcs0) {
+  cpu_setbank(IOMOON_GFX_BANK, memory_region(SLEIC_MEMREG_GFX) + iomoon_gfx_page_base[pcs0 & 0x07]);
+}
+
+/* Io Moon 80188 peripheral write.  Only PCS0's page-select side effect is wired up
+ * here; the rest of the block (PCS1 J1 outbound, PCS2, PCS4, PCS5 YM3812, PCS6 OKI +
+ * NVRAM gate) is the subject of the following driver work and is only logged for now */
+static WRITE_HANDLER(sleic2_periph_w) {
+  switch (offset) {
+    case 0x000: /* PCS0: bits 0-2 graphics page (F2), 3/4 NVRAM window gate (F10), 5 = OKI /OKCS (F9) */
+      if ((data ^ iomoon_pcs0) & 0x07) iomoon_set_gfx_bank(data);
+      iomoon_pcs0 = data;
+      return;
+    default:
+#ifdef DEBUG_SLEIC
+      if (getenv("SLEIC_TRACE_PW")) fprintf(stderr, "[188->periph] PCS%d off=%03x data=%02x\n", offset>>7, offset, data);
+#endif
+      logerror("iomoon periph A000:%03X = %02x\n", offset, data);
+      return;
+  }
+}
+
+/* Io Moon 80188 peripheral read.  Nothing in the block is modelled yet: the J1 inbound
+ * byte at PCS2 0xA0100 (F4/F6) and the YM3812 status at PCS5 0xA0280 (F8) come with the
+ * link and sound work.  Deliberately NOT the base sleic_periph_r -- its 0x37 "no event"
+ * idle and 0xA0180 ready bit are Bike Race conventions that do not apply here */
+static READ_HANDLER(sleic2_periph_r) {
+  return 0;
+}
+
+static MEMORY_READ_START(SLEIC2_80188_readmem)
+  {0x00000,0x3ffff, MRA_ROM},         /* LMCS: ROM1 low half -- resident IVT + animation data */
+  {0x40000,0x4ffff, MRA_RAM},         /* MCS0: work RAM (UM62256 IC12)                        */
+  {IOMOON_NVRAM_BASE,IOMOON_NVRAM_BASE+IOMOON_NVRAM_SIZE-1, iomoon_nvram_r}, /* MCS1: seg 5040 store */
+  {0x60000,0x6ffff, MRA_BANK1},       /* MCS2: graphics ROM page (IOMOON_GFX_BANK, PCS0 bits 0-2) */
+  {0x70000,0x7ffff, MRA_RAM},         /* MCS3: DMD staging (7000:0000-03FF)                   */
+  {0xa0000,0xa0fff, sleic2_periph_r}, /* PACS: PCS0-PCS6                                      */
+  {0xc0000,0xfffff, MRA_ROM},         /* UMCS: ROM1 code half + reset vector                  */
+MEMORY_END
+
+static MEMORY_WRITE_START(SLEIC2_80188_writemem)
+  {0x40000,0x4ffff, MWA_RAM},         /* MCS0: work RAM                                       */
+  {IOMOON_NVRAM_BASE,IOMOON_NVRAM_BASE+IOMOON_NVRAM_SIZE-1, iomoon_nvram_w}, /* MCS1: seg 5040 store */
+  {0x70000,0x7ffff, MWA_RAM},         /* MCS3: DMD staging                                    */
+  {0xa0000,0xa0fff, sleic2_periph_w}, /* PACS: PCS0-PCS6                                      */
+  /* 0x00000-0x3FFFF and 0x60000-0x6FFFF are ROM and are deliberately left unmapped for
+   * writes: no instruction in the decoded ROM writes either window (F2), so a write
+   * showing up there is a bug worth seeing in the log rather than silently absorbing */
+MEMORY_END
+
 /* Bike Race (SLEIC3) 80188 map. MMCS=0x01FF / MPCS=0xC0FC decode a 512 KB
  * mid-range block based at 0, split into four 128 KB chip-selects MCS0-3:
  *   MCS0 0x00000-0x1FFFF : work RAM (boot stack 012F:0203; the boot copies its IVT
@@ -1012,6 +1122,15 @@ static MACHINE_INIT(SLEIC1) {
   locals.dmdEqualFields = 1;
 }
 
+/* Io Moon: point the segment-6000 graphics bank somewhere valid before the first
+ * instruction runs.  0x28 is the value boot_init leaves in the PCS0 shadow [4000:1134]
+ * (bit 3 = NVRAM window closed, bit 5 = OKI /OKCS idle high, page bits clear) */
+static MACHINE_INIT(SLEIC2) {
+  machine_init_SLEIC();
+  iomoon_pcs0 = 0x28;
+  iomoon_set_gfx_bank(iomoon_pcs0);
+}
+
 /* Bike Race (SLEIC3) playfield-matrix test keys. The 40 matrix positions (Z80 switch
  * codes 0x0A-0x31) are read by the 80188 through swMatrix[1..5] (COL0..COL4, selected by
  * the port-0x82 one-hot column strobe); code = 0x0A + 8*(col-1) + row. Mapping every
@@ -1171,6 +1290,20 @@ MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(SLEIC2)
   MDRV_IMPORT_FROM(SLEIC)
+  MDRV_CORE_INIT_RESET_STOP(SLEIC2,NULL,NULL)
+
+  // Io Moon 80188 map: LMCS ROM at 0, UMCS ROM at 0xC0000, the four MMCS blocks
+  // (work RAM / non-volatile store / banked graphics page / DMD staging) and the
+  // PACS peripheral block.  See the SLEIC2_80188_readmem comment block for the
+  // chip-select values this hard-wires and where they come from
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_MEMORY(SLEIC2_80188_readmem, SLEIC2_80188_writemem)
+
+  // Non-volatile store at segment 5040 (F10), persisted by NVRAM_HANDLER(SLEIC2) and
+  // zero-filled on a fresh boot, which is what makes the firmware seed its own factory
+  // defaults.  Replaces the base driver's generic_0fill, whose generic_nvram buffer
+  // this map does not reference
+  MDRV_NVRAM_HANDLER(SLEIC2)
 
   MDRV_SOUND_ADD(YM3812, SLEIC_ym3812_intf)
   MDRV_SOUND_ADD(OKIM6295, SLEIC_okim6376_intf2)

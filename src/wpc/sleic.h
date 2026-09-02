@@ -73,6 +73,9 @@
 #define SLEIC_MEMREG_CPU     REGION_CPU1
 #define SLEIC_MEMREG_IO      REGION_CPU2
 #define SLEIC_MEMREG_DISPLAY REGION_CPU3
+/* Io Moon's graphics ROM: not CPU-addressable at a fixed address, it is paged into
+ * segment 6000 a 64 KB page at a time (findings F2), so it lives in its own region */
+#define SLEIC_MEMREG_GFX     REGION_USER2
 
 /* CPUs */
 #define SLEIC_MAIN_CPU    0
@@ -90,16 +93,27 @@ ROM_START(name) \
   NORMALREGION(0x100000, REGION_USER1) \
     ROM_LOAD(n2, 0x00000, 0x80000, chk2)
 
+/* Io Moon (SLEIC2).  The 80188 sees ROM1 (n1) through two chip selects that are not
+ * adjacent in its address space, so the image is placed twice in the CPU region:
+ *   LMCS 0x00000-0x3FFFF <- ROM1 file 0x00000-0x3FFFF (resident IVT + animation data)
+ *   UMCS 0xC0000-0xFFFFF <- ROM1 file 0x40000-0x7FFFF (all code, reset vector at FFFF0)
+ * The full image is loaded at 0x80000 (so file 0x40000 lands on 0xC0000) and its low
+ * 256 KB is reloaded at 0, which leaves 0x40000-0x7FFFF empty for the mid-range RAM
+ * windows to alias into.  The graphics ROM (n2) is NOT flat in the address space: it
+ * is paged one 64 KB page at a time into segment 6000 by PCS0 bits 0-2, so it stays
+ * in its own region and the driver banks it.  n3/n4 are the OKI sample ROMs, n5 the
+ * Z80 I/O ROM.  See findings F1/F2 */
 #define SLEIC_ROMSTART5(name, n1, chk1, n2, chk2, n3, chk3, n4, chk4, n5, chk5) \
 ROM_START(name) \
   NORMALREGION(0x100000, SLEIC_MEMREG_CPU) \
     ROM_LOAD(n1, 0x80000, 0x80000, chk1) \
+    ROM_RELOAD(  0x00000, 0x40000) \
   NORMALREGION(0x10000, SLEIC_MEMREG_IO) \
     ROM_LOAD(n5, 0x0000, 0x8000, chk5) \
   NORMALREGION(0x100000, REGION_USER1) \
     ROM_LOAD(n3, 0x00000, 0x80000, chk3) \
     ROM_LOAD(n4, 0x80000, 0x80000, chk4) \
-  NORMALREGION(0x100000, REGION_USER2) \
+  NORMALREGION(0x100000, SLEIC_MEMREG_GFX) \
     ROM_LOAD(n2, 0x00000, 0x80000, chk2)
 
 #define SLEIC_ROMSTART7(name, n1, chk1, n2, chk2, n3, chk3, n4, chk4, n5, chk5, n6, chk6, n7, chk7) \
