@@ -759,7 +759,7 @@ static MACHINE_INIT(cc) {
   if ((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) == 0)
      for (int i = 0; i < coreGlobals.nSolenoids; i++)
         if (coreGlobals.physicOutputState[i].type != CORE_MODOUT_SOL_2_STATE)
-           core_set_pwm_output_type(CORE_MODOUT_SOL0, 1, CORE_MODOUT_LEGACY_SOL_2_STATE);
+           core_set_pwm_output_type(CORE_MODOUT_SOL0 + i, 1, CORE_MODOUT_LEGACY_SOL_2_STATE);
   if ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS) == 0)
      core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80 /*coreGlobals.nLamps*/, CORE_MODOUT_LEGACY_SOL_2_STATE);
   if ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_GI) == 0)
