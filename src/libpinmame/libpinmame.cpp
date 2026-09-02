@@ -1864,6 +1864,8 @@ static void GetSolenoid1VPMState(void* callContext, void* pResult)
 {
    assert(_isRunning == 1);
    const int srcId = static_cast<StateMapping*>(callContext)->srcId;
+   if (options.usemodsol & CORE_MODOUT_FORCE_ON)
+      core_update_pwm_outputs(CORE_MODOUT_SOL0 + core_BitColToNum(srcId), 1);
    *static_cast<uint8_t*>(pResult) = (coreGlobals.solenoids & srcId) != 0 ? 1 : 0;
 }
 static void GetSolenoid2State(void* callContext, void* pResult)
@@ -1878,6 +1880,8 @@ static void GetSolenoid2VPMState(void* callContext, void* pResult)
 {
    assert(_isRunning == 1);
    const int srcId = static_cast<StateMapping*>(callContext)->srcId;
+   if (options.usemodsol & CORE_MODOUT_FORCE_ON)
+      core_update_pwm_outputs(CORE_MODOUT_SOL0 + core_BitColToNum(srcId) + 32, 1);
    *static_cast<uint8_t*>(pResult) = (coreGlobals.solenoids2 & srcId) != 0 ? 1 : 0;
 }
 static void GetCustomSolenoidState(void* callContext, void* pResult)
@@ -1913,6 +1917,8 @@ static void GetGIState(void* callContext, void* pResult)
 {
    assert(_isRunning == 1);
    const int srcId = static_cast<StateMapping*>(callContext)->srcId;
+   if (options.usemodsol & CORE_MODOUT_FORCE_ON)
+      core_update_pwm_outputs(CORE_MODOUT_GI0 + srcId, 1);
    if (core_gameData->gen & GEN_ALLWPC) // WPC GI level is 0..8
       *static_cast<float*>(pResult) = static_cast<float>(coreGlobals.gi[srcId]) / 8.f;
    else // Whitestar and SAM GI levels are either 0 or 9
@@ -1922,6 +1928,8 @@ static void GetGIVPMState(void* callContext, void* pResult)
 {
    assert(_isRunning == 1);
    const int srcId = static_cast<StateMapping*>(callContext)->srcId;
+   if (options.usemodsol & CORE_MODOUT_FORCE_ON)
+      core_update_pwm_outputs(CORE_MODOUT_GI0 + srcId, 1);
    *static_cast<uint8_t*>(pResult) = static_cast<uint8_t>(coreGlobals.gi[srcId]);
 }
 static void GetPhysOutState(void* callContext, void* pResult)
