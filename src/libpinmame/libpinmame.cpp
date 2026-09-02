@@ -592,7 +592,9 @@ extern "C" int osd_update_audio_stream(INT16* p_buffer)
          delete[] msg->buffer;
          delete msg;
          }, audioUpdate);
-      return samplesThisFrame;
+
+      // Re-seed the fixed per-frame quota (as osd_start_audio_stream does) instead of echoing the live count
+      return (int)(Machine->sample_rate / Machine->drv->frames_per_second);
    }
    else if (_p_Config->cb_OnAudioUpdated)
    {
