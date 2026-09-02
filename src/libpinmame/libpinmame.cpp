@@ -2238,9 +2238,10 @@ static void SetupMsgApiGameStates()
    {
       const int hasSAMModulatedLeds = (core_gameData->gen & GEN_SAM) && (core_gameData->hw.lampCol > 2);
       const int nLamps = (hasSAMModulatedLeds || coreGlobals.nLamps) ? coreGlobals.nLamps : (8 * (CORE_CUSTLAMPCOL + core_gameData->hw.lampCol));
-      const bool isPhysLamp = (coreGlobals.nLamps > 0) && ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS) != 0);
       for (uint16_t i = 0; i < nLamps; i++)
       {
+         const bool isPhysLamp = (hasSAMModulatedLeds && i >= 80) // SAM modulated LEDs are mapped to 80..127 and always reported as modulated outputs
+            || ((coreGlobals.nLamps > 0) && ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS) != 0));
          uint16_t l = coreData->m2lamp ? static_cast<uint16_t>(coreData->m2lamp((i / 8) + 1, i & 7)) : i;
          addDevice(PMPI_GROUP_LAMP, fmtString("Lamp #%x%x", (i / 8) + 1, (i & 7) + 1), nullptr, l, CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS, isPhysLamp ? GetPhysOutState : GetLampState, nullptr, isPhysLamp ? (CORE_MODOUT_LAMP0 + i) : i);
          addDevice(PMPI_GROUP_VPM_LAMP, fmtString("Lamp #%x%x", (i / 8) + 1, (i & 7) + 1), fmtString("FIXME define value"), l, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_CUSTOM, isPhysLamp ? GetPhysOutVPMState : GetLampVPMState, nullptr, isPhysLamp ? (CORE_MODOUT_LAMP0 + i) : i);
