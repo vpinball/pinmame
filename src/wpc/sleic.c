@@ -1880,6 +1880,12 @@ MACHINE_DRIVER_START(SLEIC2)
   // real model of findings F1/F3 -- timer 0 on vector 0x08 at 99.18 Hz and INT0 on
   // vector 0x0C at IOMOON_INT0_HZ, both interleaved on one tick.  The NMI is not
   // periodic and is not generated here; see the comment block above iomoon_irq_gen
+  //
+  // The base block's MDRV_CPU_VBLANK_INT(SLEIC_interface_update, 1) is DELIBERATELY left
+  // inherited (REPLACE does not clear it): that handler is what copies tmpLampMatrix ->
+  // lampMatrix and locals.solenoids -> coreGlobals.solenoids once a frame, so the lamp and
+  // driver decode in iomoon_z80_write writes the driver-local shadows only, exactly as the
+  // SLEIC1 and SLEIC3 port handlers do.  Do not re-state or drop it here
   MDRV_CPU_REPLACE("mcpu", I188, IOMOON_CPU_CLOCK)
   MDRV_CPU_MEMORY(SLEIC2_80188_readmem, SLEIC2_80188_writemem)
   MDRV_CPU_PERIODIC_INT(iomoon_irq_gen, IOMOON_IRQ_TICK_HZ)
