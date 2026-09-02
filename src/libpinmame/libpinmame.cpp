@@ -1751,19 +1751,31 @@ PINMAMEAPI int PinmameGetChangedNVRAM(PinmameNVRAMState* const p_nvramStates)
 
 PINMAMEAPI int PinmameReadMainCPUByte(const uint32_t address, uint8_t* const p_value)
 {
-	if (!_isRunning || p_value == nullptr)
+	return PinmameReadMainCPUMemory(address, p_value, 1);
+}
+
+/* A NULL from memory_get_read_ptr() means the read table holds a handler rather than
+   a direct pointer, not that the address is unreadable at all, se.c routes all of
+   Whitestar/Sega main RAM through ram_r. memory_find_base() has no bounds check. */
+
+static int ReadThroughRamBase(const uint32_t address, uint8_t* const p_buffer, const int size)
+{
+	const size_t regionLength = memory_region_length(REGION_CPU1);
+	if (address >= regionLength)
 	{
 		return 0;
 	}
 
-	uint8_t* p_memory = static_cast<uint8_t*>(memory_get_read_ptr(0, address));
-	if (p_memory == nullptr)
+	const uint8_t* const p_base = static_cast<const uint8_t*>(memory_find_base(0, address));
+	if (p_base == nullptr)
 	{
 		return 0;
 	}
 
-	*p_value = *p_memory;
-	return 1;
+	const int available = (int)std::min((size_t)size, regionLength - address);
+	memcpy(p_buffer, p_base, available);
+
+	return available;
 }
 
 /******************************************************
@@ -1782,7 +1794,7 @@ PINMAMEAPI int PinmameReadMainCPUMemory(const uint32_t address, uint8_t* const p
 		uint8_t* p_memory = static_cast<uint8_t*>(memory_get_read_ptr(0, address + i));
 		if (p_memory == nullptr)
 		{
-			return i;
+			return i > 0 ? i : ReadThroughRamBase(address, p_buffer, size);
 		}
 
 		p_buffer[i] = *p_memory;
