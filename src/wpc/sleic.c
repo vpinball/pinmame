@@ -39,10 +39,9 @@ static struct {
   /* Bike Race (SLEIC3) interrupt-rate accumulators, see sleic3_irq_gen */
   double int0Acc, t0Acc;
 
-  /* DMD: how the two raster fields are weighted, and which submit path is used;
-   * both in MACHINE_INIT (see notes at sleic3_build_dmd_frame and sleic_submit_dmd_frame) */
+  /* DMD: how the two raster fields are weighted; set in MACHINE_INIT
+   * (see the per-machine notes above sleic_build_dmd_frame) */
   int    dmdEqualFields;
-  int    dmdFromPtr;
 
   /* completed-frame latch for the I8039 machines, see SLEIC3_DMD_LATCH_TICKS */
   UINT8  dmdLatch[128 * 32];
@@ -233,6 +232,16 @@ static INTERRUPT_GEN(sleic1_irq_gen) {
  * 2 kHz = 0.5 ms of granularity against ISRs measured in milliseconds */
 #define IOMOON_IRQ_TICK_HZ 2000.0
 
+/* Panel visible-frame rate -- the third rate on that tick, and the only MEASURED one.
+ * From the Saleae capture of the panel wires (docs/dmd_wire_protocol.md): DOTCLK ~599 kHz
+ * over 128 x 32 dots x 2 bitplanes = 73.1 visible frames/s, and RCLK ~4.7 kHz over the 64
+ * row scans the PIC performs per visible frame (32 rows x 2 planes) = 73.4 -- the same
+ * figure from the other direction.  The capture's own "~145 Hz frame rate" line counts one
+ * BITPLANE scan as a frame; the IC23 listing shows two of those per visible frame.  It is
+ * NOT derived from IOMOON_INT0_HZ and must not be: the panel and the firmware's frame
+ * pipeline are two independent clocks on this machine (F13), which is the whole point */
+#define IOMOON_PANEL_HZ 73.0
+
 /* Fractional tick accumulators, and one held request per source.  The request has to be
  * held because of how this i86 core delivers interrupts.  cpu_set_irq_line_and_vector does
  * not touch the CPU itself: it appends the request to a per-CPU event queue and schedules a
@@ -252,7 +261,19 @@ static INTERRUPT_GEN(sleic1_irq_gen) {
 static double iomoon_int0_acc, iomoon_t0_acc; //!!
 static int    iomoon_int0_pend, iomoon_t0_pend; //!!
 
+/* The panel raster rides on the same tick (F13): IC23 free-runs and sends the 80188 no
+ * frame signal at all, so the DMD is sampled on a clock of its own rather than on
+ * anything the firmware does.  Defined with the Io Moon DMD block further down */
+static double iomoon_panel_acc; //!!
+static void iomoon_submit_dmd_frame(void);
+
 static INTERRUPT_GEN(iomoon_irq_gen) {
+  /* The panel raster is not an interrupt source and is serviced first: IC23 scans segment
+   * 7000 whatever the 80188 is doing, so the display stays live regardless of what the
+   * interrupt model below does */
+  iomoon_panel_acc += IOMOON_PANEL_HZ / IOMOON_IRQ_TICK_HZ;
+  if (iomoon_panel_acc >= 1.0) { iomoon_panel_acc -= 1.0; iomoon_submit_dmd_frame(); }
+
   iomoon_int0_acc += IOMOON_INT0_HZ   / IOMOON_IRQ_TICK_HZ;
   iomoon_t0_acc   += IOMOON_TIMER0_HZ / IOMOON_IRQ_TICK_HZ;
   if (iomoon_int0_acc >= 1.0) { iomoon_int0_acc -= 1.0; iomoon_int0_pend = 1; }
@@ -305,28 +326,43 @@ static INTERRUPT_GEN(sleic3_irq_gen) {
  *     that field 2 does not have at all, so the fields are strongly asymmetric and the
  *     pair really is a weighted 2-bit value.  Keep the 4-level mapping there.
  *
- * Set in MACHINE_INIT (locals.dmdEqualFields); SLEIC1 (Sleic Pin-Ball) overrides it */
+ *   Io Moon (IC23 PIC16C57): a third display program, and the most lopsided of the three
+ *     -- 200 row-hold counts for plane 0 against 30 for plane 1.  4 levels, and see
+ *     MACHINE_INIT(SLEIC2) for what that ratio does and does not settle.
+ *
+ * Set in MACHINE_INIT (locals.dmdEqualFields); SLEIC1 (Sleic Pin-Ball) and SLEIC2 (Io Moon)
+ * each state their own */
+
+/* Decode one 128x32 two-bitplane frame -- 32 rows x 16 bytes per plane, MSB = leftmost
+ * pixel, 1 = lit -- into the brightness grid core_dmd_submit_frame takes.  The two planes
+ * arrive as pointers because the machines stage them differently: the I8039 games
+ * interleave them in the panel buffer at 0x60410 (row stride 0x20, second plane +0x800),
+ * Io Moon writes two flat 512-byte planes at 7000:0000 (row stride 0x10, second plane
+ * +0x200, findings F13).  p0 is the MSB plane on all three -- see the per-machine
+ * weighting note above and the PIC row-hold ratio in MACHINE_INIT(SLEIC2).  No machine
+ * inverts: the firmware ANDs, ORs and copies these bytes and never NOTs or XORs them */
+static void sleic_build_dmd_frame(UINT8 *dst, const UINT8 *p0, const UINT8 *p1, int rowStride) {
+  int ii;
+  for (ii = 0; ii < 32; ii++, p0 += rowStride, p1 += rowStride) {
+    int jj;
+    for (jj = 0; jj < 16; jj++) {
+      const UINT8 f1 = p0[jj]; /* Bike Race / Sleic Pin-Ball: raster field 1 (rows 0x00-0x1F) */
+      const UINT8 f2 = p1[jj]; /*                             raster field 2 (rows 0x20-0x3F) */
+      int kk;
+      for (kk = 7; kk >= 0; kk--) {
+        const int a = (f1 >> kk) & 1, b = (f2 >> kk) & 1;
+        *dst++ = locals.dmdEqualFields ? (a | b ? (a & b ? 3 : 2) : 0)  /* 3 levels  */
+                                       : ((a << 1) | b);                /* 4 levels  */
+      }
+    }
+  }
+}
 
 /* Decode the 2-bitplane frame buffer at 0x60410 into a 128x32 brightness grid.
  * See the plane/weighting notes in SLEIC_irq_i8039 below */
 static void sleic3_build_dmd_frame(UINT8 *dst) {
-  int ii;
   const UINT8 * const buf = memory_region(SLEIC_MEMREG_CPU) + 0x60410;
-  for (ii = 0; ii < 32; ii++) {
-    UINT8 *line = dst + ii * 128;
-    const UINT8 * const src = buf + ii * 32;
-    int jj;
-    for (jj = 0; jj < 16; jj++) {
-      UINT8 f1 = src[jj];         /* plane lit by raster field 1 (rows 0x00-0x1F) */
-      UINT8 f2 = src[jj + 0x800]; /* plane lit by raster field 2 (rows 0x20-0x3F) */
-      int kk;
-      for (kk = 7; kk >= 0; kk--) {
-        int a = (f1 >> kk) & 1, b = (f2 >> kk) & 1;
-        *line++ = locals.dmdEqualFields ? (a | b ? (a & b ? 3 : 2) : 0)  /* 3 levels  */
-                                        : ((a << 1) | b);                /* 4 levels  */
-      }
-    }
-  }
+  sleic_build_dmd_frame(dst, buf, buf + 0x800, 0x20);
 }
 
 /* Bike Race V4.1 rebuilds the panel from scratch every frame: it strobes PCS4 bit 3 to
@@ -396,6 +432,50 @@ static INTERRUPT_GEN(SLEIC_irq_i8039) {
 #ifdef DEBUG_SLEIC
   sleic_dmd_dump(locals.rawDMD);
 #endif
+  core_dmd_submit_frame(core_gameData->lcdLayout->importedLayout ? core_gameData->lcdLayout->importedLayout : core_gameData->lcdLayout, locals.rawDMD, 1);
+}
+
+/*-------------------------------------------------------------------------------------
+/  Io Moon (SLEIC2) DMD frame path -- findings F13.
+/
+/  The firmware runs a four-stage pipeline in work RAM and ends it with a plain copy into
+/  a 1 KB display buffer at segment 7000 (flat 0x70000), which is all the panel ever sees:
+/
+/    4000:0000-05FF   sprite planes 0/1, then a one-plane mask (0xFF = pass-all)
+/    4000:0600-09FF   background planes 0/1 -- where the animation loader lands its frames
+/    4000:0A00-0DFF   composite planes 0/1 = (background AND mask) OR sprite   sub_F08A5
+/    7000:0000-01FF   display plane 0  \ straight copy of 4000:0A00/0C00,      sub_F08EB
+/    7000:0200-03FF   display plane 1  / plane 1 first, then plane 0
+/
+/  Composite and blit are the two alternating branches of the INT0 ISR (F3), so the
+/  display buffer is refreshed at INT0/2.  Four things follow from F13 and are what this
+/  path implements:
+/
+/    * 32 rows x 16 bytes per plane, MSB = leftmost pixel -- the same geometry the
+/      animation pages carry in their header (F2: rows 0x20, bytes/row 0x10, plane stride
+/      0x200), so a full-screen background image reaches the panel byte-for-byte;
+/    * plane 0 is the MSB, because the PIC scans it first and holds each of its rows far
+/      longer (the 200:30 row-hold ratio -- see MACHINE_INIT(SLEIC2));
+/    * NO inversion.  Nothing in the firmware NOTs or XORs these bytes, so an inversion
+/      could only be a property of the panel, and nothing observed says it is one.  (The
+/      old driver applied ^0xFF here; F13 rejects it.);
+/    * NO frame strobe.  PCS4 0xA0200 bit 3 -- the old driver's "swap buffer", which is
+/      what used to trigger the submit -- is pulsed exactly ONCE, from boot_init.  IC23 is
+/      a free-running raster with no command interface (150 words, and the only input it
+/      samples is the external dot clock), so the panel just displays whatever stands in
+/      7000:0000-03FF at the moment it scans it.
+/
+/  So the driver does what the panel does: it samples the buffer at the panel's visible
+/  frame rate and submits what it finds, rather than waiting for a signal the hardware
+/  never sends.  Segment 7000 is not double-buffered, so a sample can catch a blit in
+/  progress and show one plane a frame ahead of the other -- the real panel has exactly
+/  the same race, for exactly the same reason.
+/-----------------------------------------------------------------------------------*/
+#define IOMOON_DMD_STAGE 0x70000 /* 7000:0000 = display plane 0 (MSB); plane 1 at +0x200 */
+
+static void iomoon_submit_dmd_frame(void) {
+  const UINT8 * const stage = memory_region(SLEIC_MEMREG_CPU) + IOMOON_DMD_STAGE;
+  sleic_build_dmd_frame(locals.rawDMD, stage, stage + 0x200, 0x10);
   core_dmd_submit_frame(core_gameData->lcdLayout->importedLayout ? core_gameData->lcdLayout->importedLayout : core_gameData->lcdLayout, locals.rawDMD, 1);
 }
 
@@ -540,53 +620,6 @@ static WRITE_HANDLER(pic_w) {
   logerror("PIC W(%03x->%2x) = %02x\n", offset, offset>>7, data);
 }
 
-/* Io Moon submits its DMD from the display pointer at 4000:1150 when the firmware
- * strobes PCS4 bit 3.  Bike Race and Sleic Pin-Ball instead have an I8039 that rasters
- * the panel out of the 0x60410 frame buffer, and their 4000:1150 is ordinary work RAM,
- * so the pointer-based submit must not run for them -- it would push whatever that RAM
- * happens to hold as a frame.  Set in MACHINE_INIT(SLEIC) from the presence of the
- * display CPU.  (Bike Race V4.1 made this visible: it clears and redraws the panel
- * every frame and strobes PCS4 bit 3 each time -- 114 strobes in a 600-frame run,
- * against a single one from the 1992 sets -- so the bogus frames swamped the real
- * ones and the DMD showed garbage) -> locals.dmdFromPtr */
-
-/* Snapshot the 2-bitplane DMD frame buffer and submit the 128x32 brightness
- * grid to the DMD core. Each plane is 512 bytes (32 rows x 16 bytes,
- * MSB = leftmost pixel); plane 0 weighted x2, plane 1 x1 -> 4 grey levels.
- * cpu_readmem20 routes through the 80188 memory map (per docs/dmd_graphics.md) */
-static void sleic_submit_dmd_frame(void) {
-  int row;
-  UINT8 * __restrict dst = locals.rawDMD;
-  unsigned p1ptr, s1ptr, base;
-  const core_tLCDLayout *layout = core_gameData->lcdLayout->importedLayout
-                                ? core_gameData->lcdLayout->importedLayout
-                                : core_gameData->lcdLayout;
-  /* The 80188 draws the DMD into the buffer addressed by the display pointer at
-   * 4000:1150 (offset p1, segment s1); the PIC rasters from there. seg 7000h is
-   * only a clear/staging area (always zero). Plane 0 = base, plane 1 = base+0x200 */
-  p1ptr = cpu_readmem20(0x41150) | (cpu_readmem20(0x41151) << 8);
-  s1ptr = cpu_readmem20(0x41152) | (cpu_readmem20(0x41153) << 8);
-  base  = (s1ptr << 4) + p1ptr;
-  for (row = 0; row < 32; row++) {
-    int row_offset = row * 16;
-    int byte_idx;
-    for (byte_idx = 0; byte_idx < 16; byte_idx++) {
-      const UINT8 b0 = cpu_readmem20(base + row_offset + byte_idx);
-      const UINT8 b1 = cpu_readmem20(base + 0x200 + row_offset + byte_idx);
-      int bit;
-      for (bit = 7; bit >= 0; bit--) {
-        UINT8 p0 = (b0 >> bit) & 1;
-        UINT8 p1 = (b1 >> bit) & 1;
-        *dst++ = (p0 << 1) | p1;    /* plane 0 = MSB, plane 1 = LSB */
-      }
-    }
-  }
-#ifdef DEBUG_SLEIC
-  sleic_dmd_dump(locals.rawDMD);
-#endif
-  core_dmd_submit_frame(layout, locals.rawDMD, 1);
-}
-
 /* PACS peripheral chip-select block at segment A000h (base 0xA0000,
  * 7 selects PCS0-PCS6 on 0x80 boundaries):
  *   0xA0000 PCS0  DMD control reg 1  AND the OKI /OKCS strobe (bit 5)
@@ -662,13 +695,9 @@ static WRITE_HANDLER(sleic_periph_w) {
       cpu_set_irq_line(SLEIC_IO_CPU, IRQ_LINE_NMI, PULSE_LINE);
       break;
     case 0x200:                        /* PCS4: DMD mode; bit 3 = frame swap */
-      if (data & 0x08) {
-        if (locals.dmdFromPtr)
-          sleic_submit_dmd_frame();    /* Io Moon: buffer-swap ack is emitted by the PIC phase machine */
-        else {                         /* I8039 machines: latch the finished 0x60410 frame */
-          sleic3_build_dmd_frame(locals.dmdLatch);
-          locals.dmdLatchTtl = SLEIC3_DMD_LATCH_TICKS;
-        }
+      if (data & 0x08) {               /* latch the finished 0x60410 frame for the I8039 tick */
+        sleic3_build_dmd_frame(locals.dmdLatch);
+        locals.dmdLatchTtl = SLEIC3_DMD_LATCH_TICKS;
       }
       break;
     default:
@@ -787,7 +816,7 @@ static NVRAM_HANDLER(SLEIC1) {
  *                      0x1B6B), bit3 (0x08) = OKI channel.
  *
  * PCS4 (0xA0200) is the DMD frame strobe (shadow [0x4de]) -- left alone, since the
- * I8039 renders sleicpin's DMD from 0x60410 (calling sleic_submit_dmd_frame would corrupt it) */
+ * I8039 renders sleicpin's DMD from the 0x60410 frame buffer, not from a strobe */
 static WRITE_HANDLER(sleic1_periph_w) {
   switch (offset) {
     case 0x080:                       /* PCS1: 80188 -> Z80 command (reverse path) */
@@ -1485,9 +1514,7 @@ static MACHINE_INIT(SLEIC) {
    * interrupt accumulators all start at zero on every machine start */
   memset(&locals, 0, sizeof locals);
   memset(&sleic_io, 0, sizeof sleic_io);
-  /* Only Io Moon lacks the I8039 display CPU, and only Io Moon uses the 4000:1150 display-pointer submit on the PCS4 bit-3 strobe */
-  locals.dmdFromPtr = (Machine->drv->cpu[SLEIC_DISPLAY_CPU].cpu_type == CPU_DUMMY);
-  /* locals.dmdEqualFields stays 0 here (Bike Race weighting); SLEIC1 overrides it below */
+  /* locals.dmdEqualFields stays 0 here (Bike Race weighting); SLEIC1 and SLEIC2 each state their own below */
   core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_PREINTEGRATED_LINEAR_4, CORE_DMD_PWM_PREINTEGRATED_LINEAR_4, 0);
   /* Ball trough / ball-detect optos live on matrix COL4 (swMatrix[5]). The Z80 cmd-0xD5
    * ball-status query strobes COL4 (out 0x82 = 0x10), reads it into 0xC0DB and replies
@@ -1523,6 +1550,32 @@ static MACHINE_INIT(SLEIC2) {
   iomoon_set_gfx_bank(iomoon_pcs0);
   iomoon_int0_acc = iomoon_t0_acc = 0.0;
   iomoon_int0_pend = iomoon_t0_pend = 0;
+  iomoon_panel_acc = 0.0;
+
+  /* Panel weighting, from the IC23 dump (asm/pic16c57_annotated.asm) rather than by
+   * analogy with the I8039 games: the raster's per-row hold delay is 200 counts for the
+   * plane PORTB walks first (0x00-0x3F = 7000:0000, plane 0) against 30 counts for the
+   * second (0x40-0x7F = 7000:0200, plane 1) -- 6.7:1.  Two consequences, one settled and
+   * one approximated:
+   *
+   *   SETTLED: the planes are strongly asymmetric, so this panel really does show a
+   *     weighted 2-bit value and not Sleic Pin-Ball's "lit / lit brightly" pair, and
+   *     plane 0 is unambiguously the MSB.  That is what locals.dmdEqualFields = 0
+   *     selects, and it is stated here rather than inherited from the base init so the
+   *     PIC is on record as the reason.
+   *
+   *   APPROXIMATED: the DUTY CYCLES the ratio implies are 0, 30/230 = 13%, 200/230 = 87%
+   *     and 100%, whereas MACHINE_INIT(SLEIC)'s CORE_DMD_PWM_PREINTEGRATED_LINEAR_4 maps
+   *     the four levels this driver hands core_dmd_submit_frame onto 0, 1/3, 2/3 and 1.
+   *     The ORDER is right and the ends are exact; the two middle levels are pulled
+   *     toward each other.  The core takes no per-plane weight -- its filter/combiner
+   *     pairs are either fixed FIR patterns for a named board or the two preintegrated
+   *     LUTs -- so LINEAR_4 is the closest available model, and the alternative
+   *     (PREINTEGRATED_SAM's 1/12-step LUT, whose indices 2 and 13 would land within 4%
+   *     of 13% and 87%) is rejected because it would put values outside 0..3 into the raw
+   *     frames every downstream consumer of a 4-shade DMD reads.  Revisit if the core
+   *     ever grows a weighted 2-plane combiner */
+  locals.dmdEqualFields = 0;
   /* J1 idle: both latches empty, so port-0x01 bit 1 reads free for the Z80's very first
    * send -- boot_port_init 041B calls host_send_c008_b with interrupts still off, and
    * that routine spins on the bit before it does anything else */
