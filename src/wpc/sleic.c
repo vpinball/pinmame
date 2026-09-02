@@ -299,6 +299,19 @@ static INTERRUPT_GEN(sleic1_irq_gen) {
  * and it is independently what the reverse-engineering side's sample extractor
  * (scripts/extract-oki-msm6376.py) defaults to.
  *
+ * That ~1 % clock question is NOT the whole error budget, and the other branch is a factor
+ * of two rather than a trim.  This rate is measured in timer-0 TICKS, so it inherits
+ * IOMOON_T0_MAXCOUNT's open ALT-mode assumption as well: if the part interrupts only on max
+ * count B, IOMOON_TIMER0_HZ halves to 49.59 Hz, every duration above doubles in seconds and
+ * the derived rate lands at ~15.9 kHz -- i.e. 16 000, itself a standard 6376 strapping and
+ * the neighbourhood Sleic Pin-Ball's interface already sits in (15 151).  The two branches
+ * are audibly distinct and the owner's sound checkpoint separates them by ear:
+ *     speech roughly right but slightly sharp   -> the clock branch; trim 32000 -> 31250
+ *     speech an OCTAVE high (and half as long)  -> the ALT-mode branch; set ~16000 here AND
+ *                                                  revisit IOMOON_TIMER0_HZ, which is then
+ *                                                  wrong by the same factor everywhere else
+ * That second outcome would be a finding about the timer, not about the OKI.
+ *
  * It is stated here rather than reusing SLEIC_okim6376_intf2's 4000000/132: that divisor is
  * the OKIM6295's (pin 7) and belongs to Bike Race's interface, it is 4.7 % slow against the
  * measurement above, and sharing the struct would mean any pitch correction from the owner's
@@ -1156,6 +1169,13 @@ static void iomoon_oki_strobe(void) {
   /* CH2 -> the core's voice bit: bit 4 = voice 0, bit 5 = voice 1 (adpcm.c, data >> 4) */
   const UINT8 voice  = (iomoon_oki_latch & 0x80) ? 1 : 0;
 
+  /* The test is on the PHRASE, not on the whole latch, and the two are the same test here:
+   * the only latch value with phrase 0 that sub_D0CB8 can leave is 0x00 itself, because the
+   * one other way phrase 0 could reach a trigger routine -- sound command 0 -- is intercepted
+   * by the dispatcher at D0B92, which substitutes a random sample from CS:0C19 instead of
+   * passing 0 through.  Testing the phrase is kept because it is also the right answer for
+   * the value that cannot occur: a phrase-0 start is silence on the chip too, its table
+   * entry being null */
   if (!phrase) {                      /* sub_D0CB8: latch 0, ST low -- silence both */
     OKIM6376_data_0_w(0, 0x18);       /* no command pending -> bits 3,4 = stop voices 0,1 */
     return;
