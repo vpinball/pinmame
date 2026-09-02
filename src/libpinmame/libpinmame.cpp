@@ -2231,9 +2231,13 @@ static void SetupMsgApiGameStates()
       const bool isPhysLamp = (coreGlobals.nLamps > 0) && ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS) != 0);
       for (uint16_t i = 0; i < nLamps; i++)
       {
+         // SAM modulated LED / RGB boards (lamps >= 80) are only driven through the physics output value, never the
+         // lamp matrix, so they must be read from there even when physics output for lamps is not otherwise enabled
+         // (mirrors the backward-compatible handling in vp_getChangedLamps). Otherwise these inserts stay dark.
+         const bool usePhys = isPhysLamp || (hasSAMModulatedLeds && i >= 80);
          uint16_t l = coreData->m2lamp ? static_cast<uint16_t>(coreData->m2lamp((i / 8) + 1, i & 7)) : i;
-         addDevice(PMPI_GROUP_LAMP, fmtString("Lamp #%x%x", (i / 8) + 1, (i & 7) + 1), nullptr, l, CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS, isPhysLamp ? GetPhysOutState : GetLampState, nullptr, isPhysLamp ? (CORE_MODOUT_LAMP0 + i) : i);
-         addDevice(PMPI_GROUP_VPM_LAMP, fmtString("Lamp #%x%x", (i / 8) + 1, (i & 7) + 1), fmtString("FIXME define value"), l, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_CUSTOM, isPhysLamp ? GetPhysOutVPMState : GetLampVPMState, nullptr, isPhysLamp ? (CORE_MODOUT_LAMP0 + i) : i);
+         addDevice(PMPI_GROUP_LAMP, fmtString("Lamp #%x%x", (i / 8) + 1, (i & 7) + 1), nullptr, l, CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS, usePhys ? GetPhysOutState : GetLampState, nullptr, usePhys ? (CORE_MODOUT_LAMP0 + i) : i);
+         addDevice(PMPI_GROUP_VPM_LAMP, fmtString("Lamp #%x%x", (i / 8) + 1, (i & 7) + 1), fmtString("FIXME define value"), l, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_CUSTOM, usePhys ? GetPhysOutVPMState : GetLampVPMState, nullptr, usePhys ? (CORE_MODOUT_LAMP0 + i) : i);
       }
       setupGroup(PMPI_GROUP_LAMP, "Lamps", "Playfield, cabinet and backglass lamps (either matrix or directly controlled)");
       setupGroup(PMPI_GROUP_VPM_LAMP, "VPinMAME Lamps", "Backward compatible VPinMAME states (less precise, meaning depends on game driver)");
