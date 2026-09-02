@@ -8,6 +8,9 @@
 #include <vector>
 #include <algorithm>
 #include <format>
+#include <mutex>
+#include <condition_variable>
+#include <chrono>
 
 #if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || defined(__ia64__) || defined(__x86_64__)
  #define SSE_DISPLAY_OPT
@@ -269,6 +272,7 @@ static struct
 
    unsigned int onGetMachineStateId;
    unsigned int onReadMemoryId;
+   unsigned int onWriteMemoryId;
 
    struct MemMapState
    {
@@ -1792,6 +1796,114 @@ PINMAMEAPI int PinmameReadMainCPUMemory(const uint32_t address, uint8_t* const p
 }
 
 /******************************************************
+ * PinmameWriteMainCPUMemory
+ ******************************************************/
+
+namespace {
+
+struct PendingWrite
+{
+	const PinMAMEWriteMemoryOp* ops;
+	uint32_t count;
+	bool done;
+};
+
+std::mutex g_writeMutex;
+std::condition_variable g_writeCv;
+std::vector<PendingWrite*> g_writeQueue;
+
+} /* anonymous namespace */
+
+/* Dispatched through the memory map rather than a pointer from memory_get_write_ptr(),
+   because write handlers carry platform semantics a pointer write would bypass: WPC
+   gates CMOS on a protection register, early Bally stores only the high nibble,
+   Gottlieb System 80 mirrors each byte to 32 addresses. Applying a whole batch here
+   means the machine cannot run between the ops of one request. The CPU context is
+   installed once for the batch rather than per byte. */
+
+static void ApplyWrites(const std::vector<PendingWrite*>& batch)
+{
+	cpuintrf_push_context(0);
+
+	for (const PendingWrite* w : batch)
+	{
+		for (uint32_t op = 0; op < w->count; op++)
+		{
+			for (uint32_t i = 0; i < w->ops[op].size; i++)
+			{
+				cpunum_write_byte(0, w->ops[op].address + i, w->ops[op].data[i]);
+			}
+		}
+	}
+
+	cpuintrf_pop_context();
+}
+
+/* Called once per frame from osd_update_video_and_audio(), on the emulation thread. */
+extern "C" void libpinmame_drain_pending_writes(void)
+{
+	static std::vector<PendingWrite*> batch;   /* static, so the queue keeps its capacity */
+
+	{
+		std::lock_guard<std::mutex> lock(g_writeMutex);
+		if (g_writeQueue.empty())
+		{
+			return;
+		}
+		batch.swap(g_writeQueue);
+	}
+
+	ApplyWrites(batch);
+
+	{
+		std::lock_guard<std::mutex> lock(g_writeMutex);
+		for (PendingWrite* w : batch)
+		{
+			w->done = true;
+		}
+	}
+
+	batch.clear();
+	g_writeCv.notify_all();
+}
+
+static bool SubmitWrite(const PinMAMEWriteMemoryOp* const ops, const uint32_t count)
+{
+	PendingWrite w { ops, count, false };
+
+	/* Already on the emulation thread: apply directly rather than waiting for our own drain. */
+	if (_p_gameThread && std::this_thread::get_id() == _p_gameThread->get_id())
+	{
+		ApplyWrites({ &w });
+		return true;
+	}
+
+	std::unique_lock<std::mutex> lock(g_writeMutex);
+	g_writeQueue.push_back(&w);
+
+	/* Bounded, so a stalled or paused emulator cannot hang the caller. */
+	if (!g_writeCv.wait_for(lock, std::chrono::milliseconds(250), [&w] { return w.done; }))
+	{
+		std::erase(g_writeQueue, &w);
+		return false;
+	}
+
+	return true;
+}
+
+PINMAMEAPI int PinmameWriteMainCPUMemory(const uint32_t address, const uint8_t* const p_buffer, const int size)
+{
+	if (!_isRunning || p_buffer == nullptr || size <= 0)
+	{
+		return 0;
+	}
+
+	const PinMAMEWriteMemoryOp op { address, (uint32_t)size, p_buffer };
+
+	return SubmitWrite(&op, 1) ? size : 0;
+}
+
+/******************************************************
  * PinmameGetRawMemoryRegion
  ******************************************************/
 
@@ -1845,6 +1957,18 @@ static void OnReadMemory(const unsigned int eventId, void* userData, void* msgDa
       return;
 
    msg->read = PinmameReadMainCPUMemory(msg->address, msg->data, (int)msg->size);
+}
+
+static void OnWriteMemory(const unsigned int eventId, void* userData, void* msgData)
+{
+   if (_isRunning != 1)
+      return;
+
+   auto msg = static_cast<PinMAMEWriteMemoryMsg*>(msgData);
+   if (msg->version != 1 || msg->ops == nullptr || msg->count == 0)
+      return;
+
+   msg->applied = SubmitWrite(msg->ops, msg->count) ? msg->count : 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2674,6 +2798,8 @@ static void SetupMsgApi()
    msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.onGetMachineStateId, OnGetMachineState, nullptr);
    msgLocals.onReadMemoryId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_READ_MEMORY);
    msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.onReadMemoryId, OnReadMemory, nullptr);
+   msgLocals.onWriteMemoryId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_WRITE_MEMORY);
+   msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.onWriteMemoryId, OnWriteMemory, nullptr);
 
    msgLocals.controllerProvider = std::make_unique<PinballPlugin::Controller::CtrlItemProvider<ControllerDef>>(msgLocals.msgApi, msgLocals.endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG);
 
@@ -2694,10 +2820,12 @@ static void ReleaseMsgApi()
 
    msgLocals.msgApi->UnsubscribeMsg(msgLocals.onGetMachineStateId, OnGetMachineState, nullptr);
    msgLocals.msgApi->UnsubscribeMsg(msgLocals.onReadMemoryId, OnReadMemory, nullptr);
+   msgLocals.msgApi->UnsubscribeMsg(msgLocals.onWriteMemoryId, OnWriteMemory, nullptr);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onDmdCmdId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onConsoleDataId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onGetMachineStateId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onReadMemoryId);
+   msgLocals.msgApi->ReleaseMsgID(msgLocals.onWriteMemoryId);
 
    msgLocals.controllerProvider = nullptr;
 
