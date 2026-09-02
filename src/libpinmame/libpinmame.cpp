@@ -1866,6 +1866,8 @@ static void GetSolenoid1VPMState(void* callContext, void* pResult)
 {
    assert(_isRunning == 1);
    const int srcId = static_cast<StateMapping*>(callContext)->srcId;
+   if (options.usemodsol & CORE_MODOUT_FORCE_ON)
+      core_update_pwm_outputs(CORE_MODOUT_SOL0 + core_BitColToNum(srcId), 1);
    *static_cast<uint8_t*>(pResult) = (coreGlobals.solenoids & srcId) != 0 ? 1 : 0;
 }
 static void GetSolenoid2State(void* callContext, void* pResult)
@@ -1880,6 +1882,8 @@ static void GetSolenoid2VPMState(void* callContext, void* pResult)
 {
    assert(_isRunning == 1);
    const int srcId = static_cast<StateMapping*>(callContext)->srcId;
+   if (options.usemodsol & CORE_MODOUT_FORCE_ON)
+      core_update_pwm_outputs(CORE_MODOUT_SOL0 + core_BitColToNum(srcId) + 32, 1);
    *static_cast<uint8_t*>(pResult) = (coreGlobals.solenoids2 & srcId) != 0 ? 1 : 0;
 }
 static void GetCustomSolenoidState(void* callContext, void* pResult)
