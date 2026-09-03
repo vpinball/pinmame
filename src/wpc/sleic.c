@@ -67,6 +67,47 @@ static struct {
   /* YM3812 A0 line: 0 = register/index port, 1 = data port.  SLEIC1 drives it
    * from PCS0 bit 1, Bike Race toggles it per write (these use different peripheral write handlers, so serves both) */
   UINT8  ymA0;
+
+  /* ---- Io Moon (SLEIC2) only, from here down ---------------------------------------
+   * Io Moon runs its own interrupt generator, peripheral handlers and Z80 port map, so
+   * none of the members above serve it; these are its equivalents.  They are in locals
+   * for the same reason as everything else here: MACHINE_INIT's memset is what zeroes
+   * them at every machine start, and MACHINE_INIT(SLEIC2) then states only the values
+   * that are NOT zero (see it for the 0x28 PCS0 shadow and the trough/coin resets) */
+
+  /* Interrupt-rate accumulators and the one-deep pending latch per source, see iomoon_irq_gen */
+  double iomInt0Acc, iomT0Acc;
+  int    iomInt0Pend, iomT0Pend;
+  double iomPanelAcc;  /* the free-running IC23 panel raster rides the same tick */
+
+  UINT8  iomPcs0;      /* PCS0 (0xA0000) output shadow; also selects the graphics page */
+  UINT8  iomOkiLatch;  /* PCS6 (0xA0300): bit 7 = CH2, bits 0-6 = phrase number        */
+
+  /* J1 byte port, both directions; see the block comment above iomoon_z80_write */
+  struct {
+    UINT8 to188;     /* Z80 port 0x80: the byte on the J1 data lines                     */
+    UINT8 latch;     /* PCS2 0xA0100: what the port-0x81 strobe captured for the 80188   */
+    UINT8 latchFull; /* set from the strobe until the NMI reads 0xA0100 (port-01 bit 1)  */
+    UINT8 ctrl;      /* Z80 port 0x81 shadow, for the bit-2 / bit-5 strobe edges         */
+    UINT8 toZ80;     /* PCS1 0xA0080: the byte the 80188 sent                            */
+    UINT8 toZ80Full; /* set until the Z80 takes it (PCS3 0xA0180 bit 0 = receiver ready) */
+    UINT8 pcs4;      /* PCS4 0xA0200 shadow, for the outbound bit-5 strobe edge          */
+    UINT8 swCol;     /* Z80 port 0x82: switch-matrix column strobe, decoded to 0..5      */
+  } iomJ1;
+
+  /* Opt-in ball trough model, see the block comment above iomoon_ball_reset */
+  struct {
+    int inTrough;   /* balls resting on the trough contacts                              */
+    int atExit;     /* a ball on the ball-exit contact                                    */
+    int inPlay;     /* balls on the playfield                                             */
+    int kick;       /* frames left before the served ball reaches the exit contact        */
+    int dwell;      /* frames the ball has been sitting on the exit contact               */
+    int drainHeld;  /* previous state of the drain input, so one press = one ball         */
+    int seeded;     /* the model is ON and the complement has been taken from the port    */
+  } iomBalls;
+
+  /* Coin mechanism pulse train, see the block comment above iomoon_coin_reset */
+  struct { int pending, phase; UINT16 lastKeys; } iomCoin;
 } locals;
 
 #ifdef DEBUG_SLEIC
@@ -341,27 +382,25 @@ static INTERRUPT_GEN(sleic1_irq_gen) {
  * sources blind loses about two thirds of the timer-0 ticks, which would stretch every
  * firmware timeout by the same factor.  So: integrate time every tick, latch at most one
  * request per source (as the hardware does -- a second one arriving before the first is
- * served is lost, not queued), and hand it over on the first tick where IF is set */
-static double iomoon_int0_acc, iomoon_t0_acc; //!!
-static int    iomoon_int0_pend, iomoon_t0_pend; //!!
+ * served is lost, not queued), and hand it over on the first tick where IF is set
+ * -> locals.iomInt0Acc / locals.iomT0Acc and locals.iomInt0Pend / locals.iomT0Pend */
 
 /* The panel raster rides on the same tick (F13): IC23 free-runs and sends the 80188 no
  * frame signal at all, so the DMD is sampled on a clock of its own rather than on
- * anything the firmware does.  Defined with the Io Moon DMD block further down */
-static double iomoon_panel_acc; //!!
+ * anything the firmware does -> locals.iomPanelAcc */
 static void iomoon_submit_dmd_frame(void);
 
 static INTERRUPT_GEN(iomoon_irq_gen) {
   /* The panel raster is not an interrupt source and is serviced first: IC23 scans segment
    * 7000 whatever the 80188 is doing, so the display stays live regardless of what the
    * interrupt model below does */
-  iomoon_panel_acc += IOMOON_PANEL_HZ / IOMOON_IRQ_TICK_HZ;
-  if (iomoon_panel_acc >= 1.0) { iomoon_panel_acc -= 1.0; iomoon_submit_dmd_frame(); }
+  locals.iomPanelAcc += IOMOON_PANEL_HZ / IOMOON_IRQ_TICK_HZ;
+  if (locals.iomPanelAcc >= 1.0) { locals.iomPanelAcc -= 1.0; iomoon_submit_dmd_frame(); }
 
-  iomoon_int0_acc += IOMOON_INT0_HZ   / IOMOON_IRQ_TICK_HZ;
-  iomoon_t0_acc   += IOMOON_TIMER0_HZ / IOMOON_IRQ_TICK_HZ;
-  if (iomoon_int0_acc >= 1.0) { iomoon_int0_acc -= 1.0; iomoon_int0_pend = 1; }
-  if (iomoon_t0_acc   >= 1.0) { iomoon_t0_acc   -= 1.0; iomoon_t0_pend   = 1; }
+  locals.iomInt0Acc += IOMOON_INT0_HZ   / IOMOON_IRQ_TICK_HZ;
+  locals.iomT0Acc   += IOMOON_TIMER0_HZ / IOMOON_IRQ_TICK_HZ;
+  if (locals.iomInt0Acc >= 1.0) { locals.iomInt0Acc -= 1.0; locals.iomInt0Pend = 1; }
+  if (locals.iomT0Acc   >= 1.0) { locals.iomT0Acc   -= 1.0; locals.iomT0Pend   = 1; }
 
   /* IF clear = the firmware is inside an ISR: keep both requests latched and try again */
   if (!(activecpu_get_reg(I86_FLAGS) & 0x200)) return;
@@ -369,12 +408,12 @@ static INTERRUPT_GEN(iomoon_irq_gen) {
   /* Only one vector can be delivered at a time, so when both are pending INT0 goes first:
    * it is the higher-priority source on the real controller (level 0 against the timer's
    * 1), and the timer takes the next tick */
-  if (iomoon_int0_pend) {
-    iomoon_int0_pend = 0;
+  if (locals.iomInt0Pend) {
+    locals.iomInt0Pend = 0;
     cpu_set_irq_line_and_vector(SLEIC_MAIN_CPU, 0, HOLD_LINE, 0x0c); /* INT0    -> D000:0343 */
   }
-  else if (iomoon_t0_pend) {
-    iomoon_t0_pend = 0;
+  else if (locals.iomT0Pend) {
+    locals.iomT0Pend = 0;
     cpu_set_irq_line_and_vector(SLEIC_MAIN_CPU, 0, HOLD_LINE, 0x08); /* timer 0 -> D000:024F */
   }
 }
@@ -1019,7 +1058,11 @@ MEMORY_END
  * sub_D622C writes the factory defaults, and core_nvram persists them from then on */
 #define IOMOON_NVRAM_BASE 0x50400
 #define IOMOON_NVRAM_SIZE 0x2000
-static UINT8 iomoon_nvram[IOMOON_NVRAM_SIZE]; //!!
+/* Not part of locals, same as sleic1_nvram and sleic3_nvram: NVRAM_HANDLER(SLEIC2) below
+ * fills this from the .nv file (or zero-fills it) at every machine start, and it must
+ * survive locals' memset -- mame.c loads NVRAM before cpu_run(), and MACHINE_INIT runs
+ * from inside it */
+static UINT8 iomoon_nvram[IOMOON_NVRAM_SIZE];
 static READ_HANDLER(iomoon_nvram_r)  { return iomoon_nvram[offset]; }
 static WRITE_HANDLER(iomoon_nvram_w) { iomoon_nvram[offset] = data; }
 static NVRAM_HANDLER(SLEIC2) {
@@ -1041,8 +1084,8 @@ static const UINT32 iomoon_gfx_page_base[8] = {
   0x00000, 0x10000, 0x20000, 0x30000, 0x40000, 0x50000, 0x60000,
   0x70000  /* page 7: blank in V1 3_02.bin and never selected */
 };
-static UINT8 iomoon_pcs0; /* PCS0 (0xA0000) output shadow; boot leaves it at 0x28 */ //!!
-
+/* The PCS0 (0xA0000) output shadow that selects the page above is locals.iomPcs0;
+ * boot leaves it at 0x28 (see MACHINE_INIT(SLEIC2)) */
 static void iomoon_set_gfx_bank(UINT8 pcs0) {
   cpu_setbank(IOMOON_GFX_BANK, memory_region(SLEIC_MEMREG_GFX) + iomoon_gfx_page_base[pcs0 & 0x07]);
 }
@@ -1102,17 +1145,9 @@ static void iomoon_set_gfx_bank(UINT8 pcs0) {
 /  qout_service_pcs1.  WHICH J1 line each PCS4 bit actually drives is F6's own open
 /  clause (it needs the IC7/IC8 PALs); what the firmware pair needs, and what this
 /  models, is one Z80 NMI per outbound byte, after the byte is latched.
+/
+/  The latches and shadows it needs are locals.iomJ1, declared with the locals struct.
 /-----------------------------------------------------------------------------------*/
-static struct {
-  UINT8 to188;     /* Z80 port 0x80: the byte on the J1 data lines                     */
-  UINT8 latch;     /* PCS2 0xA0100: what the port-0x81 strobe captured for the 80188   */
-  UINT8 latchFull; /* set from the strobe until the NMI reads 0xA0100 (port-01 bit 1)  */
-  UINT8 ctrl;      /* Z80 port 0x81 shadow, for the bit-2 / bit-5 strobe edges         */
-  UINT8 toZ80;     /* PCS1 0xA0080: the byte the 80188 sent                            */
-  UINT8 toZ80Full; /* set until the Z80 takes it (PCS3 0xA0180 bit 0 = receiver ready) */
-  UINT8 pcs4;      /* PCS4 0xA0200 shadow, for the outbound bit-5 strobe edge          */
-  UINT8 swCol;     /* Z80 port 0x82: switch-matrix column strobe, decoded to 0..5      */
-} iomoon_j1; //!!
 
 /* The ball trough (defined with the model further down): the 80188 -> Z80 strobe hands
  * every command byte here, and 0xE9 is the one that moves a ball; the reset is the
@@ -1179,13 +1214,14 @@ static void iomoon_coin_reset(void);
 /  voices mix to the same output at the same volume and the firmware never reads the chip
 /  back, so swapping them changes nothing audible -- only which voice number a phrase
 /  occupies -- and no dump is needed to settle something with no observable difference.
+/
+/  The PCS6 0xA0300 latch itself (bit 7 = CH2, bits 0-6 = phrase number) is
+/  locals.iomOkiLatch.
 /-----------------------------------------------------------------------------------*/
-static UINT8 iomoon_oki_latch; /* PCS6 0xA0300: bit 7 = CH2, bits 0-6 = phrase number */ //!!
-
 static void iomoon_oki_strobe(void) {
-  const UINT8 phrase = iomoon_oki_latch & 0x7f;
+  const UINT8 phrase = locals.iomOkiLatch & 0x7f;
   /* CH2 -> the core's voice bit: bit 4 = voice 0, bit 5 = voice 1 (adpcm.c, data >> 4) */
-  const UINT8 voice  = (iomoon_oki_latch & 0x80) ? 1 : 0;
+  const UINT8 voice  = (locals.iomOkiLatch & 0x80) ? 1 : 0;
 
   /* The test is on the PHRASE, not on the whole latch, and the two are the same test here:
    * the only latch value with phrase 0 that sub_D0CB8 can leave is 0x00 itself, because the
@@ -1210,14 +1246,14 @@ static void iomoon_oki_strobe(void) {
 static WRITE_HANDLER(sleic2_periph_w) {
   switch (offset) {
     case 0x000: /* PCS0: bits 0-2 graphics page (F2), 3/4 NVRAM window gate (F10), 5 = OKI /OKCS (F9) */
-      if ((data ^ iomoon_pcs0) & 0x07) iomoon_set_gfx_bank(data);
+      if ((data ^ locals.iomPcs0) & 0x07) iomoon_set_gfx_bank(data);
       /* bit 5 = the OKI's ST input, idle high (F9).  Only the three OKI routines ever move
        * it -- okcs_strobe D0CE2, pcs0_bit5_clear D0CFC and pcs0_bit5_set_far D0D09 -- while
        * the page select F00A0 and the NVRAM gate D0596/D05B7 write the same shadow byte
        * with bit 5 untouched, so an edge here is always an OKI event and never a side
        * effect of the other two fields sharing this register */
-      if ((iomoon_pcs0 & 0x20) && !(data & 0x20)) iomoon_oki_strobe();
-      iomoon_pcs0 = data;
+      if ((locals.iomPcs0 & 0x20) && !(data & 0x20)) iomoon_oki_strobe();
+      locals.iomPcs0 = data;
       return;
     case 0x080: /* PCS1: the byte on the outbound J1 data lines (qout_service_pcs1 D020F).
                  * Writing it does NOT start a transfer -- the PCS4 bit-5 strobe below
@@ -1225,7 +1261,7 @@ static WRITE_HANDLER(sleic2_periph_w) {
                  * writes 0x00 here long before any queue exists, and treating that as a
                  * byte in flight would leave "receiver ready" clear for ever and stall
                  * the whole outbound direction */
-      iomoon_j1.toZ80 = data;
+      locals.iomJ1.toZ80 = data;
       return;
     case 0x200: /* PCS4: J1 handshake lines.  Bit 5 is pulsed by qout_service_pcs1 alone
                  * (D022A/D0243) -- the inbound NMI handler asserts bits 7/6/4 but never
@@ -1242,12 +1278,12 @@ static WRITE_HANDLER(sleic2_periph_w) {
                  * bar and stores the setting in NVRAM 0x1BC-0x1BE (sub_D098C) -- it just
                  * does not change what comes out, and modelling it would mean scaling the
                  * YM3812 channel by a wiper position the schematic has not been read for */
-      if ((data & 0x20) && !(iomoon_j1.pcs4 & 0x20)) {
-        iomoon_j1.toZ80Full = 1;
-        iomoon_ball_command(iomoon_j1.toZ80);         /* the ball trough, 0xE9 = serve */
+      if ((data & 0x20) && !(locals.iomJ1.pcs4 & 0x20)) {
+        locals.iomJ1.toZ80Full = 1;
+        iomoon_ball_command(locals.iomJ1.toZ80);         /* the ball trough, 0xE9 = serve */
         cpu_set_irq_line(SLEIC_IO_CPU, IRQ_LINE_NMI, PULSE_LINE); /* Z80 handler 0x0066 */
       }
-      iomoon_j1.pcs4 = data;
+      locals.iomJ1.pcs4 = data;
       return;
     case 0x280: /* PCS5 with A0 = 0: the YM3812's register/index port (F8).
                  *
@@ -1257,7 +1293,7 @@ static WRITE_HANDLER(sleic2_periph_w) {
                  * it this way and both were checked before this was written: Bike Race
                  * streams every byte at 0xA0280 and toggles A0 in hardware (sleic_periph_w
                  * alternates), and Sleic Pin-Ball streams every byte at 0xA0280 with A0
-                 * carried on PCS0 bit 1 (sleic1_ym_a0).  Three machines, three conventions;
+                 * carried on PCS0 bit 1 (locals.ymA0).  Three machines, three conventions;
                  * this one is the only one the Io Moon ROM supports, and F8 confirms these
                  * are the only two accesses to either address in the whole ROM */
       YM3812_control_port_0_w(0, data);
@@ -1271,7 +1307,7 @@ static WRITE_HANDLER(sleic2_periph_w) {
     case 0x300: /* PCS6: the OKI MSM6376's data/CH2 latch (F9).  Latching alone starts
                  * nothing -- the PCS0 bit-5 pulse above does -- which is why the boot's
                  * 0x80 (D00C6) and trigger_b's trailing rewrite (D0CAE) are silent here */
-      iomoon_oki_latch = data;
+      locals.iomOkiLatch = data;
       return;
     default:                          /* PCS2, PCS3 */
 #ifdef DEBUG_SLEIC
@@ -1291,12 +1327,12 @@ static READ_HANDLER(sleic2_periph_r) {
                  * handler D018C (F4).  The read is what frees the port for the Z80's
                  * next byte, so clear the busy flag and leave the latch itself standing
                  * -- a hardware latch holds its last value */
-      iomoon_j1.latchFull = 0;
-      return iomoon_j1.latch;
+      locals.iomJ1.latchFull = 0;
+      return locals.iomJ1.latch;
     case 0x180: /* PCS3 bit 0: "receiver ready".  qout_service_pcs1 tests it (D0206) and
                  * gives up for this call when it is clear, so it must report that the Z80
                  * has taken the previous byte */
-      return iomoon_j1.toZ80Full ? 0x00 : 0x01;
+      return locals.iomJ1.toZ80Full ? 0x00 : 0x01;
     case 0x280: /* PCS5: the YM3812 status port, which reads back on the same address as the
                  * index port (A0 = 0) exactly as on any OPL2.
                  *
@@ -1458,7 +1494,7 @@ static WRITE_HANDLER(z80_write_port) {
 
 /* Z80 I/O processor state shadow, shared by the SLEIC1 / SLEIC2 / SLEIC3 port handlers
  * (all three I/O ROMs drive the same latch conventions; Io Moon uses lampRow and keeps
- * its own J1 and switch-column state in iomoon_j1) */
+ * its own J1 and switch-column state in locals.iomJ1) */
 static struct {
   UINT8 swStrobe; /* port 0x82: switch matrix column strobe (0..5 after decode) */
   UINT8 lampCol;  /* lamp matrix column (after decode) */
@@ -1743,14 +1779,14 @@ static READ_HANDLER(iomoon_z80_read) {
   switch (offset) {
     case 0x00: /* J1 inbound data.  Reading is what frees the outbound latch, which is
                 * what PCS3 0xA0180 bit 0 reports back to qout_service_pcs1 */
-      iomoon_j1.toZ80Full = 0;
-      return iomoon_j1.toZ80;
+      locals.iomJ1.toZ80Full = 0;
+      return locals.iomJ1.toZ80;
     case 0x01: /* bit 1 = J1 free (clear while the 80188 has not read the latch yet),
                 * bit 5 = direct input, 1 = open.  The scan that reads bit 5 is gated off
                 * by IOMOON_PORT04_IDLE bit 0 anyway */
-      return (UINT8)((iomoon_j1.latchFull ? 0x00 : 0x02) | 0x20);
+      return (UINT8)((locals.iomJ1.latchFull ? 0x00 : 0x02) | 0x20);
     case 0x02: /* switch matrix: 6 columns -> swMatrix[1..6], active low */
-      return (UINT8)~coreGlobals.swMatrix[1 + iomoon_j1.swCol];
+      return (UINT8)~coreGlobals.swMatrix[1 + locals.iomJ1.swCol];
     case 0x03: /* cabinet inputs -> swMatrix[9], active low */
       return (UINT8)~coreGlobals.swMatrix[9];
     case 0x04: /* cabinet/config byte; swMatrix[10] pulls a bit low when closed */
@@ -1764,32 +1800,32 @@ static READ_HANDLER(iomoon_z80_read) {
 static WRITE_HANDLER(iomoon_z80_write) {
   switch (offset) {
     case 0x00: /* port 0x80: the byte onto the J1 data lines (written before the strobe) */
-      iomoon_j1.to188 = data;
+      locals.iomJ1.to188 = data;
       break;
     case 0x01: /* port 0x81: J1 control.  Bit 2 (event codes) and bit 5 (the C008 state
                 * bitmask) are the two outbound strobes and reach the same latch (F6);
                 * bit 1 is data-valid, bits 4/6 gate the two inbound read paths, bit 3 is
                 * the free-running-ish toggle F3 lists as an INT0 candidate and bit 0 is
                 * unproven -- none of those four need an action here */
-      { const UINT8 rise = (UINT8)(data & ~iomoon_j1.ctrl);
+      { const UINT8 rise = (UINT8)(data & ~locals.iomJ1.ctrl);
         if (rise & 0x24) {
           /* A strobe arriving on a latch the NMI has not read yet would overwrite an
            * undelivered byte -- a lost switch code, silently.  Port-0x01 bit 1 is what
            * stops the firmware getting here, so this is unreachable as the ROM stands;
            * it is a tripwire for any future change to the port-0x81 handling */
-          if (iomoon_j1.latchFull)
+          if (locals.iomJ1.latchFull)
             logerror("iomoon J1: strobe %02x over undelivered byte %02x\n",
-                     iomoon_j1.to188, iomoon_j1.latch);
-          iomoon_j1.latch = iomoon_j1.to188;
-          iomoon_j1.latchFull = 1;
+                     locals.iomJ1.to188, locals.iomJ1.latch);
+          locals.iomJ1.latch = locals.iomJ1.to188;
+          locals.iomJ1.latchFull = 1;
           cpu_set_irq_line(SLEIC_MAIN_CPU, IRQ_LINE_NMI, PULSE_LINE); /* handler D000:016D */
         }
       }
-      iomoon_j1.ctrl = data;
+      locals.iomJ1.ctrl = data;
       break;
     case 0x02: /* port 0x82: switch-matrix column strobe, one-hot 0x01..0x20 = column 0..5 */
       if (data) { const unsigned col = core_BitColToNum(data & -data);
-                  if (col < 6) iomoon_j1.swCol = (UINT8)col; }
+                  if (col < 6) locals.iomJ1.swCol = (UINT8)col; }
       break;
     case 0x03: /* port 0x83: lamp-matrix COLUMN strobe, one-hot 0x01..0x80 = column 0..7.
                 * lamp_colN_out (Z80 3457..34C7, one column per lamp_scan_tick, so the whole
@@ -1886,15 +1922,18 @@ static MACHINE_INIT(SLEIC1) {
  * (bit 3 = NVRAM window closed, bit 5 = OKI /OKCS idle high, page bits clear) */
 static MACHINE_INIT(SLEIC2) {
   machine_init_SLEIC();
-  iomoon_pcs0 = 0x28;
-  iomoon_set_gfx_bank(iomoon_pcs0);
-  /* The OKI latch starts empty rather than at the 0x80 boot_init writes: 0x28 above already
-   * has ST released, so nothing can be triggered before the firmware's own D00C6 write
-   * arrives, and phrase 0 would be a stop in any case */
-  iomoon_oki_latch = 0;
-  iomoon_int0_acc = iomoon_t0_acc = 0.0;
-  iomoon_int0_pend = iomoon_t0_pend = 0;
-  iomoon_panel_acc = 0.0;
+  /* Everything Io Moon keeps in locals has just been zeroed by machine_init_SLEIC's
+   * memset, so only the values that are NOT zero are stated here.  Three that the zero
+   * IS the answer for, because they are easy to mistake for oversights:
+   *   the OKI latch starts empty rather than at the 0x80 boot_init writes -- 0x28 below
+   *     already has ST released, so nothing can be triggered before the firmware's own
+   *     D00C6 write arrives, and phrase 0 would be a stop in any case;
+   *   the interrupt accumulators and their pending latches start at rest;
+   *   the J1 latches start empty, so port-0x01 bit 1 reads free for the Z80's very first
+   *     send -- boot_port_init 041B calls host_send_c008_b with interrupts still off, and
+   *     that routine spins on the bit before it does anything else */
+  locals.iomPcs0 = 0x28;
+  iomoon_set_gfx_bank(locals.iomPcs0);
 
   /* Panel weighting, from the IC23 dump (asm/pic16c57_annotated.asm) rather than by
    * analogy with the I8039 games: the raster's per-row hold delay is 200 counts for the
@@ -1920,10 +1959,6 @@ static MACHINE_INIT(SLEIC2) {
    *     frames every downstream consumer of a 4-shade DMD reads.  Revisit if the core
    *     ever grows a weighted 2-plane combiner */
   locals.dmdEqualFields = 0;
-  /* J1 idle: both latches empty, so port-0x01 bit 1 reads free for the Z80's very first
-   * send -- boot_port_init 041B calls host_send_c008_b with interrupts still off, and
-   * that routine spins on the bit before it does anything else */
-  memset(&iomoon_j1, 0, sizeof iomoon_j1);
   /* The ball trough starts EMPTY, and at the default "Balls" = 0 it stays that way: the
    * model is opt-in and the frontend owns those contacts.  It is filled by the first
    * SWITCH_UPDATE only if the operator has asked for it, because the complement comes
@@ -2118,22 +2153,14 @@ static const struct { int key; UINT8 col; UINT8 bit; } iomoon_pf_keys[] = {
 #define IOMOON_KICK_FRAMES    8   /* kicker fires -> ball on the exit contact  (~0.13 s) */
 #define IOMOON_LAUNCH_FRAMES 90   /* ball sits at the exit -> into play        (~1.5 s)  */
 
-static struct {
-  int inTrough;   /* balls resting on the trough contacts                              */
-  int atExit;     /* a ball on the ball-exit contact                                    */
-  int inPlay;     /* balls on the playfield                                             */
-  int kick;       /* frames left before the served ball reaches the exit contact        */
-  int dwell;      /* frames the ball has been sitting on the exit contact               */
-  int drainHeld;  /* previous state of the drain input, so one press = one ball         */
-  int seeded;     /* the model is ON and the complement has been taken from the port    */
-} iomoon_balls;
+/* The model's own state is locals.iomBalls, declared with the locals struct */
 
 /* Called from MACHINE_INIT.  Also the whole of the model-off path: zero here means the
  * model owns no contact and no ball, and nothing it presents can survive being switched
  * off.  "seeded" doubles as the on/off flag -- it is set only by iomoon_ball_update with
  * "Balls" > 0, and cleared again the moment that setting goes back to 0 */
 static void iomoon_ball_reset(void) {
-  memset(&iomoon_balls, 0, sizeof iomoon_balls);
+  memset(&locals.iomBalls, 0, sizeof locals.iomBalls);
 }
 
 /* Called from the 80188 -> Z80 strobe with the command byte, i.e. exactly when the Z80's
@@ -2145,9 +2172,9 @@ static void iomoon_ball_reset(void) {
  * "Balls" = 0 the serve command is simply not acted on, and whatever closes the trough
  * contacts -- a table script, or the matrix test keys -- answers it instead */
 static void iomoon_ball_command(UINT8 cmd) {
-  if (cmd == 0xe9 && iomoon_balls.seeded && !iomoon_balls.atExit && !iomoon_balls.kick
-      && iomoon_balls.inTrough > 0)
-    iomoon_balls.kick = IOMOON_KICK_FRAMES;
+  if (cmd == 0xe9 && locals.iomBalls.seeded && !locals.iomBalls.atExit && !locals.iomBalls.kick
+      && locals.iomBalls.inTrough > 0)
+    locals.iomBalls.kick = IOMOON_KICK_FRAMES;
 }
 
 /* Called once a frame from SWITCH_UPDATE(SLEIC2) AFTER the playfield key loop, and it ORs
@@ -2172,29 +2199,29 @@ static void iomoon_ball_update(int balls, int shoot, int drain) {
    * with no give-up path -- which is what a real cabinet missing a ball does, but a UI
    * setting should not brick the emulation.  Clamp up; 0 above is the deliberate way off */
   if (balls < IOMOON_TROUGH_MAX) balls = IOMOON_TROUGH_MAX;
-  if (!iomoon_balls.seeded) {
-    iomoon_balls.seeded   = 1;
-    iomoon_balls.inTrough = balls > IOMOON_TROUGH_MAX ? IOMOON_TROUGH_MAX : balls;
+  if (!locals.iomBalls.seeded) {
+    locals.iomBalls.seeded   = 1;
+    locals.iomBalls.inTrough = balls > IOMOON_TROUGH_MAX ? IOMOON_TROUGH_MAX : balls;
   }
 
-  if (iomoon_balls.kick && --iomoon_balls.kick == 0 && iomoon_balls.inTrough > 0) {
-    iomoon_balls.inTrough--;          /* the kicker has thrown it clear of the trough */
-    iomoon_balls.atExit = 1;
-    iomoon_balls.dwell  = 0;
+  if (locals.iomBalls.kick && --locals.iomBalls.kick == 0 && locals.iomBalls.inTrough > 0) {
+    locals.iomBalls.inTrough--;          /* the kicker has thrown it clear of the trough */
+    locals.iomBalls.atExit = 1;
+    locals.iomBalls.dwell  = 0;
   }
-  if (iomoon_balls.atExit) {
-    iomoon_balls.dwell++;
-    if (shoot || iomoon_balls.dwell >= IOMOON_LAUNCH_FRAMES) {
-      iomoon_balls.atExit = 0;
-      iomoon_balls.inPlay++;
+  if (locals.iomBalls.atExit) {
+    locals.iomBalls.dwell++;
+    if (shoot || locals.iomBalls.dwell >= IOMOON_LAUNCH_FRAMES) {
+      locals.iomBalls.atExit = 0;
+      locals.iomBalls.inPlay++;
     }
   }
   /* One press, one ball: the drain is an event, not a level */
-  if (drain && !iomoon_balls.drainHeld && iomoon_balls.inPlay > 0) {
-    iomoon_balls.inPlay--;
-    if (iomoon_balls.inTrough < IOMOON_TROUGH_MAX) iomoon_balls.inTrough++;
+  if (drain && !locals.iomBalls.drainHeld && locals.iomBalls.inPlay > 0) {
+    locals.iomBalls.inPlay--;
+    if (locals.iomBalls.inTrough < IOMOON_TROUGH_MAX) locals.iomBalls.inTrough++;
   }
-  iomoon_balls.drainHeld = drain ? 1 : 0;
+  locals.iomBalls.drainHeld = drain ? 1 : 0;
 
   /* Balls stack AWAY from the entry, so contact 0 is the last to fill and the first to
    * empty: n balls close the TOP n of the three contacts.  That order is not a choice --
@@ -2203,9 +2230,9 @@ static void iomoon_ball_update(int balls, int shoot, int drain) {
    * therefore the one that is open while a ball is out on the playfield.  Filling from
    * the other end instead reports a drain the instant the game arms the monitor, and the
    * ball ends about a second after it starts -- measured, before this was understood. */
-  bits = (UINT8)(((1u << iomoon_balls.inTrough) - 1u)
-                 << (IOMOON_TROUGH_MAX - iomoon_balls.inTrough)) & IOMOON_TROUGH_BITS;
-  if (iomoon_balls.atExit) bits |= IOMOON_EXIT_BIT;
+  bits = (UINT8)(((1u << locals.iomBalls.inTrough) - 1u)
+                 << (IOMOON_TROUGH_MAX - locals.iomBalls.inTrough)) & IOMOON_TROUGH_BITS;
+  if (locals.iomBalls.atExit) bits |= IOMOON_EXIT_BIT;
   coreGlobals.swMatrix[IOMOON_TROUGH_COL] |= bits;
 }
 
@@ -2278,9 +2305,9 @@ static void iomoon_ball_update(int balls, int shoot, int drain) {
 #define IOMOON_COIN_GAP    3       /* frames it is open again before the next pulse      */
 #define IOMOON_CAB_COIN    0x0200  /* the COIN bit of the cabinet inport (sleic.h)       */
 
-static struct { int pending, phase; UINT16 lastKeys; } iomoon_coin; //!!
+/* The train's own state is locals.iomCoin, declared with the locals struct */
 
-static void iomoon_coin_reset(void) { memset(&iomoon_coin, 0, sizeof iomoon_coin); }
+static void iomoon_coin_reset(void) { memset(&locals.iomCoin, 0, sizeof locals.iomCoin); }
 
 /* Pulses the mechanism emits for the coin the player just put in.  Only the smallest
  * denomination has a key (see SLEIC2_CABPORT in sleic.h): the firmware prices the running
@@ -2298,14 +2325,14 @@ static int iomoon_coin_pulses(void) {
  * again mid-burst adds a second coin, exactly like feeding the mechanism does) */
 static int iomoon_coin_update(UINT16 keys) {
   int closed;
-  if ((keys & IOMOON_CAB_COIN) && !(iomoon_coin.lastKeys & IOMOON_CAB_COIN))
-    iomoon_coin.pending += iomoon_coin_pulses();
-  iomoon_coin.lastKeys = keys;
-  if (iomoon_coin.pending <= 0) { iomoon_coin.phase = 0; return 0; }
-  closed = (iomoon_coin.phase < IOMOON_COIN_HOLD);
-  if (++iomoon_coin.phase >= IOMOON_COIN_HOLD + IOMOON_COIN_GAP) {
-    iomoon_coin.phase = 0;
-    iomoon_coin.pending--;
+  if ((keys & IOMOON_CAB_COIN) && !(locals.iomCoin.lastKeys & IOMOON_CAB_COIN))
+    locals.iomCoin.pending += iomoon_coin_pulses();
+  locals.iomCoin.lastKeys = keys;
+  if (locals.iomCoin.pending <= 0) { locals.iomCoin.phase = 0; return 0; }
+  closed = (locals.iomCoin.phase < IOMOON_COIN_HOLD);
+  if (++locals.iomCoin.phase >= IOMOON_COIN_HOLD + IOMOON_COIN_GAP) {
+    locals.iomCoin.phase = 0;
+    locals.iomCoin.pending--;
   }
   return closed;
 }
