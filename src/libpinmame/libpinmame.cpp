@@ -1899,6 +1899,14 @@ static void GetSolenoid2VPMState(void* callContext, void* pResult)
       core_update_pwm_outputs(CORE_MODOUT_SOL0 + core_BitColToNum(srcId) + 32, 1);
    *static_cast<uint8_t*>(pResult) = (coreGlobals.solenoids2 & srcId) != 0 ? 1 : 0;
 }
+static void GetFlipperSolenoid2VPMState(void* callContext, void* pResult)
+{
+   assert(_isRunning == 1);
+   const int srcId = static_cast<StateMapping*>(callContext)->srcId;
+   if (options.usemodsol & CORE_MODOUT_FORCE_ON)
+      core_update_pwm_outputs(CORE_MODOUT_SOL0 + core_BitColToNum(srcId) + 32, 1);
+   *static_cast<uint8_t*>(pResult) = (coreGlobals.solenoids2 & srcId) != 0 ? 0xFF : 0;
+}
 static void GetCustomSolenoidState(void* callContext, void* pResult)
 {
    assert(_isRunning == 1);
@@ -2166,8 +2174,9 @@ static void SetupMsgApiGameStates()
                   case 35:mask = isFlipperCoil ? 0x40 : 0x40; break; // Power bit
                   case 36:mask = isFlipperCoil ? CORE_ULFLIPSOLBITS : 0x80; break; // Power|Hold bits
                   }
+                  const bool physOut = (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) != 0;
                   addDevice(PMPI_GROUP_SOLENOID, label, nullptr, i, CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_CUSTOM, GetSolenoid2State, nullptr, mask);
-                  addDevice(PMPI_GROUP_VPM_SOLENOID, fmtString("%s", label), nullptr, i, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_CUSTOM, GetSolenoid2VPMState, nullptr, mask);
+                  addDevice(PMPI_GROUP_VPM_SOLENOID, fmtString("%s", label), nullptr, i, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_CUSTOM, (isFlipperCoil && physOut) ? GetFlipperSolenoid2VPMState : GetSolenoid2VPMState, nullptr, mask);
                }
             }
          }
@@ -2220,8 +2229,9 @@ static void SetupMsgApiGameStates()
             case 47:mask = 0x04; break; // Power bit
             case 48:mask = CORE_LLFLIPSOLBITS; break; // Power|Hold bits
             }
+            const bool physOut = (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) != 0;
             addDevice(PMPI_GROUP_SOLENOID, label, nullptr, i, CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_CUSTOM, GetSolenoid2State, nullptr, mask);
-            addDevice(PMPI_GROUP_VPM_SOLENOID, fmtString("%s", label), nullptr, i, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_CUSTOM, GetSolenoid2VPMState, nullptr, mask);
+            addDevice(PMPI_GROUP_VPM_SOLENOID, fmtString("%s", label), nullptr, i, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_CUSTOM, physOut ? GetFlipperSolenoid2VPMState : GetSolenoid2VPMState, nullptr, mask);
          }
       }
       // 49, simulated fake plunger, not broadcasted
