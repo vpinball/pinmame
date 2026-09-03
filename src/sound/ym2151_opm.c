@@ -364,7 +364,7 @@ INLINE int32_t OPM_CalcKCode(const uint16_t kcf, uint16_t lfo, const bool lfo_si
     {
         sum += 64;
     }
-    if (!lfo_sign && !cr)
+    if (!lfo_sign && !cr && (lfo & 192) != 0)
     {
         sum += (-64)&8191;
         negoverflow = 1;

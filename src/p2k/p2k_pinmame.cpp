@@ -154,7 +154,7 @@ void p2k_pinmame_pull_outputs(unsigned char *lamps, unsigned lamp_columns, UINT3
 unsigned p2k_pinmame_frame(UINT32 *dest, unsigned capacity, unsigned *width, unsigned *height, const unsigned fast_15bpp_path, unsigned *fast_15bpp_path_success)
 {
 	if (!g_machine || !dest || !width || !height) return 0;
-	bool tmp_success;
+	bool tmp_success = false;
 	const bool result = g_machine->frame_rgb(dest, capacity, *width, *height, fast_15bpp_path, tmp_success);
 	*fast_15bpp_path_success = tmp_success;
 	return result;

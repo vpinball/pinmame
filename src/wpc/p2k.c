@@ -174,6 +174,7 @@ static void p2k_dcs_decode(UINT32 offset, UINT32 mem_mask, unsigned *byte_off, u
   while (lane < 4 && !((mem_mask >> (lane * 8)) & 0xff)) lane++;
   for (i = 0; i < 4; i++) if ((mem_mask >> (i * 8)) & 0xff) n++;
   if (lane > 3) lane = 0;
+  /* This is just *byte_off = lane, as offset & ~3u is a multiple of 4, so it contributes nothing due to & 3u */
   *byte_off = ((offset & ~3u) + lane) & 3u;
   *width = n;
   *shift = lane * 8;
@@ -441,7 +442,18 @@ static PINMAME_VIDEO_UPDATE(p2k_video) {
             width, height, width, height * P2K_LINE_DOUBLE, bitmap->depth, P2K_LINE_INTERPOLATE ? "lines interpolated" : "lines doubled");
   }
 
+  /* width is the frame buffer's row stride as well as the number of pixels to draw - the loops
+     below step rows with it - so clamping it does not crop the picture, it shears it: every row
+     after the first would be read from the wrong offset. The clamp stays as the safety net that
+     keeps the writes inside the bitmap (frame_rgb will hand out up to P2K_MAX_WIDTH), but it is
+     not a mode this driver can actually display, so assert on it rather than draw a mess.
+     Both games run 640x240 throughout and MDRV_SCREEN_SIZE is 640 wide to match: if this ever
+     fires, the display controller has been programmed to a geometry nothing here was built for
+     and the whole 640x240-into-640x480 path needs revisiting, not just this clamp */
+  assert(width <= (unsigned)bitmap->width);
   if (width > (unsigned)bitmap->width) width = bitmap->width;
+  /* Height is safe to clamp: it only bounds the row loop, and the rows are indexed from the
+     bottom of the source (the picture is stored upside down), so a smaller value crops rather than misaligns */
   if (height * P2K_LINE_DOUBLE > (unsigned)bitmap->height)
     height = (unsigned)bitmap->height / P2K_LINE_DOUBLE;
 
