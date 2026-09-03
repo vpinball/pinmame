@@ -1862,10 +1862,10 @@ static MACHINE_INIT(SLEIC) {
    *     0x80 (C8 "Bola fuera", key 9). Reply 0x5D "BOLAS OK" / 0x5B "FALTA 1 BOLA";
    *     a ball at C7 OR C8 -> BOLAS OK, so standalone-test by holding key 8 (or 9).
    *   bikerac2 (07.bin, sub 0x0B72, replies 0x0C0B/0x0C16/0x0C37): monitors the same three
-   *     PLUS bit 0x40 (code 0x30, key 7) and counts missing balls -- reply adds
-   *     0x5C "FALTA 2 BOLAS". "BOLAS OK" needs two optos INCLUDING the key-7 sensor
-   *     (combos 0x20+0x40 or 0x40+0x80), so standalone-test by holding key 7 with 8 or 9;
-   *     holding only 8+9 (no 7) never reports OK. (Verified against the disassembly of both
+   *     PLUS bit 0x40 (code 0x30, key '-') and counts missing balls -- reply adds
+   *     0x5C "FALTA 2 BOLAS". "BOLAS OK" needs two optos INCLUDING the '-' sensor
+   *     (combos 0x20+0x40 or 0x40+0x80), so standalone-test by holding '-' with 8 or 9;
+   *     holding only 8+9 (no '-') never reports OK. (Verified against the disassembly of both
    *     Z80 ROMs; the key bindings already exist in sleic3_pf_keys below.)
    * The driver does not fabricate the ball complement -- the frontend (e.g. VPX)
    * supplies trough state; the keys above are only for standalone testing */
@@ -1945,7 +1945,13 @@ static MACHINE_INIT(SLEIC2) {
 
 /* Playfield test keys, one per matrix position, so the service menu's contact test can
  * exercise every contact standalone.  Columns 0-4 keep the Bike Race key layout; column 5
- * only maps the four positions whose codes (0x34-0x37) the firmware actually sends */
+ * only maps the four positions whose codes (0x34-0x37) the firmware actually sends.
+ *
+ * Two positions are deliberately NOT on the key their neighbours suggest, because those
+ * two keys already belong to a cabinet button: 7 is the test/service key (sleic.h) and T
+ * is MAME's IPT_TILT default, so col4 0x30 sits on '-' and col5 0x34 on '=' -- still the
+ * same number row, just past the digits.  Everything else here is free of both the
+ * cabinet block and the MAME UI keys */
 static const struct { int key; UINT8 col; UINT8 bit; } iomoon_pf_keys[] = {
   {KEYCODE_Q,1,0x01},{KEYCODE_W,1,0x02},{KEYCODE_E,1,0x04},{KEYCODE_R,1,0x08}, /* col0 0x0A-0x0D */
   {KEYCODE_Y,1,0x10},{KEYCODE_U,1,0x20},{KEYCODE_I,1,0x40},{KEYCODE_O,1,0x80}, /* col0 0x0E-0x11 */
@@ -1956,8 +1962,8 @@ static const struct { int key; UINT8 col; UINT8 bit; } iomoon_pf_keys[] = {
   {KEYCODE_0_PAD,4,0x01},{KEYCODE_1_PAD,4,0x02},{KEYCODE_2_PAD,4,0x04},{KEYCODE_3_PAD,4,0x08}, /* col3 0x22-0x25 */
   {KEYCODE_4_PAD,4,0x10},{KEYCODE_5_PAD,4,0x20},{KEYCODE_6_PAD,4,0x40},{KEYCODE_7_PAD,4,0x80}, /* col3 0x26-0x29 */
   {KEYCODE_0,5,0x01},{KEYCODE_2,5,0x02},{KEYCODE_3,5,0x04},{KEYCODE_4,5,0x08}, /* col4 0x2A-0x2D */
-  {KEYCODE_6,5,0x10},{KEYCODE_8,5,0x20},{KEYCODE_7,5,0x40},{KEYCODE_9,5,0x80}, /* col4 0x2E-0x31 */
-  {KEYCODE_T,6,0x01},{KEYCODE_8_PAD,6,0x02},{KEYCODE_9_PAD,6,0x04},{KEYCODE_MINUS_PAD,6,0x08}, /* col5 0x34-0x37 */
+  {KEYCODE_6,5,0x10},{KEYCODE_8,5,0x20},{KEYCODE_MINUS,5,0x40},{KEYCODE_9,5,0x80}, /* col4 0x2E-0x31 */
+  {KEYCODE_EQUALS,6,0x01},{KEYCODE_8_PAD,6,0x02},{KEYCODE_9_PAD,6,0x04},{KEYCODE_MINUS_PAD,6,0x08}, /* col5 0x34-0x37 */
 };
 
 /*-------------------------------------------------------------------------------------
@@ -2234,7 +2240,7 @@ static SWITCH_UPDATE(SLEIC2) {
  * position to a key lets the CONTACTOS self-test verify each contact. COL4 (swMatrix[5])
  * is the trough column. The Z80 cmd-0xD5 ball-status handler monitors COL4 bits 0x04
  * (code 0x2C, key 3), 0x20 = C7 (key 8) and 0x80 = C8 (key 9) on BOTH versions, plus
- * bit 0x40 (code 0x30, key 7) on bikerac2 only; see the per-version breakdown in the
+ * bit 0x40 (code 0x30, key '-') on bikerac2 only; see the per-version breakdown in the
  * MACHINE_INIT trough comment above */
 static const struct { int key; UINT8 col; UINT8 bit; } sleic3_pf_keys[] = {
   {KEYCODE_Q,1,0x01},{KEYCODE_W,1,0x02},{KEYCODE_E,1,0x04},{KEYCODE_R,1,0x08}, /* COL0 0x0A-0x0D */
@@ -2246,7 +2252,7 @@ static const struct { int key; UINT8 col; UINT8 bit; } sleic3_pf_keys[] = {
   {KEYCODE_0_PAD,4,0x01},{KEYCODE_1_PAD,4,0x02},{KEYCODE_2_PAD,4,0x04},{KEYCODE_3_PAD,4,0x08}, /* COL3 0x22-0x25 */
   {KEYCODE_4_PAD,4,0x10},{KEYCODE_5_PAD,4,0x20},{KEYCODE_6_PAD,4,0x40},{KEYCODE_7_PAD,4,0x80}, /* COL3 0x26-0x29 */
   {KEYCODE_0,5,0x01},{KEYCODE_2,5,0x02},{KEYCODE_3,5,0x04},{KEYCODE_4,5,0x08}, /* COL4 0x2A-0x2D */
-  {KEYCODE_6,5,0x10},{KEYCODE_8,5,0x20},{KEYCODE_7,5,0x40},{KEYCODE_9,5,0x80}, /* COL4 0x2E; trough optos: 0x2F=C7(key8) 0x31=C8(key9) both versions, 0x30=key7 bikerac2-only (+0x2C=key3); see trough notes above */
+  {KEYCODE_6,5,0x10},{KEYCODE_8,5,0x20},{KEYCODE_MINUS,5,0x40},{KEYCODE_9,5,0x80}, /* COL4 0x2E; trough optos: 0x2F=C7(key8) 0x31=C8(key9) both versions, 0x30=key'-' bikerac2-only (+0x2C=key3); 0x30 is on '-' rather than 7 because 7 is the test/service key (sleic.h); see trough notes above */
 };
 
 static SWITCH_UPDATE(SLEIC3) {
@@ -2260,7 +2266,7 @@ static SWITCH_UPDATE(SLEIC3) {
      *   bit4 = C2  Start        (code 0x36)
      *   bit5 = C3  Coin/Monedero(code 0x37/0x39) */
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 10, 0x01, 9); /* TILT(T)   0x400 -> bit0 (C17 tilt, code 0x32) */
-    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 10, 0x02, 9); /* TEST(End) 0x800 -> bit1 (C4 Test, code 0x33 = menu ENTER) */
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 10, 0x02, 9); /* TEST(7)   0x800 -> bit1 (C4 Test, code 0x33 = menu ENTER) */
     CORE_SETKEYSW(inports[CORE_COREINPORT] << 1,  0x04, 9); /* R-Shift 0x002 -> bit2 (C5 right flipper) */
     CORE_SETKEYSW(inports[CORE_COREINPORT] << 3,  0x08, 9); /* L-Shift 0x001 -> bit3 (C1 left flipper)  */
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 4,  0x10, 9); /* START 0x100 -> bit4 (C2) */
@@ -2274,7 +2280,7 @@ static SWITCH_UPDATE(SLEIC3) {
       coreGlobals.swMatrix[sleic3_pf_keys[i].col] &= ~sleic3_pf_keys[i].bit;
   }
 #ifdef DEBUG_SLEIC
-  sleic_debug_switches(5, 0xE0); /* COL4: C7 0x20 | key-7 sensor 0x40 (bikerac2) | C8 0x80 */
+  sleic_debug_switches(5, 0xE0); /* COL4: C7 0x20 | '-' sensor 0x40 (bikerac2) | C8 0x80 */
 #endif
 }
 

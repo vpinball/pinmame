@@ -9,20 +9,46 @@
 /--------------------------*/
 #define SLEIC_ROMEND    ROM_END
 
-/*-- Playfield keys and cabinet buttons, shared by every SLEIC machine --*/
+/*-- Cabinet buttons, shared by every SLEIC machine.
+ *
+ * KEY MAP (all three machines; Io Moon adds one more, see SLEIC2_CABPORT):
+ *
+ *   Left Shift   left flipper        Right Shift  right flipper
+ *   1            start               5            coin
+ *   T            tilt                7            test / service menu
+ *
+ * That is the PinMAME convention throughout: Left/Right Shift are the flippers in
+ * CORE_PORTS itself, 1/5/T are MAME's own IPT_START1 / IPT_COIN1 / IPT_TILT defaults
+ * (inptport.c), and 7 is the test/self-test/diagnostic button in by35, by6803, gts1,
+ * gts3, atari, alvg, ltd, zac and spinb.  These machines used to put test on End
+ * instead; across PinMAME End is a coin-door-class TOGGLE (Coin Door in wpc/gts3,
+ * Memory Protect in se, Ticket in alvg), not a momentary test button, so it moved to 7.
+ * A saved .cfg keeps whatever binding it was saved with, so delete the game's file in
+ * cfg/ to pick the new default up.
+ *
+ * There is no separate 8/9/0 service cluster because these machines have no separate
+ * service buttons: the service menu is walked with the flipper buttons, which is what
+ * the cabinet does.  Io Moon sends codes 0x41/0x42 for them and sub_DD480's dispatch at
+ * DD501 uses those as scroll and select (F14); Bike Race and Sleic Pin-Ball do the same
+ * with their own codes.
+ *
+ * Six further entries used to sit here -- "Key 3".."Key 8" on keys 3..8, feeding
+ * swMatrix[0] through the base SWITCH_UPDATE(SLEIC).  Every machine replaces that
+ * handler (SLEIC1/SLEIC2/SLEIC3 each map their own cabinet block into swMatrix[9]), so
+ * nothing ever read them, and two of them clashed with keys that have a job: key 5 is
+ * MAME's coin key, and keys 7/8 are the service keys.  They are gone; the bits they had
+ * (0x0004-0x0080) are simply unused, so every other binding keeps the mask it had and a
+ * saved cfg stays valid.  The playfield contacts are NOT here either -- each machine
+ * maps its own matrix with its own key table (iomoon_pf_keys, sleic1_pf_keys,
+ * sleic3_pf_keys), which is what lets the contact self-test exercise every position.
+ *
+ * Bits 0/1 are the flipper BUTTONS, read as cabinet inputs (Io Moon swMatrix[9] bits
+ * 3/2); on Io Moon port 0x00 IN is the J1 inbound byte, not a switch-matrix read.
+ --*/
 #define SLEIC_CABPORT \
   PORT_START /* 0 */ \
-    /* Switch Column 1 direct switches on Bike Race / Sleic Pin-Ball; on Io Moon, Keys 1/2 \
-     * are the cabinet flipper inputs (swMatrix[9] bits 3/2) -- port 0x00 IN there is the \
-     * J1 inbound byte, not a switch-matrix read */ \
-    COREPORT_BIT(     0x0001, "Key 1 / L Flipper", KEYCODE_LSHIFT) \
-    COREPORT_BIT(     0x0002, "Key 2 / R Flipper", KEYCODE_RSHIFT) \
-    COREPORT_BIT(     0x0004, "Key 3",     KEYCODE_3) \
-    COREPORT_BIT(     0x0008, "Key 4",     KEYCODE_4) \
-    COREPORT_BIT(     0x0010, "Key 5",     KEYCODE_5) \
-    COREPORT_BIT(     0x0020, "Key 6",     KEYCODE_6) \
-    COREPORT_BIT(     0x0040, "Key 7",     KEYCODE_7) \
-    COREPORT_BIT(     0x0080, "Key 8",     KEYCODE_8) \
+    COREPORT_BIT(     0x0001, "L Flipper", KEYCODE_LSHIFT) \
+    COREPORT_BIT(     0x0002, "R Flipper", KEYCODE_RSHIFT) \
     /* Cabinet buttons.  Every SLEIC machine here reads them on Z80 port 0x03 and every \
      * SWITCH_UPDATE handler below maps them into swMatrix[9], one bit per button, in the \
      * same bit order: 0 = TILT, 1 = TEST, 2 = right flipper, 3 = left flipper, 4 = START, \
@@ -30,10 +56,10 @@
      * 0x3E/0x3F/0x42/0x41/0x40/0x32), so the per-driver handler is the place that names \
      * them; see SWITCH_UPDATE(SLEIC2) for what the Io Moon firmware does with each. \
      * Nothing is mapped into swMatrix[10] (Io Moon's port-0x04 config byte). */ \
-    COREPORT_BITDEF(  0x0100, IPT_START1, IP_KEY_DEFAULT) /* START -> swMatrix[9].4 */ \
-    COREPORT_BITDEF(  0x0200, IPT_COIN1,  IP_KEY_DEFAULT) /* COIN  -> swMatrix[9].5 */ \
-    COREPORT_BITDEF(  0x0400, IPT_TILT,   IP_KEY_DEFAULT) /* TILT  -> swMatrix[9].0 */ \
-    COREPORT_BIT(     0x0800, "Test / Service Menu", KEYCODE_END) /* -> swMatrix[9].1; service-menu enter: Bike Race C4 Test code 0x33, Io Moon code 0x3F (F14). F2 is grabbed by MAME UI, End avoids stale-cfg unbinding */ \
+    COREPORT_BITDEF(  0x0100, IPT_START1, IP_KEY_DEFAULT) /* START -> swMatrix[9].4 (key 1) */ \
+    COREPORT_BITDEF(  0x0200, IPT_COIN1,  IP_KEY_DEFAULT) /* COIN  -> swMatrix[9].5 (key 5) */ \
+    COREPORT_BITDEF(  0x0400, IPT_TILT,   IP_KEY_DEFAULT) /* TILT  -> swMatrix[9].0 (key T) */ \
+    COREPORT_BIT(     0x0800, "Test / Service Menu", KEYCODE_7) /* -> swMatrix[9].1; service-menu enter: Bike Race C4 Test code 0x33, Io Moon code 0x3F (F14) */ \
 
 /*-- Common Inports for SLEIC games whose DIP block has not been traced --*/
 #define SLEIC_COMPORTS \
@@ -72,7 +98,10 @@
  * the player's (or a frontend's): when the ball in play drains.  This is that input.
  * It is a NEW bit, 0x1000, appended after the shared block's 0x0800, so every existing
  * binding keeps the bit it already had and a saved cfg stays valid.  Backspace because
- * the MAME UI does not claim it and the keys a player uses are all taken. */
+ * the MAME UI does not claim it and it is not a key the cabinet map or the PinMAME
+ * service convention wants: the digits the retired "Key 3".."Key 8" entries freed are
+ * left unbound on purpose, since 8/9/0 are where PinMAME puts service buttons and this
+ * machine has none. */
 #define SLEIC2_CABPORT \
   SLEIC_CABPORT \
     COREPORT_BIT(     0x1000, "Drain ball in play", KEYCODE_BACKSPACE)
