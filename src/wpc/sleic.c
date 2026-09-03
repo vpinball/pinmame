@@ -1120,6 +1120,9 @@ static struct {
 static void iomoon_ball_command(UINT8 cmd);
 static void iomoon_ball_reset(void);
 
+/* The coin mechanism's pulse train (model further down); the reset is the machine init's */
+static void iomoon_coin_reset(void);
+
 /*-------------------------------------------------------------------------------------
 /  Io Moon (SLEIC2) OKI MSM6376 speech and effects -- finding F9.
 /
@@ -1924,6 +1927,8 @@ static MACHINE_INIT(SLEIC2) {
   /* The ball trough starts EMPTY here and is filled by the first SWITCH_UPDATE, because
    * the ball complement comes from an input port and the ports are not readable yet */
   iomoon_ball_reset();
+  /* No coin part-way through its pulse train, and no key remembered as already down */
+  iomoon_coin_reset();
 }
 
 /*-------------------------------------------------------------------------------------
@@ -2167,6 +2172,107 @@ static void iomoon_ball_update(int balls, int shoot, int drain) {
   coreGlobals.swMatrix[IOMOON_TROUGH_COL] |= bits;
 }
 
+/*-------------------------------------------------------------------------------------
+/  Io Moon (SLEIC2) coin input: ONE line, and one coin is a PULSE TRAIN on it.
+/
+/  The cabinet has a single electronic coin mechanism -- one entry in the manual's board
+/  list, designator N-50, on the door -- and it lands on the direct-input connector J7
+/  (manual 7.2.2.2) as Z80 port 0x03 bit 5.  There is no second or third coin switch
+/  anywhere in the Z80 ROM: a sweep of the whole listing for the code-send pattern finds
+/  73 sites and exactly one of them is a coin (sub_0D15 0D15 -> 0D3C, code 0x32; 0x33 in
+/  test mode), and the 80188 has no other credit source (F5, F11).  So "coin slot 1/2/3"
+/  is NOT a wiring fact here and cannot be put on three keys as three switches.
+/
+/  What the three per-country "coin values" are instead is DENOMINATIONS on that one line,
+/  told apart by HOW MANY pulses the validator emits.  The firmware never sees a coin --
+/  it counts pulses and prices the running total:
+/
+/    D000:0190   the NMI tests the inbound byte for 0x32 and, alone among the codes, does
+/                not queue it: it increments the pulse counter [4000:1144].
+/    sub_D800A   folds that count into the accumulator and calls the per-country pricing
+/                routine (sub_DCD9E for country 5, else sub_DD03D).
+/    sub_DD03D   divides the accumulated pulses by each coin value in turn, LARGEST FIRST
+/                (413C:00AF, then 00AE, then 00AD; the country-5 routine starts one higher
+/                at 00B0), multiplies each whole coin it finds by that coin's credit value
+/                (00AB / 00AA / 00A9, and 00AC), banks it through sub_DD1C1 and keeps the
+/                remainder.
+/
+/  Cross-check the pulse counts against the manual's coin table and the unit is obvious:
+/
+/    country      coin values (pulses)          credits        one pulse =
+/    UK        3 (30p)   5 (50p)  10 (GBP1)      1 / 2 / 5        10p
+/    Germany   1 (1 DM)  2 (2 DM)  5 (5 DM)      1 / 3 / 8        1 DM
+/    Italy     1 (500 L) 2 (1000L) 4 (2000 L)    1 / 3 / 7        500 L
+/    Holland   2 (1 Fl)  5 (2,5Fl) 10 (5 Fl)     1 / 3 / 7        0,50 Fl
+/    Spain     2 (50pta) 4 (100)   8 (200) 20 (500)  1/3/7/18     25 pta
+/
+/  which is an ordinary multi-coin validator with a value-scaled pulse output, and it
+/  settles what the coin KEY has to mean.  A player cannot emit one pulse -- there is no
+/  coin worth one pulse in the UK, Holland or Spain -- so a key that emits a single pulse
+/  models something the cabinet cannot do, and under those countries it takes two or three
+/  presses before the firmware sees a whole coin (owner report, and reproduced: under the
+/  old UK default three presses banked one credit).  The key therefore inserts a COIN: it
+/  starts a burst of as many pulses as that country's coin is worth, and the firmware
+/  prices it exactly as it prices the real mechanism.  One press = one coin = at least one
+/  credit under every one of the eight country settings.
+/
+/  The pulse count is read from the firmware's own live table rather than a copy of the
+/  eight presets, because the table is what the machine is actually pricing against: it is
+/  loaded from NVRAM 0x1C4-0x1CF at boot (sub_D6A36) and rewritten whenever the country
+/  DIP changes or the operator edits the values in the service menu, and a driver-side copy
+/  would go stale on both.  Before the boot load has run it reads zero, and one pulse is
+/  the honest fallback (the machine cannot price anything at that point either -- the
+/  pulses simply pile up in [4000:1144] until it can).
+/
+/  The BURST TIMING is the Z80's, not a guess.  sub_0D15 debounces the contact for 0x32
+/  ticks of the C046 counter before it sends the code, and that counter is stepped from the
+/  Z80's own periodic interrupt (SLEIC2 runs it at 8000000/8192 = 977 Hz), so a pulse must
+/  hold the contact for 50/977 = 51 ms = about 3.1 frames.  Measured on this driver: a
+/  3-frame hold sends NOTHING and a 4-frame hold sends every pulse, so 5 frames closed is
+/  the shortest hold with real margin.  The contact must then open again before the next
+/  pulse, because sub_33FA latches the input into the C0F8 mask on the way out and
+/  input_port03_read only clears it once the contact physically opens (F5: one press, one
+/  code, no auto-repeat); 3 frames open is comfortably enough.  8 frames per pulse is also
+/  about what the mechanism itself does -- a validator of this class pulses at roughly
+/  100 ms -- so the coin sound and the credit ticking up land at a plausible rate. */
+#define IOMOON_COIN_VALUES 0x4146d /* 413C:00AD, the three coin values in PULSES (00AF is
+                                    * the largest; country 5 has a fourth at 00B0)       */
+#define IOMOON_COIN_HOLD   5       /* frames the contact is closed, per pulse            */
+#define IOMOON_COIN_GAP    3       /* frames it is open again before the next pulse      */
+#define IOMOON_CAB_COIN    0x0200  /* the COIN bit of the cabinet inport (sleic.h)       */
+
+static struct { int pending, phase; UINT16 lastKeys; } iomoon_coin; //!!
+
+static void iomoon_coin_reset(void) { memset(&iomoon_coin, 0, sizeof iomoon_coin); }
+
+/* Pulses the mechanism emits for the coin the player just put in.  Only the smallest
+ * denomination has a key (see SLEIC2_CABPORT in sleic.h): the firmware prices the running
+ * pulse total rather than individual coins, so repeated small coins reach the same credit
+ * levels a larger coin does */
+static int iomoon_coin_pulses(void) {
+  const int n = cpu_readmem20(IOMOON_COIN_VALUES);
+  return (n > 0 && n <= 40) ? n : 1; /* 0 = the boot load has not run yet; 20 is the most
+                                      * any preset asks for (Spain's 500 pta)            */
+}
+
+/* Called once a frame with the cabinet inport word.  Returns the state of the coin
+ * contact for this frame: a fresh press queues a whole coin's worth of pulses, and the
+ * queue is emitted one pulse at a time whatever else the player does meanwhile (pressing
+ * again mid-burst adds a second coin, exactly like feeding the mechanism does) */
+static int iomoon_coin_update(UINT16 keys) {
+  int closed;
+  if ((keys & IOMOON_CAB_COIN) && !(iomoon_coin.lastKeys & IOMOON_CAB_COIN))
+    iomoon_coin.pending += iomoon_coin_pulses();
+  iomoon_coin.lastKeys = keys;
+  if (iomoon_coin.pending <= 0) { iomoon_coin.phase = 0; return 0; }
+  closed = (iomoon_coin.phase < IOMOON_COIN_HOLD);
+  if (++iomoon_coin.phase >= IOMOON_COIN_HOLD + IOMOON_COIN_GAP) {
+    iomoon_coin.phase = 0;
+    iomoon_coin.pending--;
+  }
+  return closed;
+}
+
 static SWITCH_UPDATE(SLEIC2) {
   unsigned i;
   int balls = IOMOON_TROUGH_MAX, shoot = 0, drain = 0;
@@ -2196,6 +2302,8 @@ static SWITCH_UPDATE(SLEIC2) {
      *            only path in the ROM that adds credits from a switch.  The award itself
      *            is nvstore_write_triple_83 (F10) with the running total cached in
      *            413C:00D4, and sub_D0B70(0x0A) is the coin sound on the partial.
+     *            This bit is therefore NOT driven from the key directly: one press is one
+     *            COIN, and iomoon_coin_update turns it into that coin's pulse train.
      *   bit 0 -> TILT ("falta").  Its code 0x3E dispatches through the in-game table at
      *            CS:0527 (entry 48) to sub_D9EBB, which counts down the warning counter
      *            [4134:0033] -- loaded at every ball start from NVRAM byte 0x42 minus one
@@ -2221,7 +2329,11 @@ static SWITCH_UPDATE(SLEIC2) {
     CORE_SETKEYSW(in << 1,  0x04, 9); /* R-flip 0x0002 -> bit2 (code 0x42) */
     CORE_SETKEYSW(in << 3,  0x08, 9); /* L-flip 0x0001 -> bit3 (code 0x41) */
     CORE_SETKEYSW(in >> 4,  0x10, 9); /* START  0x0100 -> bit4 (code 0x40) */
-    CORE_SETKEYSW(in >> 4,  0x20, 9); /* COIN   0x0200 -> bit5 (code 0x32) */
+    /* COIN 0x0200 -> bit5 (code 0x32), through the pulse-train generator rather than
+     * straight from the key: one press is one COIN, which is several pulses on this one
+     * line -- see iomoon_coin_update */
+    if (iomoon_coin_update(in)) coreGlobals.swMatrix[9] |=  0x20;
+    else                        coreGlobals.swMatrix[9] &= ~0x20;
   }
   for (i = 0; i < sizeof(iomoon_pf_keys)/sizeof(iomoon_pf_keys[0]); i++) {
     if (keyboard_pressed(iomoon_pf_keys[i].key))

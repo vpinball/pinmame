@@ -26,6 +26,15 @@
  * A saved .cfg keeps whatever binding it was saved with, so delete the game's file in
  * cfg/ to pick the new default up.
  *
+ * There is ONE coin key because the cabinet has ONE coin line: a single electronic
+ * mechanism on the door, wired to Z80 port 0x03 bit 5, and the only credit source in
+ * either ROM.  On Io Moon a press of it is a COIN, not a contact closure -- the mechanism
+ * answers a coin with a pulse train whose length is the coin's value, and the firmware
+ * prices pulses, so the driver emits that train (iomoon_coin_update in sleic.c).  One
+ * press therefore buys at least one credit under every country setting; the three coin
+ * VALUES the country switch selects are denominations on that same line, not three
+ * switches, so there is no coin 2 / coin 3 key to bind.
+ *
  * There is no separate 8/9/0 service cluster because these machines have no separate
  * service buttons: the service menu is walked with the flipper buttons, which is what
  * the cabinet does.  Io Moon sends codes 0x41/0x42 for them and sub_DD480's dispatch at
@@ -57,7 +66,7 @@
      * them; see SWITCH_UPDATE(SLEIC2) for what the Io Moon firmware does with each. \
      * Nothing is mapped into swMatrix[10] (Io Moon's port-0x04 config byte). */ \
     COREPORT_BITDEF(  0x0100, IPT_START1, IP_KEY_DEFAULT) /* START -> swMatrix[9].4 (key 1) */ \
-    COREPORT_BITDEF(  0x0200, IPT_COIN1,  IP_KEY_DEFAULT) /* COIN  -> swMatrix[9].5 (key 5) */ \
+    COREPORT_BITDEF(  0x0200, IPT_COIN1,  IP_KEY_DEFAULT) /* COIN  -> swMatrix[9].5 (key 5); on Io Moon one press = one coin = a pulse train */ \
     COREPORT_BITDEF(  0x0400, IPT_TILT,   IP_KEY_DEFAULT) /* TILT  -> swMatrix[9].0 (key T) */ \
     COREPORT_BIT(     0x0800, "Test / Service Menu", KEYCODE_7) /* -> swMatrix[9].1; service-menu enter: Bike Race C4 Test code 0x33, Io Moon code 0x3F (F14) */ \
 
@@ -151,16 +160,41 @@
  * inversion).  Values 1 and 6 are labelled for their manual ROW; the coin values the \
  * ROM actually loads there are not the manual's, and value 1 is a duplicate of value 4. \
  * \
- * DEFAULT is United Kingdom -- country 0, SW2/SW3/SW4 all ON, DIP value 0x0000 -- by \
- * OWNER PREFERENCE: English text.  Country 5 is the only value that selects the Spanish \
- * tables, so any other value gives English; 0 is picked because it is the only English \
- * one whose preset matches the manual exactly, 30p/1, 50p/2, GBP1/5 = divisors 3/5/10 \
- * and credits 1/2/5, with none of the France/Belgium coin-value discrepancies and no \
- * off-by-one credit like Portugal's.  So the English default also comes with correct \
- * documented pricing, at the cost of three coin pulses per credit rather than one. \
- * Verified end to end at this setting, from the DIP default, not an override: country \
- * byte 0, preset 3/5/10 and 1/2/5, menu record table 0x0100, the DMD drawing ADJUSTMENT / \
- * SOUND-VIDEO / GAME / TECHNICAL, and coin -> credit -> START -> mode 3 -> song 1. \
+ * WHAT ONE COIN BUYS, per setting, because that is what the country switch is FOR.  The \
+ * coin key inserts one coin of the smallest denomination the country accepts (SLEIC_CABPORT \
+ * above, and iomoon_coin_update in sleic.c for why a key is a coin and not a pulse), so \
+ * this column is what one press gives you on a fresh machine: \
+ * \
+ *   value  country          smallest coin    one press   two presses  three presses \
+ *     0    United Kingdom   30p  (3 pulses)     1 credit    2           3 \
+ *     1    France(ROM=NL)   2 pulses            1           2           3 \
+ *     2    Germany          1 DM (1 pulse)      1           3           4 \
+ *     3    Italy            500 L (1 pulse)     1           3           4 \
+ *     4    Netherlands      1 Fl (2 pulses)     1           2           3 \
+ *     5    Spain            50 pta (2 pulses)   1           3           4 \
+ *     6    Belgium          2 pulses            1           3           4 \
+ *     7    Portugal         50 Esc (1 pulse)    1           3           4 \
+ * \
+ * (No setting needs more than one press for the first credit, and none can: every preset's \
+ * smallest coin is worth at least one credit -- that is what a smallest coin IS.  The \
+ * later columns do not simply add up because the firmware prices the RUNNING PULSE TOTAL \
+ * greedily, largest coin first, so two 1 DM coins are priced as one 2 DM coin and pay the \
+ * 2 DM bonus -- that is the machine's own arithmetic (sub_DD03D), not a driver artefact. \
+ * The larger denominations are not separate keys because they are not separate switches; \
+ * see the coin comment in sleic.c.) \
+ * \
+ * DEFAULT is Netherlands -- country 4, SW2/SW3 ON and SW4 OFF, DIP value 0x0008 -- by \
+ * OWNER PREFERENCE, and it is the setting the owner's own cabinet ran: guilders, one coin \
+ * per game.  It is English text (country 5 is the only value that selects the Spanish \
+ * tables, so every other value is English) and its preset is one of the six that match \
+ * the service manual exactly -- 1 Fl/1, 2,5 Fl/3, 5 Fl/7 = 2/5/10 pulses for 1/3/7 \
+ * credits -- with none of the France/Belgium coin-value discrepancies and no off-by-one \
+ * credit like Spain's or Portugal's.  United Kingdom (0x0000) is equally exact and stays \
+ * one click away; it is not the default only because the machine this driver is compared \
+ * against is a Dutch one.  Verified end to end at the Netherlands default, from the DIP \
+ * rather than an override: country byte 4, preset 2/5/10 and 1/3/7, one coin key \
+ * press -> 1 credit, and START -> mode 3 -> song 1, with the DMD drawing the English \
+ * ADJUSTMENT / SOUND-VIDEO / GAME / TECHNICAL menu. \
  * Note country 0 reaches its preset through two fall-through paths -- the country table \
  * at D5D01 is indexed from 2 so a nibble of 0 lands on D5CF8's "country 0", and \
  * sub_D69CC's bounds check sends 0 to the default preset sub_D6D36 -- which is by \
@@ -174,7 +208,7 @@
     COREPORT_DIPNAME( 0x0001, 0x0001, "SW40-1 VDB watchdog (not modelled)") \
       COREPORT_DIPSET(0x0000, "On (watchdog disabled)" ) \
       COREPORT_DIPSET(0x0001, "Off (watchdog enabled)" ) \
-    COREPORT_DIPNAME( 0x000e, 0x0000, "SW40-2/3/4 Country") \
+    COREPORT_DIPNAME( 0x000e, 0x0008, "SW40-2/3/4 Country") \
       COREPORT_DIPSET(0x0000, "United Kingdom" ) \
       COREPORT_DIPSET(0x0002, "France (ROM coins differ)" ) \
       COREPORT_DIPSET(0x0004, "Germany" ) \
