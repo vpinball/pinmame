@@ -1391,6 +1391,8 @@ DRIVERNV(bikerac2)      // 1992 - Bike Race (2-ball play)
 DRIVERNV(bikerac3)      // 1992 - Bike Race (V4.1)
 DRIVERNV(sleicpin)      // 1993 - Sleic Pin-Ball
 DRIVERNV(iomoon)        // 1994 - Io Moon
+DRIVERNV(iomoona)       // 1994 - Io Moon (earlier ROM revision)
+DRIVERNV(iomoont)       // 1994 - Io Moon (PRESS START tournament MOD)
                         // 1996 - Dona Elvira 2
 
 // ----------------

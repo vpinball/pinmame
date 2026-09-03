@@ -115,6 +115,7 @@ Funhouse 9.07H (Ballsaver MOD), 9.05H + (Ballsaver MOD) (both are independently 
 Gorgar L-2 (most likely official, but unreleased so far, makes it the newest version available)
 High Speed G-4 (aka German PROTO4), L-1 (but coming from a Unidesa / Cirsa licensed board)
 Hurricane D-2 LED Ghost Fix + Ball Saver MOD
+Io Moon (earlier ROM revision), (PRESS START tournament MOD)
 Mata Hari (Free Play and MODified rules, 6 and 7 digit versions (latter requires DIP 19 on))
 Maverick 4.04 (German, Display 4.00)
 Monte Carlo (German) (most likely older revision than existing one, see above)
