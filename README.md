@@ -111,7 +111,7 @@ and listen to/record the pinball game sounds with the pure PinMAME package itsel
 - *Sonic* - Odin DeLuxe (1985), Pole Position (1987), Star Wars (1987)
 - *Allied Leisure* - All games from Super Picker (1977) to Star Shooter (1979)
 - *Fascination, Int.* - Roy Clark - The Entertainer (1977), Eros One, and Circa 1933 (both 1979)
-- *Sleic* - Bike Race (1992, standard and 2-ball versions), Sleic Pin-Ball (1993)
+- *Sleic* - Bike Race (1992, standard and 2-ball versions), Sleic Pin-Ball (1993), Io Moon (1994)
 - *Playmatic* - Last Lap (1978), Antar (1979), Evil Fight (1980), Mad Race (1982), Meg-Aaton (1983), KZ-26 (1984) (*)
 - *NSM*
 - *Grand Products* - 300/Bullseye (1986)

@@ -107,4 +107,5 @@ SLEIC_ROMSTART5(iomoon, "v1_3_01.bin", CRC(df80bf4f) SHA1(29547b444cad116c9dc925
 						"v1_3_04.bin", CRC(f3a950bf) SHA1(e0410f8fe9b4efe7d21052c0a19894a563f90a27),
 						"v1_3_05.bin", CRC(6bb5e101) SHA1(125412953bbee7ee171c0bd34f7848fde37ace67))
 SLEIC_ROMEND
-CORE_GAMEDEFNV(iomoon,"Io Moon",1994,"Sleic (Spain)",gl_mSLEIC2,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(iomoon,"Io Moon",1994,"Sleic (Spain)",gl_mSLEIC2,0)
+
