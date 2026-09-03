@@ -1664,8 +1664,8 @@ MEMORY_END
 /  the I/O ROM contradicts.
 /-----------------------------------------------------------------------------------*/
 
-/* Port 0x04 with nothing pressed.  Three bits have to be right or the firmware misbehaves,
- * and all three readings come from the ROM:
+/* Port 0x04 with nothing pressed.  Two bits have to be right or the firmware misbehaves,
+ * and both readings come from the ROM:
  *
  *   bit 7 = 1  selftest_wait_reset 2E42 spins on it (IN ($04) / BIT 7 / JP Z,self), so a 0
  *              here is a hang the moment the self-test path is taken.
@@ -1674,24 +1674,10 @@ MEMORY_END
  *              bit 5, sending codes 0x50-0x79; which physical contacts sit on it is part
  *              of F5's open gap, so the honest model is "not fitted" rather than a
  *              guessed wiring.  Turning it on is a one-bit change once that is known.
- *   bit 5 = 0  makes the command-0xED handler 2BEB answer 0x45 at once (IN ($04) / BIT 5 /
- *              JP Z,2C17).  The service manual's SW40 list (section 7.2.2.3) has a switch
- *              with exactly this function, SW5 "servicio: no se dispensan bolas" / no
- *              balls dispensed.  That the FUNCTION matches is a good sign the branch is
- *              understood; it is NOT proof that SW5 is this bit, because the manual gives
- *              no bit numbers and only SW2-SW4's positions have been established.
- *              With bit 5 SET the handler instead loops -- strobe column 0,
- *              check the trough contacts, run the eject coil sequence sub_2CFB, repeat --
- *              and its ONLY exit is those contacts closing.  That is correct hardware
- *              behaviour (a machine waiting for its balls), but it never returns to the
- *              command dispatcher, so the Z80 stops scanning switches entirely; with no
- *              ball model and F5's physical map open, 0 is the state this driver can
- *              honestly hold.  The 80188 side is happy either way: F14's prompt takes
- *              0x45 or 0x46 and moves on.
  *
- * Bits 1-3 have since been taken OUT of this constant: they are the SW40 country switches
- * and the firmware acts on them, so they come from the DIP bank instead -- see
- * iomoon_port04() below.  What remains here is bits 0, 4, 5, 6 and 7.
+ * Bits 1-3 and bit 5 are NOT in this constant: they are SW40 switches the firmware acts
+ * on, so they come from the DIP bank -- see iomoon_port04() below.  What remains here is
+ * bits 0, 4, 6 and 7, all high.
  *
  * Two structural notes, because the read is "IDLE & ~swMatrix[10]" and an AND can only
  * ever CLEAR bits:
@@ -1702,7 +1688,7 @@ MEMORY_END
  *   - anything mapped into swMatrix[10] bit 7 would pull that bit low and hang
  *     selftest_wait_reset 2E42.  Nothing writes row 10 today; keep it that way unless
  *     the bit is understood. */
-#define IOMOON_PORT04_IDLE 0xdf
+#define IOMOON_PORT04_IDLE 0xff
 
 /* Bits 1-3 of port 0x04 are the SW40 country switches SW2-SW4, and they are NOT an idle
  * constant -- the firmware reads them and acts on them, so they are a DIP the user sets
@@ -1724,11 +1710,21 @@ MEMORY_END
  * themselves, not by the UK and Spain rows (both are palindromes and survive a reversal);
  * sleic.h carries the eight-row comparison and the three rows a reversal would break.
  *
- * The other five bits stay in IOMOON_PORT04_IDLE.  Bit 5 in particular must stay 0 for
- * the reason above -- the manual's SW5 "servicio: no se dispensan bolas" is the same
- * behaviour the 0xED handler shows, and with no ball model 0 is the state to hold. */
+ * Bit 5 is SW40-5, the manual's "servicio: no se dispensan bolas".  The 0xED handler
+ * 2BEB reads it (IN ($04) / BIT 5 / JP Z,2C17) and with the bit LOW answers 0x45 without
+ * looking at a contact -- which is exactly "do not dispense balls", i.e. the SERVICE
+ * position.  Normal play is the bit HIGH, where 2BEB runs the real check: strobe column
+ * 0, test the trough (sub_2C1F), and answer 0x45 through sub_2851 when the balls are
+ * home or 0x46 and the eject sequence when they are not.  That branch used to be a hang,
+ * which is why this bit was held low; with the trough modelled it is not, and the DIP
+ * now selects it.  Measured both ways: bit high answers 0x45 in ONE frame at boot and
+ * the whole coin/credit/START/serve chain runs identically to bit low. */
 static UINT8 iomoon_port04(void) {
-  return (UINT8)((IOMOON_PORT04_IDLE & ~0x0e) | (core_getDip(0) & 0x0e));
+  /* DIP 0x10 is SW40-5 and its two settings are named for the switch, not for the bit:
+   * "On" (DIP 0) = the service position = port-04 bit 5 LOW, "Off" (DIP 0x10) = normal
+   * play = bit 5 HIGH.  Default is Off */
+  return (UINT8)((IOMOON_PORT04_IDLE & ~0x2e) | (core_getDip(0) & 0x0e)
+                 | ((core_getDip(0) & 0x10) ? 0x20 : 0x00));
 }
 
 static READ_HANDLER(iomoon_z80_read) {
@@ -2109,7 +2105,16 @@ static void iomoon_ball_command(UINT8 cmd) {
  * play", balls = its "Balls" setting (0 = model off) */
 static void iomoon_ball_update(int balls, int shoot, int drain) {
   UINT8 bits;
-  if (balls <= 0) { iomoon_balls.seeded = 0; return; }   /* frontend owns the trough */
+  /* "Balls" = 0 turns the model off for a frontend that drives these contacts itself.
+   * Drop the whole state, not just the seeded flag: a half-finished serve left behind
+   * would be applied to the first frame after the setting is turned back on */
+  if (balls <= 0) { iomoon_ball_reset(); return; }
+  /* Fewer than three cannot work and is not a machine state a user should be able to
+   * select by accident: the trough test sub_2C1F only ever clears with three adjacent
+   * contacts closed, so a two-ball trough leaves command 0xEF (Z80 2BC7) looping with no
+   * give-up path -- which is what a real cabinet missing a ball does, but a UI setting
+   * should not brick the emulation.  Clamp up; 0 above is the deliberate way off */
+  if (balls < IOMOON_TROUGH_MAX) balls = IOMOON_TROUGH_MAX;
   if (!iomoon_balls.seeded) {
     iomoon_balls.seeded   = 1;
     iomoon_balls.inTrough = balls > IOMOON_TROUGH_MAX ? IOMOON_TROUGH_MAX : balls;

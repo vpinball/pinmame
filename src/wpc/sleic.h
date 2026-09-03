@@ -153,9 +153,9 @@
       COREPORT_DIPSET(0x000a, "Spain (Spanish text)" ) \
       COREPORT_DIPSET(0x000c, "Belgium (ROM coins differ)" ) \
       COREPORT_DIPSET(0x000e, "Portugal" ) \
-    COREPORT_DIPNAME( 0x0010, 0x0000, "SW40-5 no balls dispensed (not modelled)") \
-      COREPORT_DIPSET(0x0000, "On" ) \
-      COREPORT_DIPSET(0x0010, "Off" ) \
+    COREPORT_DIPNAME( 0x0010, 0x0010, "SW40-5 Service: no balls dispensed") \
+      COREPORT_DIPSET(0x0000, "On (0xED answers at once, no ball check)" ) \
+      COREPORT_DIPSET(0x0010, "Off (normal play)" ) \
     COREPORT_DIPNAME( 0x0020, 0x0000, "SW40-6 solenoid test (not modelled)") \
       COREPORT_DIPSET(0x0000, "On" ) \
       COREPORT_DIPSET(0x0020, "Off" ) \
