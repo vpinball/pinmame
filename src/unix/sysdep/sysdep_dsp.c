@@ -101,6 +101,9 @@ static const struct plugin_struct *sysdep_dsp_plugins[] = {
 #ifdef SYSDEP_DSP_SDL
    &sysdep_dsp_sdl,
 #endif
+#ifdef SYSDEP_DSP_SDL3
+   &sysdep_dsp_sdl3,
+#endif
 #ifdef SYSDEP_DSP_WAVEOUT
    &sysdep_dsp_waveout,
 #endif

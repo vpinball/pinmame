@@ -1,0 +1,85 @@
+name: sdl3pinmame
+on:
+  push:
+  pull_request:
+
+env:
+  VERSION_START_SHA: 79345956d1807e3188f0e895379466c7c4caae72
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  version:
+    name: Version
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      revision: ${{ steps.version.outputs.revision }}
+      sha: ${{ steps.version.outputs.sha }}
+      sha7: ${{ steps.version.outputs.sha7 }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - id: version
+        run: |
+          VERSION_MAJOR=$(grep -Eo "VERSION_MAJOR\s+[0-9]+" src/version.h | grep -Eo "[0-9]+")
+          VERSION_MINOR=$(grep -Eo "VERSION_MINOR\s+[0-9]+" src/version.h | grep -Eo "[0-9]+")
+          VERSION_REV=$(grep -Eo "VERSION_REV\s+[0-9]+" src/version.h | grep -Eo "[0-9]+")
+          VERSION="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+          REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..HEAD --count)
+          SHA="${GITHUB_SHA}"
+          SHA7="${SHA::7}"
+          TAG="${VERSION}-${REVISION}-${SHA7}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "revision=${REVISION}" >> $GITHUB_OUTPUT
+          echo "sha=${SHA}" >> $GITHUB_OUTPUT
+          echo "sha7=${SHA7}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
+  build:
+    name: Build sdl3pinmame-${{ matrix.platform }}-${{ matrix.arch }}
+    runs-on: ${{ matrix.os }}
+    needs: [ version ]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-24.04, platform: linux, arch: x64 }
+          - { os: macos-15, platform: macos, arch: x64 }
+          - { os: macos-15, platform: macos, arch: arm64 }
+    steps:
+      - uses: actions/checkout@v6
+      - if: matrix.platform == 'linux'
+        name: Install SDL3 build dependencies
+        # SDL3 is built from source (see cmake/sdl3pinmame/CMakeLists.txt), these are the
+        # development packages it needs to enable its x11/wayland/pipewire/pulseaudio backends
+        run: |
+          sudo apt update
+          sudo apt install -y ninja-build libasound2-dev libpulse-dev libaudio-dev libjack-dev libsndio-dev \
+            libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev \
+            libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev \
+            libdbus-1-dev libibus-1.0-dev libudev-dev libpipewire-0.3-dev libwayland-dev libdecor-0-dev liburing-dev
+      - name: Build sdl3pinmame-${{ matrix.platform }}-${{ matrix.arch }}
+        run: |
+          cp cmake/sdl3pinmame/CMakeLists.txt CMakeLists.txt
+          cmake \
+             -DPLATFORM=${{ matrix.platform }} \
+             -DARCH=${{ matrix.arch }} \
+             -DCMAKE_BUILD_TYPE=Release \
+             -B build/Release
+          cmake --build build/Release
+      - run: |
+          mkdir tmp
+          cp build/Release/sdl3pinmame tmp
+          cp release/gamelist.txt tmp
+          cp release/license.txt tmp
+          cp release/pinmame.txt tmp
+          cp release/whatsnew.txt tmp
+      - uses: actions/upload-artifact@v7
+        with:
+          name: sdl3pinmame-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}
+          path: tmp

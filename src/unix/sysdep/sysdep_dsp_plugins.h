@@ -57,6 +57,9 @@ extern struct plugin_struct sysdep_dsp_arts;
 #ifdef SYSDEP_DSP_SDL
 extern struct plugin_struct sysdep_dsp_sdl;
 #endif
+#ifdef SYSDEP_DSP_SDL3
+extern struct plugin_struct sysdep_dsp_sdl3;
+#endif
 #ifdef SYSDEP_DSP_WAVEOUT
 extern struct plugin_struct sysdep_dsp_waveout;
 #endif
