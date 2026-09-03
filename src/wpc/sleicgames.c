@@ -91,7 +91,7 @@ SLEIC_ROMEND
 CORE_GAMEDEFNV(sleicpin,"Sleic Pin-Ball",1993,"Sleic (Spain)",gl_mSLEIC1,0)
 
 /*-------------------------------------------------------------------
-/ Io Moon (1994)
+/ Io Moon (1996)
 /-------------------------------------------------------------------*/
 /* "Balls" defaults to 0, and for Io Moon that is not a ball count -- it is the OFF
    position of the driver's optional internal ball-trough model (SWITCH_UPDATE(SLEIC2) in
@@ -114,7 +114,7 @@ SLEIC_ROMSTART5(iomoon, "v1_3_01.bin", CRC(df80bf4f) SHA1(29547b444cad116c9dc925
 						"v1_3_04.bin", CRC(f3a950bf) SHA1(e0410f8fe9b4efe7d21052c0a19894a563f90a27),
 						"v1_3_05.bin", CRC(6bb5e101) SHA1(125412953bbee7ee171c0bd34f7848fde37ace67))
 SLEIC_ROMEND
-CORE_GAMEDEFNV(iomoon,"Io Moon",1994,"Sleic (Spain)",gl_mSLEIC2,0)
+CORE_GAMEDEFNV(iomoon,"Io Moon",1996,"Sleic (Spain)",gl_mSLEIC2,0)
 
 /* An earlier dump of the same 1.3 set.  The stickers on both sets read V1.3 -- the number
    after the dash is the chip position, not a sub-revision -- so the two are told apart by
@@ -139,7 +139,7 @@ SLEIC_ROMSTART5(iomoona,"v1_3_01e.bin", CRC(00a75790) SHA1(3af7a5c10a8c1687a212a
 						"v1_3_04.bin",  CRC(f3a950bf) SHA1(e0410f8fe9b4efe7d21052c0a19894a563f90a27),
 						"v1_3_05e.bin", CRC(dd5145f5) SHA1(7de0b9582e5130cd1eafb1c0038ee7c9ce7b3ec2))
 SLEIC_ROMEND
-CORE_CLONEDEFNV(iomoona,iomoon,"Io Moon (earlier ROM revision)",1994,"Sleic (Spain)",gl_mSLEIC2,0)
+CORE_CLONEDEFNV(iomoona,iomoon,"Io Moon (earlier ROM revision)",1996,"Sleic (Spain)",gl_mSLEIC2,0)
 
 /* Tournament MOD of the parent set: chip 01 patched so the end of a game asks for PRESS
    START instead of dropping straight back to attract, which is what a tournament wants
@@ -155,4 +155,4 @@ SLEIC_ROMSTART5(iomoont,"v1_3_01t.bin", CRC(42cafcda) SHA1(0ac3dd882748bc86a3b66
 						"v1_3_04.bin",  CRC(f3a950bf) SHA1(e0410f8fe9b4efe7d21052c0a19894a563f90a27),
 						"v1_3_05.bin",  CRC(6bb5e101) SHA1(125412953bbee7ee171c0bd34f7848fde37ace67))
 SLEIC_ROMEND
-CORE_CLONEDEFNV(iomoont,iomoon,"Io Moon (PRESS START tournament MOD)",1994,"Sleic (Spain)",gl_mSLEIC2,0)
+CORE_CLONEDEFNV(iomoont,iomoon,"Io Moon (PRESS START tournament MOD)",1996,"Sleic (Spain)",gl_mSLEIC2,0)
