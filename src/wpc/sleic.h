@@ -12,7 +12,9 @@
 /*-- Playfield keys and cabinet buttons, shared by every SLEIC machine --*/
 #define SLEIC_CABPORT \
   PORT_START /* 0 */ \
-    /* Switch Column 1 / direct switches port 0x00 on Io Moon */ \
+    /* Switch Column 1 direct switches on Bike Race / Sleic Pin-Ball; on Io Moon, Keys 1/2 \
+     * are the cabinet flipper inputs (swMatrix[9] bits 3/2) -- port 0x00 IN there is the \
+     * J1 inbound byte, not a switch-matrix read */ \
     COREPORT_BIT(     0x0001, "Key 1 / L Flipper", KEYCODE_LSHIFT) \
     COREPORT_BIT(     0x0002, "Key 2 / R Flipper", KEYCODE_RSHIFT) \
     COREPORT_BIT(     0x0004, "Key 3",     KEYCODE_3) \
@@ -127,10 +129,9 @@
  * and credits 1/2/5, with none of the France/Belgium coin-value discrepancies and no \
  * off-by-one credit like Portugal's.  So the English default also comes with correct \
  * documented pricing, at the cost of three coin pulses per credit rather than one. \
- * Verified end to end at this setting, from the DIP rather than a probe override: country \
+ * Verified end to end at this setting, from the DIP default, not an override: country \
  * byte 0, preset 3/5/10 and 1/2/5, menu record table 0x0100, the DMD drawing ADJUSTMENT / \
- * SOUND-VIDEO / GAME / TECHNICAL, and coin -> credit -> START -> mode 3 -> song 1 \
- * (scratchpad logs t16/dip-uk-default.log, t16/uk-full.log and t16/fixround-final.log). \
+ * SOUND-VIDEO / GAME / TECHNICAL, and coin -> credit -> START -> mode 3 -> song 1. \
  * Note country 0 reaches its preset through two fall-through paths -- the country table \
  * at D5D01 is indexed from 2 so a nibble of 0 lands on D5CF8's "country 0", and \
  * sub_D69CC's bounds check sends 0 to the default preset sub_D6D36 -- which is by \

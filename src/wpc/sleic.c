@@ -12,6 +12,11 @@
 		DISPLAY: DMD 128x32
 		SOUND:   YM3812 (OPL2 FM music) + OKI MSM6376 (ADPCM speech/FX),
 		         both driven by the 80188
+
+   The F1..F15 citations throughout this file refer to the findings contract in the SLEIC
+   IO Moon reverse-engineering repository (https://github.com/gerwout/sleic-iomoon, file
+   asm/baseline-2026-09/findings.md), as do paths such as docs/dmd_wire_protocol.md and
+   asm/pic16c57_annotated.asm.
  ************************************************************************************************/
 
 #include "driver.h"
@@ -90,6 +95,9 @@ static void sleic_dmd_dump(const UINT8 *frame) {
 static int SLEIC_sw2m(int no) { return (no/10 - 4)*8 + no%10; }
 static int SLEIC_m2sw(int col, int row) { return 40 + col*10 + row; }
 
+/* The base machine's placeholder: a vector-less pulse of IRQ line 0.  Every concrete
+ * machine below now overrides it (sleic1_irq_gen / iomoon_irq_gen / sleic3_irq_gen), so
+ * nothing that ships reaches this */
 static INTERRUPT_GEN(SLEIC_irq_i80188) {
   cpu_set_irq_line(SLEIC_MAIN_CPU, 0, PULSE_LINE);
 }
@@ -183,7 +191,7 @@ static INTERRUPT_GEN(sleic1_irq_gen) {
  * handler averages 7.5 ms.  A 290 Hz period is 3.45 ms and a 145 Hz period 6.9 ms, so
  * neither contains it, and because INT0 outranks timer 0 on the controller a
  * permanently-pending INT0 does not merely run late -- it starves the timer outright.  At
- * 290 Hz the probe measures timer 0 at zero interrupts per second and the firmware never
+ * 290 Hz measurement shows timer 0 at zero interrupts per second and the firmware never
  * leaves its frame-delay loop at D5611: a hang, not a slow machine.
  *
  * So what ships here is 72.5 Hz, and it is important to be plain about what that number is
@@ -221,7 +229,7 @@ static INTERRUPT_GEN(sleic1_irq_gen) {
  * It is deliberately NOT changed yet.  Everything measured for the J1 link -- the switch
  * scan cadence, the handshake spins, the byte rates -- was measured at 2.5 MHz, and a 1.6x
  * change to the I/O board's speed re-times all of it at once.  Revisit it against the real
- * machine (or a scope on X10) as its own step, with the switch-delivery probe re-run
+ * machine (or a scope on X10) as its own step, with switch-delivery testing re-run
  * either side of the change; that is an owner checkpoint, not a silent edit */
 #define IOMOON_Z80_CLOCK 2500000
 
@@ -263,7 +271,7 @@ static INTERRUPT_GEN(sleic1_irq_gen) {
  *
  * Pitch and envelope speed scale with it; musical TEMPO does not.  Tempo comes from the
  * sequencer's tick, which F8 puts on the INT0 handler's odd branch: IOMOON_INT0_HZ / 2 =
- * 36.25 Hz here, and that half is MEASURED (SLEIC_PROBE_IRQ reports INT0 served at 72.5/s).
+ * 36.25 Hz here, and that half is MEASURED (INT0 served at 72.5/s over a headless boot).
  * How far off hardware that is depends entirely on F3's open INT0 source, so it is stated
  * as a range and not as a number: 2x slow if INT0 is the per-FRAME candidate (~145 Hz),
  * 4x slow under F3's per-PLANE recommendation (~290 Hz).  Deliberately NOT derived from
@@ -1067,11 +1075,12 @@ static void iomoon_set_gfx_bank(UINT8 pcs0) {
 /  the latch as a one-byte mailbox with flow control on port-0x01 bit 1: free while empty,
 /  busy from the strobe until the NMI reads 0xA0100.  That is what stops the Z80
 /  overrunning a latch the 80188 has not emptied yet -- and dropped switch bytes are
-/  exactly the failure this task exists to prevent.
+/  exactly the failure that flow control exists to prevent.
 /
-/  It cannot deadlock, and NOT because of anything on the Z80 side: host_send_c0fc is
-/  reached from the IRQ handler as well, so its spin can run with IFF1 = 0 and no Z80
-/  interrupt will break it.  What clears the latch is the other CPU, on two mechanisms
+/  It cannot deadlock, and NOT because of anything on the Z80 side: host_send_c008, the
+/  sibling sender at Z80 0144, is also reached from the IRQ handler (call sites at 0B49
+/  and 0C7E), so its spin can run with IFF1 = 0 and no Z80 interrupt will break it.  What
+/  clears the latch is the other CPU, on two mechanisms
 /  that hold regardless: (a) the 80188 NMI is non-maskable, so the handler that reads
 /  0xA0100 always runs; and (b) cpu_set_irq_line called from Z80 context queues the
 /  request for CPU 0 and schedules it with timer_set(TIME_NOW), which calls
@@ -1219,7 +1228,7 @@ static WRITE_HANDLER(sleic2_periph_w) {
                  * (D022A/D0243) -- the inbound NMI handler asserts bits 7/6/4 but never
                  * bit 5 -- so its rising edge is the outbound strobe, and it arrives
                  * after the PCS1 write above.  Bit 3 (the old branch's "frame strobe")
-                 * is F13/Task 11's, not this one's.
+                 * belongs to the DMD frame path (F13), not to this handshake.
                  *
                  * Bits 0-2 are deliberately ignored: sub_D03C0 / sub_D0401 bit-bang them
                  * as a three-wire serial port (CS, U/D, INC) for the X9C503P digital
