@@ -93,7 +93,14 @@ CORE_GAMEDEFNV(sleicpin,"Sleic Pin-Ball",1993,"Sleic (Spain)",gl_mSLEIC1,0)
 /*-------------------------------------------------------------------
 / Io Moon (1994)
 /-------------------------------------------------------------------*/
-INITGAME2(iomoon, sleic_dispDMD, 1)
+/* THREE balls, and that is the firmware's own number rather than a guess: the 80188's
+   ball-start path stores 3 into its trough counter [413C:00F9] after a successful ball
+   search (DC514, DC587) and its 0xEA reply table does the same for the "trough full"
+   answer 0x3A (DC14D), and the Z80's trough test 2C1F only ever clears with three
+   adjacent contacts closed.  The driver's trough model (SWITCH_UPDATE(SLEIC2)) takes the
+   complement from this setting, and 0 turns the model off for a frontend that would
+   rather drive the trough contacts itself. */
+INITGAME2(iomoon, sleic_dispDMD, 3)
 SLEIC_ROMSTART5(iomoon, "v1_3_01.bin", CRC(df80bf4f) SHA1(29547b444cad116c9dc925d6b3112f584df37250),
 						"v1_3_02.bin", CRC(2bd589cd) SHA1(87354c76cbef8185d563266230c72a618ce6fcd7),
 						"v1_3_03.bin", CRC(334d0e20) SHA1(06b38cc7fcee633c45a9000187fcde8d7e03a51f),

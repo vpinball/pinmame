@@ -62,7 +62,21 @@
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0080, "1" )
 
-/*-- Io Moon (SLEIC2) inports.  Same cabinet block, but its DIP block is the real SW40. \
+/*-- Io Moon adds one cabinet input the other machines have no use for: the ball drain.
+ * Its ball trough is modelled in the driver (SWITCH_UPDATE(SLEIC2)) because the firmware
+ * BLOCKS on it -- 80188 commands 0xE9/0xEF and the Z80 handlers 2B03/2BC7 wait on the
+ * column-0 trough contacts, and with no ball anywhere the Z80 never returns to its main
+ * loop.  The model does everything a ball does on its own except the one thing that is
+ * the player's (or a frontend's): when the ball in play drains.  This is that input.
+ * It is a NEW bit, 0x1000, appended after the shared block's 0x0800, so every existing
+ * binding keeps the bit it already had and a saved cfg stays valid.  Backspace because
+ * the MAME UI does not claim it and the keys a player uses are all taken. */
+#define SLEIC2_CABPORT \
+  SLEIC_CABPORT \
+    COREPORT_BIT(     0x1000, "Drain ball in play", KEYCODE_BACKSPACE)
+
+/*-- Io Moon (SLEIC2) inports.  Same cabinet block plus the drain, but its DIP block is \
+ * the real SW40. \
  * \
  * Read as PinMAME DIP bank 0 (core_getDip(0)); only SLEIC2 reads it, which is why it is \
  * a separate macro -- the sister machines' Z80 ROMs were never traced for SW40 and keep \
@@ -125,7 +139,7 @@
  * Io Moon was built for and the path the ROM exercises most (its own pricing routine \
  * sub_DCD9E and the only fourth coin value). */ \
 #define SLEIC2_COMPORTS \
-  SLEIC_CABPORT \
+  SLEIC2_CABPORT \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0001, "SW40-1 VDB watchdog (not modelled)") \
       COREPORT_DIPSET(0x0000, "On (watchdog disabled)" ) \

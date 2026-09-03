@@ -1105,6 +1105,12 @@ static struct {
   UINT8 swCol;     /* Z80 port 0x82: switch-matrix column strobe, decoded to 0..5      */
 } iomoon_j1; //!!
 
+/* The ball trough (defined with the model further down): the 80188 -> Z80 strobe hands
+ * every command byte here, and 0xE9 is the one that moves a ball; the reset is the
+ * machine init's */
+static void iomoon_ball_command(UINT8 cmd);
+static void iomoon_ball_reset(void);
+
 /*-------------------------------------------------------------------------------------
 /  Io Moon (SLEIC2) OKI MSM6376 speech and effects -- finding F9.
 /
@@ -1226,6 +1232,7 @@ static WRITE_HANDLER(sleic2_periph_w) {
                  * YM3812 channel by a wiper position the schematic has not been read for */
       if ((data & 0x20) && !(iomoon_j1.pcs4 & 0x20)) {
         iomoon_j1.toZ80Full = 1;
+        iomoon_ball_command(iomoon_j1.toZ80);         /* the ball trough, 0xE9 = serve */
         cpu_set_irq_line(SLEIC_IO_CPU, IRQ_LINE_NMI, PULSE_LINE); /* Z80 handler 0x0066 */
       }
       iomoon_j1.pcs4 = data;
@@ -1909,6 +1916,9 @@ static MACHINE_INIT(SLEIC2) {
    * send -- boot_port_init 041B calls host_send_c008_b with interrupts still off, and
    * that routine spins on the bit before it does anything else */
   memset(&iomoon_j1, 0, sizeof iomoon_j1);
+  /* The ball trough starts EMPTY here and is filled by the first SWITCH_UPDATE, because
+   * the ball complement comes from an input port and the ports are not readable yet */
+  iomoon_ball_reset();
 }
 
 /*-------------------------------------------------------------------------------------
@@ -1945,10 +1955,210 @@ static const struct { int key; UINT8 col; UINT8 bit; } iomoon_pf_keys[] = {
   {KEYCODE_T,6,0x01},{KEYCODE_8_PAD,6,0x02},{KEYCODE_9_PAD,6,0x04},{KEYCODE_MINUS_PAD,6,0x08}, /* col5 0x34-0x37 */
 };
 
+/*-------------------------------------------------------------------------------------
+/  Io Moon (SLEIC2) ball trough.
+/
+/  This is the one piece of playfield state the driver has to keep, because the firmware
+/  BLOCKS on it.  Four of the 48 matrix contacts are ball-handling contacts rather than
+/  playfield events, and both CPUs stop dead until they read right:
+/
+/    swMatrix[1] bits 0-2   the three trough contacts, codes 0x0A-0x0C
+/    swMatrix[1] bit 3      the ball-exit contact, code 0x0D
+/
+/  That these four are ball handling and not playfield is the ROM's statement, not an
+/  inference from the manual: the in-game switch dispatcher sub_D7636 subtracts 0x0E
+/  before its 55-entry table (D7652: SUB AX,0000E / CMP BX,00036), so codes 0x0A-0x0D
+/  reach no playfield handler at all and exist only for the four commands below.  The
+/  service manual's matrix list agreeing -- its first four entries are "contacto salida
+/  bolas 1/2/3" and "bola fuera" -- is corroboration for the group, not for which contact
+/  is which; the ROM settles that on its own further down.
+/
+/  The four commands, Z80 handlers out of the 256-entry table at $2000:
+/
+/    0xEA -> 2A45  count the trough.  Counts the CLOSED contacts among C0DB bits 0-2 and
+/                  adds bit 3, then answers 0x48 (none) 0x38 (1) 0x39 (2) 0x3A (3).  The
+/                  80188 stores that in [413C:00F9] through the reply table at CS:04EE4
+/                  (sub_DC10D DC144-DC17D).
+/    0xEB -> 2AB0  the same count on column 4 for the second ball device -> [413C:00F8].
+/    0xE9 -> 2B03  SERVE.  If C0DB bit 3 is already closed it answers 0x45 at once;
+/                  otherwise it reports driver state 0 busy (sub_08A7) and polls column 0
+/                  until bit 3 closes, five tries of 0x3E8 ticks each, then gives up with
+/                  0x4A.  So the machine expects the trough kicker to put a ball ON the
+/                  ball-exit contact.
+/    0xEF -> 2BC7  BALLS HOME.  A closed loop -- test the trough (sub_2C1F), run the
+/                  ball-search coil sequence (sub_2CFB), wait, repeat -- whose ONLY exit
+/                  is sub_2C1F returning 0, i.e. three adjacent trough contacts closed
+/                  (2C2B: AND 007 / 2C35: AND 00E, either one all-zero).  It answers 0x45
+/                  and returns only then.
+/
+/  and the ball-start path that drives them, sub_DC4C9:
+/
+/    DC4D0: CALL sub_DC410            ; 0xEA, count the trough -> [00F9]
+/    DC4D4: CALL sub_DC2FC            ; 0xEB, count device 2   -> [00F8]
+/    DC4DC: CMP ES:000F9,0 / JE DC4FE ; nothing in the trough -> ball search
+/    DC4F9: CMP DX,3 / JNL DC522      ; [00F9]+[00F8] >= 3 -> skip the search
+/    DC4FE: PUSH 0EF / CALL qout_push
+/    DC507: CALL sub_DC075 / OR AX,AX / JE DC507   ; wait for 0x45 -- NO TIMEOUT
+/    DC514: MOV ES:000F9, 003         ; after a search the trough IS the three balls
+/    DC522: CALL sub_DC47E            ; 0xE9, serve one ball
+/    DC52B: DEC [00F9]
+/
+/  With no ball modelled at all the trough answers 0x48, DC4DC takes the search branch,
+/  and the two CPUs deadlock: the 80188 spins at DC507 for a reply the Z80 will never
+/  send, and the Z80 never leaves 2BC7, so main_loop 0D4C stops running and with it
+/  input_port03_read_tick 2E62 and the whole switch scan.  That is why cabinet buttons
+/  and flippers die the moment a game starts, and it is why this model exists.
+/
+/  THE DRAIN.  The first trough contact is also the ball-over sensor, and that is what
+/  fixes which end of the trough is which.  Its per-bit routine is not like the other
+/  47: instead of sending its own code it sends 0x43, and only while the game has armed
+/  it --
+/
+/    316D: LD A,#$0A / LD (C0FC),A / JP sub_161E
+/    161E: LD A,(C068) / AND A / JP NZ,1642   ; test mode: send 0x0A like any contact
+/    1625: LD A,(C054) / AND A / RET Z        ; not armed -> report NOTHING
+/    162A: LD A,(C04B) / AND A / RET NZ       ; 200-tick lockout still running
+/    162F: C049 = 0x00C8 / C04B = 0xFF        ; re-arm the lockout
+/    163A: LD A,#$43 / LD (C0FC),A / JP host_send_c0fc
+/
+/  C054 is armed by 80188 command 0xF3 (Z80 2A3A) and disarmed by 0xF4 (2A40), and
+/  sub_DC74B pushes 0xF3 immediately after serving the ball (DC779).  On the 80188 side
+/  0x43 is not an ordinary event: BOTH in-game tables send it to sub_D92C0, the ball-over
+/  routine -- the dispatch table at CS:0527 (sub_D7636, entry for 0x43 -> D7666) and the
+/  ball-in-play wait table at CS:07AE (sub_D7A12, 0x43 -> D7A3E), where every other
+/  playfield code merely returns 1.  Note also that 161E's normal-play path never calls
+/  sub_3394, so unlike contacts 1-3 (sub_164A / sub_165A / sub_166A, which set the
+/  reported mask C0E8 and go quiet) this contact re-reports for as long as it is closed.
+/
+/  So contact 0 is the trough ENTRY: a ball only rests on it when it is home, and a ball
+/  arriving there is the drain.  Balls therefore fill the trough from contact 2 down, and
+/  the contact a served ball vacates is contact 0.
+/
+/  What is modelled, and why each transition is here:
+/
+/    at rest            three balls on the trough contacts.  The complement comes from the
+/                       "Balls" setting of the standard simulator input port, which the
+/                       game already carries; the firmware's own number is 3 (DC514 and
+/                       DC14D both store 3).  Setting it to 0 turns the whole model off,
+/                       which is the escape hatch for a frontend that wants to own these
+/                       contacts itself.
+/    serve              on command 0xE9 reaching the Z80, after a short mechanical delay,
+/                       one ball leaves the trough and closes the ball-exit contact.  That
+/                       is what 2B03 is waiting for and it is what makes it answer 0x45.
+/    launch             the ball rolls off the exit contact into play.  "Shoot Ball" does
+/                       it at once; otherwise it happens on its own after a delay, because
+/                       the firmware demands it: with bit 3 held closed the ball-start path
+/                       runs again every ~4 s (measured) instead of settling into play.
+/                       WHICH of the two the real cabinet does -- a plunger the player
+/                       pulls or a coil that launches by itself -- is not in either ROM,
+/                       so both are offered and neither is claimed.
+/    drain              the ball in play returns to the trough and closes contact 0, which
+/                       is what the firmware reads as ball-over (above).  This is the ONE
+/                       thing a ball does not do by itself, so it is an input: "Drain ball
+/                       in play" on the cabinet port (sleic.h).  The driver does not
+/                       announce the ball over -- it puts the ball back in the trough and
+/                       lets the Z80's own 161E send the 0x43.
+/
+/  Nothing here writes firmware memory; it only presents contacts, and every contact it
+/  presents is one the real machine has.
+/-----------------------------------------------------------------------------------*/
+#define IOMOON_TROUGH_COL   1     /* swMatrix index of Z80 switch column 0              */
+#define IOMOON_TROUGH_BITS  0x07  /* bits 0-2, codes 0x0A-0x0C                          */
+#define IOMOON_EXIT_BIT     0x08  /* bit 3, code 0x0D                                   */
+#define IOMOON_TROUGH_MAX   3     /* three contacts, so three balls can rest on them     */
+
+/* Frame counts at the 60 Hz VBLANK this runs on.  Both are the mechanical time a ball
+ * takes, not a firmware requirement, so both are generous against the firmware's own
+ * windows: the serve has 0x3E8 Z80 ticks ~ 1.0 s per try before 2B03 gives up, and the
+ * ball-start path re-runs about every 4 s if the exit contact never clears */
+#define IOMOON_KICK_FRAMES    8   /* kicker fires -> ball on the exit contact  (~0.13 s) */
+#define IOMOON_LAUNCH_FRAMES 90   /* ball sits at the exit -> into play        (~1.5 s)  */
+
+static struct {
+  int inTrough;   /* balls resting on the trough contacts                              */
+  int atExit;     /* a ball on the ball-exit contact                                    */
+  int inPlay;     /* balls on the playfield                                             */
+  int kick;       /* frames left before the served ball reaches the exit contact        */
+  int dwell;      /* frames the ball has been sitting on the exit contact               */
+  int drainHeld;  /* previous state of the drain input, so one press = one ball         */
+  int seeded;     /* the complement has been taken from the input port                  */
+} iomoon_balls;
+
+/* Called from MACHINE_INIT.  The complement is not known here -- the input ports are not
+ * readable this early -- so the first SWITCH_UPDATE fills the trough */
+static void iomoon_ball_reset(void) {
+  memset(&iomoon_balls, 0, sizeof iomoon_balls);
+}
+
+/* Called from the 80188 -> Z80 strobe with the command byte, i.e. exactly when the Z80's
+ * NMI takes it.  0xE9 is the only command that moves a ball; 0xEF cannot be served by
+ * moving one, since its exit condition is the trough being FULL and the balls it is
+ * looking for are the ones already in play */
+static void iomoon_ball_command(UINT8 cmd) {
+  if (cmd == 0xe9 && iomoon_balls.seeded && !iomoon_balls.atExit && !iomoon_balls.kick
+      && iomoon_balls.inTrough > 0)
+    iomoon_balls.kick = IOMOON_KICK_FRAMES;
+}
+
+/* Called once a frame from SWITCH_UPDATE(SLEIC2) AFTER the playfield key loop, and it ORs
+ * its contacts in rather than assigning them: a key held on one of those four positions is
+ * a contact stuck closed, which is exactly what the service menu's contact test wants to
+ * see, and the model has no business overriding it.
+ *
+ * shoot = the simulator port's "Shoot Ball", drain = the cabinet port's "Drain ball in
+ * play", balls = its "Balls" setting (0 = model off) */
+static void iomoon_ball_update(int balls, int shoot, int drain) {
+  UINT8 bits;
+  if (balls <= 0) { iomoon_balls.seeded = 0; return; }   /* frontend owns the trough */
+  if (!iomoon_balls.seeded) {
+    iomoon_balls.seeded   = 1;
+    iomoon_balls.inTrough = balls > IOMOON_TROUGH_MAX ? IOMOON_TROUGH_MAX : balls;
+  }
+
+  if (iomoon_balls.kick && --iomoon_balls.kick == 0 && iomoon_balls.inTrough > 0) {
+    iomoon_balls.inTrough--;          /* the kicker has thrown it clear of the trough */
+    iomoon_balls.atExit = 1;
+    iomoon_balls.dwell  = 0;
+  }
+  if (iomoon_balls.atExit) {
+    iomoon_balls.dwell++;
+    if (shoot || iomoon_balls.dwell >= IOMOON_LAUNCH_FRAMES) {
+      iomoon_balls.atExit = 0;
+      iomoon_balls.inPlay++;
+    }
+  }
+  /* One press, one ball: the drain is an event, not a level */
+  if (drain && !iomoon_balls.drainHeld && iomoon_balls.inPlay > 0) {
+    iomoon_balls.inPlay--;
+    if (iomoon_balls.inTrough < IOMOON_TROUGH_MAX) iomoon_balls.inTrough++;
+  }
+  iomoon_balls.drainHeld = drain ? 1 : 0;
+
+  /* Balls stack AWAY from the entry, so contact 0 is the last to fill and the first to
+   * empty: n balls close the TOP n of the three contacts.  That order is not a choice --
+   * the Z80's per-bit routine for contact 0 is the one that reports a drained ball
+   * (sub_161E, see above), so contact 0 has to be the one a returning ball closes and
+   * therefore the one that is open while a ball is out on the playfield.  Filling from
+   * the other end instead reports a drain the instant the game arms the monitor, and the
+   * ball ends about a second after it starts -- measured, before this was understood. */
+  bits = (UINT8)(((1u << iomoon_balls.inTrough) - 1u)
+                 << (IOMOON_TROUGH_MAX - iomoon_balls.inTrough)) & IOMOON_TROUGH_BITS;
+  if (iomoon_balls.atExit) bits |= IOMOON_EXIT_BIT;
+  coreGlobals.swMatrix[IOMOON_TROUGH_COL] |= bits;
+}
+
 static SWITCH_UPDATE(SLEIC2) {
   unsigned i;
+  int balls = IOMOON_TROUGH_MAX, shoot = 0, drain = 0;
   if (inports) {
     const UINT16 in = inports[CORE_COREINPORT];
+    /* The ball trough's three inputs, acted on after the key loop below.  "Balls" and
+     * "Shoot Ball" are the standard simulator port the game already carries (sim.h,
+     * SLEIC2_INPUT_PORTS_START); "Drain ball in play" is Io Moon's own cabinet bit
+     * 0x1000 (sleic.h), which is how a run gets through a whole ball */
+    balls = SIM_BALLS(inports[CORE_SIMINPORT]);
+    shoot = (inports[CORE_SIMINPORT] & SIM_SHOOTERKEY) ? 1 : 0;
+    drain = (in & 0x1000) ? 1 : 0;
     /* Cabinet inputs -> swMatrix[9] = Z80 port 0x03, one bit per input.  The bit -> CODE
      * map is exact (F5/F14, see iomoon_z80_read).  The bit -> BUTTON map is no longer a
      * choice for four of the six: the 80188 firmware says outright what it does with each
@@ -1999,6 +2209,9 @@ static SWITCH_UPDATE(SLEIC2) {
     else
       coreGlobals.swMatrix[iomoon_pf_keys[i].col] &= ~iomoon_pf_keys[i].bit;
   }
+  /* After the key loop, because it ORs its four contacts in on top: a key held on one of
+   * them is a contact stuck closed and the model must not override it */
+  iomoon_ball_update(balls, shoot, drain);
 }
 
 /* Bike Race (SLEIC3) playfield-matrix test keys. The 40 matrix positions (Z80 switch
