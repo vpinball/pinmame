@@ -93,14 +93,21 @@ CORE_GAMEDEFNV(sleicpin,"Sleic Pin-Ball",1993,"Sleic (Spain)",gl_mSLEIC1,0)
 /*-------------------------------------------------------------------
 / Io Moon (1994)
 /-------------------------------------------------------------------*/
-/* THREE balls, and that is the firmware's own number rather than a guess: the 80188's
-   ball-start path stores 3 into its trough counter [413C:00F9] after a successful ball
-   search (DC514, DC587) and its 0xEA reply table does the same for the "trough full"
-   answer 0x3A (DC14D), and the Z80's trough test 2C1F only ever clears with three
-   adjacent contacts closed.  The driver's trough model (SWITCH_UPDATE(SLEIC2)) takes the
-   complement from this setting, and 0 turns the model off for a frontend that would
-   rather drive the trough contacts itself. */
-INITGAME2(iomoon, sleic_dispDMD, 3)
+/* "Balls" defaults to 0, and for Io Moon that is not a ball count -- it is the OFF
+   position of the driver's optional internal ball-trough model (SWITCH_UPDATE(SLEIC2) in
+   sleic.c).  Off is the PinMAME convention: swMatrix[1] bits 0-3 (switch codes 0x0A-0x0D)
+   are ordinary switches, and closing them is the frontend's job -- a VPinMAME table
+   script's, or standalone the Q/W/E/R matrix test keys'.  Bike Race does the same and
+   sits on "FALTA 1 BOLA" until its trough contacts close.
+
+   Set "Balls" to 3 to turn the model on for standalone desktop play, where nothing else
+   is going to close those contacts.  THREE is the firmware's own number rather than a
+   guess: the 80188's ball-start path stores 3 into its trough counter [413C:00F9] after a
+   successful ball search (DC514, DC587) and its 0xEA reply table does the same for the
+   "trough full" answer 0x3A (DC14D), and the Z80's trough test 2C1F only ever clears with
+   three adjacent contacts closed.  1 and 2 clamp up to 3; 4-7 also give 3, since the
+   trough has only three contacts. */
+INITGAME2(iomoon, sleic_dispDMD, 0)
 SLEIC_ROMSTART5(iomoon, "v1_3_01.bin", CRC(df80bf4f) SHA1(29547b444cad116c9dc925d6b3112f584df37250),
 						"v1_3_02.bin", CRC(2bd589cd) SHA1(87354c76cbef8185d563266230c72a618ce6fcd7),
 						"v1_3_03.bin", CRC(334d0e20) SHA1(06b38cc7fcee633c45a9000187fcde8d7e03a51f),
@@ -122,8 +129,10 @@ CORE_GAMEDEFNV(iomoon,"Io Moon",1994,"Sleic (Spain)",gl_mSLEIC2,0)
    reach the sound, non-volatile-store or country/pricing code, which is byte-identical
    to the parent's.  What is NOT tested is where the two revisions actually diverge --
    the service-menu dispatch around DD480 in chip 01, and the Z80 trough and port-0x04
-   handlers 2BC7/2C1F/2D9D in chip 05.  Those want an interactive play-test. */
-INITGAME2(iomoona, sleic_dispDMD, 3)
+   handlers 2BC7/2C1F/2D9D in chip 05.  Those want an interactive play-test -- and the
+   trough half of it needs either a frontend driving the trough switches or "Balls" set
+   to 3, since the internal model is off by default here as it is on the parent. */
+INITGAME2(iomoona, sleic_dispDMD, 0)
 SLEIC_ROMSTART5(iomoona,"v1_3_01e.bin", CRC(00a75790) SHA1(3af7a5c10a8c1687a212a01393cc9195a04a73c9),
 						"v1_3_02.bin",  CRC(2bd589cd) SHA1(87354c76cbef8185d563266230c72a618ce6fcd7),
 						"v1_3_03.bin",  CRC(334d0e20) SHA1(06b38cc7fcee633c45a9000187fcde8d7e03a51f),
@@ -136,8 +145,10 @@ CORE_CLONEDEFNV(iomoona,iomoon,"Io Moon (earlier ROM revision)",1994,"Sleic (Spa
    START instead of dropping straight back to attract, which is what a tournament wants
    between players.  Only chip 01 changes; 02-05 are the parent's.  The patch is 186
    bytes in four regions -- a 168-byte and an 11-byte block of new code at C0010-C00B7
-   and C00D0-C00DA, reached by two four-byte hooks planted at D5077 and D5123. */
-INITGAME2(iomoont, sleic_dispDMD, 3)
+   and C00D0-C00DA, reached by two four-byte hooks planted at D5077 and D5123.  Seeing
+   the patch fire means playing a game to its end, so standalone it needs "Balls" = 3;
+   the internal trough model is off by default here as it is on the parent. */
+INITGAME2(iomoont, sleic_dispDMD, 0)
 SLEIC_ROMSTART5(iomoont,"v1_3_01t.bin", CRC(42cafcda) SHA1(0ac3dd882748bc86a3b66aff2d286eecd8d24a4b),
 						"v1_3_02.bin",  CRC(2bd589cd) SHA1(87354c76cbef8185d563266230c72a618ce6fcd7),
 						"v1_3_03.bin",  CRC(334d0e20) SHA1(06b38cc7fcee633c45a9000187fcde8d7e03a51f),

@@ -100,20 +100,29 @@
       COREPORT_DIPSET(0x0080, "1" )
 
 /*-- Io Moon adds one cabinet input the other machines have no use for: the ball drain.
- * Its ball trough is modelled in the driver (SWITCH_UPDATE(SLEIC2)) because the firmware
- * BLOCKS on it -- 80188 commands 0xE9/0xEF and the Z80 handlers 2B03/2BC7 wait on the
- * column-0 trough contacts, and with no ball anywhere the Z80 never returns to its main
- * loop.  The model does everything a ball does on its own except the one thing that is
- * the player's (or a frontend's): when the ball in play drains.  This is that input.
- * It is a NEW bit, 0x1000, appended after the shared block's 0x0800, so every existing
- * binding keeps the bit it already had and a saved cfg stays valid.  Backspace because
- * the MAME UI does not claim it and it is not a key the cabinet map or the PinMAME
- * service convention wants: the digits the retired "Key 3".."Key 8" entries freed are
- * left unbound on purpose, since 8/9/0 are where PinMAME puts service buttons and this
- * machine has none. */
+ * It belongs to the driver's OPTIONAL internal trough model (SWITCH_UPDATE(SLEIC2)), and
+ * that model is OFF BY DEFAULT -- so by default this key does nothing at all.
+ *
+ * Why the model exists: the firmware BLOCKS on the trough contacts -- 80188 commands
+ * 0xE9/0xEF and the Z80 handlers 2B03/2BC7 wait on the column-0 contacts, and with no
+ * ball anywhere the Z80 never returns to its main loop.  Why it is not the default:
+ * PinMAME's convention is that the FRONTEND closes switches, and swMatrix[1] bits 0-3
+ * are ordinary switches a VPinMAME table script (or, standalone, the Q/W/E/R matrix test
+ * keys) drives.  A driver that seeds balls invents state the frontend then fights.
+ *
+ * The opt-in knob is the standard simulator port's "Balls" setting, in SIM_PORTS below:
+ * 0 (the default) = model off, frontend-driven; 3 = the internal three-ball model, for
+ * standalone desktop play.  With it at 0 this input and "Shoot Ball" are both INERT --
+ * iomoon_ball_update returns before it reads either -- so nothing is half-live.
+ *
+ * The bit is 0x1000, appended after the shared block's 0x0800, so every existing binding
+ * keeps the bit it already had.  Backspace because the MAME UI does not claim it and it
+ * is not a key the cabinet map or the PinMAME service convention wants: the digits the
+ * retired "Key 3".."Key 8" entries freed are left unbound on purpose, since 8/9/0 are
+ * where PinMAME puts service buttons and this machine has none. */
 #define SLEIC2_CABPORT \
   SLEIC_CABPORT \
-    COREPORT_BIT(     0x1000, "Drain ball in play", KEYCODE_BACKSPACE)
+    COREPORT_BIT(     0x1000, "Drain ball (needs Balls=3)", KEYCODE_BACKSPACE)
 
 /*-- Io Moon (SLEIC2) inports.  Same cabinet block plus the drain, but its DIP block is \
  * the real SW40. \
@@ -237,6 +246,11 @@
     SIM_PORTS(balls) \
     SLEIC_COMPORTS
 
+/* Io Moon.  <balls> is SIM_PORTS' "Balls" default and, for this machine only, it doubles
+ * as the on/off switch for the driver's internal ball-trough model: sleicgames.c passes
+ * 0 for every Io Moon set, so the trough contacts are plain frontend-driven switches
+ * unless the operator sets "Balls" to 3.  See SLEIC2_CABPORT above and the trough
+ * comment in sleic.c */
 #define SLEIC2_INPUT_PORTS_START(name,balls) \
   INPUT_PORTS_START(name) \
     CORE_PORTS \

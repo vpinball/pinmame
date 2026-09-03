@@ -1924,8 +1924,10 @@ static MACHINE_INIT(SLEIC2) {
    * send -- boot_port_init 041B calls host_send_c008_b with interrupts still off, and
    * that routine spins on the bit before it does anything else */
   memset(&iomoon_j1, 0, sizeof iomoon_j1);
-  /* The ball trough starts EMPTY here and is filled by the first SWITCH_UPDATE, because
-   * the ball complement comes from an input port and the ports are not readable yet */
+  /* The ball trough starts EMPTY, and at the default "Balls" = 0 it stays that way: the
+   * model is opt-in and the frontend owns those contacts.  It is filled by the first
+   * SWITCH_UPDATE only if the operator has asked for it, because the complement comes
+   * from an input port and the ports are not readable this early */
   iomoon_ball_reset();
   /* No coin part-way through its pulse train, and no key remembered as already down */
   iomoon_coin_reset();
@@ -1972,10 +1974,36 @@ static const struct { int key; UINT8 col; UINT8 bit; } iomoon_pf_keys[] = {
 };
 
 /*-------------------------------------------------------------------------------------
-/  Io Moon (SLEIC2) ball trough.
+/  Io Moon (SLEIC2) ball trough -- OPT-IN, AND OFF BY DEFAULT.
 /
-/  This is the one piece of playfield state the driver has to keep, because the firmware
-/  BLOCKS on it.  Four of the 48 matrix contacts are ball-handling contacts rather than
+/  READ THIS FIRST.  PinMAME's contract is that switches are switches: the FRONTEND closes
+/  them.  Under VPinMAME a table script owns the trough opto/contact numbers and reports a
+/  ball arriving or leaving; standalone, the matrix test keys do it by hand.  A driver that
+/  seeds balls of its own invents playfield state the frontend then fights, so this model
+/  is not the default and the sister machines have no equivalent -- Bike Race sits on
+/  "FALTA 1 BOLA" until something closes its trough contacts, which is exactly right.
+/
+/  So the four contacts below are ORDINARY SWITCHES unless the operator asks for the
+/  model.  The knob is the standard simulator port's "Balls" setting, which every PinMAME
+/  driver already carries (sim.h, and SLEIC2_INPUT_PORTS_START in sleic.h):
+/
+/    Balls = 0   DEFAULT.  The model is off.  swMatrix[1] bits 0-3 are driven only by the
+/                matrix inputs -- the Q/W/E/R test keys, or a VPinMAME table script.  No
+/                seeding, no kicker, and the "Drain ball in play" and "Shoot Ball" inputs
+/                do nothing at all (iomoon_ball_update returns before it reads them).
+/    Balls = 3   The internal three-ball model below, for standalone desktop play where
+/                nothing else is going to close those contacts.  1 and 2 clamp up to 3
+/                (see the clamp comment); 4..7 also give 3, since the trough only has
+/                three contacts.
+/
+/  Turning it on or off mid-session is safe: the off path drops the whole state, so a
+/  serve caught half-way is not replayed into the first frame after it is switched back on.
+/  Turning it OFF during a game does leave the firmware looking for balls that are now
+/  nobody's job to present, which is the same stall a real cabinet has when the balls are
+/  taken out mid-game -- switch it before you start, not during.
+/
+/  WHAT THE MODEL IS FOR, when it is on.  The firmware BLOCKS on these contacts.  Four of
+/  the 48 matrix contacts are ball-handling contacts rather than
 /  playfield events, and both CPUs stop dead until they read right:
 /
 /    swMatrix[1] bits 0-2   the three trough contacts, codes 0x0A-0x0C
@@ -2055,9 +2083,8 @@ static const struct { int key; UINT8 col; UINT8 bit; } iomoon_pf_keys[] = {
 /    at rest            three balls on the trough contacts.  The complement comes from the
 /                       "Balls" setting of the standard simulator input port, which the
 /                       game already carries; the firmware's own number is 3 (DC514 and
-/                       DC14D both store 3).  Setting it to 0 turns the whole model off,
-/                       which is the escape hatch for a frontend that wants to own these
-/                       contacts itself.
+/                       DC14D both store 3).  0 -- the DEFAULT -- turns the whole model
+/                       off and hands these contacts back to the frontend.
 /    serve              on command 0xE9 reaching the Z80, after a short mechanical delay,
 /                       one ball leaves the trough and closes the ball-exit contact.  That
 /                       is what 2B03 is waiting for and it is what makes it answer 0x45.
@@ -2076,7 +2103,8 @@ static const struct { int key; UINT8 col; UINT8 bit; } iomoon_pf_keys[] = {
 /                       lets the Z80's own 161E send the 0x43.
 /
 /  Nothing here writes firmware memory; it only presents contacts, and every contact it
-/  presents is one the real machine has.
+/  presents is one the real machine has -- and with "Balls" at its default 0 it presents
+/  none of them, so the frontend's own trough switches are the only thing driving them.
 /-----------------------------------------------------------------------------------*/
 #define IOMOON_TROUGH_COL   1     /* swMatrix index of Z80 switch column 0              */
 #define IOMOON_TROUGH_BITS  0x07  /* bits 0-2, codes 0x0A-0x0C                          */
@@ -2097,11 +2125,13 @@ static struct {
   int kick;       /* frames left before the served ball reaches the exit contact        */
   int dwell;      /* frames the ball has been sitting on the exit contact               */
   int drainHeld;  /* previous state of the drain input, so one press = one ball         */
-  int seeded;     /* the complement has been taken from the input port                  */
+  int seeded;     /* the model is ON and the complement has been taken from the port    */
 } iomoon_balls;
 
-/* Called from MACHINE_INIT.  The complement is not known here -- the input ports are not
- * readable this early -- so the first SWITCH_UPDATE fills the trough */
+/* Called from MACHINE_INIT.  Also the whole of the model-off path: zero here means the
+ * model owns no contact and no ball, and nothing it presents can survive being switched
+ * off.  "seeded" doubles as the on/off flag -- it is set only by iomoon_ball_update with
+ * "Balls" > 0, and cleared again the moment that setting goes back to 0 */
 static void iomoon_ball_reset(void) {
   memset(&iomoon_balls, 0, sizeof iomoon_balls);
 }
@@ -2109,7 +2139,11 @@ static void iomoon_ball_reset(void) {
 /* Called from the 80188 -> Z80 strobe with the command byte, i.e. exactly when the Z80's
  * NMI takes it.  0xE9 is the only command that moves a ball; 0xEF cannot be served by
  * moving one, since its exit condition is the trough being FULL and the balls it is
- * looking for are the ones already in play */
+ * looking for are the ones already in play.
+ *
+ * The "seeded" test is what keeps the kicker out of the way with the model off: with
+ * "Balls" = 0 the serve command is simply not acted on, and whatever closes the trough
+ * contacts -- a table script, or the matrix test keys -- answers it instead */
 static void iomoon_ball_command(UINT8 cmd) {
   if (cmd == 0xe9 && iomoon_balls.seeded && !iomoon_balls.atExit && !iomoon_balls.kick
       && iomoon_balls.inTrough > 0)
@@ -2122,18 +2156,21 @@ static void iomoon_ball_command(UINT8 cmd) {
  * see, and the model has no business overriding it.
  *
  * shoot = the simulator port's "Shoot Ball", drain = the cabinet port's "Drain ball in
- * play", balls = its "Balls" setting (0 = model off) */
+ * play", balls = its "Balls" setting.  balls = 0 is the DEFAULT and means model off */
 static void iomoon_ball_update(int balls, int shoot, int drain) {
   UINT8 bits;
-  /* "Balls" = 0 turns the model off for a frontend that drives these contacts itself.
-   * Drop the whole state, not just the seeded flag: a half-finished serve left behind
-   * would be applied to the first frame after the setting is turned back on */
+  /* MODEL OFF -- the default, and the only behaviour a frontend ever sees.  Return before
+   * anything is seeded, before the kicker is stepped and before "shoot" or "drain" is
+   * looked at, so those two inputs are inert rather than half-live, and swMatrix[1] bits
+   * 0-3 are left exactly as the matrix inputs set them.  Drop the whole state, not just
+   * the seeded flag: a half-finished serve left behind would otherwise be applied to the
+   * first frame after the setting is turned back on */
   if (balls <= 0) { iomoon_ball_reset(); return; }
-  /* Fewer than three cannot work and is not a machine state a user should be able to
-   * select by accident: the trough test sub_2C1F only ever clears with three adjacent
-   * contacts closed, so a two-ball trough leaves command 0xEF (Z80 2BC7) looping with no
-   * give-up path -- which is what a real cabinet missing a ball does, but a UI setting
-   * should not brick the emulation.  Clamp up; 0 above is the deliberate way off */
+  /* MODEL ON.  Fewer than three cannot work and is not a machine state a user should be
+   * able to select by accident: the trough test sub_2C1F only ever clears with three
+   * adjacent contacts closed, so a two-ball trough leaves command 0xEF (Z80 2BC7) looping
+   * with no give-up path -- which is what a real cabinet missing a ball does, but a UI
+   * setting should not brick the emulation.  Clamp up; 0 above is the deliberate way off */
   if (balls < IOMOON_TROUGH_MAX) balls = IOMOON_TROUGH_MAX;
   if (!iomoon_balls.seeded) {
     iomoon_balls.seeded   = 1;
@@ -2275,13 +2312,18 @@ static int iomoon_coin_update(UINT16 keys) {
 
 static SWITCH_UPDATE(SLEIC2) {
   unsigned i;
-  int balls = IOMOON_TROUGH_MAX, shoot = 0, drain = 0;
+  /* Model OFF unless the ports say otherwise, and inports == NULL is exactly the case
+   * that must stay off: core.c passes NULL when the host owns the keyboard (VPinMAME),
+   * i.e. when a table script is driving the trough switches itself */
+  int balls = 0, shoot = 0, drain = 0;
   if (inports) {
     const UINT16 in = inports[CORE_COREINPORT];
     /* The ball trough's three inputs, acted on after the key loop below.  "Balls" and
      * "Shoot Ball" are the standard simulator port the game already carries (sim.h,
      * SLEIC2_INPUT_PORTS_START); "Drain ball in play" is Io Moon's own cabinet bit
-     * 0x1000 (sleic.h), which is how a run gets through a whole ball */
+     * 0x1000 (sleic.h), which is how a run gets through a whole ball.  "Balls" is the
+     * opt-in: 0 (the DEFAULT) leaves the trough contacts to the frontend and makes the
+     * other two inert */
     balls = SIM_BALLS(inports[CORE_SIMINPORT]);
     shoot = (inports[CORE_SIMINPORT] & SIM_SHOOTERKEY) ? 1 : 0;
     drain = (in & 0x1000) ? 1 : 0;
