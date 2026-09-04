@@ -1896,15 +1896,23 @@ static MACHINE_INIT(SLEIC) {
    * ball-status query strobes COL4 (out 0x82 = 0x10), reads it into 0xC0DB and replies
    * over J1. The set of monitored optos and reply codes DIFFERS BY VERSION -- the Z80 I/O
    * ROM (bkio07.bin vs 07.bin) is one of the two ROMs that differ between the games:
+   * The contact names below are the firmware's own, decoded from its code->C-number->name
+   * table at linear 0xF373D (5-byte records Cnum|name_off16|name_seg, indexed
+   * [F000:0x370B + code*5]); the name pool is length-prefixed DMD glyph indices, 0x0A =
+   * space and 0x0B.. = A..Z with N-tilde inserted after N:
+   *     code 0x2C bit 0x04 = C22 "EXPULSOR 1"
+   *     code 0x2F bit 0x20 = C6  "SALIDA BOLAS"
+   *     code 0x30 bit 0x40 = C7  "BOLA EN ESPERA"
+   *     code 0x31 bit 0x80 = C8  "BOLA FUERA"
    *   bikerace (bkio07, handler 0x0B1D -> sub 0x0B31, replies 0x0B7C/0x0B9D): monitors
-   *     COL4 bits 0x04 (code 0x2C, key 3), 0x20 (C7 "Bola Retenida", key 8) and
-   *     0x80 (C8 "Bola fuera", key 9). Reply 0x5D "BOLAS OK" / 0x5B "FALTA 1 BOLA";
-   *     a ball at C7 OR C8 -> BOLAS OK, so standalone-test by holding key 8 (or 9).
+   *     COL4 bits 0x04 (C22, key 3), 0x20 (C6 "Salida Bolas", key 8) and
+   *     0x80 (C8 "Bola Fuera", key 9). Reply 0x5D "BOLAS OK" / 0x5B "FALTA 1 BOLA";
+   *     a ball at C6 OR C8 -> BOLAS OK, so standalone-test by holding key 8 (or 9).
    *   bikerac2 (07.bin, sub 0x0B72, replies 0x0C0B/0x0C16/0x0C37): monitors the same three
-   *     PLUS bit 0x40 (code 0x30, key '-') and counts missing balls -- reply adds
-   *     0x5C "FALTA 2 BOLAS". "BOLAS OK" needs two optos INCLUDING the '-' sensor
+   *     PLUS bit 0x40 (C7 "Bola en Espera", key '-') and counts missing balls -- reply adds
+   *     0x5C "FALTA 2 BOLAS". "BOLAS OK" needs two optos INCLUDING C7
    *     (combos 0x20+0x40 or 0x40+0x80), so standalone-test by holding '-' with 8 or 9;
-   *     holding only 8+9 (no '-') never reports OK. (Verified against the disassembly of both
+   *     holding only 8+9 (no C7) never reports OK. (Verified against the disassembly of both
    *     Z80 ROMs; the key bindings already exist in sleic3_pf_keys below.)
    * The driver does not fabricate the ball complement -- the frontend (e.g. VPX)
    * supplies trough state; the keys above are only for standalone testing */
@@ -2420,9 +2428,10 @@ static SWITCH_UPDATE(SLEIC2) {
  * the port-0x82 one-hot column strobe); code = 0x0A + 8*(col-1) + row. Mapping every
  * position to a key lets the CONTACTOS self-test verify each contact. COL4 (swMatrix[5])
  * is the trough column. The Z80 cmd-0xD5 ball-status handler monitors COL4 bits 0x04
- * (code 0x2C, key 3), 0x20 = C7 (key 8) and 0x80 = C8 (key 9) on all three sets, plus
- * bit 0x40 (code 0x30, key '-') on bikerac2 AND bikerac3, which share the same F000
- * code revision; see the per-version breakdown in the MACHINE_INIT trough comment above.
+ * (C22, key 3), 0x20 = C6 "Salida Bolas" (key 8) and 0x80 = C8 "Bola Fuera" (key 9) on
+ * all three sets, plus bit 0x40 = C7 "Bola en Espera" (key '-') on bikerac2 AND
+ * bikerac3, which share the same F000 code revision; see the per-version breakdown and
+ * the source of those names in the MACHINE_INIT trough comment above.
  *
  * What that means for filling the trough by hand: bikerace clears with either 8+9 or
  * 8+'-', but bikerac2 and bikerac3 need 8+'-' -- 8+9 alone leaves them sitting on
@@ -2438,7 +2447,7 @@ static const struct { int key; UINT8 col; UINT8 bit; } sleic3_pf_keys[] = {
   {KEYCODE_0_PAD,4,0x01},{KEYCODE_1_PAD,4,0x02},{KEYCODE_2_PAD,4,0x04},{KEYCODE_3_PAD,4,0x08}, /* COL3 0x22-0x25 */
   {KEYCODE_4_PAD,4,0x10},{KEYCODE_5_PAD,4,0x20},{KEYCODE_6_PAD,4,0x40},{KEYCODE_7_PAD,4,0x80}, /* COL3 0x26-0x29 */
   {KEYCODE_0,5,0x01},{KEYCODE_2,5,0x02},{KEYCODE_3,5,0x04},{KEYCODE_4,5,0x08}, /* COL4 0x2A-0x2D */
-  {KEYCODE_6,5,0x10},{KEYCODE_8,5,0x20},{KEYCODE_MINUS,5,0x40},{KEYCODE_9,5,0x80}, /* COL4 0x2E; trough optos: 0x2F=C7(key8) 0x31=C8(key9) both versions, 0x30=key'-' bikerac2-only (+0x2C=key3); 0x30 is on '-' rather than 7 because 7 is the test/service key (sleic.h); see trough notes above */
+  {KEYCODE_6,5,0x10},{KEYCODE_8,5,0x20},{KEYCODE_MINUS,5,0x40},{KEYCODE_9,5,0x80}, /* COL4 0x2E; trough optos: 0x2F=C6 "Salida Bolas"(key8), 0x30=C7 "Bola en Espera"(key'-'), 0x31=C8 "Bola Fuera"(key9), +0x2C=C22(key3); C7 is on '-' rather than 7 because 7 is the test/service key (sleic.h); see trough notes above */
 };
 
 /*-------------------------------------------------------------------------------------
@@ -2462,15 +2471,15 @@ static const struct { int key; UINT8 col; UINT8 bit; } sleic3_pf_keys[] = {
 /
 /  THE MASK.  0xE0 closes all three of COL4's monitored optos at once, which satisfies
 /  every version's rule without the driver having to know which set is running:
-/    bikerace  wants a ball at 0x20 OR 0x80                         -> 0xE0 satisfies it
-/    bikerac2  wants two optos INCLUDING 0x40 (0x20+0x40 or 0x40+0x80) -> 0xE0 satisfies it
+/    bikerace  wants a ball at C6 0x20 OR C8 0x80                     -> 0xE0 satisfies it
+/    bikerac2  wants two INCLUDING C7 0x40 (0x20+0x40 or 0x40+0x80)   -> 0xE0 satisfies it
 /    bikerac3  shares bikerac2's Z80 code revision, so the same rule
 /  Measured over 2000 headless frames with two coins and START, distinct DMD frames:
 /  104 / 107 / 111 with the mask against 5-6 for the sets that need 0x40 without it.
 /  See the per-version breakdown in the MACHINE_INIT trough comment above.
 /-----------------------------------------------------------------------------------*/
 #define SLEIC3_TROUGH_COL   5     /* swMatrix index of Z80 switch column 4 (COL4)       */
-#define SLEIC3_TROUGH_BITS  0xE0  /* the three monitored optos, see the mask note above  */
+#define SLEIC3_TROUGH_BITS  0xE0  /* C6 | C7 | C8, the three monitored optos; see above  */
 
 /* Called from SWITCH_UPDATE(SLEIC3) AFTER the playfield key loop, and it ORs its bits in
  * rather than assigning them, for the same reason Io Moon's does: a matrix test key held
