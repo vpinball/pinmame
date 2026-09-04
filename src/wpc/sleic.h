@@ -69,6 +69,13 @@
     COREPORT_BITDEF(  0x0200, IPT_COIN1,  IP_KEY_DEFAULT) /* COIN  -> swMatrix[9].5 (key 5); on Io Moon one press = one coin = a pulse train */ \
     COREPORT_BITDEF(  0x0400, IPT_TILT,   IP_KEY_DEFAULT) /* TILT  -> swMatrix[9].0 (key T) */ \
     COREPORT_BIT(     0x0800, "Test / Service Menu", KEYCODE_7) /* -> swMatrix[9].1; service-menu enter: Bike Race C4 Test code 0x33, Io Moon code 0x3F (F14) */ \
+    /* Lifts the ball off the trough optos while held, so the ball-missing path can be \
+     * exercised without letting go of the matrix test keys.  Inert unless "Balls" > 0, \
+     * and inert on Sleic Pin-Ball, which has no trough model yet (see SWITCH_UPDATE(SLEIC1)). \
+     * Same key as Io Moon's drain, which is the opposite polarity on that machine: there \
+     * the trough contacts mean "ball home" and the key RETURNS one, here they gate the \
+     * ball-present check and the key TAKES one away */ \
+    COREPORT_BIT(     0x1000, "Ball out of trough (needs Balls>0)", KEYCODE_BACKSPACE) \
 
 /*-- Common Inports for SLEIC games whose DIP block has not been traced --*/
 #define SLEIC_COMPORTS \

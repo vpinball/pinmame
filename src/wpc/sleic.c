@@ -2441,9 +2441,55 @@ static const struct { int key; UINT8 col; UINT8 bit; } sleic3_pf_keys[] = {
   {KEYCODE_6,5,0x10},{KEYCODE_8,5,0x20},{KEYCODE_MINUS,5,0x40},{KEYCODE_9,5,0x80}, /* COL4 0x2E; trough optos: 0x2F=C7(key8) 0x31=C8(key9) both versions, 0x30=key'-' bikerac2-only (+0x2C=key3); 0x30 is on '-' rather than 7 because 7 is the test/service key (sleic.h); see trough notes above */
 };
 
+/*-------------------------------------------------------------------------------------
+/  Bike Race (SLEIC3) ball-present model -- OPT-IN, AND OFF BY DEFAULT.
+/
+/  Same bargain as Io Moon's trough model: under a frontend a table script owns the ball
+/  optos and reports them, so the driver must not fabricate them, and with "Balls" at its
+/  default 0 it does not.  Standalone there is nothing to close them, and the machine sits
+/  on "FALTA n BOLAS" until something does -- which is correct, but means holding two
+/  matrix keys down for the whole session before a game can be started.  Setting "Balls"
+/  to any non-zero value hands that job to the driver.
+/
+/  This is a SIMPLER model than Io Moon's, deliberately.  Io Moon's trough is three
+/  contacts in a line with a kicker command (0xE9) and a drain sensor, so the state a ball
+/  is in can be tracked and each contact driven from it.  What Bike Race exposes on COL4
+/  is a ball-PRESENT check answered by the Z80's cmd-0xD5 handler, and no serve command
+/  has been identified in either Z80 ROM.  So nothing here tracks a ball count or a
+/  kicker: it presents the complement the firmware wants to see, and the cabinet port's
+/  "Ball out of trough" key lifts it.  Inventing a serve would be inventing mechanics the
+/  disassembly does not show.
+/
+/  THE MASK.  0xE0 closes all three of COL4's monitored optos at once, which satisfies
+/  every version's rule without the driver having to know which set is running:
+/    bikerace  wants a ball at 0x20 OR 0x80                         -> 0xE0 satisfies it
+/    bikerac2  wants two optos INCLUDING 0x40 (0x20+0x40 or 0x40+0x80) -> 0xE0 satisfies it
+/    bikerac3  shares bikerac2's Z80 code revision, so the same rule
+/  Measured over 2000 headless frames with two coins and START, distinct DMD frames:
+/  104 / 107 / 111 with the mask against 5-6 for the sets that need 0x40 without it.
+/  See the per-version breakdown in the MACHINE_INIT trough comment above.
+/-----------------------------------------------------------------------------------*/
+#define SLEIC3_TROUGH_COL   5     /* swMatrix index of Z80 switch column 4 (COL4)       */
+#define SLEIC3_TROUGH_BITS  0xE0  /* the three monitored optos, see the mask note above  */
+
+/* Called from SWITCH_UPDATE(SLEIC3) AFTER the playfield key loop, and it ORs its bits in
+ * rather than assigning them, for the same reason Io Moon's does: a matrix test key held
+ * on one of these positions is a contact stuck closed, which is what the service menu's
+ * contact test wants to see, and the model has no business overriding it.
+ *
+ * balls = the simulator port's "Balls" setting, 0 (the default) meaning model off.
+ * out   = the cabinet port's "Ball out of trough", held while the ball is away. */
+static void sleic3_ball_update(int balls, int out) {
+  if (balls <= 0 || out) return;
+  coreGlobals.swMatrix[SLEIC3_TROUGH_COL] |= SLEIC3_TROUGH_BITS;
+}
+
 static SWITCH_UPDATE(SLEIC3) {
   unsigned i;
+  int balls = 0, out = 0;
   if (inports) {
+    balls = SIM_BALLS(inports[CORE_SIMINPORT]);
+    out   = (inports[CORE_COREINPORT] & 0x1000) ? 1 : 0;
     /* Cabinet/direct buttons are all on Z80 port 0x03 (swMatrix[9]), bit -> contact:
      *   bit0 = C17 Tilt        (code 0x32, also menu ENTER)
      *   bit1 = C4  Test        (code 0x33 = menu ENTER)
@@ -2465,8 +2511,10 @@ static SWITCH_UPDATE(SLEIC3) {
     else
       coreGlobals.swMatrix[sleic3_pf_keys[i].col] &= ~sleic3_pf_keys[i].bit;
   }
+  /* After the key loop, because it ORs its optos in on top -- see the comment on it */
+  sleic3_ball_update(balls, out);
 #ifdef DEBUG_SLEIC
-  sleic_debug_switches(5, 0xE0); /* COL4: C7 0x20 | '-' sensor 0x40 (bikerac2) | C8 0x80 */
+  sleic_debug_switches(5, SLEIC3_TROUGH_BITS); /* COL4 optos, same mask the model uses */
 #endif
 }
 

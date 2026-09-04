@@ -29,7 +29,19 @@ static core_tLCDLayout sleic_dispDMD[] = {
 /*-------------------------------------------------------------------
 / Bike Race (1992)
 /-------------------------------------------------------------------*/
-INITGAME(bikerace, sleic_dispDMD, 2)
+/* "Balls" is 0 on all three Bike Race sets, and for this family that is not a ball count
+   -- it is the OFF position of the driver's optional ball-present model
+   (sleic3_ball_update in sleic.c).  Off is the PinMAME convention: swMatrix[5]'s COL4
+   optos are ordinary switches, and closing them is the frontend's job -- a VPinMAME table
+   script's, or standalone the matrix test keys 8 and '-'.  Io Moon does the same and sits
+   on "FALTA 1 BOLA" until its trough contacts close.
+
+   Set "Balls" to any non-zero value to turn the model on for standalone desktop play,
+   where nothing else is going to close them.  Unlike Io Moon there is no meaningful
+   number here: the firmware answers a ball-PRESENT query rather than counting a trough,
+   so the model presents the whole complement or none of it, and the cabinet port's "Ball
+   out of trough" key (Backspace) lifts it while held. */
+INITGAME(bikerace, sleic_dispDMD, 0)
 SLEIC_ROMSTART7(bikerace,"bkdsp01.bin", CRC(9b220fcb) SHA1(54e82705d8ce8a26d9e1b5f0fe382ded1f2070c3),
 						 "bksnd02.bin", CRC(d67b3883) SHA1(712022b9b24c6ab559d020ab8e2106f68b4d7896),
 						 "bksnd03.bin", CRC(b6d00245) SHA1(f7da6f2ca681fbe62ea9cab7f92d3e501b7e867d),
@@ -40,7 +52,7 @@ SLEIC_ROMSTART7(bikerace,"bkdsp01.bin", CRC(9b220fcb) SHA1(54e82705d8ce8a26d9e1b
 SLEIC_ROMEND
 CORE_GAMEDEFNV(bikerace,"Bike Race",1992,"Sleic (Spain)",gl_mSLEIC3,0)
 
-INITGAME(bikerac2, sleic_dispDMD, 2)
+INITGAME(bikerac2, sleic_dispDMD, 0)
 SLEIC_ROMSTART7(bikerac2,"bkdsp01.bin", CRC(9b220fcb) SHA1(54e82705d8ce8a26d9e1b5f0fe382ded1f2070c3),
 						 "bksnd02.bin", CRC(d67b3883) SHA1(712022b9b24c6ab559d020ab8e2106f68b4d7896),
 						 "bksnd03.bin", CRC(b6d00245) SHA1(f7da6f2ca681fbe62ea9cab7f92d3e501b7e867d),
@@ -104,7 +116,7 @@ CORE_CLONEDEFNV(bikerac2,bikerace,"Bike Race (2-ball play)",1992,"Sleic (Spain)"
 /  evidence above says to expect CRC 9db436d4, but that is a prediction, not a
 /  dump.  The bad image is archived and documented at
 /  sleic-iomoon/roms/related-machines/bike-race/v4.1/. */
-INITGAME(bikerac3, sleic_dispDMD, 2)
+INITGAME(bikerac3, sleic_dispDMD, 0)
 SLEIC_ROMSTART7(bikerac3,"bkdsp01.bin", CRC(9b220fcb) SHA1(54e82705d8ce8a26d9e1b5f0fe382ded1f2070c3),
 						 "bksnd02.bin", CRC(d67b3883) SHA1(712022b9b24c6ab559d020ab8e2106f68b4d7896),
 						 "bk03.bin",    CRC(74c10536) SHA1(43a2a63494b044fe2326ee09831ef90f37d3b432),
