@@ -23,8 +23,6 @@ MAIN SCRIPT  "/usr/local/bin/run_lisy (summary only, for details see comments in
 
 Implementation into pinmame; Files where LISY code is inserted:
     makefile.unix -> compile switches, moved to makefile.lisy
-    makefile.unixsdl
-    makefile.unixsdl_debug
     src/mame.c -> lisy_init() & lisy80_error()
     src/usrintrf.c -> check for 'time_to_quit'
     src/unix/main.c -> lisy_set_gamename( ..) & lisy_version

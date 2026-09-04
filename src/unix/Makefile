@@ -64,7 +64,7 @@ SOUND_OBJS = $(SOUND_OBJS.$(ARCH)) $(DSP_DIR)/esound.o $(DSP_DIR)/artssound.o \
 # joystick objs
 JOY_DIR  = $(OBJDIR)/joystick-drivers
 JOY_OBJS = $(JOY_DIR)/joy_i386.o $(JOY_DIR)/joy_pad.o $(JOY_DIR)/joy_x11.o \
-    $(JOY_DIR)/joy_usb.o $(JOY_DIR)/joy_ps2.o $(JOY_DIR)/joy_SDL.o \
+    $(JOY_DIR)/joy_usb.o $(JOY_DIR)/joy_ps2.o \
     $(JOY_DIR)/XInputDevices.o
 
 # framskip objs
