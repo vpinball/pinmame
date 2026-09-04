@@ -51,112 +51,69 @@ SLEIC_ROMSTART7(bikerac2,"bkdsp01.bin", CRC(9b220fcb) SHA1(54e82705d8ce8a26d9e1b
 SLEIC_ROMEND
 CORE_CLONEDEFNV(bikerac2,bikerace,"Bike Race (2-ball play)",1992,"Sleic (Spain)",gl_mSLEIC3,0)
 
-/* V4.1 -- the newest of the three known Bike Race sets (dumped by Joerg Amann).
-/  ROM 01 was not dumped; 02 and 05 are byte-identical to the parent set and are
-/  inherited from it, so only 03/04/06/07 are listed here.  That inheritance is
-/  verified for 02 and 05 against a complete six-chip pull off a V4.1 machine,
-/  not merely assumed; 01 is still assumed.  Relative to bikerace, this set
-/  carries the same F000 code revision as bikerac2 (including the 4-opto trough
-/  handler that can report "FALTA 2 BOLAS"), and adds changes of its own to the
-/  OKI sample ROM (03), the character/graphics ROM (06) and the game data (04).
+/* V4.1 -- the newest of the three known Bike Race sets.  Three chips differ from
+/  the parent: the OKI sample ROM 03 (by 229 bytes), the game code 04 and the Z80
+/  I/O code 07, both full rebuilds.  Chips 01, 02, 05 and 06 are the parent's.
 /
-/  NOT WORKING: it boots and runs, but the artwork comes out as garbage.  The
-/  cause is in the ROM set, not in this driver: ROM 06 does not match ROM 04.
+/  For 02 and 05 that inheritance is verified rather than assumed, against a
+/  complete six-chip pull off a V4.1 machine.  01 was never dumped.  06 IS
+/  INHERITED ON THE EVIDENCE BELOW rather than on a dump: the V4.1 ROM 06 in
+/  circulation, CRC ad48a30a, is a BAD DUMP, and no good one exists yet.
 /
-/  ROM 06 holds the sprite/character table in its first 0x1104 bytes -- the only
-/  part of that chip V4.1 changes -- as records of a 6-byte header W,1,H followed
-/  by ceil(W/8)*H*3 bytes of plane 0, plane 1 and mask.  ROM 04 reaches them
-/  through far pointers held in its own code segment, and those pointers are
-/  BYTE-IDENTICAL to the 1992 set's: every one of the 24 seg-0x2000 pointer slots
-/  in bk04 holds the same offset as the matching slot in bkcpu04, 0x0000, 0x012C,
-/  0x014A, 0x03A2 and 0x05FA among them.  bkcpu06 carries a well-formed record at
-/  each of those offsets (eleven 8x8 sprites on a 0x1E stride, then an 18x18 at
-/  0x014A).  bk06 carries none: it has 19 well-formed headers where bkcpu06 has
-/  32, at different offsets, and the very first record of the chain at 0x0000 is
-/  already malformed.  The same code reading the same addresses therefore finds
-/  no sprite, and draws the garbage.
+/  Why ROM 06 is inherited
+/  -----------------------
+/  ROM 06 holds the sprite/character table in its first 0x1104 bytes, as records
+/  of a 6-byte header W,1,H followed by ceil(W/8)*H*3 bytes of plane 0, plane 1
+/  and mask.  ROM 04 reaches them through far pointers in its own code segment,
+/  and those pointers are byte-identical to bkcpu04's -- all 24 segment-0x2000
+/  slots, and likewise every slot for ROM 05 and the DMD buffer.  Logging every
+/  80188 read of that window, bikerace and the bad V4.1 set are identical for 120
+/  accesses -- both fetch the 18x18 record at 0x20366 -- and then split on one
+/  byte at flat 0x2001E, the table's second record: the parent reads
+/  08 00 01 00 08 00 and draws an 8x8 sprite, the bad set reads 18 06 26 26 3C 3C,
+/  a width of 1560 pixels, and runs away.
 /
-/  Substituting bkcpu06 for bk06 -- or just its first 0x1104 bytes, leaving the
-/  other 124 KB of V4.1's own graphics in place -- makes this set render exactly
-/  like the parent: 5131 of 5131 captured DMD frames identical between the two
-/  substitutions, seven distinct screens instead of two, the "SLEIC PRESENTA" and
-/  "FALTAN n BOLAS" screens clean.  So ROM 03, 04 and 07 of this set are sound
-/  and the fault is confined to bk06[0x0000:0x1104].
+/  The machine that dump came from displays text correctly, per its owner.  For
+/  that to be true the byte at 0x2001E must be 0x08, so the file is not what the
+/  chip holds -- the read is at fault and the chip is fine.  Four things agree:
 /
-/  bk06 CONTAINS NO NEW ARTWORK, which is what says it is not a genuine V4.1
-/  revision of the table.  Classify each byte of bk06[0x0000:0x1200] as either
-/  bkcpu06's byte at the same address or its byte 0x200 further on, and all but
-/  two are accounted for -- 2099 displaced by +0x200, 2507 correct, 2 left over:
+/    * The bad file duplicates pages.  bk06[0x0400:0x0600] == bk06[0x0600:0x0800],
+/      likewise 0x0800/0x0A00 and 0x0C00/0x0E00.  No sprite table on a 0x1E record
+/      stride looks like that, and bkcpu06 does not.
+/    * Every differing byte is recycled.  Classify bk06[0x0000:0x1200] as either
+/      bkcpu06's byte at the same address or its byte 0x200 on, and all but two
+/      are accounted for: 2099 displaced, 2507 correct, 2 left over.  A revised
+/      table would hold revised sprites; this one holds two new bytes.
+/    * No Bike Race revision has ever changed a graphics ROM.  There are two, 05
+/      at MCS2 0x40000 and 06 at MCS1 0x20000, and 05 -- the larger bank, 133
+/      records against 06's 32 -- is byte-identical in bikerace, bikerac2 and
+/      V4.1.  bikerac2 rebuilds 04 and 07 and still leaves both alone.  The same
+/      dump session read 05 perfectly, with none of the page duplication, so the
+/      fault is one chip's read rather than the reader.
+/    * The surviving records line up with the intact bytes exactly.  Of bkcpu06's
+/      32 records, the 15 that survive into the bad dump all sit in correctly-read
+/      windows and the 17 that are lost all sit in mis-read ones, zero anomalies.
+/      It is bkcpu06's table with the damaged pages knocked out, not another one.
 /
-/      0x0000-0x002D  +0x200      0x0600-0x07FF  same
-/      0x002E-0x002F  NEITHER     0x0800-0x09FF  +0x200
-/      0x0030-0x00FF  same        0x0A00-0x0BFF  same
-/      0x0100-0x01FF  +0x200      0x0C00-0x0DFF  +0x200
-/      0x0200-0x03FF  same        0x0E00-0x0FFF  same
-/      0x0400-0x05FF  +0x200      0x1000-0x1104  +0x200
-/                                 0x1105-0x11FF  same
+/  With bkcpu06 in place the set renders exactly like the parent -- 5131 of 5131
+/  captured DMD frames identical to substituting the whole chip, seven distinct
+/  screens instead of two.
 /
-/  Every run is exact.  A revised sprite table would hold revised sprites; this
-/  one holds two bytes that are not already in the 1992 chip, recycled at a
-/  0x200 page granularity no build tool produces.  It is NOT a stuck address
-/  line -- 0x0030-0x00FF and 0x1105-0x11FF have bit 9 clear and are correct, and
-/  the 0x1104 boundary falls mid-block where no address line can change.
-/
-/  Traced at runtime the divergence is one byte.  Logging every 80188 read of the
-/  ROM 06 window, the two sets are identical for 120 accesses -- both fetch the
-/  18x18 record at 0x20366 -- and then split at flat 0x2001E, the table's second
-/  record: bikerace reads 08 00 01 00 08 00 and draws an 8x8 sprite, bikerac3
-/  reads 18 06 26 26 3C 3C, a width of 0x0618 = 1560 pixels, and runs away (3514
-/  reads reaching 0x20D5F against 180 reaching 0x203A1).
-/
-/  THE MACHINE THIS SET CAME FROM RUNS CORRECTLY, per its owner, and that settles
-/  what the bytes could not: for it to work, the byte at 0x2001E must be 0x08, and
-/  the file says 0x18, so the file is not what the chip holds.  The read is at
-/  fault and the physical ROM 06 is fine.  That also fits the damage stopping
-/  after 4 KB rather than following an address line -- a marginal contact, or a
-/  reader that fetched the opening pages twice, corrupts the start of a read and
-/  then settles.
-/
-/  Nothing on the driver side compensates, which was tested rather than assumed:
-/  loading bkcpu05 in the 06 slot, and rotating bk06 0x200 each way, all still
-/  fail (2, 8 and 2 distinct DMD frames over 600, against 7 for a working set).
-/  The emulation is faithfully reading the byte the file contains.
-/
-/  Three further things say the chip is simply the 1992 one.  Bike Race has two
-/  graphics ROMs, 05 at MCS2 0x40000 and 06 at MCS1 0x20000; 05 is the larger
-/  sprite bank, 133 well-formed records against 06's 32, and is byte-identical
-/  across every known set (CRC 072ce879 in bikerace, bikerac2 and V4.1).  First,
-/  no Bike Race revision has ever changed a graphics ROM -- bikerac2 rebuilds 04
-/  and 07 and leaves both alone -- so a V4.1 that revised 06 would be the only
-/  exception in the family.  Second, the same dump session read 05 perfectly,
-/  128 KB correct with none of the page duplication bk06 shows, so the fault is
-/  one chip's read and not the setup.  Third, of the 32 records in bkcpu06, the
-/  15 that survive into bk06 all sit in correctly-read windows and the 17 that
-/  are lost all sit in mis-read ones, with zero anomalies: bk06's table is not a
-/  different 19-record table but the 1992 table with the damaged pages knocked
-/  out.
-/
-/  So the set needs a re-read of ROM 06, checking offset 0x001E first: it must be
-/  08 00 01 00 08 00.  The expected outcome is bkcpu06, CRC 9db436d4, which would
-/  make V4.1 a three-chip clone -- bk03, bk04 and bk07 over the parent set.
-/
-/  Either way this is not a driver change.  It is not a missing chip: the V4.1
-/  16-bit board carries exactly three 27C010 positions and all three are
-/  populated, so the seven-chip complement this driver expects is the whole
-/  machine.  Nor is it a mapping question: bk04's chip-select table (MMCS 0x01FF,
-/  PACS 0xA03C, MPCS 0xC0FC, at file offset 0x50) is byte-identical to bkcpu04's,
-/  so V4.1 decodes ROM 06 at MCS1 0x20000 and ROM 05 at MCS2 0x40000 exactly as
-/  the 1992 sets do. */
+/  IF A GOOD V4.1 ROM 06 IS EVER DUMPED and turns out not to be bkcpu06, this
+/  block is what has to change: replace the bkcpu06.bin line with it.  The
+/  evidence above says to expect CRC 9db436d4, but that is a prediction, not a
+/  dump.  The bad image is archived and documented at
+/  sleic-iomoon/roms/related-machines/bike-race/v4.1/. */
 INITGAME(bikerac3, sleic_dispDMD, 2)
 SLEIC_ROMSTART7(bikerac3,"bkdsp01.bin", CRC(9b220fcb) SHA1(54e82705d8ce8a26d9e1b5f0fe382ded1f2070c3),
 						 "bksnd02.bin", CRC(d67b3883) SHA1(712022b9b24c6ab559d020ab8e2106f68b4d7896),
 						 "bk03.bin",    CRC(74c10536) SHA1(43a2a63494b044fe2326ee09831ef90f37d3b432),
 						 "bk04.bin",    CRC(33fd212e) SHA1(9471e34fc4280741816d65f88590febc9e8629a7),
 						 "bkcpu05.bin", CRC(072ce879) SHA1(4f6fb044592feb4c72bbdcbe5f19e063c0e49d0d),
-						 "bk06.bin",    CRC(ad48a30a) SHA1(183b04699b038811de950bba6b8a067689bdb883),
+						 "bkcpu06.bin", CRC(9db436d4) SHA1(3869524c0490e0a019d2f8ab46546ff42727665e),
 						 "bk07.bin",    CRC(200ff3fc) SHA1(96fc8561b078c5306b15e260436e3d3ba562c51d))
 SLEIC_ROMEND
-CORE_CLONEDEFNV(bikerac3,bikerace,"Bike Race (V4.1)",1992,"Sleic (Spain)",gl_mSLEIC3,GAME_NOT_WORKING)
+CORE_CLONEDEFNV(bikerac3,bikerace,"Bike Race (V4.1)",1992,"Sleic (Spain)",gl_mSLEIC3,0)
 
 /*-------------------------------------------------------------------
 / Sleic Pin-Ball (1993)
