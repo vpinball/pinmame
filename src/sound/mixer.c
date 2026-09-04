@@ -148,8 +148,8 @@ static void mixer_apply_reverb_filter(struct mixer_channel_data* const channel, 
 		for (i = 0; i < len; i++) {
 			buf[i] = buf[i] + (rev_buf[newPos] - buf[i]) * rev_force;
 			rev_buf[rev_pos] = buf[i];
-			rev_pos++; if (rev_pos > REVERB_LENGTH) rev_pos = 0;
-			newPos++; if (newPos > REVERB_LENGTH) newPos = 0;
+			rev_pos++; if (rev_pos >= REVERB_LENGTH) rev_pos = 0;
+			newPos++;  if (newPos  >= REVERB_LENGTH) newPos = 0;
 		}
 		channel->reverbPos[left_right] = rev_pos;
 	}

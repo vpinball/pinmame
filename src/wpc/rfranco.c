@@ -134,8 +134,7 @@
      ever appears to stop updating the score, read C01C before suspecting the
      8279 model: 0xFF means the ROM faulted, and the first thing to check is
      whether the front end is holding one of those four contacts closed. Set 1
-     tolerates the same stuck contact indefinitely, which is why this only ever
-     shows up on set 2.
+     tolerates the same stuck contact indefinitely, which is why this only ever shows up on set 2
  ************************************************************************************************/
 
 #include "driver.h"
@@ -206,8 +205,7 @@
    the ISR drags the tick phase with it every frame), and on the 0x196C path a
    prematurely released 8085 still HALTs for the RST5.5 reply before writing
    again.  Neither mechanism protects the main-loop bare STA sends, which were
-   measured landing inside blocked passes, so the computed bound above is the
-   one that holds. */
+   measured landing inside blocked passes, so the computed bound above is the one that holds */
 #define RFRANCO_SOUND_GUARD_US 4000
 
 /* Pseudo solenoids. The two bumpers and the two expulsores have no CPU
@@ -219,12 +217,12 @@
    contact drawing (manual page 3) has contacts 24 and 25 inside the two
    triangular bodies at the bottom corners, i.e. the slingshots, and the parts
    list calls that mechanism the RECHAZADOR. 53/3311 drives exactly four coils:
-   two bumpers and those two. See rfranco_pseudo_sol for the wiring. */
+   two bumpers and those two. See rfranco_pseudo_sol for the wiring */
 #define RFRANCO_SOL_BUMPER_L 17
 #define RFRANCO_SOL_BUMPER_R 18
 #define RFRANCO_SOL_EJECT_L  19
 #define RFRANCO_SOL_EJECT_R  20
-#define RFRANCO_PSEUDO_FRAMES 6   /* vblanks a synthesised coil stays visible */
+#define RFRANCO_PSEUDO_FRAMES 6 /* vblanks a synthesised coil stays visible */
 
 /*----------------
 /  Local variables
@@ -236,41 +234,41 @@ static struct {
 
   /* Serial switch chain: two 74165s on the driver board (IC5/IC6) are loaded
      with the playfield contacts and clocked out into SID one bit at a time.
-     shiftIn holds the word still to be shifted; shiftPos counts bits. */
+     shiftIn holds the word still to be shifted; shiftPos counts bits */
   UINT16 swShift;
   int    swShiftPos;
 
   /* Serial display chain: SOD feeds a 74164 (IC1) on the display board which
-     in turn drives the 8279. The game clocks 9 bits per frame. */
+     in turn drives the 8279. The game clocks 9 bits per frame */
   UINT16 dispShift;
   int    sodState;
   int    cbInstalled;
 
   /* 8212 command/ack latches between the two CPUs at 0x8000. */
-  UINT8  soundCmd;      /* main -> sound, latched in IC6 */
-  UINT8  soundReply;    /* sound -> main, latched in IC5 */
-  int    soundTrigger;  /* trigger the main CPU is currently stalled on */
-  int    soundSeq;      /* rotating index into the trigger block */
-  UINT8  scpuP2;        /* 8035 port 2 latch - selects latch / PSG1 / PSG2 */
-  int    coinPulse;     /* TRAP ticks left on a coin one-shot */
-  UINT8  coinBits;      /* which coin slot is pulsing */
-  UINT8  coinDriven;    /* coin bits this driver last wrote into the matrix */
-  UINT8  lastCoin;      /* previous key level, for edge detect */
-  UINT8  lastStart;     /* previous start key level, for edge detect */
-  UINT8  lastDoor;      /* previous door toggle positions, for edge detect */
-  int    troughEdge;    /* a physical event wants the trough contact driven */
-  int    lastTilt;      /* previous falta level, for edge detect */
-  int    phaseT1;       /* mains half-cycle presented on the 8035's T1 pin */
-  int    gatePhase;     /* phase the bytes arriving now were selected for */
+  UINT8  soundCmd;     /* main -> sound, latched in IC6 */
+  UINT8  soundReply;   /* sound -> main, latched in IC5 */
+  int    soundTrigger; /* trigger the main CPU is currently stalled on */
+  int    soundSeq;     /* rotating index into the trigger block */
+  UINT8  scpuP2;       /* 8035 port 2 latch - selects latch / PSG1 / PSG2 */
+  int    coinPulse;    /* TRAP ticks left on a coin one-shot */
+  UINT8  coinBits;     /* which coin slot is pulsing */
+  UINT8  coinDriven;   /* coin bits this driver last wrote into the matrix */
+  UINT8  lastCoin;     /* previous key level, for edge detect */
+  UINT8  lastStart;    /* previous start key level, for edge detect */
+  UINT8  lastDoor;     /* previous door toggle positions, for edge detect */
+  int    troughEdge;   /* a physical event wants the trough contact driven */
+  int    lastTilt;     /* previous falta level, for edge detect */
+  int    phaseT1;      /* mains half-cycle presented on the 8035's T1 pin */
+  int    gatePhase;    /* phase the bytes arriving now were selected for */
   UINT8  lampAcc[CORE_STDLAMPCOLS]; /* lamps gated during the current half cycle */
   UINT8  lampPhase[2][CORE_STDLAMPCOLS]; /* last complete image of each phase */
-  UINT32 solAcc;        /* coils gated during the current half cycle */
+  UINT32 solAcc;       /* coils gated during the current half cycle */
   UINT32 solPhase[2];
-  UINT32 solSticky;     /* coils gated since the last vblank */
-  int    ballInTrough;  /* caida de bolas contact - see RFRANCO SWITCH_UPDATE */
-  UINT8  lastJG;        /* previous JG contacts, for the pseudo coil one-shots */
-  int    pseudoSol[4];  /* vblanks left on each synthesised coil */
-  UINT8  i8279ram[16];  /* display RAM behind the 8279 */
+  UINT32 solSticky;    /* coils gated since the last vblank */
+  int    ballInTrough; /* caida de bolas contact - see RFRANCO SWITCH_UPDATE */
+  UINT8  lastJG;       /* previous JG contacts, for the pseudo coil one-shots */
+  int    pseudoSol[4]; /* vblanks left on each synthesised coil */
+  UINT8  i8279ram[16]; /* display RAM behind the 8279 */
   int    i8279addr;
   int    i8279autoinc;
   int    inhibitA, inhibitB;
@@ -280,12 +278,11 @@ static struct {
 /  Serial switch input on the SID pin
 /-------------------------------------*/
 /* The scan at 0x18A6 reads 16 bits, first bit first, inverting as it goes
-   because the contacts are active low, and clocks the chain on with an OUT
-   between each. */
+   because the contacts are active low, and clocks the chain on with an OUT between each */
 static int rfranco_sid_r(void) {
   /* Present the bit as-is: PinMAME's 1 = closed is what the hardware puts on
      SID, and the ROM's CMA at 0x18A9 turns it into its own 0 = closed. The
-     register is filled by LOAD, not here - see rfranco_load_w. */
+     register is filled by LOAD, not here - see rfranco_load_w */
   return locals.swShift & 1;
 }
 
@@ -309,12 +306,12 @@ static int rfranco_sid_r(void) {
    input (JM3) is gone before the first RIM and is invisible to the ROM. That is
    exactly why the manual's errata moves the picabolas contact from JM3 to JN2.
    Row 4 bit 7 is IC5's floating SER input and must stay clear, or the zone 9
-   contact test reports a phantom closed switch. */
+   contact test reports a phantom closed switch */
 static void rfranco_load_w(void) {
   /* Mask the SER bit rather than only asking callers to leave it alone: a front
      end doing vp_setSwitch(48,1), or the Tab menu's manual switch keys on
      column 4 row 8, would otherwise feed the ROM a sixteenth contact and its
-     own zone 9 test would report one the machine does not have. */
+     own zone 9 test would report one the machine does not have */
   locals.swShift = (UINT16)((coreGlobals.swMatrix[3] |
                             (coreGlobals.swMatrix[4] << 8)) & 0x7fff);
   locals.swShiftPos = 16;
@@ -334,21 +331,21 @@ static void rfranco_sod_w(int state) {
    uses an OUT to any port as the strobe (0x00 inside the switch read loop at
    0x18B3, 0xFF inside the display write loop at 0x241C - the port number is
    irrelevant, the whole I/O space is one decode). Each pulse advances both the
-   switch shift register and the display shift register. */
+   switch shift register and the display shift register */
 static WRITE_HANDLER(rfranco_clk_w) {
   /* Belt and braces. This used to be the only install that stuck, because the
      reset handler runs before the CPU cores are reset (cpuexec.c:364 vs :372)
      and i8085_reset wiped the callbacks. Commit 8317f095 made the core preserve
      them, so MACHINE_RESET's install now survives and this one re-seats the
      same two pointers. Kept because it costs one branch and removing it would
-     make the driver depend silently on that core fix. */
+     make the driver depend silently on that core fix */
   if (!locals.cbInstalled) {
     locals.cbInstalled = 1;
     i8085_set_SID_callback(rfranco_sid_r);
     i8085_set_SOD_callback(rfranco_sod_w);
   }
   /* Advance the switch chain. Every OUT is a clock edge for it, whichever
-     serial chain the game thinks it is driving. */
+     serial chain the game thinks it is driving */
   if (locals.swShiftPos > 0) {
     locals.swShift >>= 1; /* LSB first - see rfranco_sid_r */
     locals.swShiftPos--;
@@ -358,8 +355,7 @@ static WRITE_HANDLER(rfranco_clk_w) {
      frame, which then falls off the end, leaving the register holding the
      payload byte exactly. Nothing needs to distinguish the two serial chains
      here - the switch scan's clocks disturb the register harmlessly, because it
-     is reloaded from scratch every frame and only ever committed when LOAD
-     pulses (see rfranco_sound_w). */
+     is reloaded from scratch every frame and only ever committed when LOAD pulses (see rfranco_sound_w) */
   locals.dispShift = (UINT16)((locals.dispShift << 1) | locals.sodState);
 }
 
@@ -368,15 +364,14 @@ static WRITE_HANDLER(rfranco_clk_w) {
 /-------------------------------*/
 /* Writing sends a command to the sound CPU and raises its interrupt; reading
    takes the reply and clears RST5.5 on the main CPU. The game's handshake is
-   at 0x196C: store the command, unmask RST5.5 with SIM, EI, then HALT until
-   the latch answers. */
+   at 0x196C: store the command, unmask RST5.5 with SIM, EI, then HALT until the latch answers */
 /*------------------------------
 /  8279 display controller
 /-------------------------------*/
 /* 16 x 8 display RAM. Each byte holds two digits: the high nibble goes to the
    7447 driving D15..D30 (OUT A) and the low nibble to the one driving D1..D14
    (OUT B), with the 74159 selecting one anode pair per RAM address. Digits are
-   raw BCD; 0x0F blanks (the 7447 shows nothing for 15). */
+   raw BCD; 0x0F blanks (the 7447 shows nothing for 15) */
 static const INT8 rfranco_digit[16][2] = {  /* {OUT A, OUT B}, -1 = not wired */
   { 14,  6 }, { 30, 22 }, { 13,  5 }, { 29, 21 },
   { 12,  4 }, { 28, 20 }, { 11,  3 }, { 27, 19 },
@@ -394,14 +389,14 @@ static void rfranco_8279_refresh(int addr) {
 
 /* Called when LOAD pulses, which is the rising edge of the 8279's /WR. A0 is
    whatever level SOD was left at: 0x2417 finishes with D=0xC0 (high = command)
-   and 0x2432 with D=0x40 (low = data). */
+   and 0x2432 with D=0x40 (low = data) */
 static void rfranco_8279_w(UINT8 data, int a0) {
   if (a0) {                                   /* command */
     switch (data & 0xe0) {
       case 0x80:                              /* write display RAM at addr */
         /* bit 4 is AI. The game uses both settings: 0x90 (address 0, AI set)
            ahead of the 16 byte fills at 0x2A46 and 0x24A8, and 0x8n with AI
-           clear when it re-addresses before every single digit (0x25B9). */
+           clear when it re-addresses before every single digit (0x25B9) */
         locals.i8279addr = data & 0x0f;
         locals.i8279autoinc = (data & 0x10) ? 1 : 0;
         break;
@@ -409,7 +404,7 @@ static void rfranco_8279_w(UINT8 data, int a0) {
         /* 101x IWa IWb BLa BLb - bit 3 inhibits OUT A (the byte's high nibble)
            and bit 2 inhibits OUT B (the low nibble). The game sends 0xA8 for
            the odd players and 0xA4 for the even ones (0x2456), which is what
-           puts players 1/3 on OUT B and 2/4 on OUT A. */
+           puts players 1/3 on OUT B and 2/4 on OUT A */
         locals.inhibitA = (data & 0x08) ? 1 : 0;
         locals.inhibitB = (data & 0x04) ? 1 : 0;
         break;
@@ -445,7 +440,7 @@ static WRITE_HANDLER(rfranco_sound_w) {
      P1.5, which reaches the display board as the 8279's /WR (JA12) and the
      driver board as the 74165 parallel load (JE-4), so it commits the display
      byte and captures the playfield contacts at the same instant. 0x2417 sends
-     it at the end of every transfer and it is issued from nowhere else. */
+     it at the end of every transfer and it is issued from nowhere else */
   if (data == 0xaa) {
     rfranco_8279_w((UINT8)(locals.dispShift & 0xff), locals.sodState);
     rfranco_load_w();
@@ -475,7 +470,7 @@ static WRITE_HANDLER(rfranco_sound_w) {
      traced on both sides, that lost the whole second half of every frame:
      the 8085 sent ... F5 ... 2F ... 2F but the sound CPU forwarded the coil
      half as ten copies of the trailing 0xFF, so no coil and no IC3 lamp ever
-     reached the driver board. */
+     reached the driver board */
   locals.soundSeq = (locals.soundSeq + 1) % RFRANCO_SOUND_TRIGGERS;
   locals.soundTrigger = RFRANCO_SOUND_TRIGGER + locals.soundSeq;
   cpu_spinuntil_trigger(locals.soundTrigger);
@@ -490,7 +485,7 @@ static READ_HANDLER(rfranco_sound_r) {
 /* 0x4000 is chip select CS1 from the 74S138 and carries eight playfield
    contacts straight off connector JG - MAME's skeleton omits it entirely. The
    ROM reads it once per pass at 0x18BD and, unlike the serial chain, applies no
-   CMA, so the bus itself is active low. */
+   CMA, so the bus itself is active low */
 static READ_HANDLER(rfranco_4000_r) {
   return ~coreGlobals.swMatrix[1];
 }
@@ -510,7 +505,7 @@ static READ_HANDLER(rfranco_4000_r) {
        0082: MOVX @R1,A                ; write the reply, raises INT5.5
 
    The 8212s are edge devices: strobing one asserts its INT, reading it clears
-   it. IC6 carries main->sound (INT35), IC5 carries sound->main (RST5.5). */
+   it. IC6 carries main->sound (INT35), IC5 carries sound->main (RST5.5) */
 #define RFRANCO_LATCH_SELECTED(p2) (((p2) & 0x80) == 0)
 
 static READ_HANDLER(rfranco_scpu_movx_r) {
@@ -529,10 +524,10 @@ static READ_HANDLER(rfranco_scpu_movx_r) {
      sound command 0x99 (0x18C3: MVI A,99 / CALL 196C), the 8035 answers from
      0x060F by selecting IC2 and reading register 0x0E, and the reply lands in
      C027. Port A carries the two coin slots, the ball drain and the start
-     button; port B carries the two operator switches on the door. */
+     button; port B carries the two operator switches on the door */
   if (!(locals.scpuP2 & 0x20)) {
     switch (offset & 0x0f) {
-      case 0x0e:  /* port A - cabinet inputs, active low */
+      case 0x0e: /* port A - cabinet inputs, active low */
         return ~coreGlobals.swMatrix[2];
       case 0x0f: {
         /* Port B bits 7/6 are the ajuste and test switches on the door; 1 is
@@ -549,8 +544,7 @@ static READ_HANDLER(rfranco_scpu_movx_r) {
            The position is not only read at boot - the ajustes menu re-reads it
            on every pass; see RFRANCO_SWAJUSTE in rfranco.h for what the ROM
            does with it and why these are switches and not a setting.
-           Resting position is down, so an untouched machine reads 0xC0 and
-           boots into juego. */
+           Resting position is down, so an untouched machine reads 0xC0 and boots into juego */
         UINT8 v = 0xc0;
         if (core_getSw(RFRANCO_SWAJUSTE)) v &= (UINT8)~0x80;
         if (core_getSw(RFRANCO_SWTEST))   v &= (UINT8)~0x40;
@@ -561,8 +555,7 @@ static READ_HANDLER(rfranco_scpu_movx_r) {
     }
   }
   if (!(locals.scpuP2 & 0x40)) {
-    /* PSG1 is read back too: the REST opcode saves a voice's volume register
-       before muting it (sound ROM 0x2A5). */
+    /* PSG1 is read back too: the REST opcode saves a voice's volume register before muting it (sound ROM 0x2A5) */
     AY8910Write(0, 0, offset & 0x0f);
     return AY8910Read(0);
   }
@@ -608,13 +601,13 @@ static READ_HANDLER(rfranco_scpu_movx_r) {
    FASE B code (ball-1), 0x16A1 lights IC1 code 1/2 for the player number,
    0x042B sets IC3 FASE A code 4 (the start button lamp) when a credit is
    available, 0x0174 sets IC2 FASE B code 5 (fin de juego) on game over, and
-   0x151B alternates IC3 code 3 between the two phases (pasillo dcho/izq). */
+   0x151B alternates IC3 code 3 between the two phases (pasillo dcho/izq) */
 #define RFRANCO_IC1 0
 #define RFRANCO_IC2 1
 #define RFRANCO_IC3 2
 
 static void rfranco_gate(int dec, int phase, int code) {
-  if (code > 9) return;                 /* 10-15 select no output */
+  if (code > 9) return; /* 10-15 select no output */
   if (code < 8)
     locals.lampAcc[dec * 2 + phase] |= (UINT8)(1 << code);
   else if (dec != RFRANCO_IC3)
@@ -644,7 +637,7 @@ static WRITE_HANDLER(rfranco_scpu_movx_w) {
      Each code gates a BT106 thyristor which then conducts to the end of the
      mains half cycle, so a lamp selected for one ~85us slot stays lit for the
      rest of the frame. Accumulate here and commit at the frame boundary rather
-     than sampling instantaneously. */
+     than sampling instantaneously */
   if (!(locals.scpuP2 & 0x40)) {
     int hi = data >> 4, lo = data & 0x0f;
     int ph = locals.gatePhase ? 0 : 1;    /* 0 = FASE A, 1 = FASE B */
@@ -655,14 +648,14 @@ static WRITE_HANDLER(rfranco_scpu_movx_w) {
         return;
       case 0x0f:
         /* IC7, connector JL. Solenoid number is the 4028 output + 1:
-             1 (n.c.)   2 taca      3 bobina monedero  4 contador 25
+             1 (n.c.)   2 taca     3 bobina monedero   4 contador 25
              5 contador 100        6 relay flippers    7 bancada izquierda
              8 picabolas           9 bancada derecha  10 salida bolas
            Confirmed against the ROM: 0x055F fires 4 on a 25 pta coin, 0x15A6
            holds 3 through attract to enable the coin slot, 0x1639/0x1656 fire
            9 and 7 to reset whichever target bank is down, 0x1682 fires 10 to
-           serve the ball and 0x1754 fires 2 when a replay is awarded. */
-        if (hi < 10) locals.solAcc |= 1u << hi;                   /* IC7 coils */
+           serve the ball and 0x1754 fires 2 when a replay is awarded */
+        if (hi < 10) locals.solAcc |= 1u << hi; /* IC7 coils */
         rfranco_gate(RFRANCO_IC3, ph, lo);
         return;
       default:
@@ -672,8 +665,8 @@ static WRITE_HANDLER(rfranco_scpu_movx_w) {
     }
   }
   /* Not "else": P2 = 0x9F pulls both selects low at once, which the sound ROM
-     uses at 0x39B to zero registers 8/9/10 on both chips. */
-  if (!(locals.scpuP2 & 0x20)) {          /* PCS2 = IC2, the input PSG */
+     uses at 0x39B to zero registers 8/9/10 on both chips */
+  if (!(locals.scpuP2 & 0x20)) { /* PCS2 = IC2, the input PSG */
     AY8910Write(1, 0, offset & 0x0f);
     AY8910Write(1, 1, data);
   }
@@ -681,8 +674,7 @@ static WRITE_HANDLER(rfranco_scpu_movx_w) {
 
 /* The sound CPU samples the mains half cycle on T1 (JD-8, DETECCION FASE) and
    reports it to the 8085, which uses it to pick between the FASE A and FASE B
-   copies of the lamp data. Exactly one JT1 exists in the whole sound ROM, at
-   0x00F8. */
+   copies of the lamp data. Exactly one JT1 exists in the whole sound ROM, at 0x00F8 */
 static READ_HANDLER(rfranco_scpu_t1_r) {
   return locals.phaseT1;
 }
@@ -694,14 +686,14 @@ static WRITE_HANDLER(rfranco_scpu_p1_w) {
      /RD35 and ALE, which is why a single MOVX both latches the AY register
      number and writes it. P1 drives the 74S138 (IC8) and the 7438 (IC15)
      display strobe gates; P1.6 is an independent latched output toggled only
-     by sound commands 0x96 and 0x69. */
+     by sound commands 0x96 and 0x69 */
 }
 
 static WRITE_HANDLER(rfranco_scpu_p2_w) {
   /* P2.4 is the system /RESET net: it reaches both AY-3-8910s (pin 23), the
      8212 latches and the main board. The sound CPU asserts it at 0x0BA, holds
      it across its ~1.94s power-up timer delay, and releases it at 0x0C7 - so
-     the 8035 holds the rest of the machine in reset while it starts up. */
+     the 8035 holds the rest of the machine in reset while it starts up */
   if ((locals.scpuP2 ^ data) & 0x10)
     cpu_set_reset_line(RFRANCO_CPU, (data & 0x10) ? CLEAR_LINE : ASSERT_LINE);
   locals.scpuP2 = data;
@@ -710,12 +702,12 @@ static WRITE_HANDLER(rfranco_scpu_p2_w) {
 /*-- AY-3-8910 --*/
 /* PSG1 (chip 0, CPU board IC3) is the output device and PSG2 (chip 1, IC2) the
    input device - see rfranco_scpu_movx_r/w, which intercept registers 0x0E/0x0F
-   for both. Nothing is wired here: the I/O ports never reach AY8910Write. */
-struct AY8910interface RFRANCO_ay8910Int = {
-  2,                        /* 2 chips: 0 = PSG1/IC3 (outputs), 1 = PSG2/IC2 */
-  RFRANCO_CPUFREQ / 6,      /* clocked from 8035 T0 = XTAL/6 */
-  { 30, 30 },               /* volume */
-  { 0, 0 }, { 0, 0 },       /* I/O ports are handled in rfranco_scpu_movx_r/w */
+   for both. Nothing is wired here: the I/O ports never reach AY8910Write */
+static struct AY8910interface RFRANCO_ay8910Int = {
+  2,                   /* 2 chips: 0 = PSG1/IC3 (outputs), 1 = PSG2/IC2 */
+  RFRANCO_CPUFREQ / 6, /* clocked from 8035 T0 = XTAL/6 */
+  { 30, 30 },          /* volume */
+  { 0, 0 }, { 0, 0 },  /* I/O ports are handled in rfranco_scpu_movx_r/w */
   { 0, 0 }, { 0, 0 },
 };
 
@@ -738,8 +730,7 @@ struct AY8910interface RFRANCO_ay8910Int = {
    the trough, table closes the contact; kicker fires, table opens it - and the
    driver must keep its hands off, or the two fight over the same bit.
 
-   The standalone build defaults the flag to 0xff, so keyboard play is
-   unaffected. */
+   The standalone build defaults the flag to 0xff, so keyboard play is unaffected */
 static int rfranco_ownsBall(void) {
   extern int g_fHandleMechanics;
   return g_fHandleMechanics != 0;
@@ -760,7 +751,7 @@ static INTERRUPT_GEN(rfranco_trap) {
      conducting on their own supply and its lamps stay lit right through. So
      keep a snapshot per phase and publish the union, rather than replacing the
      whole matrix every pass - that made every lamp flicker on and off at 50 Hz
-     and left whichever phase vblank happened to miss looking dark. */
+     and left whichever phase vblank happened to miss looking dark */
   int i, p = locals.gatePhase ? 0 : 1;
   memcpy(locals.lampPhase[p], locals.lampAcc, sizeof(locals.lampAcc));
   locals.solPhase[p] = locals.solAcc;
@@ -774,7 +765,7 @@ static INTERRUPT_GEN(rfranco_trap) {
      Without this the trough reads "ball present" for ever and the game ends
      every ball the instant it starts one (0x0A2C -> 0x1121).
 
-     Only when the mechanics are ours - see rfranco_ownsBall. */
+     Only when the mechanics are ours - see rfranco_ownsBall */
   if (rfranco_ownsBall() && (locals.solAcc & (1u << 9))) {
     locals.ballInTrough = 0;
     locals.troughEdge = 1;
@@ -788,7 +779,7 @@ static INTERRUPT_GEN(rfranco_trap) {
      by 0x1996 one TRAP ago, from the phase the sound CPU reported to the 0xDD
      issued then - 0x19E6 sends 0xDD, stores the reply in C04F and immediately
      blasts the buffer prepared on the previous pass. So the phase that selected
-     the data now arriving is the one before the current one. */
+     the data now arriving is the one before the current one */
   locals.gatePhase = locals.phaseT1;
   locals.phaseT1 ^= 1;
   cpu_set_irq_line(RFRANCO_CPU, IRQ_LINE_NMI, PULSE_LINE);
@@ -800,11 +791,11 @@ static INTERRUPT_GEN(rfranco_trap) {
 /* The bumpers and the two ball ejectors are fired by board 53/3311 straight
    from their own playfield contacts; the CPU never sees them as outputs and
    only reads the contacts for scoring. Synthesise a one-shot on each so they
-   are visible - and so a front end has something to drive. */
+   are visible - and so a front end has something to drive */
 static void rfranco_pseudo_sol(void) {
   static const struct { UINT8 mask; int sol; } wired[4] = {
-    { 0x80, RFRANCO_SOL_BUMPER_L },   /* JG7  AD7 contacto bumper izq   (sw 18) */
-    { 0x02, RFRANCO_SOL_BUMPER_R },   /* JG6  AD1 contacto bumper dcho  (sw 12) */
+    { 0x80, RFRANCO_SOL_BUMPER_L }, /* JG7  AD7 contacto bumper izq   (sw 18) */
+    { 0x02, RFRANCO_SOL_BUMPER_R }, /* JG6  AD1 contacto bumper dcho  (sw 12) */
     /* Both expulsores hang off the same bit. Their contacts are the manual's
        24 and 25, the two "10 PUNTOS" inside the slingshot bodies, and they are
        wired in parallel onto AD0 - which the ROM's own contact-test table
@@ -812,8 +803,8 @@ static void rfranco_pseudo_sol(void) {
        higher of the two. The CPU therefore cannot tell left from right and
        neither can this driver: both fire together. A front end that knows
        where the ball was should use that instead. */
-    { 0x01, RFRANCO_SOL_EJECT_L },    /* JG8  AD0 contacto 10 puntos    (sw 11) */
-    { 0x01, RFRANCO_SOL_EJECT_R },    /* JG8  AD0 - the same contact         */
+    { 0x01, RFRANCO_SOL_EJECT_L },  /* JG8  AD0 contacto 10 puntos    (sw 11) */
+    { 0x01, RFRANCO_SOL_EJECT_R },  /* JG8  AD0 - the same contact            */
   };
   UINT8 jg = coreGlobals.swMatrix[1], closed = (UINT8)(jg & ~locals.lastJG);
   int i;
@@ -831,11 +822,10 @@ static INTERRUPT_GEN(rfranco_vblank) {
   locals.vblankCount++;
 
   /*-- lamps --*/
-  memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix,
-         sizeof(coreGlobals.tmpLampMatrix));
+  memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   /*-- solenoids --*/
   /* TRAP runs at 100 Hz against a 60 Hz vblank, so take everything gated since
-     the last frame rather than only the newest half cycle. */
+     the last frame rather than only the newest half cycle */
   locals.solenoids = locals.solSticky;
   locals.solSticky = 0;
   rfranco_pseudo_sol();
@@ -848,14 +838,14 @@ static INTERRUPT_GEN(rfranco_vblank) {
      this the cabinet inputs never reach swMatrix at all. Pass TRUE because the
      flippers are not CPU driven here - the ROM never energises the flipper
      supply relay on JL3, the buttons feed the coils directly through the
-     interconnect board - so the flipper solenoids have to be synthesised. */
+     interconnect board - so the flipper solenoids have to be synthesised */
   core_updateSw(TRUE);
 }
 
 /* Switch numbering. The driver keeps its four hardware bytes in swMatrix rows
    1-4, so expose them as the usual col*10 + row + 1 (see the table at the top
    of this file). Declaring this explicitly rather than relying on core.c's
-   default keeps the numbering the driver's own. */
+   default keeps the numbering the driver's own */
 static int rfranco_sw2m(int no) { return (no / 10) * 8 + (no % 10) - 1; }
 static int rfranco_m2sw(int col, int row) { return col * 10 + row + 1; }
 
@@ -863,7 +853,7 @@ static int rfranco_m2sw(int col, int row) { return col * 10 + row + 1; }
    number are read the same way and both agree with what the debug interface
    reports. Without this the base machine driver's sequential numbering would
    apply and column 0 - the whole IC1 group - would land on lamp numbers 0 and
-   below, unreachable through vp_getLamp. */
+   below, unreachable through vp_getLamp */
 /* The two directions do NOT take the column the same way, which is core.c's
    convention rather than this driver's choice. lamp2m carries a +8 that
    vp_getLamp cancels with its own -8 (vpintf.c:34), and m2lamp is called with a
@@ -874,7 +864,7 @@ static int rfranco_m2sw(int col, int row) { return col * 10 + row + 1; }
    back as 81-88, numbers this machine does not have.
    Note core.c's own round-trip assert (core.c:2469) passes a ZERO-based column,
    so it disagrees with vpintf about the convention. It never fires here because
-   hw.lampCol is 0, and it is not this driver's to fix. */
+   hw.lampCol is 0, and it is not this driver's to fix */
 static int rfranco_lamp2m(int no) { return (no / 10) * 8 + (no % 10) + 7; }
 static int rfranco_m2lamp(int col, int row) { return (col - 1) * 10 + row + 1; }
 
@@ -894,7 +884,7 @@ static SWITCH_UPDATE(RFRANCO) {
      vblank, before the ROM has had a chance to look: it polls the row through
      the sound CPU, so a switch that survives less than one frame is a coin
      toss. That made the start button unusable from outside the keyboard, and
-     it is what made "insert coin, press start" work about half the time. */
+     it is what made "insert coin, press start" work about half the time */
   if (inports) {
     UINT16 inp = inports[RFRANCO_COMINPORT];
     UINT8  coins = (UINT8)(inp & 0x30);
@@ -905,18 +895,18 @@ static SWITCH_UPDATE(RFRANCO) {
        coin, then waits for the contact to OPEN within 20 TRAP ticks; if it is
        still closed it falls through to 0x055C and jumps to the fault handler,
        which wedges the machine for good. Holding a coin key down is the
-       obvious thing for a user to do, so turn the key press into a one-shot. */
+       obvious thing for a user to do, so turn the key press into a one-shot */
     if (coins & ~locals.lastCoin) {
       locals.coinBits = (UINT8)(coins & ~locals.lastCoin);
       locals.coinPulse = 10;
     }
     locals.lastCoin = coins;
 
-    if (inp & 0x0040) {                          /* DRAIN key: ball returns */
+    if (inp & 0x0040) { /* DRAIN key: ball returns */
       if (!locals.ballInTrough) locals.troughEdge = 1;
       locals.ballInTrough = 1;
     }
-    if (start != locals.lastStart) {              /* pulsador partidas */
+    if (start != locals.lastStart) { /* pulsador partidas */
       v |= start; mask |= 0x80;
       locals.lastStart = start;
     }
@@ -928,8 +918,7 @@ static SWITCH_UPDATE(RFRANCO) {
        stamp back over anything a front end or a test harness had set between
        vblanks, and these two are exactly the switches an operator menu walker
        drives from outside. So they get the same change-detection treatment as
-       everything else here: the keyboard owns a bit only at the moment it
-       moves it. */
+       everything else here: the keyboard owns a bit only at the moment it moves it */
     if (door != locals.lastDoor) {
       CORE_SETKEYSW(door, 0x03, 0);
       locals.lastDoor = door;
@@ -938,7 +927,7 @@ static SWITCH_UPDATE(RFRANCO) {
 
   /* The coin one-shot, from either path: the keyboard arms it above, and a
      front end that drives the contact itself never does - but if one is armed
-     it has to be run down here, or the two paths could leave a coin latched. */
+     it has to be run down here, or the two paths could leave a coin latched */
   {
     UINT8 coinNow = (UINT8)(locals.coinPulse ? locals.coinBits : 0);
     if (coinNow != locals.coinDriven) {
@@ -962,11 +951,11 @@ static SWITCH_UPDATE(RFRANCO) {
      And when the front end owns the mechanics outright (rfranco_ownsBall), the
      driver does not drive the contact at all: the table's ball physics do, and
      an empty trough at game start is then a real "no ball" condition that the
-     ROM handles on its own by waiting at 0x030F/0x0331. */
+     ROM handles on its own by waiting at 0x030F/0x0331 */
   if (locals.troughEdge) {
-    locals.troughEdge = 0;      /* consumed either way, so that a table which
-                                   turns HandleMechanics back on mid-run does not
-                                   inherit a stale edge from before */
+    locals.troughEdge = 0; /* consumed either way, so that a table which
+                              turns HandleMechanics back on mid-run does not
+                              inherit a stale edge from before */
     if (rfranco_ownsBall()) {
       if (locals.ballInTrough) v |= 0x40;
       mask |= 0x40;
@@ -978,13 +967,13 @@ static SWITCH_UPDATE(RFRANCO) {
   /* Falta (tilt) is not a matrix switch on the real board - it reaches the CPU
      on JD1 and fires RST 6.5 (vector 0x0034 -> 0x0286). The ROM never reads
      bits 0-3 of the cabinet row, so switch 21 is borrowed as the front end's
-     way in; it is edge triggered, like the contact. */
+     way in; it is edge triggered, like the contact */
   if (coreGlobals.swMatrix[2] & 0x01) tilt = 1;
   /* Level, not a pulse. RST 6.5 is a level sensitive input, and the ROM leaves
      it masked except for the single NOP at 0x194D, so a pulse is armed and
      disarmed again long before the CPU can look: the core's own request flag is
      cleared by the falling edge (i8085_set_RST65). Hold the line for as long as
-     the contact is closed and the request survives to the next unmask window. */
+     the contact is closed and the request survives to the next unmask window */
   if (tilt != locals.lastTilt)
     cpu_set_irq_line(RFRANCO_CPU, I8085_RST65_LINE, tilt ? ASSERT_LINE : CLEAR_LINE);
   locals.lastTilt = tilt;
@@ -992,7 +981,7 @@ static SWITCH_UPDATE(RFRANCO) {
   /* Where the two door switches are sitting, in the same place and the same
      way s11.c:800 shows Advance and Up/Down. A toggle has no on-screen
      position of its own, and on this machine the position decides which of the
-     four modes the ROM took at boot, so it is worth being able to see it. */
+     four modes the ROM took at boot, so it is worth being able to see it */
   core_textOutf(40, 20, BLACK, core_getSw(RFRANCO_SWAJUSTE) ? "Ajuste arriba" : "Ajuste abajo ");
   core_textOutf(40, 30, BLACK, core_getSw(RFRANCO_SWTEST)   ? "Test   arriba" : "Test   abajo ");
 }
@@ -1052,9 +1041,9 @@ MEMORY_END
    game started inside one VPinMAME/libpinmame process running a still
    scrambled sound ROM - the 8035 would execute noise, never release P2.4 and
    hold the main CPU in reset for ever. MACHINE_INIT is not the place either,
-   because it also runs on a soft reset and would reverse the image back. */
+   because it also runs on a soft reset and would reverse the image back */
 void rfranco_unscramble_sound_rom(void) {
-  UINT8 *rom = memory_region(RFRANCO_MEMREG_SCPU);
+  UINT8 * const rom = memory_region(RFRANCO_MEMREG_SCPU);
   int i;
   if (!rom) return;
   for (i = 0; i < 0x1000; i++) {
@@ -1072,28 +1061,34 @@ void rfranco_unscramble_sound_rom(void) {
    came back with the trough left wherever the last game had put it rather than
    with a ball in it, so the ROM's boot path could not complete, and the boot
    dispatch at 0x00BB - the only place the operator door switches are ever read -
-   was never reached. Resetting into an operator menu did nothing at all. */
+   was never reached. Resetting into an operator menu did nothing at all */
 static MACHINE_RESET(RFRANCO) {
   memset(&locals, 0, sizeof locals);
   /* The 8035 resets its ports high (i8039_reset sets P2 = 0xff), so start there
      rather than at 0: a zeroed P2 reads as "latch selected" and gives the P2.4
      edge detector a state the chip was never in. Harmless with this ROM - 0x0A5
-     writes P2 before the first MOVX - but only by luck. */
+     writes P2 before the first MOVX - but only by luck */
   locals.scpuP2 = 0xff;
-  locals.ballInTrough = 1;      /* a ball rests in the outhole at power up */
-  locals.troughEdge = 1;        /* ... and the ROM has to be told so, unless the
-                                   front end owns the trough - see
-                                   rfranco_ownsBall, which gates the commit */
+  /* Blank, not zero. The 8279's own clear command fills its display RAM with
+     0xff because that is what blanks a 7447 (see the 0xc0 case in rfranco_8279_w),
+     so a memset to 0x00 would leave the RAM claiming "digit 0" while locals.segments
+     is blank. Anything the ROM then wrote with one inhibit bit set would take the
+     untouched nibble from that stale 0 and paint a digit the machine is not showing.
+     The ROM clears before it draws either way, but it keeps the two agreeing */
+  memset(locals.i8279ram, 0xff, sizeof locals.i8279ram);
+  locals.ballInTrough = 1; /* a ball rests in the outhole at power up */
+  locals.troughEdge = 1;   /* ... and the ROM has to be told so, unless the
+                              front end owns the trough - see
+                              rfranco_ownsBall, which gates the commit */
   /* RIM must sample SID at the instant it executes, because the switch data is
-     being clocked in a bit at a time - a value pushed in ahead of time would be
-     stale. */
+     being clocked in a bit at a time - a value pushed in ahead of time would be stale */
   i8085_set_SID_callback(rfranco_sid_r);
   i8085_set_SOD_callback(rfranco_sod_w);
 }
 
 MACHINE_DRIVER_START(RFRANCO)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD_TAG("mcpu", 8085A, RFRANCO_CPUFREQ / 2)  /* core wants the internal clock */
+  MDRV_CPU_ADD_TAG("mcpu", 8085A, RFRANCO_CPUFREQ / 2) /* core wants the internal clock */
   MDRV_CPU_MEMORY(rfranco_readmem, rfranco_writemem)
   MDRV_CPU_PORTS(NULL, rfranco_writeport)
   MDRV_CPU_VBLANK_INT(rfranco_vblank, 1)
@@ -1101,7 +1096,7 @@ MACHINE_DRIVER_START(RFRANCO)
 
   /* PinMAME's MCS-48 core wants the machine cycle rate, not the pin frequency:
      the 8035 divides its clock by 15 internally. The sound CPU is fed from the
-     8085's CLK OUT, i.e. XTAL/2. */
+     8085's CLK OUT, i.e. XTAL/2 */
   MDRV_CPU_ADD_TAG("scpu", I8035, RFRANCO_CPUFREQ / 2 / 15)
   MDRV_CPU_MEMORY(rfranco_scpu_readmem, rfranco_scpu_writemem)
   MDRV_CPU_PORTS(rfranco_scpu_readport, rfranco_scpu_writeport)
@@ -1122,15 +1117,12 @@ MACHINE_DRIVER_START(RFRANCO)
      emulated throughput and ~35% less host CPU per emulated second than 500.
      The slice quantum at 250 is ~67us, far inside the sound guard's 1230us
      margin - see RFRANCO_SOUND_GUARD_US.  Details: docs/driver-notes.md
-     (superstar repo) §7.3. */
+     (superstar repo) 7.3 */
   MDRV_INTERLEAVE(250)
   MDRV_CORE_INIT_RESET_STOP(NULL, RFRANCO, NULL)
-  MDRV_DIPS(0)                  /* none. The machine has no DIP switches: the
-                                   operator's settings are NVRAM, reached from
-                                   the ajustes menu, and the two door switches
-                                   are switches (RFRANCO_SWAJUSTE). The empty
-                                   inport they used to occupy stays declared -
-                                   see the comment in rfranco.h. */
+  MDRV_DIPS(0) /* none. The machine has no DIP switches: the operator's settings are NVRAM, reached from
+                  the ajustes menu, and the two door switches are switches (RFRANCO_SWAJUSTE). The empty
+                  inport they used to occupy stays declared - see the comment in rfranco.h */
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_SWITCH_UPDATE(RFRANCO)
   MDRV_SWITCH_CONV(rfranco_sw2m, rfranco_m2sw)

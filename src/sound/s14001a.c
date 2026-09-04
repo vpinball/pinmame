@@ -176,7 +176,7 @@ BOOL m_bDAR04To00CarryP2;
 BOOL m_bPPQCarryP2;
 BOOL m_bRepeatCarryP2;
 BOOL m_bLengthCarryP2;
-UINT16 m_RomAddrP1;         // rom address
+UINT16 m_uRomAddrP1;        // rom address
 
 // output pins
 UINT8 m_uOutputP2;          // output changes on phase2
@@ -187,15 +187,6 @@ BOOL m_bBusyP1;             // busy changes on phase 1
 BOOL m_bStart;
 UINT8 m_uWord;              // 6 bit word noumber to be spoken
 
-// emulator variables
-// statistics
-UINT32 m_uNPitchPeriods;
-UINT32 m_uNVoiced;
-UINT32 m_uNControlWords;
-
-// diagnostic output
-static const UINT32 m_uPrintLevel = 0;
-
 UINT8 readmem(UINT16 offset, BOOL phase);
 BOOL Clock(void); // called once to toggle external clock twice
 
@@ -203,8 +194,6 @@ BOOL Clock(void); // called once to toggle external clock twice
 UINT8 Mux8To2(BOOL bVoicedP2, UINT8 uPPQtrP2, UINT8 uDeltaAdrP2, UINT8 uRomDataP2);
 void CalculateIncrement(BOOL bVoicedP2, UINT8 uPPQtrP2, BOOL bPPQStartP2, UINT8 uDeltaP2, UINT8 uDeltaOldP2, UINT8 *uDeltaOldP1, UINT8 *uIncrementP2, BOOL *bAddP2);
 UINT8 CalculateOutput(BOOL bVoicedP2, BOOL bXSilenceP2, UINT8 uPPQtrP2, BOOL bPPQStartP2, UINT8 uLOutputP2, UINT8 uIncrementP2, BOOL bAddP2);
-void ClearStatistics();
-void GetStatistics(UINT32 *uNPitchPeriods, UINT32 *uNVoiced, UINT32 *uNControlWords);
 
 void s14001a_update(int ch, INT16 *buffer, int length);
 
@@ -338,13 +327,12 @@ int s14001a_sh_start(const struct MachineSound *msound)
 	m_bPPQCarryP2 = 0;
 	m_bRepeatCarryP2 = 0;
 	m_bLengthCarryP2 = 0;
-	m_RomAddrP1 = 0;
+	m_uRomAddrP1 = 0;
 	m_uRomAddrP2 = 0;
 	m_bBusyP1 = 0;
 	m_bStart = 0;
 	m_uWord = 0;
 
-	ClearStatistics();
 	m_uOutputP1 = m_uOutputP2 = 7;
 
 	// register for savestates
@@ -377,18 +365,13 @@ int s14001a_sh_start(const struct MachineSound *msound)
 	save_item(NAME(m_bPPQCarryP2));
 	save_item(NAME(m_bRepeatCarryP2));
 	save_item(NAME(m_bLengthCarryP2));
-	save_item(NAME(m_RomAddrP1));
+	save_item(NAME(m_uRomAddrP1));
 
 	save_item(NAME(m_uOutputP2));
 	save_item(NAME(m_uRomAddrP2));
 	save_item(NAME(m_bBusyP1));
 	save_item(NAME(m_bStart));
-	save_item(NAME(m_uWord));
-
-	save_item(NAME(m_uNPitchPeriods));
-	save_item(NAME(m_uNVoiced));
-	save_item(NAME(m_uNControlWords));
-	save_item(NAME(m_uPrintLevel));*/
+	save_item(NAME(m_uWord));*/
 
 	return 0;
 }
@@ -507,7 +490,7 @@ BOOL Clock(void)
 		m_uDeltaOldP2  = m_uDeltaOldP1;
 
 		m_uOutputP2    = m_uOutputP1;
-		m_uRomAddrP2   = m_RomAddrP1;
+		m_uRomAddrP2   = m_uRomAddrP1;
 
 		// setup carries from phase 2 values
 		m_bDAR04To00CarryP2  = m_uDAR04To00P2 == 0x1F;
@@ -536,7 +519,7 @@ BOOL Clock(void)
 		// all other bits forced to 0.  04 to 08 makes a multiply by two.
 		m_uDAR13To05P1 = (m_uWord&0x3C)>>2;
 		m_uDAR04To00P1 = (m_uWord&0x03)<<3;
-		m_RomAddrP1 = (m_uDAR13To05P1<<3)|(m_uDAR04To00P1>>2); // remove lower two bits
+		m_uRomAddrP1 = (m_uDAR13To05P1<<3)|(m_uDAR04To00P1>>2); // remove lower two bits
 		m_uOutputP1 = 7;
 		if (m_bStart) m_uStateP1 = WORDWAIT;
 		else          m_uStateP1 = CWARMSB;
@@ -547,15 +530,12 @@ BOOL Clock(void)
 		break;
 
 	case CWARMSB:
-		if (m_uPrintLevel >= 1)
-			printf("\n speaking word %02x",m_uWord);
-
 		// use uDAR to load uCWAR 8 msb
 		m_uCWARP1 = readmem(m_uRomAddrP2,m_bPhase1)<<4; // note use of rom address setup in previous state
 		// increment DAR by 4, 2 lsb's count deltas within a byte
 		m_uDAR04To00P1 += 4;
 		if (m_uDAR04To00P1 >= 32) m_uDAR04To00P1 = 0; // emulate 5 bit counter
-		m_RomAddrP1 = (m_uDAR13To05P1<<3)|(m_uDAR04To00P1>>2); // remove lower two bits
+		m_uRomAddrP1 = (m_uDAR13To05P1<<3)|(m_uDAR04To00P1>>2); // remove lower two bits
 
 		m_uOutputP1 = 7;
 		if (m_bStart) m_uStateP1 = WORDWAIT;
@@ -564,7 +544,7 @@ BOOL Clock(void)
 
 	case CWARLSB:
 		m_uCWARP1   = m_uCWARP2|(readmem(m_uRomAddrP2,m_bPhase1)>>4); // setup in previous state
-		m_RomAddrP1 = m_uCWARP1;
+		m_uRomAddrP1 = m_uCWARP1;
 
 		m_uOutputP1 = 7;
 		if (m_bStart) m_uStateP1 = WORDWAIT;
@@ -575,8 +555,7 @@ BOOL Clock(void)
 		m_uDAR13To05P1 = readmem(m_uRomAddrP2,m_bPhase1)<<1; // 9 bit counter, 8 MSBs from ROM, lsb zeroed
 		m_uDAR04To00P1 = 0;
 		m_uCWARP1++;
-		m_RomAddrP1 = m_uCWARP1;
-		m_uNControlWords++; // statistics
+		m_uRomAddrP1 = m_uCWARP1;
 
 		m_uOutputP1 = 7;
 		if (m_bStart) m_uStateP1 = WORDWAIT;
@@ -591,14 +570,11 @@ BOOL Clock(void)
 		m_uLengthP1  =(readmem(m_uRomAddrP2,m_bPhase1)&0x1F)<<2; // includes external length and repeat
 		m_uDAR04To00P1 = 0;
 		m_uCWARP1++; // gets ready for next DARMSB
-		m_RomAddrP1  = (m_uDAR13To05P1<<3)|(m_uDAR04To00P1>>2); // remove lower two bits
+		m_uRomAddrP1  = (m_uDAR13To05P1<<3)|(m_uDAR04To00P1>>2); // remove lower two bits
 
 		m_uOutputP1 = 7;
 		if (m_bStart) m_uStateP1 = WORDWAIT;
 		else          m_uStateP1 = PLAY;
-
-		if (m_uPrintLevel >= 2)
-			printf("\n cw %d %d %d %d %d",m_bStopP1,m_bVoicedP1,m_bSilenceP1,m_uLengthP1>>4,m_uXRepeatP1);
 
 		break;
 
@@ -607,18 +583,6 @@ BOOL Clock(void)
 		UINT8 uDeltaP2;     // signal line
 		UINT8 uIncrementP2; // signal lines
 		BOOL bAddP2;        // signal line
-
-		// statistics
-		if (m_bPPQCarryP2)
-		{
-			// pitch period end
-			if (m_uPrintLevel >= 3)
-				printf("\n ppe: RomAddr %03x",m_uRomAddrP2);
-
-			m_uNPitchPeriods++;
-			if (m_bVoicedP2) m_uNVoiced++;
-		}
-		// end statistics
 
 		// modify output
 		uDeltaP2 = Mux8To2(m_bVoicedP2,
@@ -672,13 +636,13 @@ BOOL Clock(void)
 			if (m_uDAR13To05P1 >= 0x200) m_uDAR13To05P1 = 0; // emulate 9 bit counter
 		}
 
-		// construct m_RomAddrP1
-		m_RomAddrP1 = m_uDAR04To00P1;
+		// construct m_uRomAddrP1
+		m_uRomAddrP1 = m_uDAR04To00P1;
 		if (m_bVoicedP2 && m_uLengthP1&0x1) // mirroring
 		{
-			m_RomAddrP1 ^= 0x1f; // count backwards
+			m_uRomAddrP1 ^= 0x1f; // count backwards
 		}
-		m_RomAddrP1 = (m_uDAR13To05P1<<3) | m_RomAddrP1>>2;
+		m_uRomAddrP1 = (m_uDAR13To05P1<<3) | m_uRomAddrP1>>2;
 
 		// next state
 		if (m_bStart) m_uStateP1 = WORDWAIT;
@@ -686,7 +650,7 @@ BOOL Clock(void)
 		else if (m_bLengthCarryP2)
 		{
 			m_uStateP1  = DARMSB;
-			m_RomAddrP1 = m_uCWARP1; // output correct address
+			m_uRomAddrP1 = m_uCWARP1; // output correct address
 		}
 		else m_uStateP1 = PLAY;
 		break;
@@ -702,17 +666,3 @@ BOOL Clock(void)
 	return TRUE;
 }
 
-void ClearStatistics()
-{
-	m_uNPitchPeriods = 0;
-	m_uNVoiced       = 0;
-	//m_uPrintLevel    = 0;
-	m_uNControlWords = 0;
-}
-
-void GetStatistics(UINT32 *uNPitchPeriods, UINT32 *uNVoiced, UINT32 *uNControlWords)
-{
-	*uNPitchPeriods = m_uNPitchPeriods;
-	*uNVoiced = m_uNVoiced;
-	*uNControlWords = m_uNControlWords;
-}
