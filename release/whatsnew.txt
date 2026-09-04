@@ -33,6 +33,7 @@ Get rid of BASS external dependency (used for internal AltSound mode 1 support) 
 Added Pinball 2000 emulation. It works in principle, but the CPU is clocked way too low (0.33x) for performance reasons (for now)! Still, it seems to work reasonably well, most likely as the graphics/video part is not emulated cycle-accurate and thus much faster than the clock rate implies.
 Added Recreativos Franco Super Star emulation, including improved i8085 emulation
 Fixed and extended Sleic emulation, including some i86 fixes
+Sleic Io Moon now plays, and is no longer marked as not working
 Fixed a potential small problem with Bally VideoPins sound emulation
 Added physical/PWM DMD support to Capcom games (potentially leading to more brightness levels being displayed if the CPU triggers it)
 Added physical/PWM (dimmed) segment support to System 11 games
@@ -114,6 +115,7 @@ Funhouse 9.07H (Ballsaver MOD), 9.05H + (Ballsaver MOD) (both are independently 
 Gorgar L-2 (most likely official, but unreleased so far, makes it the newest version available)
 High Speed G-4 (aka German PROTO4), L-1 (but coming from a Unidesa / Cirsa licensed board)
 Hurricane D-2 LED Ghost Fix + Ball Saver MOD
+Io Moon (earlier ROM revision), (PRESS START tournament MOD)
 Mata Hari (Free Play and MODified rules, 6 and 7 digit versions (latter requires DIP 19 on))
 Maverick 4.04 (German, Display 4.00)
 Monte Carlo (German) (most likely older revision than existing one, see above)
