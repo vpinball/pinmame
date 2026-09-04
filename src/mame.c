@@ -115,6 +115,7 @@
 #include "vidhrdw/generic.h"
 #include "palette.h"
 #include "harddisk.h"
+#include "denormals.h"
 #if defined(PINMAME) && defined(PROC_SUPPORT)
 #include "p-roc/p-roc.h"
 #endif /* PINMAME && PROC_SUPPORT */
@@ -288,6 +289,9 @@ INLINE void bail_and_print(const char *message)
 int run_game(int game)
 {
 	int err = 1;
+
+	/* set FLZ/DAZ on this thread, so the sound cores' various different IIR filters settle at 0 instead of parking in the denormal range once a machine goes quiet - see denormals.h */
+	set_denormals_flush_to_zero();
 
 	begin_resource_tracking();
 

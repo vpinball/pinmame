@@ -1537,7 +1537,7 @@ void p2k_state::do_gfx_pipeline()
 	// destination data, all ones into the raster unit; 100/101 take it from the frame buffer, which
 	// is not a colour key and has not been seen with C6h.
 	//
-	// Not modelled: §4.4.1 stages each source scan line into a BLT buffer as the hardware blits, so
+	// Not modelled: 4.4.1 stages each source scan line into a BLT buffer as the hardware blits, so
 	// Buffer 0 would hold the last line copied. This reads VRAM directly, and nothing reads it back
 	const unsigned blt_rd = (m_gx_pipeline_reg[GP_BLT_MODE] >> 2) & 7u;
 	const u32 key_base = (blt_rd == 2) ? m_maincpu->cpu_access_reg(mediagx_device::L1_BB0_BASE)
@@ -2580,7 +2580,7 @@ u8 p2k_state::port_read(offs_t port)
 	// unmapped (reads return 0xff) lets it continue. This used to say the missing piece was SMM.
 	// It is not: the SMM region at 0x40400000 is never read or written by any set, and the only
 	// SMI sources the databook gives the bus interface unit are the VGA I/O traps in BC_XMAP_1
-	// bits 13-15, which no set sets (§4.2.3, and P2K_BIUWATCH shows the XMAP registers untouched).
+	// bits 13-15, which no set sets (4.2.3, and P2K_BIUWATCH shows the XMAP registers untouched).
 	// What is behind these registers is GX_BASE itself, among the rest of the configuration - so
 	// answering them wrongly can move the whole register aperture out from under the driver
 	if (port >= 0x002e && port <= 0x002f)
