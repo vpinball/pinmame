@@ -1376,8 +1376,8 @@ MEMORY_END
  *   MCS0 0x00000-0x1FFFF : work RAM (boot stack 012F:0203; the boot copies its IVT
  *                          image from CS:00C4 to physical 0 before STI, so the
  *                          driver must NOT overwrite the IVT)
- *   MCS1 0x20000-0x3FFFF : graphics ROM bkcpu05
- *   MCS2 0x40000-0x5FFFF : graphics ROM bkcpu06 (read via ES=0x5000)
+ *   MCS1 0x20000-0x3FFFF : graphics ROM bkcpu06 (sprite table in its first 0x1104)
+ *   MCS2 0x40000-0x5FFFF : graphics ROM bkcpu05 (read via ES=0x5000)
  *   MCS3 0x60000-0x7FFFF : DMD / video frame buffer RAM (panel staging at 0x60410)
  * PACS=0xA03C -> peripheral block at 0xA0000, so sleic_periph_r/w are used.
  * UMCS -> bkcpu04 code at 0xE0000-0xFFFFF (reset EA F000:0000). */
