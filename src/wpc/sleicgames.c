@@ -122,11 +122,23 @@ CORE_CLONEDEFNV(bikerac2,bikerace,"Bike Race (2-ball play)",1992,"Sleic (Spain)"
 /  fail (2, 8 and 2 distinct DMD frames over 600, against 7 for a working set).
 /  The emulation is faithfully reading the byte the file contains.
 /
-/  What the set needs is a re-read of ROM 06, checking offset 0x001E first: it
-/  must be 08 00 01 00 08 00.  Whether the corrected chip then matches bkcpu06
-/  (CRC 9db436d4), which would make V4.1 a three-chip clone, is open -- the
-/  substitution only shows that A valid table at those offsets works, not that
-/  V4.1's table is the 1992 one.
+/  Three further things say the chip is simply the 1992 one.  Bike Race has two
+/  graphics ROMs, 05 at MCS2 0x40000 and 06 at MCS1 0x20000; 05 is the larger
+/  sprite bank, 133 well-formed records against 06's 32, and is byte-identical
+/  across every known set (CRC 072ce879 in bikerace, bikerac2 and V4.1).  First,
+/  no Bike Race revision has ever changed a graphics ROM -- bikerac2 rebuilds 04
+/  and 07 and leaves both alone -- so a V4.1 that revised 06 would be the only
+/  exception in the family.  Second, the same dump session read 05 perfectly,
+/  128 KB correct with none of the page duplication bk06 shows, so the fault is
+/  one chip's read and not the setup.  Third, of the 32 records in bkcpu06, the
+/  15 that survive into bk06 all sit in correctly-read windows and the 17 that
+/  are lost all sit in mis-read ones, with zero anomalies: bk06's table is not a
+/  different 19-record table but the 1992 table with the damaged pages knocked
+/  out.
+/
+/  So the set needs a re-read of ROM 06, checking offset 0x001E first: it must be
+/  08 00 01 00 08 00.  The expected outcome is bkcpu06, CRC 9db436d4, which would
+/  make V4.1 a three-chip clone -- bk03, bk04 and bk07 over the parent set.
 /
 /  Either way this is not a driver change.  It is not a missing chip: the V4.1
 /  16-bit board carries exactly three 27C010 positions and all three are
