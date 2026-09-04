@@ -230,14 +230,14 @@
       COREPORT_DIPSET(0x0000, "On (0xED answers at once, no ball check)" ) \
       COREPORT_DIPSET(0x0010, "Off (normal play)" ) \
     COREPORT_DIPNAME( 0x0020, 0x0000, "SW40-6 solenoid test (not modelled)") \
-      COREPORT_DIPSET(0x0000, "On" ) \
-      COREPORT_DIPSET(0x0020, "Off" ) \
+      COREPORT_DIPSET(0x0020, DEF_STR( Off ) ) \
+      COREPORT_DIPSET(0x0000, DEF_STR( On ) ) \
     COREPORT_DIPNAME( 0x0040, 0x0000, "SW40-7 lamp test (not modelled)") \
-      COREPORT_DIPSET(0x0000, "On" ) \
-      COREPORT_DIPSET(0x0040, "Off" ) \
+      COREPORT_DIPSET(0x0040, DEF_STR( Off ) ) \
+      COREPORT_DIPSET(0x0000, DEF_STR( On ) ) \
     COREPORT_DIPNAME( 0x0080, 0x0000, "SW40-8 board self-test (not modelled)") \
-      COREPORT_DIPSET(0x0000, "On" ) \
-      COREPORT_DIPSET(0x0080, "Off" )
+      COREPORT_DIPSET(0x0080, DEF_STR( Off ) ) \
+      COREPORT_DIPSET(0x0000, DEF_STR( On ) )
 
 /*-- Standard input ports --*/
 #define SLEIC_INPUT_PORTS_START(name,balls) \
