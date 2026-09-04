@@ -27,7 +27,7 @@
 #include "sp0256.h"
 
 #ifdef PINMAME
-#define CLOCK_DIVIDER 312
+#define CLOCK_DIVIDER 312 // by now also in MAME (6*4*13)
 #else
 #define CLOCK_DIVIDER (7*6*8)
 #endif

@@ -23,6 +23,11 @@ The SP0250 manual states that the original speech is sampled at 10kHz, so the di
 should be 312, but 312 = 39*8 so it doesn't look right because a divider by 39 is unlikely.
 
 7*6*8 = 336 gives a 9.286kHz sample rate and matches the samples from the Sega boards.
+
+NOTE: The above is the old reasoning and 336 is now superseded: current MAME derives the
+frame rate from the chip's PWM output instead, as ROMCLOCK (= clock/2) divided by one
+frame of 4 PWM sections x 39 clocks = 156, i.e. clock/312 - so it agrees with the 312
+the manual's 10kHz implies, and with the value used here. Keep 312; do not "fix" it back to 336
 */
 #ifdef PINMAME
 #define CLOCK_DIVIDER 312
@@ -176,6 +181,9 @@ static void sp0250_update(int num, INT16 *output, int length)
 		}
 
 #if 0
+		// MAME's path: the chip's DAC really is 7 bits, and quantises to it
+		// We are trading that authenticity for less quantisation noise
+
 		// maximum amp value is effectively 13 bits
 		// reduce to 7 bits; due to filter effects it
 		// may occasionally clip

@@ -963,7 +963,7 @@ static void build_injection_filter(double * const a, double * const b,
 {
 	// First compute the three coefficients of H(s) = (k0 + k2*s)/(k1 + k2*s)
 	const double k0 = votraxsc01_locals.cclock * c2t;
-	const double k1 = votraxsc01_locals.cclock * (((INT64)c1b*(INT64)c3 - (INT64)c2t*(INT64)c2t) / (double)c2t);
+	const double k1 = votraxsc01_locals.cclock * (((INT64)c1b*(INT64)c3 + (INT64)c2t*(INT64)c2t) / (double)c2t);
 	const double k2 = c2b;
 
 	// Don't pre-warp
