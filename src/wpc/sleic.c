@@ -2420,9 +2420,14 @@ static SWITCH_UPDATE(SLEIC2) {
  * the port-0x82 one-hot column strobe); code = 0x0A + 8*(col-1) + row. Mapping every
  * position to a key lets the CONTACTOS self-test verify each contact. COL4 (swMatrix[5])
  * is the trough column. The Z80 cmd-0xD5 ball-status handler monitors COL4 bits 0x04
- * (code 0x2C, key 3), 0x20 = C7 (key 8) and 0x80 = C8 (key 9) on BOTH versions, plus
- * bit 0x40 (code 0x30, key '-') on bikerac2 only; see the per-version breakdown in the
- * MACHINE_INIT trough comment above */
+ * (code 0x2C, key 3), 0x20 = C7 (key 8) and 0x80 = C8 (key 9) on all three sets, plus
+ * bit 0x40 (code 0x30, key '-') on bikerac2 AND bikerac3, which share the same F000
+ * code revision; see the per-version breakdown in the MACHINE_INIT trough comment above.
+ *
+ * What that means for filling the trough by hand: bikerace clears with either 8+9 or
+ * 8+'-', but bikerac2 and bikerac3 need 8+'-' -- 8+9 alone leaves them sitting on
+ * "FALTAN n BOLAS" (measured: 5 and 6 distinct DMD frames against 110 and 111). The
+ * SLEIC_TROUGH default mask 0xE0 closes 8, '-' and 9 together and serves all three */
 static const struct { int key; UINT8 col; UINT8 bit; } sleic3_pf_keys[] = {
   {KEYCODE_Q,1,0x01},{KEYCODE_W,1,0x02},{KEYCODE_E,1,0x04},{KEYCODE_R,1,0x08}, /* COL0 0x0A-0x0D */
   {KEYCODE_Y,1,0x10},{KEYCODE_U,1,0x20},{KEYCODE_I,1,0x40},{KEYCODE_O,1,0x80}, /* COL0 0x0E-0x11 */
