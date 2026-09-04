@@ -516,6 +516,26 @@ void i8051_init(void)
 {
 	int cpu = cpu_getactivecpu();
 
+	//Drop any callbacks a PREVIOUS game registered.  These three statics are
+	//file scope, so without this they live for the whole process -- and
+	//libpinmame and VPinMAME run more than one game per process
+	//(PinmameRun/PinmameStop).  Run a spinb game, which registers both an
+	//eram_iaddr_callback and a serial callback, then stop and run an Alvin G
+	//game: alvgdmd.c instantiates an I8051 and registers nothing, so its DMD
+	//CPU would inherit spinb's eram_iaddr_callback and re-address every
+	//MOVX @Ri through another driver's state.  nuova.c has the same shape.
+	//
+	//This is the right place for it, and i8051_reset() is not: cpu_init()
+	//runs once per game start, from init_machine() (mame.c), and a driver's
+	//MACHINE_INIT -- where registration happens -- runs later, inside
+	//cpu_pre_run() (cpuexec.c), which calls machine_init() and only then
+	//cpunum_reset().  So registration still precedes the first reset and
+	//survives every later one, which is what the note in i8051_reset()
+	//needs, while a new game no longer inherits the old game's callbacks.
+	hold_serial_tx_callback = NULL;
+	hold_serial_rx_callback = NULL;
+	hold_eram_iaddr_callback = NULL;
+
 	//Internal stuff
 	state_save_register_UINT16("i8051", cpu, "PPC",       &i8051.ppc,    1);
 	state_save_register_UINT16("i8051", cpu, "PC",        &i8051.pc,     1);
