@@ -7,6 +7,8 @@ Version 3.7 (XX XXth, 2026) - ""
 ------------------------------------------------------------------------------
 - Add windows COM-API method 'PMBuildVersion' returning e.g. 30700.4711 with build number (e.g. 4711) as decimal
 
+- Fix script dialog API/UI for non-standard DPI values
+
 - Easier to upgrade game/rom aliases: There is now a default alias file called 'VPMAlias_template.txt', which contains all builtin (actually compiled into the library itself) aliases,
   so there is no need for a 'VPMAlias.txt' provided with the installation anymore.
   An optionally created 'VPMAlias.txt' only needs your very personal entries from now on:
