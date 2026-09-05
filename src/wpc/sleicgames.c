@@ -69,8 +69,9 @@ CORE_CLONEDEFNV(bikerac2,bikerace,"Bike Race (2-ball play)",1992,"Sleic (Spain)"
 /
 /  For 02 and 05 that inheritance is verified rather than assumed, against a
 /  complete six-chip pull off a V4.1 machine.  01 was never dumped.  06 IS
-/  INHERITED ON THE EVIDENCE BELOW rather than on a dump: the V4.1 ROM 06 in
-/  circulation, CRC ad48a30a, is a BAD DUMP, and no good one exists yet.
+/  INHERITED because a re-dump confirmed it is the parent's: the first V4.1 read
+/  of ROM 06, CRC ad48a30a, was a BAD DUMP, and a re-read came back CRC 9db436d4,
+/  byte-identical to bkcpu06 (see "Confirmed by a second dump" below).
 /
 /  Why ROM 06 is inherited
 /  -----------------------
@@ -111,10 +112,12 @@ CORE_CLONEDEFNV(bikerac2,bikerace,"Bike Race (2-ball play)",1992,"Sleic (Spain)"
 /  captured DMD frames identical to substituting the whole chip, seven distinct
 /  screens instead of two.
 /
-/  IF A GOOD V4.1 ROM 06 IS EVER DUMPED and turns out not to be bkcpu06, this
-/  block is what has to change: replace the bkcpu06.bin line with it.  The
-/  evidence above says to expect CRC 9db436d4, but that is a prediction, not a
-/  dump.  The bad image is archived and documented at
+/  CONFIRMED BY A SECOND DUMP.  ROM 06 was re-read from the same V4.1 machine and
+/  came back as CRC 9db436d4 -- byte-identical to bkcpu06 -- passing the checks the
+/  bad read failed (offset 0x1E = 08 00 01 00 08 00, no duplicated 0x200 pages, 12
+/  well-formed sprite records from 0x0000).  So V4.1 is a genuine three-chip clone,
+/  03/04/07 over the parent, and inheriting bkcpu06 is correct rather than inferred.
+/  The bad image (ad48a30a) and this analysis are archived at
 /  sleic-iomoon/roms/related-machines/bike-race/v4.1/. */
 INITGAME(bikerac3, sleic_dispDMD, 0)
 SLEIC_ROMSTART7(bikerac3,"bkdsp01.bin", CRC(9b220fcb) SHA1(54e82705d8ce8a26d9e1b5f0fe382ded1f2070c3),
