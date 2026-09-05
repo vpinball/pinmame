@@ -1445,8 +1445,19 @@ void i8051_set_irq_line(int irqline, int state)
 						SET_IE0(1);		//Nope, just set it..
 				}
 			}
-			else
-				SET_IE0(0);		//Clear Int occurred flag
+			else {
+				//IE0 is a mirror of the pin only in LEVEL-triggered mode (IT0 = 0).
+				//In EDGE-triggered mode (IT0 = 1) it is a latch: hardware sets it on the
+				//1->0 transition and clears it only when the ISR is vectored to (which the
+				//V_IE0 case in check_interrupts() below does).  The line going away must
+				//therefore NOT withdraw a request that has already been latched, or every
+				//edge arriving while another ISR runs is lost -- which is what a PULSE_LINE
+				//driver such as alvgdmd.c's vblank does on every single assert.
+				//Cf. MAME src/devices/cpu/mcs51/i8051.cpp, handle_irq():
+				//    if (!BIT(m_tcon, TCON_IT0)) // clear if level triggered
+				if(!GET_IT0)
+					SET_IE0(0);	//Clear Int occurred flag
+			}
 			i8051.last_int0 = state;
 
 			//Do the interrupt & handle - remove machine cycles used
@@ -1469,8 +1480,19 @@ void i8051_set_irq_line(int irqline, int state)
 					SET_IE1(1);		//Nope, just set it..
 				}
 			}
-			else
-				SET_IE1(0);		//Clear Int occurred flag
+			else {
+				//IE1 is a mirror of the pin only in LEVEL-triggered mode (IT1 = 0).
+				//In EDGE-triggered mode (IT1 = 1) it is a latch: hardware sets it on the
+				//1->0 transition and clears it only when the ISR is vectored to (which the
+				//V_IE1 case in check_interrupts() below does).  The line going away must
+				//therefore NOT withdraw a request that has already been latched, or every
+				//edge arriving while another ISR runs is lost -- which is what a PULSE_LINE
+				//driver such as alvgdmd.c's vblank does on every single assert.
+				//Cf. MAME src/devices/cpu/mcs51/i8051.cpp, handle_irq():
+				//    if (!BIT(m_tcon, TCON_IT1)) // clear if level triggered
+				if(!GET_IT1)
+					SET_IE1(0);	//Clear Int occurred flag
+			}
 			i8051.last_int1 = state;
 
 			//Do the interrupt & handle - remove machine cycles used
