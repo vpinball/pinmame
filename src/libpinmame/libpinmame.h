@@ -485,8 +485,11 @@ PINMAMEAPI void PinmameSetDIP(const int dipBank, const int value);
 PINMAMEAPI int PinmameGetMaxNVRAM();
 PINMAMEAPI int PinmameGetNVRAM(PinmameNVRAMState* const p_nvramStates);
 PINMAMEAPI int PinmameGetChangedNVRAM(PinmameNVRAMState* const p_nvramStates);
+/* Memory reads and writes are applied on the emulation thread between time slices and dispatch
+   through the memory map. A caller on another thread waits for the next frame (bounded). */
 PINMAMEAPI int PinmameReadMainCPUByte(uint32_t address, uint8_t* const p_value);
 PINMAMEAPI int PinmameReadMainCPUMemory(uint32_t address, uint8_t* const p_buffer, int size);
+PINMAMEAPI int PinmameWriteMainCPUMemory(uint32_t address, const uint8_t* const p_buffer, int size);
 PINMAMEAPI const uint8_t* PinmameGetRawMemoryRegion(const int region);
 PINMAMEAPI size_t PinmameGetRawMemoryRegionLength(const int region);
 PINMAMEAPI void PinmameSetUserData(void* const p_userData);

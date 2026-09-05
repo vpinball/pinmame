@@ -36,6 +36,11 @@ typedef struct PinMAMEMachineStateMsg
 
 #define PMPI_READ_MEMORY                     "ReadMemory:1"
 
+// The read is performed on the emulation thread between time slices, dispatched through the
+// memory map like a CPU read, so handler-backed RAM reads correctly and the result cannot be
+// torn by the running emulation or resolved against another CPU's bank tables. The caller
+// waits for the next frame (bounded, typically under 20 ms). 'read' is short only when the
+// range runs past the end of the address space.
 typedef struct PinMAMEReadMemoryMsg
 {
    int version;         // Always 1 (to allow upgrading this message in later revisions)
@@ -44,6 +49,26 @@ typedef struct PinMAMEReadMemoryMsg
    uint8_t* data;       // Request: caller-owned buffer, at least 'size' bytes
    uint32_t read;       // Response: bytes actually read, 0 if unavailable
 } PinMAMEReadMemoryMsg;
+
+#define PMPI_WRITE_MEMORY                    "WriteMemory"
+
+typedef struct PinMAMEWriteMemoryOp
+{
+   uint32_t address;       // Start address in the main CPU address space
+   uint32_t size;          // Number of bytes to write
+   const uint8_t* data;    // Caller-owned buffer, at least 'size' bytes
+} PinMAMEWriteMemoryOp;
+
+// Every op in one message is applied in a single pass on the emulation thread, so the
+// machine cannot run between them. WPC needs that: writing protected CMOS means storing
+// 0xB4 to 0x3FFD first, and the game re-locks within a frame.
+typedef struct PinMAMEWriteMemoryMsg
+{
+   int version;                      // Always 1 (to allow upgrading this message in later revisions)
+   uint32_t count;                   // Request: number of ops
+   const PinMAMEWriteMemoryOp* ops;  // Request: applied in order, atomically
+   uint32_t applied;                 // Response: count on success, 0 if unavailable
+} PinMAMEWriteMemoryMsg;
 
 
 // State groups
