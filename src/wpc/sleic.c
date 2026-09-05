@@ -1376,8 +1376,8 @@ MEMORY_END
  *   MCS0 0x00000-0x1FFFF : work RAM (boot stack 012F:0203; the boot copies its IVT
  *                          image from CS:00C4 to physical 0 before STI, so the
  *                          driver must NOT overwrite the IVT)
- *   MCS1 0x20000-0x3FFFF : graphics ROM bkcpu05
- *   MCS2 0x40000-0x5FFFF : graphics ROM bkcpu06 (read via ES=0x5000)
+ *   MCS1 0x20000-0x3FFFF : graphics ROM bkcpu06 (sprite table in its first 0x1104)
+ *   MCS2 0x40000-0x5FFFF : graphics ROM bkcpu05 (read via ES=0x5000)
  *   MCS3 0x60000-0x7FFFF : DMD / video frame buffer RAM (panel staging at 0x60410)
  * PACS=0xA03C -> peripheral block at 0xA0000, so sleic_periph_r/w are used.
  * UMCS -> bkcpu04 code at 0xE0000-0xFFFFF (reset EA F000:0000). */
@@ -1896,15 +1896,23 @@ static MACHINE_INIT(SLEIC) {
    * ball-status query strobes COL4 (out 0x82 = 0x10), reads it into 0xC0DB and replies
    * over J1. The set of monitored optos and reply codes DIFFERS BY VERSION -- the Z80 I/O
    * ROM (bkio07.bin vs 07.bin) is one of the two ROMs that differ between the games:
+   * The contact names below are the firmware's own, decoded from its code->C-number->name
+   * table at linear 0xF373D (5-byte records Cnum|name_off16|name_seg, indexed
+   * [F000:0x370B + code*5]); the name pool is length-prefixed DMD glyph indices, 0x0A =
+   * space and 0x0B.. = A..Z with N-tilde inserted after N:
+   *     code 0x2C bit 0x04 = C22 "EXPULSOR 1"
+   *     code 0x2F bit 0x20 = C6  "SALIDA BOLAS"
+   *     code 0x30 bit 0x40 = C7  "BOLA EN ESPERA"
+   *     code 0x31 bit 0x80 = C8  "BOLA FUERA"
    *   bikerace (bkio07, handler 0x0B1D -> sub 0x0B31, replies 0x0B7C/0x0B9D): monitors
-   *     COL4 bits 0x04 (code 0x2C, key 3), 0x20 (C7 "Bola Retenida", key 8) and
-   *     0x80 (C8 "Bola fuera", key 9). Reply 0x5D "BOLAS OK" / 0x5B "FALTA 1 BOLA";
-   *     a ball at C7 OR C8 -> BOLAS OK, so standalone-test by holding key 8 (or 9).
+   *     COL4 bits 0x04 (C22, key 3), 0x20 (C6 "Salida Bolas", key 8) and
+   *     0x80 (C8 "Bola Fuera", key 9). Reply 0x5D "BOLAS OK" / 0x5B "FALTA 1 BOLA";
+   *     a ball at C6 OR C8 -> BOLAS OK, so standalone-test by holding key 8 (or 9).
    *   bikerac2 (07.bin, sub 0x0B72, replies 0x0C0B/0x0C16/0x0C37): monitors the same three
-   *     PLUS bit 0x40 (code 0x30, key '-') and counts missing balls -- reply adds
-   *     0x5C "FALTA 2 BOLAS". "BOLAS OK" needs two optos INCLUDING the '-' sensor
+   *     PLUS bit 0x40 (C7 "Bola en Espera", key '-') and counts missing balls -- reply adds
+   *     0x5C "FALTA 2 BOLAS". "BOLAS OK" needs two optos INCLUDING C7
    *     (combos 0x20+0x40 or 0x40+0x80), so standalone-test by holding '-' with 8 or 9;
-   *     holding only 8+9 (no '-') never reports OK. (Verified against the disassembly of both
+   *     holding only 8+9 (no C7) never reports OK. (Verified against the disassembly of both
    *     Z80 ROMs; the key bindings already exist in sleic3_pf_keys below.)
    * The driver does not fabricate the ball complement -- the frontend (e.g. VPX)
    * supplies trough state; the keys above are only for standalone testing */
@@ -2420,9 +2428,15 @@ static SWITCH_UPDATE(SLEIC2) {
  * the port-0x82 one-hot column strobe); code = 0x0A + 8*(col-1) + row. Mapping every
  * position to a key lets the CONTACTOS self-test verify each contact. COL4 (swMatrix[5])
  * is the trough column. The Z80 cmd-0xD5 ball-status handler monitors COL4 bits 0x04
- * (code 0x2C, key 3), 0x20 = C7 (key 8) and 0x80 = C8 (key 9) on BOTH versions, plus
- * bit 0x40 (code 0x30, key '-') on bikerac2 only; see the per-version breakdown in the
- * MACHINE_INIT trough comment above */
+ * (C22, key 3), 0x20 = C6 "Salida Bolas" (key 8) and 0x80 = C8 "Bola Fuera" (key 9) on
+ * all three sets, plus bit 0x40 = C7 "Bola en Espera" (key '-') on bikerac2 AND
+ * bikerac3, which share the same F000 code revision; see the per-version breakdown and
+ * the source of those names in the MACHINE_INIT trough comment above.
+ *
+ * What that means for filling the trough by hand: bikerace clears with either 8+9 or
+ * 8+'-', but bikerac2 and bikerac3 need 8+'-' -- 8+9 alone leaves them sitting on
+ * "FALTAN n BOLAS" (measured: 5 and 6 distinct DMD frames against 110 and 111). The
+ * SLEIC_TROUGH default mask 0xE0 closes 8, '-' and 9 together and serves all three */
 static const struct { int key; UINT8 col; UINT8 bit; } sleic3_pf_keys[] = {
   {KEYCODE_Q,1,0x01},{KEYCODE_W,1,0x02},{KEYCODE_E,1,0x04},{KEYCODE_R,1,0x08}, /* COL0 0x0A-0x0D */
   {KEYCODE_Y,1,0x10},{KEYCODE_U,1,0x20},{KEYCODE_I,1,0x40},{KEYCODE_O,1,0x80}, /* COL0 0x0E-0x11 */
@@ -2433,12 +2447,58 @@ static const struct { int key; UINT8 col; UINT8 bit; } sleic3_pf_keys[] = {
   {KEYCODE_0_PAD,4,0x01},{KEYCODE_1_PAD,4,0x02},{KEYCODE_2_PAD,4,0x04},{KEYCODE_3_PAD,4,0x08}, /* COL3 0x22-0x25 */
   {KEYCODE_4_PAD,4,0x10},{KEYCODE_5_PAD,4,0x20},{KEYCODE_6_PAD,4,0x40},{KEYCODE_7_PAD,4,0x80}, /* COL3 0x26-0x29 */
   {KEYCODE_0,5,0x01},{KEYCODE_2,5,0x02},{KEYCODE_3,5,0x04},{KEYCODE_4,5,0x08}, /* COL4 0x2A-0x2D */
-  {KEYCODE_6,5,0x10},{KEYCODE_8,5,0x20},{KEYCODE_MINUS,5,0x40},{KEYCODE_9,5,0x80}, /* COL4 0x2E; trough optos: 0x2F=C7(key8) 0x31=C8(key9) both versions, 0x30=key'-' bikerac2-only (+0x2C=key3); 0x30 is on '-' rather than 7 because 7 is the test/service key (sleic.h); see trough notes above */
+  {KEYCODE_6,5,0x10},{KEYCODE_8,5,0x20},{KEYCODE_MINUS,5,0x40},{KEYCODE_9,5,0x80}, /* COL4 0x2E; trough optos: 0x2F=C6 "Salida Bolas"(key8), 0x30=C7 "Bola en Espera"(key'-'), 0x31=C8 "Bola Fuera"(key9), +0x2C=C22(key3); C7 is on '-' rather than 7 because 7 is the test/service key (sleic.h); see trough notes above */
 };
+
+/*-------------------------------------------------------------------------------------
+/  Bike Race (SLEIC3) ball-present model -- OPT-IN, AND OFF BY DEFAULT.
+/
+/  Same bargain as Io Moon's trough model: under a frontend a table script owns the ball
+/  optos and reports them, so the driver must not fabricate them, and with "Balls" at its
+/  default 0 it does not.  Standalone there is nothing to close them, and the machine sits
+/  on "FALTA n BOLAS" until something does -- which is correct, but means holding two
+/  matrix keys down for the whole session before a game can be started.  Setting "Balls"
+/  to any non-zero value hands that job to the driver.
+/
+/  This is a SIMPLER model than Io Moon's, deliberately.  Io Moon's trough is three
+/  contacts in a line with a kicker command (0xE9) and a drain sensor, so the state a ball
+/  is in can be tracked and each contact driven from it.  What Bike Race exposes on COL4
+/  is a ball-PRESENT check answered by the Z80's cmd-0xD5 handler, and no serve command
+/  has been identified in either Z80 ROM.  So nothing here tracks a ball count or a
+/  kicker: it presents the complement the firmware wants to see, and the cabinet port's
+/  "Ball out of trough" key lifts it.  Inventing a serve would be inventing mechanics the
+/  disassembly does not show.
+/
+/  THE MASK.  0xE0 closes all three of COL4's monitored optos at once, which satisfies
+/  every version's rule without the driver having to know which set is running:
+/    bikerace  wants a ball at C6 0x20 OR C8 0x80                     -> 0xE0 satisfies it
+/    bikerac2  wants two INCLUDING C7 0x40 (0x20+0x40 or 0x40+0x80)   -> 0xE0 satisfies it
+/    bikerac3  shares bikerac2's Z80 code revision, so the same rule
+/  Measured over 2000 headless frames with two coins and START, distinct DMD frames:
+/  104 / 107 / 111 with the mask against 5-6 for the sets that need 0x40 without it.
+/  See the per-version breakdown in the MACHINE_INIT trough comment above.
+/-----------------------------------------------------------------------------------*/
+#define SLEIC3_TROUGH_COL   5     /* swMatrix index of Z80 switch column 4 (COL4)       */
+#define SLEIC3_TROUGH_BITS  0xE0  /* C6 | C7 | C8, the three monitored optos; see above  */
+
+/* Called from SWITCH_UPDATE(SLEIC3) AFTER the playfield key loop, and it ORs its bits in
+ * rather than assigning them, for the same reason Io Moon's does: a matrix test key held
+ * on one of these positions is a contact stuck closed, which is what the service menu's
+ * contact test wants to see, and the model has no business overriding it.
+ *
+ * balls = the simulator port's "Balls" setting, 0 (the default) meaning model off.
+ * out   = the cabinet port's "Ball out of trough", held while the ball is away. */
+static void sleic3_ball_update(int balls, int out) {
+  if (balls <= 0 || out) return;
+  coreGlobals.swMatrix[SLEIC3_TROUGH_COL] |= SLEIC3_TROUGH_BITS;
+}
 
 static SWITCH_UPDATE(SLEIC3) {
   unsigned i;
+  int balls = 0, out = 0;
   if (inports) {
+    balls = SIM_BALLS(inports[CORE_SIMINPORT]);
+    out   = (inports[CORE_COREINPORT] & 0x1000) ? 1 : 0;
     /* Cabinet/direct buttons are all on Z80 port 0x03 (swMatrix[9]), bit -> contact:
      *   bit0 = C17 Tilt        (code 0x32, also menu ENTER)
      *   bit1 = C4  Test        (code 0x33 = menu ENTER)
@@ -2460,8 +2520,10 @@ static SWITCH_UPDATE(SLEIC3) {
     else
       coreGlobals.swMatrix[sleic3_pf_keys[i].col] &= ~sleic3_pf_keys[i].bit;
   }
+  /* After the key loop, because it ORs its optos in on top -- see the comment on it */
+  sleic3_ball_update(balls, out);
 #ifdef DEBUG_SLEIC
-  sleic_debug_switches(5, 0xE0); /* COL4: C7 0x20 | '-' sensor 0x40 (bikerac2) | C8 0x80 */
+  sleic_debug_switches(5, SLEIC3_TROUGH_BITS); /* COL4 optos, same mask the model uses */
 #endif
 }
 
