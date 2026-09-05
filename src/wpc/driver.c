@@ -3077,6 +3077,7 @@ DRIVER(sttng,d2)        //                  Star Trek: The Next Generation (DX-2
 DRIVER(sttng,l3)        //          12/93 W Star Trek: The Next Generation (LX-3)
 DRIVER(sttng,l5)        //          12/93 W Star Trek: The Next Generation (LX-5)
 DRIVER(sttng,l7)        //          02/94 W Star Trek: The Next Generation (LX-7 Sound L-1)
+DRIVER(sttng,la7)       //          02/94 W Star Trek: The Next Generation (LA-7 Sound L-1)
 DRIVER(sttng,d7)        //                  Star Trek: The Next Generation (DX-7 Sound L-1) LED Ghost Fix
 DRIVER(sttng,l7c)       //          08/17 W Star Trek: The Next Generation (LX-7C Competition MOD)
 DRIVER(sttng,x7)        //          02/94 W Star Trek: The Next Generation (LX-7 Special Sound L-1)
