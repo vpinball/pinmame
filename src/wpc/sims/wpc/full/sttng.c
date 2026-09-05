@@ -598,6 +598,7 @@ DCS_SOUNDROM7x("ngs_u2.rom",CRC(e9fe68fe) SHA1(3d7631aa5ddd52f7c3c00cd091e212430
                "ng_u8_s.l1",CRC(c9fb065e) SHA1(c148178ee0ea787acc88078db01d17073e75fdc7))
 
 WPC_ROMSTART(sttng,l7,"trek_lx7.rom",  0x80000,CRC(d439fdbb) SHA1(12d1c72cd6cc18db53e51ebb4c1e55ca9bcf9908)) ST_SND WPC_ROMEND
+WPC_ROMSTART(sttng,la7,"trek_la7.rom", 0x80000,CRC(3a1fdfdd) SHA1(f020c2413c0a12eb062e655f5a381ea6ea0ec7aa)) ST_SND WPC_ROMEND
 WPC_ROMSTART(sttng,d7,"trek_dx7.rom",  0x80000,CRC(e0894fab) SHA1(673695d9a0533cccdc842489e875223fcd8ccbd9)) ST_SND WPC_ROMEND
 
 WPC_ROMSTART(sttng,x7,"trek_x7.rom",   0x80000,CRC(4e71c9c7) SHA1(8a7ec42dfb4a6902ba745548b40e84de5305c295)) ST_SPECIAL_SND WPC_ROMEND
@@ -636,6 +637,7 @@ WPC_ROMSTART(sttng,l5,"trek_lx5.rom",0x80000,CRC(e004f3a7) SHA1(c724641106115e3f
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(sttng,l7,"Star Trek: The Next Generation (LX-7, Sound L-1)",1994,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(sttng,la7,l7,"Star Trek: The Next Generation (LA-7, Sound L-1)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,d7,l7,"Star Trek: The Next Generation (DX-7 LED Ghost Fix, Sound L-1)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,l7c,l7,"Star Trek: The Next Generation (LX-7C Competition MOD)",2017,"Williams",wpc_mDCSS,0) //rev. L-7X patch b804
 CORE_CLONEDEF(sttng,x7,l7,"Star Trek: The Next Generation (LX-7, Special Sound L-1)",1994,"Williams",wpc_mDCSS,0)
