@@ -198,6 +198,32 @@ STDMETHODIMP CWSHDlg::Show(LONG_PTR hParentWnd, VARIANT *RetVal)
 
 #define CTRLID_START 1000
 
+// The script API positions controls in pixels laid out for 96 dpi. In a DPI aware host process (Visual Pinball
+// 10.8.1 and later declare per-monitor awareness), Windows no longer scales the dialog for us, but it still
+// scales the dialog font, so the controls overlap their text. Scale the layout by the dialog's DPI instead.
+static float GetDialogDpiScale(HWND hDlg)
+{
+	typedef UINT (WINAPI *PGetDpiForWindow)(HWND);
+	HMODULE hUser32 = GetModuleHandle("user32.dll");
+	PGetDpiForWindow pGetDpiForWindow = hUser32 ? (PGetDpiForWindow) GetProcAddress(hUser32, "GetDpiForWindow") : NULL;
+	UINT dpi = 0;
+	if ( pGetDpiForWindow )
+		dpi = pGetDpiForWindow(hDlg); // Windows 10 1607+, returns 96 for DPI unaware processes
+	if ( !dpi ) {
+		HDC hDC = GetDC(hDlg);
+		if ( hDC ) {
+			dpi = GetDeviceCaps(hDC, LOGPIXELSY);
+			ReleaseDC(hDlg, hDC);
+		}
+	}
+	return dpi ? (float) dpi / 96.0f : 1.0f;
+}
+
+static int ScaleDpi(int value, float scale)
+{
+	return (int) (value * scale + (value >= 0 ? 0.5f : -0.5f));
+}
+
 void SaveDlgValues(HWND hDlg, CWSHDlgCtrls *pWSHDlgCtrls)
 {
 	for (int i=0; i<pWSHDlgCtrls->m_lCount; i++) {
@@ -218,6 +244,7 @@ INT_PTR _stdcall WSHDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	static CWSHDlgCtrls *pWSHDlgCtrls = NULL;
 	static int iIDOkButton		= -1;
 	static int iIDCancelButton	= -1;
+	static float fDpiScale = 1.0f;
 
 	long i;
 	int  iPreviousType;
@@ -239,6 +266,7 @@ INT_PTR _stdcall WSHDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		SetWindowText(hDlg, pWSHDlg->m_szTitle);
 
 		hFont = (HFONT) SendMessage(hDlg, WM_GETFONT, 0, 0);
+		fDpiScale = GetDialogDpiScale(hDlg);
 
 		SetRectEmpty(&Rect);
 		Rect.right = 1;
@@ -255,10 +283,10 @@ INT_PTR _stdcall WSHDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			HWND  hWnd = 0;
 			int iCommonOptions = WS_CHILD | WS_VISIBLE | ((iPreviousType!=pWSHDlgCtrls->m_pCtrlList[i]->m_iType)?WS_GROUP|WS_TABSTOP:0);
 			
-			int x = pWSHDlgCtrls->m_pCtrlList[i]->m_x;
-			int y = pWSHDlgCtrls->m_pCtrlList[i]->m_y;
-			int w = pWSHDlgCtrls->m_pCtrlList[i]->m_w;
-			int h = pWSHDlgCtrls->m_pCtrlList[i]->m_h;
+			int x = ScaleDpi(pWSHDlgCtrls->m_pCtrlList[i]->m_x, fDpiScale);
+			int y = ScaleDpi(pWSHDlgCtrls->m_pCtrlList[i]->m_y, fDpiScale);
+			int w = ScaleDpi(pWSHDlgCtrls->m_pCtrlList[i]->m_w, fDpiScale);
+			int h = ScaleDpi(pWSHDlgCtrls->m_pCtrlList[i]->m_h, fDpiScale);
 
 			RECT ControlRect;
 			SetRect(&ControlRect, x, y, x + w, y + h);
@@ -357,35 +385,35 @@ INT_PTR _stdcall WSHDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		Rect.bottom += iBorderY;
 
 		if ( pWSHDlg->m_w>0 )
-			Rect.right = pWSHDlg->m_w;
+			Rect.right = ScaleDpi(pWSHDlg->m_w, fDpiScale);
 		if ( pWSHDlg->m_h>0 )
-			Rect.bottom = pWSHDlg->m_h;
+			Rect.bottom = ScaleDpi(pWSHDlg->m_h, fDpiScale);
 
 		if ( fPlaceStandardButtons ) {
 			int iButtonHeight = 0;
 			int iButtonWidth = 0;
 			if ( iIDOkButton!=-1 )
-				iButtonWidth = pWSHDlgCtrls->m_pCtrlList[iIDOkButton-CTRLID_START]->m_w;
+				iButtonWidth = ScaleDpi(pWSHDlgCtrls->m_pCtrlList[iIDOkButton-CTRLID_START]->m_w, fDpiScale);
 			if ( iIDCancelButton!=-1 ) {
-				if ( iButtonWidth ) iButtonWidth += 5;
-				iButtonWidth += pWSHDlgCtrls->m_pCtrlList[iIDCancelButton-CTRLID_START]->m_w;
+				if ( iButtonWidth ) iButtonWidth += ScaleDpi(5, fDpiScale);
+				iButtonWidth += ScaleDpi(pWSHDlgCtrls->m_pCtrlList[iIDCancelButton-CTRLID_START]->m_w, fDpiScale);
 			}
 			int iPosX = (Rect.right - iButtonWidth) / 2;
 
 			if ( iIDOkButton!=-1 ) {
-				iButtonHeight = pWSHDlgCtrls->m_pCtrlList[iIDOkButton-CTRLID_START]->m_h;
+				iButtonHeight = ScaleDpi(pWSHDlgCtrls->m_pCtrlList[iIDOkButton-CTRLID_START]->m_h, fDpiScale);
 				SetWindowPos(
 					GetDlgItem(hDlg, iIDOkButton), 
 					0,
 					iPosX,
 					Rect.bottom,
 					0,0,SWP_NOZORDER|SWP_NOSIZE);
-				iPosX += 5 + pWSHDlgCtrls->m_pCtrlList[iIDOkButton-CTRLID_START]->m_w;
+				iPosX += ScaleDpi(5 + pWSHDlgCtrls->m_pCtrlList[iIDOkButton-CTRLID_START]->m_w, fDpiScale);
 			}
 
 			if ( iIDCancelButton!=-1 ) {
-				if ( iButtonHeight<pWSHDlgCtrls->m_pCtrlList[iIDCancelButton-CTRLID_START]->m_h )
-					iButtonHeight = pWSHDlgCtrls->m_pCtrlList[iIDCancelButton-CTRLID_START]->m_h;
+				if ( iButtonHeight<ScaleDpi(pWSHDlgCtrls->m_pCtrlList[iIDCancelButton-CTRLID_START]->m_h, fDpiScale) )
+					iButtonHeight = ScaleDpi(pWSHDlgCtrls->m_pCtrlList[iIDCancelButton-CTRLID_START]->m_h, fDpiScale);
 				SetWindowPos(
 					GetDlgItem(hDlg, iIDCancelButton), 
 					0,
@@ -401,11 +429,11 @@ INT_PTR _stdcall WSHDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		int x,y;
 
-		x = pWSHDlg->m_x;
+		x = ScaleDpi(pWSHDlg->m_x, fDpiScale);
 		if ( x<0 ) 
 			x = (GetSystemMetrics(SM_CXSCREEN)-(Rect.right-Rect.left)) / 2;
 
-		y = pWSHDlg->m_y;
+		y = ScaleDpi(pWSHDlg->m_y, fDpiScale);
 		if ( y<0 ) 
 			y = (GetSystemMetrics(SM_CYSCREEN)-(Rect.bottom-Rect.top)) / 2;
 
