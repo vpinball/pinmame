@@ -24,7 +24,7 @@
 
 
 // Message to gather machine information, message must be a PinMAMEMachineStateMsg
-#define PMPI_GET_MACHINE_STATE               "GetMachineState"
+#define PMPI_GET_MACHINE_STATE               "GetMachineState:1"
 
 typedef struct PinMAMEMachineStateMsg
 {
@@ -34,7 +34,7 @@ typedef struct PinMAMEMachineStateMsg
    uint64_t hardwareGen;
 } PinMAMEMachineStateMsg;
 
-#define PMPI_READ_MEMORY                     "ReadMemory"
+#define PMPI_READ_MEMORY                     "ReadMemory:1"
 
 typedef struct PinMAMEReadMemoryMsg
 {
@@ -69,9 +69,9 @@ typedef struct PinMAMEReadMemoryMsg
 //
 // Some PinMAME driver exposes communication between the main controller board (CPU node) and the child nodes (Sound & DMD board)
 // and SAM driver exposes console data through these event messages
-#define PMPI_EVT_ON_AUDIO_CMD                "OnAudioCmd"
-#define PMPI_EVT_ON_DISPLAY_CMD              "OnDisplayCmd"
-#define PMPI_EVT_ON_CONSOLE_DATA             "OnConsoleData"
+#define PMPI_EVT_ON_AUDIO_CMD                "OnAudioCmd:1"
+#define PMPI_EVT_ON_DISPLAY_CMD              "OnDisplayCmd:1"
+#define PMPI_EVT_ON_CONSOLE_DATA             "OnConsoleData:1"
 
 typedef struct PinMAMEChildBoardEventMsg
 {
