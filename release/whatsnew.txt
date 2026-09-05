@@ -124,7 +124,7 @@ Police Force LX-5a & LX-5pi(Post INDISC) (MOD)
 Rollergames TA-2 (LA-2C competition MOD based Tournament Edition)
 Rolling Stones V21 (unreleased so far, makes it the newest version available)
 Soccer Kings (alternate set 2)
-STTNG LX-9 (MOD) (using the special L-1 sound roms, note that the special callouts can be turned off completely within the game menu)
+STTNG LX-9 (MOD) (using the special L-1 sound roms, note that the special callouts can be turned off completely within the game menu), LA-7
 Super Mario Bros. (Spanish / Vifico license) (rev.1 and (most likely) rev.2)
 Surf 'n Safari (Tournament MOD)
 Swords of Fury (Richrom/Lionman MOD V1, with and without swords sounds)
