@@ -15,6 +15,7 @@
 #include "wpc/core.h"
 #include "wpc/wpc.h"
 #include "memory.h"
+#include "inptport.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -369,6 +370,9 @@ static void publish_event(const char *fmt, ...)
 static void service_pulses(void);
 static void pulse_tick(int reassert);
 
+/* forward declaration; defined with the switch/input implementation below */
+static void apply_holdport_option(void);
+
 int remote_debug_next_event(char *buf, int maxlen)
 {
 	int have = 0;
@@ -466,6 +470,7 @@ void remote_debug_init(void)
 		is_paused = 1;
 		printf("Remote Debugger: paused on start\n");
 	}
+	apply_holdport_option();
 	should_quit = 0;
 	step_requested = 0;
 	breakpoint_count = 0;
@@ -1675,6 +1680,68 @@ int remote_debug_set_switch(int sw, int val, int pulse_ms)
 	}
 	remote_debug_unlock();
 	return result;
+}
+
+/* Force bits high/low in input port `port`'s value, independent of the
+ * normal keyboard/joystick read (see /api/input/port and -holdport). This
+ * is the only way to present a dedicated-input button (e.g. ADVANCE) as
+ * already held, including from before MACHINE_INIT runs. Returns 0 on
+ * success, -1 if port is out of range. */
+int remote_debug_set_input_port_force(int port, int val)
+{
+	int result = -1;
+	remote_debug_lock();
+	if (port >= 0 && port < MAX_INPUT_PORTS) {
+		input_port_set_force(port, (unsigned short)val);
+		result = 0;
+	}
+	remote_debug_unlock();
+	return result;
+}
+
+/* Write switch-matrix column `col` directly, bypassing core_setSw and its
+ * sw2m mapping (see /api/input/matrix). core_setSw maps every positive
+ * switch number to swMatrix[1] or later (core_swSeq2m: no+7), so dedicated
+ * columns such as col 0 -- the cabinet row holding TEST/ADVANCE/EG1/EG2 --
+ * are otherwise unreachable from the API. Returns 0 on success, -1 if the
+ * core is not ready or col is out of range. */
+int remote_debug_set_matrix_col(int col, int val)
+{
+	int result = -1;
+	remote_debug_lock();
+	if (coreData && col >= 0 && col < CORE_MAXSWCOL) {
+		coreGlobals.swMatrix[col] = (UINT8)val;
+		result = 0;
+	}
+	remote_debug_unlock();
+	return result;
+}
+
+/* Parse "-holdport PORT:HEXMASK[,PORT:HEXMASK...]" and force those input
+ * port bits high before the machine runs, so MACHINE_INIT sees them --
+ * this is how "hold ADVANCE while switching on" (the real machine's route
+ * into test mode) gets simulated, since the normal input path is not
+ * reachable that early. Called once from remote_debug_init(), which itself
+ * runs before run_machine() (see mame.c). */
+static void apply_holdport_option(void)
+{
+	char *copy, *tok;
+
+	if (!pmoptions.holdport || !pmoptions.holdport[0])
+		return;
+	copy = strdup(pmoptions.holdport);
+	if (!copy)
+		return;
+	for (tok = strtok(copy, ","); tok; tok = strtok(NULL, ",")) {
+		char *sep = strchr(tok, ':');
+		if (sep) {
+			int port = atoi(tok);
+			unsigned short mask = (unsigned short)strtoul(sep + 1, NULL, 16);
+			input_port_set_force(port, mask);
+			printf("Remote Debugger: holding port %d bits %04X from power-on\n", port, mask);
+		}
+	}
+	free(copy);
 }
 
 /* ================================================================== */

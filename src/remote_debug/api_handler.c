@@ -327,7 +327,17 @@ static void handle_api_info(const http_request_t *req, http_response_t *resp)
 		char sw_hex[CORE_MAXSWCOL * 2 + 1];
 		char seg_hex[CORE_SEGCOUNT * 4 + 1];
 		char desc_esc[256];
+		/* room for CORE_MAXGI ints ("-2147483648," is 12) plus the brackets */
+		char gi_str[CORE_MAXGI * 12 + 4];
+		char *gi_p = gi_str;
 		int i, ded, len;
+		/* GI strings, 0..8 per string, as a JSON array.  Only the drivers
+		   that set coreGlobals.nGI have any; the rest report []. */
+		*gi_p++ = '[';
+		for (i = 0; i < coreGlobals.nGI && i < CORE_MAXGI; i++)
+			gi_p += sprintf(gi_p, i ? ",%d" : "%d", coreGlobals.gi[i]);
+		*gi_p++ = ']';
+		*gi_p = '\0';
 		for (i = 0; i < CORE_MAXLAMPCOL; i++)
 			sprintf(lamp_hex + i * 2, "%02X", coreGlobals.lampMatrix[i]);
 		for (i = 0; i < CORE_MAXSWCOL; i++)
@@ -339,12 +349,12 @@ static void handle_api_info(const http_request_t *req, http_response_t *resp)
 			"{\"game\": \"%s\", \"description\": \"%s\", \"manufacturer\": \"%s\", "
 			"\"year\": \"%s\", \"paused\": %d, \"wpc_bank\": %d, \"lamps\": \"%s\", "
 			"\"switches\": \"%s\", \"segments\": \"%s\", \"dedicated\": %d, "
-			"\"solenoids\": %u, \"solenoids2\": %u}",
+			"\"solenoids\": %u, \"solenoids2\": %u, \"gi\": %s}",
 			Machine->gamedrv->name,
 			remote_debug_json_escape(desc_esc, (int)sizeof(desc_esc), Machine->gamedrv->description),
 			Machine->gamedrv->manufacturer, Machine->gamedrv->year,
 			remote_debug_is_paused(), bank, lamp_hex, sw_hex, seg_hex, ded,
-			coreGlobals.solenoids, coreGlobals.solenoids2);
+			coreGlobals.solenoids, coreGlobals.solenoids2, gi_str);
 		remote_debug_unlock();
 		resp->body = buffer;
 		resp->len = (len > 0 && len < 8192) ? len : (int)strlen(buffer);
@@ -1038,6 +1048,46 @@ static void handle_api_input(const http_request_t *req, http_response_t *resp)
 		respond_error(resp, 503, "core not initialized");
 }
 
+/* Force bits high/low in a raw input port's value, e.g. to hold a
+ * dedicated cabinet button (ADVANCE, TEST) at runtime the same way
+ * -holdport presents one from power-on. */
+static void handle_api_input_port(const http_request_t *req, http_response_t *resp)
+{
+	char port_buf[32], val_buf[32];
+	int port;
+	get_query_param(req->query, "port", port_buf, (int)sizeof(port_buf));
+	get_query_param(req->query, "val", val_buf, (int)sizeof(val_buf));
+	if (!port_buf[0] || !val_buf[0]) {
+		respond_error(resp, 400, "missing parameters: port, val");
+		return;
+	}
+	port = parse_int(port_buf);
+	if (remote_debug_set_input_port_force(port, (int)parse_hex(val_buf)) == 0)
+		respond_ok(resp);
+	else
+		respond_error(resp, 400, "port out of range");
+}
+
+/* Write a switch-matrix column directly, bypassing core_setSw/sw2m, so a
+ * dedicated switch column outside the scanned matrix (e.g. col 0, the
+ * cabinet row) can be set from the API. */
+static void handle_api_input_matrix(const http_request_t *req, http_response_t *resp)
+{
+	char col_buf[32], val_buf[32];
+	int col;
+	get_query_param(req->query, "col", col_buf, (int)sizeof(col_buf));
+	get_query_param(req->query, "val", val_buf, (int)sizeof(val_buf));
+	if (!col_buf[0] || !val_buf[0]) {
+		respond_error(resp, 400, "missing parameters: col, val");
+		return;
+	}
+	col = parse_int(col_buf);
+	if (remote_debug_set_matrix_col(col, (int)parse_hex(val_buf)) == 0)
+		respond_ok(resp);
+	else
+		respond_error(resp, 503, "core not initialized, or col out of range");
+}
+
 /* Read or set g_fHandleMechanics, the flag a front end uses to take ownership
  * of driver-modelled mechanics (VPinMAME exposes it as
  * Controller.HandleMechanics; libpinmame defaults it to 0). The standalone
@@ -1490,6 +1540,10 @@ static const api_route_t api_routes[] = {
 	 "?val=N - set g_fHandleMechanics (0 = front end owns the mechanics); no val = read"},
 	{"/api/input", handle_api_input,
 	 "?sw=N&val=0|1[&pulse=MS] - set a switch, optionally as a timed pulse"},
+	{"/api/input/port", handle_api_input_port,
+	 "?port=N&val=HEX - force bits high/low in a raw input port (reaches dedicated buttons like ADVANCE)"},
+	{"/api/input/matrix", handle_api_input_matrix,
+	 "?col=N&val=HEX - write a switch-matrix column directly, bypassing core_setSw/sw2m"},
 	{"/ui", handle_ui, "the web UI"},
 	{"/api/doc", handle_api_doc, "this document"},
 };
