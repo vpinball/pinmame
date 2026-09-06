@@ -745,17 +745,16 @@ static WRITE_HANDLER(pic_w) {
 
 /* Bike Race (SLEIC3) PACS peripheral chip-select block at segment A000h (base 0xA0000,
  * PCS0-PCS6 on 0x80 boundaries), read off schematic REF 011-026 sheets 3 and 4:
- *   0xA0000 PCS0  IC32 74LS273 control latch: bit 1 YA0 (YM3812 A0), bit 2 /RCS,
+ *   0xA0000 PCS0  IC32 74LS273 control latch: bit 1 YA0 (YM3812 A0), bit 2 RES,
  *                 bit 3 2CH (OKI channel), bit 4 /ST (OKI start), bits 5-7 X9103 pot
  *   0xA0080 PCS1  command byte to the I/O side (J1 link)
  *   0xA0280 PCS5  YM3812 -- ONE address; index vs data is PCS0 bit 1 (net YA0)
  *   0xA0300 PCS6  IC45 74LS273 OKI phrase latch, I0-I6 (bit 7 unconnected)
  *
  * YM3812 (IC41) = in-game FM music; OKI MSM6376 (IC46) = speech/FX, run as two
- * channels selected by 2CH at the /ST edge -> sleic3_oki_strobe.  A phrase written to
+ * channels selected by 2CH at the /ST edge -> sleic_oki_strobe.  A phrase written to
  * 0xA0300 ARMS the next /ST rising edge (0xA0000 bit 4), which STARTS it
- * -> locals.okiLatch / locals.okiPrevStrobe / locals.okiPending.  sleic_oki_trigger
- * just below is Pin-Ball's (SLEIC1) single-voice model and is left exactly as it was. */
+ * -> locals.okiLatch / locals.okiPrevStrobe / locals.okiPending. */
 
 /* J1 inbound byte latch (IC43 at 80188 PCS2 = 0xA0100): the last byte the Z80 strobed
  * across the J1 port. The Z80's port-0x81 bit-2 strobe latches the byte AND raises the
@@ -763,41 +762,39 @@ static WRITE_HANDLER(pic_w) {
  * pushes the byte into the display command queue at 4000:1220 and sets the frame-pending
  * flag [4000:1147] that vsync_check (D000:5D1B) waits on -> locals.j1* */
 
-static void sleic_oki_trigger(void) {
-  UINT8 sample =  locals.okiLatch & 0x7f;              /* phrase number     */
-  UINT8 voice  = (locals.okiLatch & 0x80) ? 0x1 : 0x2; /* ch A=v0 / ch B=v1 */
-  locals.okiPending = 0;
-  if (!sample) return;
-#ifdef DEBUG_SLEIC
-  if (getenv("SLEIC_TRACE_SND")) fprintf(stderr, "[oki] phrase %02x\n", sample);
-#endif
-  OKIM6376_data_0_w(0, 0x80 | sample); /* latch phrase number           */
-  OKIM6376_data_0_w(0, voice << 4);    /* trigger playback on the voice */
-}
-
-/* Bike Race (SLEIC3) OKI MSM6376 strobe.  Separate from sleic_oki_trigger above, which
- * Pin-Ball (SLEIC1) shares and which must keep its byte-for-byte behaviour.
+/* OKI MSM6376 strobe, shared by Bike Race (SLEIC3) and Sleic Pin-Ball (SLEIC1).  Both
+ * boards are schematic ref 011-026, so the same IC32 control latch drives both, and both
+ * firmwares run the 6376 as TWO concurrent channels.  (Io Moon has its own
+ * iomoon_oki_strobe: its channel really is latch bit 7.)
  *
- * The firmware runs the 6376 as TWO concurrent channels.  The channel is NOT a bit of
- * the phrase byte -- every 0xA0300 write is masked with AND AL,07F first (E0CCE / E0CF9),
- * and on the board bit 7 of the IC45 phrase latch is unconnected -- it is PCS0 bit 3,
- * IC32 4Q = 2CH (schematic sheet 3 p122, OKI pin 63 on sheet 4).  The channel-1 trigger
- * sub_E0CBF leaves 2CH high; the channel-2 trigger sub_E0CEA clears it (E0D0C-E0D14)
- * around the /ST pulse (bit 4, IC32 5Q) and restores it after (E0D1B-E0D23), so the
- * channel is the state of bit 3 at the /ST rising edge -- which is what this is given.
+ * The channel is NOT a bit of the phrase byte here -- Bike Race masks every 0xA0300 write
+ * with AND AL,07F (E0CCE / E0CF9), Pin-Ball never sets bit 7 at all (its 63 phrase stubs
+ * are 0x01-0x3F), and on the board bit 7 of the IC45 phrase latch is unconnected.  It is
+ * PCS0 bit 3, IC32 4Q = 2CH (sheet 3, OKI pin 63 on sheet 4), sampled at the /ST rising
+ * edge (bit 4, IC32 5Q), which is what this is given:
+ *   Bike Race -- channel-1 trigger sub_E0CBF leaves 2CH high; channel-2 trigger
+ *                sub_E0CEA clears it (E0D0C-E0D14) around the /ST pulse and restores it
+ *                after (E0D1B-E0D23).
+ *   Pin-Ball  -- one trigger (sp03 E000:1B26-1B6A) alternates on a toggle at [0x27c]:
+ *                even calls strobe with 2CH high, odd calls clear it (0x1B4F/0x1B55),
+ *                strobe (0x1B6B), then restore it (0x1B60/0x1B66).
  * Both channels reach the core's two 6376 voices (adpcm.c: bit 4 = voice 0, bit 5 =
- * voice 1 on data >> 4); collapsing them onto one voice, as the old model did, made
- * adpcm.c refuse the second of every overlapping pair (its start on a still-playing
- * voice is dropped at OKIM6376_data_w) -- exactly how START issues phrase 19, the 4.7 s
- * motor sample in BK03, on channel 2 while phrase 1 is still running on channel 1.
+ * voice 1 on data >> 4).  Collapsing them onto one voice, as the old model did, made
+ * adpcm.c refuse the second of every overlapping pair (a start on a still-playing voice
+ * is dropped in OKIM6376_data_w) -- Bike Race's START issues phrase 19, the 4.7 s motor
+ * sample in BK03, on channel 2 while phrase 1 still runs on channel 1; Pin-Ball's START
+ * issues 0x16 then 0x2f, and its tilt 0x21, 0x37, 0x2b.
  *
- * The abort-before-start is the same as iomoon_oki_strobe: the firmware's only busy
- * model is its own software counter per channel ([01BE] / [01C1]), which can expire a
- * little before the emulated sample ends (the interface rate is ~2 % under the
- * firmware-implied ~30.9 kHz), so a re-issue on a channel the firmware considers free
- * must restart, not be refused.  Phrase 0 is the stop-all sub_E0D2D (latch 0, /ST held
- * low, released two timer ticks later by sub_E0D7E): silence both voices */
-static void sleic3_oki_strobe(UINT8 pcs0) {
+ * The abort-before-start is the same as iomoon_oki_strobe.  Bike Race's only busy model
+ * is its own software counter per channel ([01BE] / [01C1]), which can expire a little
+ * before the emulated sample ends; Pin-Ball has no busy model at all -- no BUSY read, no
+ * counters, no drop rule, so its n-th phrase goes to channel n mod 2 whether or not that
+ * channel is still playing.  Either way a re-issue must restart, not be refused.
+ *
+ * Phrase 0 is a stop-all: Bike Race's sub_E0D2D (latch 0, /ST held low, released two
+ * timer ticks later by sub_E0D7E), and Pin-Ball's E000:1AEF, which strobes phrase 0 once
+ * per channel -- run at boot and again by the menu-exit soft reboot (F000:57FD) */
+static void sleic_oki_strobe(UINT8 pcs0) {
   const UINT8 phrase = locals.okiLatch & 0x7f;
   const UINT8 voice  = (pcs0 & 0x08) ? 0 : 1;     /* 2CH high = channel 1 = voice 0     */
   locals.okiPending = 0;
@@ -849,7 +846,7 @@ static WRITE_HANDLER(sleic_periph_w) {
        * channel is read from bit 3 at the /ST rising edge */
       locals.ymA0 = (data >> 1) & 1;
       if (locals.okiPending && (data & 0x10) && !(locals.okiPrevStrobe & 0x10))
-        sleic3_oki_strobe(data);
+        sleic_oki_strobe(data);
       locals.okiPrevStrobe = data;
       break;
     case 0x080:                        /* PCS1: command byte the 80188 sends to the I/O side */
@@ -1016,8 +1013,9 @@ static NVRAM_HANDLER(SLEIC1) {
  *    PCS5 (0xA0280)  = YM3812 register/data (A0 from PCS0 bit 1; see locals.ymA0).
  *    PCS6 (0xA0300)  = OKI MSM6376 phrase latch (the phrase number, sp03 0x1B36/0x1B47).
  *    PCS0 (0xA0000)  = shared control shadow [0x4da]: bit1 = YM3812 A0, bit4 (0x10) =
- *                      OKI /OKCS strobe (rising edge fires the latched phrase, sp03
- *                      0x1B6B), bit3 (0x08) = OKI channel.
+ *                      the OKI /ST start strobe (rising edge fires the latched phrase,
+ *                      sp03 0x1B6B), bit3 (0x08) = 2CH, the OKI channel select, which
+ *                      the trigger at sp03 0x1B26 alternates on every call.
  *
  * PCS4 (0xA0200) is the DMD frame strobe (shadow [0x4de]) -- left alone, since the
  * I8039 renders sleicpin's DMD from the 0x60410 frame buffer, not from a strobe */
@@ -1034,14 +1032,19 @@ static WRITE_HANDLER(sleic1_periph_w) {
       if (locals.ymA0) YM3812_write_port_0_w(0, data);
       else             YM3812_control_port_0_w(0, data);
       return;
-    case 0x300:                       /* PCS6: OKI MSM6376 phrase latch */
+    case 0x300:                       /* PCS6: IC45 OKI MSM6376 phrase latch, I0-I6 */
       locals.okiLatch = data;
-      if (data & 0x7f) locals.okiPending = 1;
+      /* Every value arms the next /ST edge, INCLUDING zero: sp03 E000:1AEF strobes
+       * phrase 0 once per channel as a stop-all, at boot and again on the menu-exit
+       * soft reboot (F000:57FD).  Gating this on a non-zero phrase discarded both */
+      locals.okiPending = 1;
       return;
-    case 0x000:                       /* PCS0: shared control (bit1 YM A0, bit4 /OKCS) */
+    case 0x000:                       /* PCS0: IC32 control latch */
+      /* bit 1 = YM3812 A0 (latched, sp03 0x1E05); bit 3 = 2CH OKI channel, read by
+       * sleic_oki_strobe at the /ST edge; bit 4 = /ST, the start strobe (sp03 0x1B6B) */
       locals.ymA0 = (data >> 1) & 1;
       if (locals.okiPending && (data & 0x10) && !(locals.okiPrevStrobe & 0x10)) {
-        sleic_oki_trigger();
+        sleic_oki_strobe(data);
       }
       locals.okiPrevStrobe = data;
       return;
