@@ -471,6 +471,9 @@
     <ClCompile Include="..\src\machine\i8155.c">
       <Filter>Source Files\MAME\Machine</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\machine\i8256.c">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\machine\mathbox.c">
       <Filter>Source Files\MAME\Machine</Filter>
     </ClCompile>
@@ -1569,6 +1572,9 @@
       <Filter>Source Files\MAME\Machine</Filter>
     </ClInclude>
     <ClInclude Include="..\src\machine\i8155.h">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\machine\i8256.h">
       <Filter>Source Files\MAME\Machine</Filter>
     </ClInclude>
     <ClInclude Include="..\src\machine\mathbox.h">

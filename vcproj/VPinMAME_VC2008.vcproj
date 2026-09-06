@@ -1976,6 +1976,14 @@
 						>
 					</File>
 					<File
+						RelativePath=".\..\src\machine\i8256.c"
+						>
+					</File>
+					<File
+						RelativePath=".\..\src\machine\i8256.h"
+						>
+					</File>
+					<File
 						RelativePath=".\..\src\machine\mathbox.c"
 						>
 					</File>

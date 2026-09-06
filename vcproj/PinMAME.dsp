@@ -886,6 +886,14 @@ SOURCE=.\src\machine\i8155.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\machine\i8256.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\i8256.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\machine\mathbox.c
 # End Source File
 # Begin Source File

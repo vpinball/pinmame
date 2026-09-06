@@ -339,6 +339,8 @@ add_executable(sdl3pinmame
    src/machine/eeprom.h
    src/machine/i8155.c
    src/machine/i8155.h
+   src/machine/i8256.c
+   src/machine/i8256.h
    src/machine/mathbox.c
    src/machine/mathbox.h
    src/machine/pic8259.c

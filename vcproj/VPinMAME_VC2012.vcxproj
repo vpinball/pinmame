@@ -952,6 +952,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="..\src\machine\8255ppi.c" />
     <ClCompile Include="..\src\machine\eeprom.c" />
     <ClCompile Include="..\src\machine\i8155.c" />
+    <ClCompile Include="..\src\machine\i8256.c" />
     <ClCompile Include="..\src\machine\mathbox.c" />
     <ClCompile Include="..\src\machine\pic8259.c" />
     <ClCompile Include="..\src\machine\ticket.c" />
@@ -1496,6 +1497,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClInclude Include="..\src\machine\8255ppi.h" />
     <ClInclude Include="..\src\machine\eeprom.h" />
     <ClInclude Include="..\src\machine\i8155.h" />
+    <ClInclude Include="..\src\machine\i8256.h" />
     <ClInclude Include="..\src\machine\mathbox.h" />
     <ClInclude Include="..\src\machine\pic8259.h" />
     <ClInclude Include="..\src\machine\ticket.h" />
