@@ -591,12 +591,25 @@ YM2203 English datasheet: http://www.appleii-box.de/APPLE2/JonasCard/YM2203%20da
 YM2203 Japanese datasheet contents, translated: http://www.larwe.com/technical/chip_ym2203.html
 */
 
+#include <math.h>
 #include "driver.h"
 #include "ay8910.h"
 #include "state.h"
 #include "../ext/vgm/vgmwrite.h"
 
 #define MAX_OUTPUT 0x7fff
+/* One-pole DC correction on the output to move the signal from unipolar to "around 0", same shape as in dac.c. The VolA/2 shift below is exact
+   only at 50% duty; tone AND noise on one channel sits at ~25% and keeps a residual, and a channel held high for volume modulation is pure DC.
+   Both together: the shift removes the bulk instantly, so the filter only ever sees a small step and never
+   has to settle a half-scale one. 10Hz is inaudible - -0.04dB at 100Hz - and the coefficient comes from the chip's own rate, clock/8 */
+#define AY8910_DC_CUTOFF_HZ 10.0
+
+/* 0 = the measured curve as-is, the absolute divider ratio. It reaches neither
+       silence nor the rail - peak is 9815 of 32767, so ~10.4dB down on the old
+       table, and drivers would need their mixing levels raised to match
+   1 = the same curve stretched to span 0..MAX_OUTPUT, so the peak lands back on
+       32767 (same as old table) and nothing needs re-levelling */
+#define AY8910_NORMALIZE_OUTPUT
 
 #define STEP 2
 
@@ -633,7 +646,12 @@ struct AY8910
 	INT8 CountEnv;
 	UINT8 Hold,Alternate,Attack,Holding;
 	UINT32 RNG;
-	unsigned int VolTable[32];
+	UINT8 PrescaleN; /* noise prescaler: the LFSR clocks at half the counter rate */
+	unsigned int VolTable[16]; /* one entry per real DAC level */
+	/* unipolar/DC correction: y[n] = R*y[n-1] + (x[n] - x[n-1]); one per output stream */
+	double dcInteg[3];
+	INT32 dcPrev[3];
+	double dcCoeff;
 #ifdef SINGLE_CHANNEL_MIXER
 	unsigned int mix_vol[3];
 #endif
@@ -743,23 +761,24 @@ static void _AYWriteReg(int n, int r, int v)
 	case AY_AVOL:
 		PSG->Regs[AY_AVOL] &= 0x1f;
 		PSG->EnvelopeA = PSG->Regs[AY_AVOL] & 0x10;
-		PSG->VolA = PSG->EnvelopeA ? PSG->VolE : PSG->VolTable[PSG->Regs[AY_AVOL] ? PSG->Regs[AY_AVOL]*2+1 : 0];
+		PSG->VolA = PSG->EnvelopeA ? PSG->VolE : PSG->VolTable[PSG->Regs[AY_AVOL] & 0x0f];
 		break;
 	case AY_BVOL:
 		PSG->Regs[AY_BVOL] &= 0x1f;
 		PSG->EnvelopeB = PSG->Regs[AY_BVOL] & 0x10;
-		PSG->VolB = PSG->EnvelopeB ? PSG->VolE : PSG->VolTable[PSG->Regs[AY_BVOL] ? PSG->Regs[AY_BVOL]*2+1 : 0];
+		PSG->VolB = PSG->EnvelopeB ? PSG->VolE : PSG->VolTable[PSG->Regs[AY_BVOL] & 0x0f];
 		break;
 	case AY_CVOL:
 		PSG->Regs[AY_CVOL] &= 0x1f;
 		PSG->EnvelopeC = PSG->Regs[AY_CVOL] & 0x10;
-		PSG->VolC = PSG->EnvelopeC ? PSG->VolE : PSG->VolTable[PSG->Regs[AY_CVOL] ? PSG->Regs[AY_CVOL]*2+1 : 0];
+		PSG->VolC = PSG->EnvelopeC ? PSG->VolE : PSG->VolTable[PSG->Regs[AY_CVOL] & 0x0f];
 		break;
 	case AY_EFINE:
 	case AY_ECOARSE:
 		old = PSG->PeriodE;
-		PSG->PeriodE = ((PSG->Regs[AY_EFINE] + (INT32)256 * PSG->Regs[AY_ECOARSE])) * STEP;
-		if (PSG->PeriodE == 0) PSG->PeriodE = STEP / 2;
+		/* x2 because the envelope below is the AY's 16 steps, not the (previous) YM2149's 32: same sweep duration, half the resolution. MAME's m_step for PSG_TYPE_AY */
+		PSG->PeriodE = ((PSG->Regs[AY_EFINE] + (INT32)256 * PSG->Regs[AY_ECOARSE])) * (STEP * 2);
+		if (PSG->PeriodE == 0) PSG->PeriodE = STEP;
 		PSG->CountE += PSG->PeriodE - old;
 		if (PSG->CountE <= 0) PSG->CountE = 1;
 		break;
@@ -786,12 +805,12 @@ static void _AYWriteReg(int n, int r, int v)
 
 		1 1 1 1  /___
 
-		The envelope counter on the AY-3-8910 has 16 steps. On the YM2149 it
-		has twice the steps, happening twice as fast. Since the end result is
-		just a smoother curve, we always use the YM2149 behaviour.
+		The envelope counter has 16 steps on the AY-3-8910 (and 32 at twice the
+		rate on the YM2149). We model the AY, so a sweep walks the 16 levels the DAC actually has.
+		This used to run the YM2149's 32 for a smoother (but less accurate) curve
 		*/
 		PSG->Regs[AY_ESHAPE] &= 0x0f;
-		PSG->Attack = (PSG->Regs[AY_ESHAPE] & 0x04) ? 0x1f : 0x00;
+		PSG->Attack = (PSG->Regs[AY_ESHAPE] & 0x04) ? 0x0f : 0x00;
 		if ((PSG->Regs[AY_ESHAPE] & 0x08) == 0)
 		{
 			/* if Continue = 0, map the shape to the equivalent one which has Continue = 1 */
@@ -804,7 +823,7 @@ static void _AYWriteReg(int n, int r, int v)
 			PSG->Alternate = PSG->Regs[AY_ESHAPE] & 0x02;
 		}
 		PSG->CountE = PSG->PeriodE;
-		PSG->CountEnv = 0x1f;
+		PSG->CountEnv = 0x0f;
 		PSG->Holding = 0;
 		PSG->VolE = PSG->VolTable[PSG->CountEnv ^ PSG->Attack];
 		if (PSG->EnvelopeA) PSG->VolA = PSG->VolE;
@@ -1185,24 +1204,33 @@ static void AY8910Update(int chip,
 			PSG->CountN -= nextevent;
 			if (PSG->CountN <= 0)
 			{
-				/* Is noise output going to change? */
-				if ((PSG->RNG + 1) & 2)	/* (bit0^bit1)? */
+				/* The counter expiring only toggles a prescaler; the shift register
+				   advances every SECOND expiry (MAME's m_prescale_noise). Without it,
+				   the noise ran an 'octave high' - the datasheet says clock/(16*NP),
+				   the counter alone gives clock/(8*NP). The tone path was already
+				   right because its counter toggles the output twice per cycle */
+				PSG->PrescaleN ^= 1;
+				if (!PSG->PrescaleN)
 				{
-					PSG->OutputN = ~PSG->OutputN;
-					outn = (PSG->OutputN | PSG->Regs[AY_ENABLE]);
+					/* Is noise output going to change? */
+					if ((PSG->RNG + 1) & 2)	/* (bit0^bit1)? */
+					{
+						PSG->OutputN = ~PSG->OutputN;
+						outn = (PSG->OutputN | PSG->Regs[AY_ENABLE]);
+					}
+
+					/* The Random Number Generator of the 8910 is a 17-bit shift */
+					/* register. The input to the shift register is bit0 XOR bit3 */
+					/* (bit0 is the output). This was verified on AY-3-8910 and YM2149 chips. */
+
+					/* The following is a fast way to compute bit17 = bit0^bit3. */
+					/* Instead of doing all the logic operations, we only check */
+					/* bit0, relying on the fact that after three shifts of the */
+					/* register, what now is bit3 will become bit0, and will */
+					/* invert, if necessary, bit14, which previously was bit17. */
+					if (PSG->RNG & 1) PSG->RNG ^= 0x24000; /* This version is called the "Galois configuration". */
+					PSG->RNG >>= 1;
 				}
-
-				/* The Random Number Generator of the 8910 is a 17-bit shift */
-				/* register. The input to the shift register is bit0 XOR bit3 */
-				/* (bit0 is the output). This was verified on AY-3-8910 and YM2149 chips. */
-
-				/* The following is a fast way to compute bit17 = bit0^bit3. */
-				/* Instead of doing all the logic operations, we only check */
-				/* bit0, relying on the fact that after three shifts of the */
-				/* register, what now is bit3 will become bit0, and will */
-				/* invert, if necessary, bit14, which previously was bit17. */
-				if (PSG->RNG & 1) PSG->RNG ^= 0x24000; /* This version is called the "Galois configuration". */
-				PSG->RNG >>= 1;
 				PSG->CountN += PSG->PeriodN;
 			}
 
@@ -1227,7 +1255,7 @@ static void AY8910Update(int chip,
 					if (PSG->Hold)
 					{
 						if (PSG->Alternate)
-							PSG->Attack ^= 0x1f;
+							PSG->Attack ^= 0x0f;
 						PSG->Holding = 1;
 						PSG->CountEnv = 0;
 					}
@@ -1235,10 +1263,10 @@ static void AY8910Update(int chip,
 					{
 						/* if CountEnv has looped an odd number of times (usually 1), */
 						/* invert the output. */
-						if (PSG->Alternate && (PSG->CountEnv & 0x20))
- 							PSG->Attack ^= 0x1f;
+						if (PSG->Alternate && (PSG->CountEnv & 0x10))
+ 							PSG->Attack ^= 0x0f;
 
-						PSG->CountEnv &= 0x1f;
+						PSG->CountEnv &= 0x0f;
 					}
 				}
 
@@ -1250,24 +1278,57 @@ static void AY8910Update(int chip,
 			}
 		}
 
+		/* Centre signal around 0, instead of the old 0..MAX unipolar:
+		   vola is the on-time out of STEP, so subtracting VolA/2 removes the
+		   volume-proportional pedestal. Only a shift - shape and peak-to-peak are
+		   unchanged. That alone is exact at 50% duty (tone alone, or noise alone -
+		   the common cases) but leaves ~-VolA/4 with tone AND noise on one channel,
+		   and pure DC on a channel held high for volume modulation, so the blocker
+		   below takes out the rest (MAME does neither; it shifts its table by a
+		   fixed quarter of full scale, worst |DC| 0.125 at any duty, which is not
+		   open to us with VolTable unsigned). See AY8910_DC_CUTOFF_HZ */
 #ifdef SINGLE_CHANNEL_MIXER
-		tmp_buf = (vola * (int)PSG->VolA * (int)PSG->mix_vol[0] + volb * (int)PSG->VolB * (int)PSG->mix_vol[1] + volc * (int)PSG->VolC * (int)PSG->mix_vol[2])/(int)(100*STEP);
+		tmp_buf = ((2*vola - STEP) * (int)PSG->VolA * (int)PSG->mix_vol[0] + (2*volb - STEP) * (int)PSG->VolB * (int)PSG->mix_vol[1] + (2*volc - STEP) * (int)PSG->VolC * (int)PSG->mix_vol[2])/(int)(2*100*STEP);
+		PSG->dcInteg[0] = PSG->dcInteg[0]*PSG->dcCoeff + (double)(tmp_buf - PSG->dcPrev[0]);
+		PSG->dcPrev[0] = tmp_buf;
+		tmp_buf = (INT32)PSG->dcInteg[0];
 		*(buf1++) = (tmp_buf < -32768) ? -32768 : ((tmp_buf > 32767) ? 32767 : tmp_buf);
 #else
-		*(buf1++) = (vola * PSG->VolA) / STEP;
-		*(buf2++) = (volb * PSG->VolB) / STEP;
-		*(buf3++) = (volc * PSG->VolC) / STEP;
+		{
+			const INT32 raw[3] = { ((2*vola - STEP) * (int)PSG->VolA) / (2*STEP),
+			                       ((2*volb - STEP) * (int)PSG->VolB) / (2*STEP),
+			                       ((2*volc - STEP) * (int)PSG->VolC) / (2*STEP) };
+			INT16 * const dst[3] = { buf1, buf2, buf3 };
+			int c;
+			for (c = 0; c < 3; c++)
+			{
+				INT32 o;
+				PSG->dcInteg[c] = PSG->dcInteg[c]*PSG->dcCoeff + (double)(raw[c] - PSG->dcPrev[c]);
+				PSG->dcPrev[c] = raw[c];
+				o = (INT32)PSG->dcInteg[c];
+				*dst[c] = (o < -32768) ? -32768 : ((o > 32767) ? 32767 : o);
+			}
+			buf1++; buf2++; buf3++;
+		}
 #endif
 		length--;
 	}
 }
 
 
+/* exact one-pole corner: R = (1-sin w)/cos w, w = 2*pi*fc/fs */
+static void AY8910_set_dc_coeff(int chip, double sample_rate)
+{
+	const double w = (2.*M_PI*AY8910_DC_CUTOFF_HZ)/sample_rate;
+	AYPSG[chip].dcCoeff = (1. - sin(w))/cos(w);
+}
+
 void AY8910_set_clock(int chip, double clock)
 {
 	struct AY8910 *PSG = &AYPSG[chip];
 
 	stream_update(PSG->Channel, 0);
+	AY8910_set_dc_coeff(chip, clock/8.);
 #ifdef SINGLE_CHANNEL_MIXER
 	stream_set_sample_rate(PSG->Channel, clock/8.);
 #else
@@ -1292,25 +1353,47 @@ void AY8910_set_volume(int chip,int channel,int volume)
 }
 
 
+/* Measured DAC levels (from MAME / Matthew Westcott's Dec 2001 readings) of a
+   real AY-3-8910: a constant voltage on channel C, sweeping the low 4 bits of r10.
+   The resistors below reproduce those voltages in SwitcherCAD (RD 8M, RU 0.8M) */
+#define AY8910_RES_LOAD 1000.0 /* load on each channel in ohms, same as MAME's default */
+
+static const double ay8910_r_up   =  800000.0;
+static const double ay8910_r_down = 8000000.0;
+static const double ay8910_res[16] = {
+	15950., 15350., 15090., 14760., 14275., 13620., 12890., 11370.,
+	10600.,  8590.,  7190.,  5985.,  4820.,  3945.,  3017.,  2345.
+};
+
 static void build_mixer_table(int chip)
 {
 	struct AY8910 *PSG = &AYPSG[chip];
 	int i;
-	double out;
+	double m[16], min = 1.0, max = 0.0;
 
-
-	/* calculate the volume->voltage conversion table */
-	/* The AY-3-8910 has 16 levels, in a logarithmic scale (3dB per step) */
-	/* The YM2149 still has 16 levels for the tone generators, but 32 for */
-	/* the envelope generator (1.5dB per step). */
-	out = MAX_OUTPUT;
-	for (i = 31;i > 0;i--)
+	/* MAME's build_single_table() with zero_is_off, as it uses for the AY-3-8910: level 0 is the output with the pull-up out of circuit */
+	for (i = 0; i < 16; i++)
 	{
-		PSG->VolTable[i] = (unsigned int)(out + 0.5);	/* round to nearest */
-
-		out /= 1.188502227;	/* = 10 ^ (1.5/20) = 1.5dB */
+		double rw = 1.0/ay8910_res[i];
+		double rt = 1.0/ay8910_r_down + 1.0/AY8910_RES_LOAD + rw;
+		if (i != 0) /* zero_is_off */
+		{
+			rw += 1.0/ay8910_r_up;
+			rt += 1.0/ay8910_r_up;
+		}
+		m[i] = rw/rt;
+		if (m[i] < min) min = m[i];
+		if (m[i] > max) max = m[i];
 	}
-	PSG->VolTable[0] = 0;
+#ifdef AY8910_NORMALIZE_OUTPUT
+	for (i = 0; i < 16; i++)
+		m[i] = (m[i] - min) / (max - min);
+#endif
+
+	/* One entry per real level; the volume register and the 16 step envelope both
+	   index it directly. Level 0 is no longer forced to silence (unless AY8910_NORMALIZE_OUTPUT) */
+	for (i = 0; i < 16; i++)
+		PSG->VolTable[i] = (unsigned int)(MAX_OUTPUT * m[i] + 0.5);
 }
 
 
@@ -1322,6 +1405,9 @@ void AY8910_reset(int chip)
 
 	PSG->register_latch = 0;
 	PSG->RNG = 1;
+	PSG->PrescaleN = 0;
+	memset(PSG->dcInteg, 0, sizeof(PSG->dcInteg));
+	memset(PSG->dcPrev,  0, sizeof(PSG->dcPrev));
 	PSG->OutputA = 0;
 	PSG->OutputB = 0;
 	PSG->OutputC = 0;
@@ -1371,6 +1457,7 @@ static int AY8910_init(const char *chip_name,int chip,
 		sample_rate = clock/8.;
 
 	memset(PSG,0,sizeof(struct AY8910));
+	AY8910_set_dc_coeff(chip, sample_rate); /* after the memset! */
 	PSG->PortAread = portAread;
 	PSG->PortBread = portBread;
 	PSG->PortAwrite = portAwrite;
@@ -1487,6 +1574,9 @@ static void AY8910_statesave(int chip)
 	state_save_register_UINT8("AY8910",  chip, "Attack",         &PSG->Attack,         1);
 	state_save_register_UINT8("AY8910",  chip, "Holding",        &PSG->Holding,        1);
 	state_save_register_UINT32("AY8910", chip, "RNG",            &PSG->RNG,            1);
+	state_save_register_UINT8 ("AY8910", chip, "PrescaleN",      &PSG->PrescaleN,      1);
+	state_save_register_double("AY8910", chip, "dcInteg",        PSG->dcInteg,         3);
+	state_save_register_INT32 ("AY8910", chip, "dcPrev",         PSG->dcPrev,          3);
 }
 
 

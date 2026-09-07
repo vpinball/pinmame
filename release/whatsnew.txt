@@ -57,6 +57,7 @@ Rewired Striker Xtreme, Playboy and Sharkey's Shootout to use the J2 auxiliary-d
 Fixed trolls in Medieval Madness
 Improved sound for Metal Man, and a bit for Jolly Park and Verne's World (in general, slightly more authentic MSM5205 sound)
 Slightly improved YM262 sound for Sir Lancelot
+Improved AY8910 sound emulation (more accurate noise, measured DAC curve, 16-step envelope)
 Fixed sound problems if a OKI6295 game is used after a OKI6376 game (e.g. GTS3 after Sleic)
 Fixed VGM recording for machines using OKI6295 sound
 Added VGM recording for machines using BSMT2000 sound
