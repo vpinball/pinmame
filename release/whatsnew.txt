@@ -59,6 +59,7 @@ Improved sound for Metal Man, and a bit for Jolly Park and Verne's World (in gen
 Slightly improved YM262 sound for Sir Lancelot
 Improved AY8910 sound emulation (more accurate noise, measured DAC curve, 16-step envelope)
 Improved TMS52X0 sound emulation (more accurate, many previously needed hacks disabled)
+Improved (slightly) the SN76496/SN76489(A)/SN76494 sound emulation (more accurate noise and fix lowest note)
 Fixed sound problems if a OKI6295 game is used after a OKI6376 game (e.g. GTS3 after Sleic)
 Fixed VGM recording for machines using OKI6295 sound
 Added VGM recording for machines using BSMT2000 sound

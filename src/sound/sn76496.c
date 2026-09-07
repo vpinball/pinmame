@@ -52,8 +52,10 @@ struct SN76496
 	UINT32 RNG;		/* noise generator      */
     INT32 NoiseMode;	    /* active noise mode */
     INT32 FeedbackMask;     /* mask for feedback */
-    INT32 WhitenoiseTaps;   /* mask for white noise taps */
-    INT32 WhitenoiseInvert; /* white noise invert flag */
+    INT32 WhitenoiseTap1;   /* first white noise tap  */
+    INT32 WhitenoiseTap2;   /* second white noise tap */
+    INT32 Negate;           /* output is inverted (SN76489, SN94624) */
+    INT32 ClockDivider;     /* 8 for most, 1 for the SN76494/SN94624 */
     INT32 Period[4];
 	INT32 Count[4];
 	INT32 Output[4];
@@ -94,8 +96,10 @@ static void SN76496Write(int chip,int data)
 		case 2:	/* tone 1 : frequency */
 		case 4:	/* tone 2 : frequency */
 		    if ((data & 0x80) == 0) R->Register[r] = (R->Register[r] & 0x0f) | ((data & 0x3f) << 4);
-			R->Period[c] = STEP * R->Register[r];
-			if (R->Period[c] == 0) R->Period[c] = STEP;
+			/* A frequency register of 0 means 0x400, not 1: the counter is 10 bit and
+			   wraps. This used to clamp to STEP, i.e. period 1, turning what should be
+			   the lowest tone the chip can make into an ultrasonic one */
+			R->Period[c] = STEP * (R->Register[r] ? R->Register[r] : 0x400);
 			if (r == 4)
 			{
 				/* update noise shift frequency */
@@ -169,7 +173,7 @@ static void SN76496Update(int chip,INT16 *buffer,int length)
 	while (length > 0)
 	{
 		int vol[4];
-		unsigned int out;
+		INT32 out;
 		int left;
 
 		/* vol[] keeps track of how long each square wave stays */
@@ -215,32 +219,20 @@ static void SN76496Update(int chip,INT16 *buffer,int length)
 			R->Count[3] -= nextevent;
 			if (R->Count[3] <= 0)
 			{
-                if (R->NoiseMode == 1) /* White Noise Mode */
+                /* One condition for both noise modes: The two
+                   taps are separate there rather than one combined mask, and the second
+                   is gated on the white-noise bit - so in periodic mode this reduces to
+                   feedback from tap1 alone */
+                if (((R->RNG & R->WhitenoiseTap1) != 0) != (((R->RNG & R->WhitenoiseTap2) != 0) && (R->NoiseMode == 1)))
                 {
-                    if (((R->RNG & R->WhitenoiseTaps) != R->WhitenoiseTaps) && ((R->RNG & R->WhitenoiseTaps) != 0)) /* crappy xor! */
-                    {
-                        R->RNG >>= 1;
-                        R->RNG |= R->FeedbackMask;
-                    }
-                    else
-                    {
-                        R->RNG >>= 1;
-                    }
-                    R->Output[3] = R->WhitenoiseInvert ? !(R->RNG & 1) : R->RNG & 1;
+                    R->RNG >>= 1;
+                    R->RNG |= R->FeedbackMask;
                 }
-                else /* Periodic noise mode */
+                else
                 {
-                    if (R->RNG & 1)
-                    {
-                        R->RNG >>= 1;
-                        R->RNG |= R->FeedbackMask;
-                    }
-                    else
-                    {
-                        R->RNG >>= 1;
-                    }
-                    R->Output[3] = R->RNG & 1;
+                    R->RNG >>= 1;
                 }
+                R->Output[3] = R->RNG & 1;
                 
                 R->Count[3] += R->Period[3];
 				if (R->Output[3]) vol[3] += R->Period[3];
@@ -250,12 +242,19 @@ static void SN76496Update(int chip,INT16 *buffer,int length)
 			left -= nextevent;
 		} while (left > 0);
 
-		out = vol[0] * R->Volume[0] + vol[1] * R->Volume[1] +
-				vol[2] * R->Volume[2] + vol[3] * R->Volume[3];
+		/* PINMAME: Centre on 0 rather than swinging 0..MAX: vol[] is the on-time out of STEP, so subtracting Volume[i]/2
+		   takes out the pedestal. The three tone channels and the noise channel are separate, never ANDed together, so every
+		   active channel is at 50% duty and the removal is exact. Peak-to-peak is unchanged, so this is not a volume change */
+		out = (2*vol[0] - STEP) * R->Volume[0] + (2*vol[1] - STEP) * R->Volume[1] +
+				(2*vol[2] - STEP) * R->Volume[2] + (2*vol[3] - STEP) * R->Volume[3];
+
+		/* the SN76489/SN94624 output stage inverts */
+		if (R->Negate) out = -out;
 
 		if (out > MAX_OUTPUT * STEP) out = MAX_OUTPUT * STEP;
+		else if (out < -(MAX_OUTPUT * STEP)) out = -(MAX_OUTPUT * STEP);
 
-		*(buffer++) = out / STEP;
+		*(buffer++) = out / (2*STEP);
 
 		length--;
 	}
@@ -288,13 +287,16 @@ static void SN76496_set_gain(int chip,int gain)
 
 
 
-static int SN76496_init(const struct MachineSound *msound,int chip,double clock,int volume)
+static int SN76496_init(const struct MachineSound *msound,int chip,double clock,int volume,int clockdivider)
 {
 	int i;
 	struct SN76496 *R = &sn[chip];
 	char name[40];
 
-	double sample_rate = clock/16.;
+	/* MAME runs the stream at clock/2 and then divides by the per-variant clock
+	   divider, so the generators see clock/(2*divider): clock/16 for most parts,
+	   but clock/2 for the SN76494 and SN94624, which divide by 1 */
+	double sample_rate = clock/(2.*clockdivider);
 
 	sprintf(name,"SN76496 #%d",chip);
 	R->Channel = stream_init(name,volume,sample_rate,chip,SN76496Update);
@@ -302,25 +304,33 @@ static int SN76496_init(const struct MachineSound *msound,int chip,double clock,
 	if (R->Channel == -1)
 		return 1;
 
+	/* Silence on reset. MAME instead leaves the volume registers at 0 - which on this
+	   chip means MAX - and derives the volumes from them, so a non-Sega part hums at
+	   cold boot until the game initialises it; MAME lists that under BTANB. Deliberate
+	   difference: authentic, but it would make Inder and Wico beep on every start */
 	for (i = 0;i < 4;i++) R->Volume[i] = 0;
 
 	R->LastRegister = /*m_sega_style_psg?3:*/0; // Sega VDP PSG defaults to selected period reg for 2nd channel //!! m_sega_style_psg true/false?
 	for (i = 0;i < 8;i+=2)
 	{
 		R->Register[i] = 0;
-		R->Register[i + 1] = 0x0;   //!! 0x0f?? // volume = 0x0 (max volume) on reset; this needs testing on chips other than SN76489A and Sega VDP PSG //!! m_sega_style_psg true/false?
+		R->Register[i + 1] = 0x0;   /* 0 = max volume. MAME resets this to 0xf only for the Sega VDP PSG, and every part used here is non-Sega, so 0x0 is right - see the note at Volume[] above for why we do not then play it */
 	}
 
 	for (i = 0;i < 4;i++)
 	{
 		R->Output[i] = 0;
-		R->Period[i] = R->Count[i] = STEP;
+		/* tone periods reset to 0x400 as on the chip (MAME); the noise one stays at STEP
+		   rather than MAME's 0, because the period is a divisor in the loop below and 0 would spin it */
+		R->Period[i] = R->Count[i] = (i < 3) ? (STEP * 0x400) : STEP;
 	}
 
     /* Default is SN76489 non-A */
-    R->FeedbackMask = 0x4000;     /* mask for feedback */
-    R->WhitenoiseTaps = 0x03;   /* mask for white noise taps */
-    R->WhitenoiseInvert = 1; /* white noise invert flag */
+    R->FeedbackMask = 0x4000;   /* mask for feedback */
+    R->WhitenoiseTap1 = 0x01;
+    R->WhitenoiseTap2 = 0x02;
+    R->Negate = 1;
+    R->ClockDivider = clockdivider;
 
     R->RNG = R->FeedbackMask;
     R->Output[3] = R->RNG & 1;
@@ -330,7 +340,7 @@ static int SN76496_init(const struct MachineSound *msound,int chip,double clock,
 
 
 
-static int generic_start(const struct MachineSound *msound, int feedbackmask, int noisetaps, int noiseinvert)
+static int generic_start(const struct MachineSound *msound, int feedbackmask, int noisetap1, int noisetap2, int negate, int clockdivider)
 {
 	int chip;
 	const struct SN76496interface *intf = msound->sound_interface;
@@ -338,7 +348,7 @@ static int generic_start(const struct MachineSound *msound, int feedbackmask, in
 
 	for (chip = 0;chip < intf->num;chip++)
 	{
-		if (SN76496_init(msound,chip,intf->baseclock[chip],intf->volume[chip] & 0xff) != 0)
+		if (SN76496_init(msound,chip,intf->baseclock[chip],intf->volume[chip] & 0xff,clockdivider) != 0)
 			return 1;
 
 		SN76496_set_gain(chip,(intf->volume[chip] >> 8) & 0xff);
@@ -346,47 +356,56 @@ static int generic_start(const struct MachineSound *msound, int feedbackmask, in
 		R = &sn[chip];
 
 		R->FeedbackMask = feedbackmask;
-		R->WhitenoiseTaps = noisetaps;
-		R->WhitenoiseInvert = noiseinvert;
+		R->WhitenoiseTap1 = noisetap1;
+		R->WhitenoiseTap2 = noisetap2;
+		R->Negate = negate;
+		R->ClockDivider = clockdivider;
+		/* reseed: SN76496_init ran before the real mask was known and used the
+		   0x4000 default, so a part with a wider mask started with the wrong RNG */
+		R->RNG = R->FeedbackMask;
+		R->Output[3] = R->RNG & 1;
 
 		R->vgm_idx = vgm_open(VGMC_SN76496, intf->baseclock[chip]); //!!
 		vgm_header_set(R->vgm_idx, 0x01, R->FeedbackMask);
-		vgm_header_set(R->vgm_idx, 0x02, R->WhitenoiseTaps);
-		//!! vgm_header_set(R->vgm_idx, 0x03, m_whitenoise_tap2);
-		vgm_header_set(R->vgm_idx, 0x04, R->WhitenoiseInvert); //!! m_negate);
+		vgm_header_set(R->vgm_idx, 0x02, R->WhitenoiseTap1);
+		vgm_header_set(R->vgm_idx, 0x03, R->WhitenoiseTap2);
+		vgm_header_set(R->vgm_idx, 0x04, R->Negate);
 		vgm_header_set(R->vgm_idx, 0x05, 0); //!! m_stereo);
-		vgm_header_set(R->vgm_idx, 0x06, 1); //!! m_clock_divider);
+		vgm_header_set(R->vgm_idx, 0x06, R->ClockDivider);
 		vgm_header_set(R->vgm_idx, 0x07, 0); //!! m_sega_style_psg); // how ironic that it does just the opposite of its name
 	}
 	return 0;
 }
 
+/* feedback mask, noise tap 1, noise tap 2, negate, clock divider - all taken MAME's sn76496.cpp. The old table had one combined tap mask, a
+   noise-only invert instead of the output negate, and no divider at all; the masks for everything above the plain SN76489 were 0x8000/0x06 where MAME has 0x10000/0x04+0x08 */
 int SN76489_sh_start(const struct MachineSound *msound)
 {
-    return generic_start(msound, 0x4000, 0x03, 1);
+    return generic_start(msound, 0x4000, 0x01, 0x02, 1, 8);
 }
 
 int SN76489A_sh_start(const struct MachineSound *msound)
 {
-    return generic_start(msound, 0x8000, 0x06, 0);
+    return generic_start(msound, 0x10000, 0x04, 0x08, 0, 8);
 }
 
 int SN76494_sh_start(const struct MachineSound *msound)
 {
-    return generic_start(msound, 0x8000, 0x06, 0);
+    /* divider 1, not 8: the SN76494 clocks its generators at clock/2 where the rest of the family runs at clock/16 */
+    return generic_start(msound, 0x10000, 0x04, 0x08, 0, 1);
 }
 
 int SN76496_sh_start(const struct MachineSound *msound)
 {
-    return generic_start(msound, 0x8000, 0x06, 0);
+    return generic_start(msound, 0x10000, 0x04, 0x08, 0, 8);
 }
 
 int gamegear_sh_start(const struct MachineSound *msound)
 {
-    return generic_start(msound, 0x8000, 0x09, 0);
+    return generic_start(msound, 0x8000, 0x01, 0x08, 1, 8);
 }
 
 int smsiii_sh_start(const struct MachineSound *msound)
 {
-    return generic_start(msound, 0x8000, 0x09, 0);
+    return generic_start(msound, 0x8000, 0x01, 0x08, 1, 8);
 }
