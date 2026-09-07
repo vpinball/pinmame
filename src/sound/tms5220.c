@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+// copyright-holders:Frank Palazzolo, Aaron Giles, Jonathan Gevaryahu, Raphael Nabet, Couriersud, Michael Zapf
 /**********************************************************************************************
 
      TMS5200/5220 simulator
@@ -89,14 +91,11 @@ TI's naming has D7 as LSB and D0 as MSB and is in uppercase
                  +-----------------+
 
 TODO:
-    * Ever since the big rewrite, there are glitches on certain frame transitions
-      for example in the word 'robots' during the eprom attract mode,
-      I (LN) am not entirely sure why the real chip doesn't have these as well.
-      Needs more real hardware testing/dumps for comparison.
-    * Ever since the timing rewrite, the above problem is slightly worse. This
-      time, however, it is probably a 'real' bug, which I (LN) am in the process
-      of tracking down.
-      i.e. the word 'congratulations' in victory when you get a high score.
+    5110:
+    * implement CS
+    * TMS5110_CMD_TEST_TALK is only partially implemented
+    5220:
+    * Samples repeat over and over in the 'eprom' test mode. Needs investigation.
     * Implement a ready callback for pc interfaces
     - this will be quite a challenge since for it to be really accurate
       the whole emulation has to run in sync (lots of timers) with the
@@ -104,7 +103,6 @@ TODO:
     * If a command is still executing, /READY will be kept high until the command has
       finished if the next command is written.
     * tomcat has a 5220 which is not hooked up at all
-    * Is the TS=0 forcing energy to 0 for next frame in the interpolator actually correct? I'm (LN) guessing no. The patent schematics state that TS=0 shuts off the output dac completely, though doesn't affect the I/O pin.
 
 Pedantic detail from observation of real chip:
 The 5200 and 5220 chips outputs the following coefficients over PROMOUT while
@@ -200,23 +198,59 @@ Interpolation is inhibited (i.e. interpolation at IP frames will not happen
 
 
 ****Documentation of chip commands:***
-    x0x0xbcc : on 5200/5220: NOP (does nothing); on 5220C and CD2501ECD: Select frame length by cc, and b selects whether every frame is preceded by 2 bits to select the frame length (instead of using the value set by cc); the default (and after a reset command) is as if '0x00' was written, i.e. for frame length (200 samples) and 0 for whether the preceding 2 bits are enabled (off)
+    76543210  (these are in logical 7 thru 0 order with MSB (7) first; TI calls
+              these bits by the opposite order, D0 thru D7, on the datasheet,
+              with D0 being the MSB)
 
-    x001xxxx: READ BYTE (RDBY) Sends eight read bit commands (M0 high M1 low) to VSM and reads the resulting bits serially into a temporary register, which becomes readable as the next byte read from the tms52xx once ready goes active. Note the bit order of the byte read from the TMS52xx is BACKWARDS as compared to the actual data order as in the rom on the VSM chips; the read byte command of the tms5100 reads the bits in the 'correct' order. This was IMHO a rather silly design decision of TI. (I (LN) asked Larry Brantingham about this but he wasn't involved with the TMS52xx chips, just the 5100); There's ASCII data in the TI 99/4 speech module VSMs which has the bit order reversed on purpose because of this!
+    x0x0xbcc: on 5200/5220: NOP (does nothing)
+              on 5220C and CD2501ECD: Select frame length by cc, and b selects
+              whether every frame is preceded by 2 bits to select the frame
+              length (instead of using the value set by cc); the default (and
+              after a reset command) is as if '0x00' was written, i.e. for
+              frame length (200 samples) and 0 for whether the preceding 2
+              bits are enabled (off)
+
+    x001xxxx: READ BYTE (RDBY)
+              Sends eight read bit commands (M0 high M1 low) to VSM and reads
+              the resulting bits serially into a temporary register, which
+              becomes readable as the next byte read from the tms52xx once
+              ready goes active. Note the bit order of the byte read from the
+              TMS52xx is BACKWARDS as compared to the actual data order as in
+              the rom on the VSM chips; the read byte command of the tms5100
+              reads the bits in the 'correct' order. This was IMHO a rather
+              silly design decision of TI. (I (LN) asked Larry Brantingham
+              about this but he wasn't involved with the TMS52xx chips, just
+              the 5100); There's ASCII data in the TI 99/4 speech module VSMs
+              which has the bit order reversed on purpose because of this!
     TALK STATUS must be CLEAR for this command to work; otherwise it is treated as a NOP.
 
-    x011xxxx: READ AND BRANCH (RB) Sends a read and branch command (M0 high, M1 high) to force VSM to set its data pointer to whatever the data is at its current pointer location is)
+    x011xxxx: READ AND BRANCH (RB)
+              Sends a read and branch command (M0 high, M1 high) to force VSM
+              to set its data pointer to whatever the data is at its current
+              pointer location is)
     TALK STATUS must be CLEAR for this command to work; otherwise it is treated as a NOP.
 
-    x100aaaa: LOAD ADDRESS (LA) Send a load address command (M0 low M1 high) to VSM with the 4 'a' bits; Note you need to send four or five of these in sequence to actually specify an address to the vsm.
+    x100aaaa: LOAD ADDRESS (LA)
+              Send a load address command (M0 low M1 high) to VSM with the 4
+              'a' bits; Note you need to send four or five of these in
+              sequence to actually specify an address to the vsm.
     TALK STATUS must be CLEAR for this command to work; otherwise it is treated as a NOP.
 
-    x101xxxx: SPEAK (SPK) Begins speaking, pulling speech data from the current address pointer location of the VSM modules.
+    x101xxxx: SPEAK (SPK)
+              Begins speaking, pulling speech data from the current address
+              pointer location of the VSM modules.
 
-    x110xxxx: SPEAK EXTERNAL (SPKEXT) Clears the FIFO using SPKEE line, then sets TALKD (TALKST remains zero) until 8 bytes have been written to the FIFO, at which point it begins speaking, pulling data from the 16 byte fifo.
-    The patent implies TALK STATUS must be CLEAR for this command to work; otherwise it is treated as a NOP, but the decap shows that this is not true, and is an error on the patent diagram.
+    x110xxxx: SPEAK EXTERNAL (SPKEXT)
+              Clears the FIFO using SPKEE line, then sets TALKD (TALKST
+              remains zero) until 8 bytes have been written to the FIFO, at
+              which point it begins speaking, pulling data from the 16 byte
+              FIFO.
+    The patent implies TALK STATUS must be CLEAR for this command to work;
+    otherwise it is treated as a NOP, but the decap shows that this is not
+    true, and is an error on the patent diagram.
 
-    x111xxxx: RESET (RST) Resets the speech synthesis core immediately, and clears the FIFO.
+    x111xxxx: RESET (RST)
+              Resets the speech synthesis core immediately, and clears the FIFO.
 
 
     Other chip differences:
@@ -278,7 +312,7 @@ Exidy's 'Victory' and 'Victor Banana' (need verify for both)
     Pinball: Several (don't know names offhand, have not checked schematics; likely Zaccaria's 'Farfalla')
     Home computer: Street Electronics Corp.'s Apple II 'Echo 2' Speech
 synthesizer (later cards only); Texas Instruments' 'Speak and Learn'
-scanner wand unit.
+scanner wand unit; HP 27201A Speech Output Module (serial port connection).
 
 TMS5220C AKA TSP5220C: (on stuff made from 1984 to 1992 or so)
     Arcade: Atari's 'Indiana Jones and the Temple of Doom', '720',
@@ -291,9 +325,10 @@ this), mostly on later pinballs with LPC speech)
 module (6511 based), IBM PS/2 Speech adapter (parallel port connection
 device), PES Speech adapter (serial port connection)
 
-Street electronics had a later 1989-era ECHO appleII card which is TSP50c0x/1x
-MCU based speech and not tms5xxx based (though it is likely emulating the tms5220
-in MCU code). Look for a 16-pin chip at U6 labeled "ECHO-3 SN".
+Street electronics had two later 1988-1990-era ECHO appleII cards which are
+TSP50c0x/1x MCU based speech and not tms52xx based (though it is likely
+emulating the tms5220 in MCU code). Look for a 16-pin chip at U6 labeled
+"ECHO-2 SN" or "ECHO-3 SN".
 
 ***********************************************************************************************/
 
@@ -304,9 +339,6 @@ in MCU code). Look for a 16-pin chip at U6 labeled "ECHO-3 SN".
 #include "driver.h"
 #include "sndintrf.h"
 #include "tms5220.h"
-
-/* Pull in the ROM tables */
-#include "tms5220r.c"
 
 #ifndef TRUE
   #define TRUE 1
@@ -346,6 +378,7 @@ in MCU code). Look for a 16-pin chip at U6 labeled "ECHO-3 SN".
 #undef VOICED_INV_HACK
 #undef VOICED_ZERO_HACK
 #undef VOICED_PULSE_HACK
+//!! PinMAME history shows this deliberately set for Zaccaria in 2011 and re-tuned (PAMP 0x7f->0xaf) against MAME's new chirp table in 2013. Leave for now, unless thoroughly tested!
 #define VOICED_PULSE_MONOPOLAR_HACK
 #define PAMP 0xaf
 #define PWIDTH 1
@@ -355,18 +388,21 @@ in MCU code). Look for a 16-pin chip at U6 labeled "ECHO-3 SN".
  * or clip logic, even though the real hardware doesn't do this, partially verified by decap */
 //#define ALLOW_4_LSB
 
+/* forces m_TALK active instantly whenever m_SPEN would be activated, causing speech delay to be reduced by up to one frame time */
+/* for some reason, this hack makes MAME's (Exidy) victory behave better, though it does not match the patent */
+//#define FAST_START_HACK
+
 
 /* *****configuration of chip connection stuff***** */
-/* must be defined; if 0, output the waveform as if it was tapped on the speaker pin as usual, if 1, output the waveform as if it was tapped on the i/o pin (volume is much lower in the latter case) */
+/* must be defined; if 0, output the waveform as if it was tapped on the
+   speaker pin as usual, if 1, output the waveform as if it was tapped on the
+   i/o pin (volume is much lower in the latter case) */
 #define FORCE_DIGITAL 0
 
-/* must be defined; if 1, normal speech (one A cycle, one B cycle per interpolation step); if 0; speak as if SPKSLOW was used (two A cycles, one B cycle per interpolation step) */
+/* 5220 only; must be defined; if 1, normal speech (one A cycle, one B cycle
+   per interpolation step); if 0; speak as if SPKSLOW was used (two A cycles,
+   one B cycle per interpolation step) */
 #define FORCE_SUBC_RELOAD 1
-
-/* raise TALK the instant a SPEAK/SPKEXT is accepted instead of at the next
-   RESETL4, so speech starts without the ~2 frame (~40ms) delay the real chip has.
-   Does not match the patent, but on as in MAME. Undefine to get the accurate onset, at the risk of a game clipping its samples */
-//#define FAST_START_HACK
 
 /* If defined, a FIFO underrun mid-frame (parse_frame's 'ranout') resets the whole chip.
    PinMAME has always done this, MAME just returns and lets /BE halt speech (which is more accurate).
@@ -415,8 +451,6 @@ in MCU code). Look for a 16-pin chip at U6 labeled "ECHO-3 SN".
 // above debugs the tms5220_data_r and data_w access methods which actually respect rs and ws
 
 #define FIFO_SIZE 16
-
-static const UINT8 reload_table[4] = { 0, 2, 4, 6 }; //sample count reload for 5220c only; 5200 and 5220 always reload with 0; keep in mind this is loaded on IP=0 PC=12 subcycle=1 so it immediately will increment after one sample, effectively being 1,3,5,7 as in the comments above.
 
 struct tms5220
 {
@@ -556,6 +590,11 @@ static void update_ready_state(struct tms5220 *tms);
 static INT32 lattice_filter(struct tms5220 *tms);
 static INT16 clip_analog(INT16 clip);
 static void tms5220_set_variant_chip(void *chip, int variant);
+
+static const UINT8 reload_table[4] = { 0, 2, 4, 6 }; //sample count reload for 5220c only; 5200 and 5220 always reload with 0; keep in mind this is loaded on IP=0 PC=12 subcycle=1 so it immediately will increment after one sample, effectively being 1,3,5,7 as in the comments above.
+
+// Pull in the ROM tables
+#include "tms5220r.c"
 
 /**********************************************************************************************
 
@@ -758,7 +797,7 @@ void tms5220_data_write_chip(void *chip, int data)
 #endif
   if (tms->DDIS) // If we're in speak external mode
   {
-    /* add this byte to the FIFO */
+    // add this byte to the FIFO
     if (tms->fifo_count < FIFO_SIZE)
     {
       tms->fifo[tms->fifo_tail] = data;
@@ -768,27 +807,24 @@ void tms5220_data_write_chip(void *chip, int data)
       logerror("data_write: Added byte to FIFO (current count=%2d)\n", tms->fifo_count);
 #endif
       update_status_and_ints(tms);
-      /* if that write just unset buffer low and SPEN *was* zero (circuit 251, sheet 12).
-         Must be an edge detect: the level test used before re-triggered the block below
+      // if we just unset buffer low with that last write, and SPEN *was* zero (see circuit 251, sheet 12)
+      /* Must be an edge detect: the level test used before re-triggered the block below
          on every further write while buffer_low stayed clear, restarting the frame counters mid-utterance */
-      if ((tms->SPEN == 0) && old_buffer_low && (tms->buffer_low == 0))
+      if ((!tms->SPEN) && old_buffer_low && (!tms->buffer_low)) // MUST HAVE EDGE DETECT
       {
         int i;
 #ifdef DEBUG_FIFO
         logerror("data_write triggered talk status to go active!\n");
 #endif
-        /* ...then we have enough bytes to start talking; set zpar and clear the new frame
-           parameters (they become the old frame just before the first parse_frame call) */
-        /* TODO: the 3 lines below (and others) were needed for MAME's exidy victory to not fail its selftest due to a sample ending too late, may require additional investigation.
-           Came in with the 2011 MAME sync (44d6c503); current MAME has since dropped
-           these counter resets. Same for the SPEAK handler below */
-        tms->subcycle = tms->subc_reload;
-        tms->PC = 0;
-        tms->interp_period = reload_table[tms->tms5220c_rate&0x3]; // is this correct? should this be always 7 instead, so that the new frame is loaded quickly?
+        // ...then we now have enough bytes to start talking; set zpar and clear out the new frame parameters (it will become old frame just before the first call to parse_frame() )
         tms->zpar = tms->uv_zpar = 1;  /* the seeded 'silence' frame is zero everything */
         tms->OLDE = tms->OLDP = 1;     /* silence/zpar frames are zero energy and zero pitch */
 #ifdef PERFECT_INTERPOLATION_HACK
         tms->old_zpar = tms->old_uv_zpar = 1;
+#endif
+        tms->SPEN = 1;
+#ifdef FAST_START_HACK
+        tms->TALK = 1;
 #endif
         tms->new_frame_energy_idx = 0;
         tms->new_frame_pitch_idx = 0;
@@ -798,23 +834,20 @@ void tms5220_data_write_chip(void *chip, int data)
           tms->new_frame_k_idx[i] = 0xF;
         for (i = 7; i < tms->coeff->num_k; i++)
           tms->new_frame_k_idx[i] = 0x7;
-        tms->SPEN = 1;
-#ifdef FAST_START_HACK
-        tms->TALK = 1;
-#endif
+
       }
     }
     else
     {
 #ifdef DEBUG_FIFO
       logerror("data_write: Ran out of room in the tms52xx FIFO! this should never happen!\n");
-      // at this point, /READY should remain HIGH/inactive until the fifo has at least one byte open in it.
+      // at this point, /READY should remain HIGH/inactive until the FIFO has at least one byte open in it.
 #endif
     }
 
   }
   else //(! tms->DDIS)
-    /* R Nabet : we parse commands at once.  It is necessary for such commands as read. */
+    // R Nabet : we parse commands at once.  It is necessary for such commands as read.
     process_command(tms,data);
 }
 
@@ -848,34 +881,37 @@ void tms5220_data_write(int data) {
 
 static void update_status_and_ints(struct tms5220 *tms)
 {
-  /* update flags and set ints if needed */
-
+  /* update 52xx FIFO flags and set ints if needed */
   update_ready_state(tms);
 
-  /* BL is set if neither byte 9 nor 8 of the fifo are in use; this
+  /* BL is set if neither byte 9 nor 8 of the FIFO are in use; this
     translates to having fifo_count (which ranges from 0 bytes in use to 16
     bytes used) being less than or equal to 8. Victory/Victorba depends on this. */
     if (tms->fifo_count <= 8)
     {
-        /* generate an interrupt if necessary; if /BL was inactive and is now active, set int. */
+        // generate an interrupt if necessary; if /BL was inactive and is now active, set int.
         if (!tms->buffer_low)
+        {
+            tms->buffer_low = 1;
             set_interrupt_state(tms, 1);
-        tms->buffer_low = 1;
+        }
   }
   else
     tms->buffer_low = 0;
 
-  /* BE is set if neither byte 15 nor 14 of the fifo are in use; this
-    translates to having fifo_count equal to exactly 0 */
+  /* BE is set if neither byte 15 nor 14 of the FIFO are in use; this
+    translates to having fifo_count equal to exactly 0
+  */
   if (tms->fifo_count == 0)
   {
-      /* generate an interrupt if necessary; if /BE was inactive and is now active, set int. */
-        if (!tms->buffer_empty)
-            set_interrupt_state(tms, 1);
-        tms->buffer_empty = 1;
-        /* /BE clears TALK via TCON, which clears SPEN - but only if DDIS is set (patent
-           p16 gate 232b). TALKD is left alone so the frame in flight plays out */
-        if (tms->DDIS) tms->TALK = tms->SPEN = 0;
+      // generate an interrupt if necessary; if /BE was inactive and is now active, set int.
+      if (!tms->buffer_empty)
+      {
+          tms->buffer_empty = 1;
+          set_interrupt_state(tms, 1);
+      }
+      if (tms->DDIS)
+         tms->TALK = tms->SPEN = 0; // /BE being active clears the TALK status via TCON, which in turn clears SPEN, but ONLY if m_DDIS is set! See patent page 16, gate 232b
     }
   else
     tms->buffer_empty = 0;
@@ -916,7 +952,7 @@ int tms5220_status_read_chip(void *chip)
     logerror("Status read: TS=%d BL=%d BE=%d\n", TALK_STATUS(tms) ? 1 : 0, tms->buffer_low, tms->buffer_empty);
 #endif
 
-    return ((TALK_STATUS(tms) ? 1 : 0) << 7) | (tms->buffer_low << 6) | (tms->buffer_empty << 5);
+    return ((TALK_STATUS(tms) ? 1 : 0) << 7) | (tms->buffer_low << 6) | (tms->buffer_empty << 5);// | (m_write_latch & 0x1f); // low 5 bits are open bus, so use the m_write_latch value.
   }
 }
 
@@ -1031,13 +1067,17 @@ void tms5220_process_chip(void *chip, INT16 *buffer, unsigned int size)
      IP/PC/subcycle counters turning while emitting the idle level. They never stop on
      the real chip, and that motion is what starts the next utterance on the right
      phase - and what brings TALKD up */
-  while (size > 0) {
-   if (tms->TALKD) { /* speaking */
+  while (size > 0)
+  {
+   if(tms->TALKD) // speaking
+   {
     /* OLDE/OLDP are latched at RESETL4, further down; they used to be latched a
      * second time here at IP=0 PC=0, which is the same instant and the same values */
 
-    /* if we're ready for a new frame to be applied, i.e. when IP=0, PC=12, Sub=1 */
-    /* (In reality, the frame was really loaded incrementally during the entire IP=0 PC=x time period, but it doesn't affect anything until IP=0 PC=12 happens) */
+    /* if we're ready for a new frame to be applied, i.e. when IP=0, PC=12, Sub=1
+    * (In reality, the frame was really loaded incrementally during the entire IP=0
+    * PC=x time period, but it doesn't affect anything until IP=0 PC=12 happens)
+    */
     if ((tms->interp_period == 0) && (tms->PC == 12) && (tms->subcycle == 1)) {
       // HACK for regression testing, be sure to comment out before release!
       //tms->RNG = 0x1234;
@@ -1050,9 +1090,8 @@ void tms5220_process_chip(void *chip, INT16 *buffer, unsigned int size)
       /* remember previous frame energy, pitch, and coefficients */
       tms->old_frame_energy_idx = tms->new_frame_energy_idx;
       tms->old_frame_pitch_idx = tms->new_frame_pitch_idx;
-      for (i=0; i < tms->coeff->num_k; i++) {
+      for (i=0; i < tms->coeff->num_k; i++)
         tms->old_frame_k_idx[i] = tms->new_frame_k_idx[i];
-      }
 #endif
 
       /* Parse a new frame into new_target_energy, new_target_pitch and new_target_k[].
@@ -1071,21 +1110,20 @@ void tms5220_process_chip(void *chip, INT16 *buffer, unsigned int size)
       }
 
       /* in all cases where interpolation would be inhibited, set the inhibit flag; otherwise clear it.
-         Interpolation inhibit cases:
+         * Interpolation inhibit cases:
          * Old frame was voiced, new is unvoiced
-         * Old frame was silence/zero energy, new has nonzero energy
+         * Old frame was silence/zero energy, new has non-zero energy
          * Old frame was unvoiced, new is voiced
-         * Old frame was unvoiced, new frame is silence/zero energy (unique to tms52xx)
+         * Old frame was unvoiced, new frame is silence/zero energy (non-existent on tms51xx rev D and F (present and working on tms52xx, present but buggy on tms51xx rev A and B))
        */
       if ( ((OLD_FRAME_UNVOICED_FLAG == 0) && NEW_FRAME_UNVOICED_FLAG)
         || ((OLD_FRAME_UNVOICED_FLAG == 1) && !NEW_FRAME_UNVOICED_FLAG)
         || ((OLD_FRAME_SILENCE_FLAG == 1) && !NEW_FRAME_SILENCE_FLAG)
         || ((OLD_FRAME_UNVOICED_FLAG == 1) && NEW_FRAME_SILENCE_FLAG) )
-      {
         tms->inhibit = 1;
-      } else { // normal frame, normal interpolation
+      else // normal frame, normal interpolation
         tms->inhibit = 0;
-      }
+
       /* load new frame targets from tables, using parsed indices. zpar zeroes energy,
          pitch and k1-k4 too, which the old code never did - it had only the unvoiced
          case below. Both latches are maintained by parse_frame */
@@ -1110,7 +1148,9 @@ void tms5220_process_chip(void *chip, INT16 *buffer, unsigned int size)
       /* No forcing of target_energy to 0 on a clear talk status any more: a stop frame
          carries energy index 0xF, whose table entry is 0, so the ramp falls out of the
          frame, and everything else that stops speech sets zpar */
-    } else { // Not a new frame, just interpolate the existing frame.
+    }
+    else // Not a new frame, just interpolate the existing frame.
+    {
       int inhibit_state = ((tms->inhibit == 1) && (tms->interp_period != 0)); // disable inhibit when reaching the last interp period, but don't overwrite the tms->inhibit value
 #ifdef PERFECT_INTERPOLATION_HACK
       int samples_per_frame = tms->subc_reload ? 175 : 266; // either (13 A cycles + 12 B cycles) * 7 interps for normal SPEAK/SPKEXT, or (13*2 A cycles + 12 B cycles) * 7 interps for SPKSLOW
@@ -1122,17 +1162,18 @@ void tms5220_process_chip(void *chip, INT16 *buffer, unsigned int size)
       // zero-parameter latches as they were then, not as they are now
       tms->current_energy = (tms->coeff->energytable[tms->old_frame_energy_idx] * (1-tms->old_zpar));
       tms->current_pitch = (tms->coeff->pitchtable[tms->old_frame_pitch_idx] * (1-tms->old_zpar));
-      for (i=0; i < tms->coeff->num_k; i++) {
+      for (i = 0; i < tms->coeff->num_k; i++)
         tms->current_k[i] = (tms->coeff->ktable[i][tms->old_frame_k_idx[i]] * (1-((i < 4) ? tms->old_zpar : tms->old_uv_zpar)));
-      }
       // now adjust each value to be exactly correct for each of the samples per frame
-      if (tms->interp_period != 0) { // if we're still interpolating...
+      if (tms->interp_period != 0) // if we're still interpolating...
+      {
         tms->current_energy = (tms->current_energy + (((tms->target_energy - tms->current_energy) * (1-inhibit_state)) * current_sample) / samples_per_frame) * (1-tms->zpar);
         tms->current_pitch = (tms->current_pitch + (((tms->target_pitch - tms->current_pitch) * (1-inhibit_state)) * current_sample) / samples_per_frame) * (1-tms->zpar);
-        for (i=0; i < tms->coeff->num_k; i++) {
+        for (i = 0; i < tms->coeff->num_k; i++)
           tms->current_k[i] = (tms->current_k[i] + (((tms->target_k[i] - tms->current_k[i]) * (1-inhibit_state)) * current_sample) / samples_per_frame) * (1-((i < 4) ? tms->zpar : tms->uv_zpar));
-        }
-      } else { // we're done, play this frame for 1/8 frame.
+      }
+      else // we're done, play this frame for 1/8 frame.
+      {
         if (tms->subcycle == 2) tms->pitch_zero = 0; /* ~2nd subcycle of IP=0: release the circuit 412 latch */
         tms->current_energy = tms->target_energy;
         tms->current_pitch = tms->target_pitch;
@@ -1152,7 +1193,7 @@ void tms5220_process_chip(void *chip, INT16 *buffer, unsigned int size)
             tms->current_pitch = (tms->current_pitch + (((tms->target_pitch - tms->current_pitch) * (1-inhibit_state)) INTERP_SHIFT)) * (1-tms->zpar);
             break;
           case 2: case 3: case 4: case 5: case 6: case 7: case 8: case 9: case 10: case 11:
-            /* PC = 2 thru 11, B cycle, write updated K1 thru K10 */
+            /* PC = 2 through 11, B cycle, write updated K1 through K10 */
             tms->current_k[tms->PC-2] = (tms->current_k[tms->PC-2] + (((tms->target_k[tms->PC-2] - tms->current_k[tms->PC-2]) * (1-inhibit_state)) INTERP_SHIFT)) * (1-(((tms->PC-2) < 4) ? tms->zpar : tms->uv_zpar));
             break;
           case 12: /* PC = 12 never has a subcycle 2, so we should never get here */
@@ -1162,9 +1203,9 @@ void tms5220_process_chip(void *chip, INT16 *buffer, unsigned int size)
 #endif
     }
 
-    /* calculate the output */
+    // calculate the output
     if (OLD_FRAME_UNVOICED_FLAG == 1) {
-      /* generate unvoiced samples here */
+      // generate unvoiced samples here
 #ifndef UNVOICED_HACK
       if (tms->RNG & 1) {
         tms->excitation_data = ~0x3F; /* according to the patent it is (either + or -) half of the maximum value in the chirp table, so either 01000000(0x40) or 11000000(0xC0)*/
@@ -1179,7 +1220,7 @@ void tms5220_process_chip(void *chip, INT16 *buffer, unsigned int size)
       }
 #endif
     } else { /* (OLD_FRAME_UNVOICED_FLAG == 0) */
-      /* generate voiced samples here */
+      // generate voiced samples here
       /* US patent 4331836 Figure 14B shows, and logic would hold, that a pitch based chirp
        * function has a chirp/peak and then a long chain of zeroes.
        * The last entry of the chirp rom is at address 0b110011 (51d), the 52nd sample,
@@ -1232,7 +1273,7 @@ void tms5220_process_chip(void *chip, INT16 *buffer, unsigned int size)
 #endif
     }
 
-    /* Update LFSR *20* times every sample (once per T cycle), like patent shows */
+    // Update LFSR *20* times every sample (once per T cycle), like patent shows
     for (i=0; i < 20; i++) {
       bitout = ((tms->RNG >> 12) & 1) ^
                ((tms->RNG >>  3) & 1) ^
@@ -1253,15 +1294,12 @@ void tms5220_process_chip(void *chip, INT16 *buffer, unsigned int size)
     fprintf(stderr,"\n");
 #endif
     /* next, force result to 14 bits (since its possible that the addition at the final (k1) stage of the lattice overflowed) */
-    while (this_sample > 16383) {
-      this_sample -= 32768;
-    }
-    while (this_sample < -16384) {
-      this_sample += 32768;
-    }
-    if (tms->digital_select == 0) { // analog SPK pin output is only 8 bits, with clipping
+    while (this_sample > 16383) this_sample -= 32768;
+    while (this_sample < -16384) this_sample += 32768;
+    if (tms->digital_select == 0) // analog SPK pin output is only 8 bits, with clipping
       buffer[buf_count] = clip_analog(this_sample);
-    } else { // digital I/O pin output is 12 bits
+    else // digital I/O pin output is 12 bits
+    {
 #ifdef ALLOW_4_LSB
       // input:  ssss ssss ssss ssss ssnn nnnn nnnn nnnn
       // N taps:                       ^                 = 0x2000;
@@ -1275,15 +1313,21 @@ void tms5220_process_chip(void *chip, INT16 *buffer, unsigned int size)
       buffer[buf_count] = (this_sample << 1) | ((this_sample & 0x3E00) >> 9);
 #endif
     }
-    /* Update all counts */
+    // Update all counts
 
     tms->subcycle++;
-    if ((tms->subcycle == 2) && (tms->PC == 12)) { /* RESETF3 */
-      /* Circuit 412: arm the pitch-counter hold if INHIBIT was true across this frame
-         transition. Released at PC=0 in the generator above, ~2 samples from here; the
-         old code zeroed pitch_count once, right here, which was too short */
+    if ((tms->subcycle == 2) && (tms->PC == 12)) { // RESETF3
+      /* Circuit 412 in the patent acts a reset, resetting the pitch counter to 0
+       * if INHIBIT was true during the most recent frame transition.
+       * The exact time this occurs is betwen IP=7, PC=12 sub=0, T=t12
+       * and m_IP = 0, PC=0 sub=0, T=t12, a period of exactly 20 cycles,
+       * which overlaps the time OLDE and OLDP are updated at IP=7 PC=12 T17
+       * (and hence INHIBIT itself 2 t-cycles later).
+       * According to testing the pitch zeroing lasts approximately 2 samples.
+       * We set the zeroing latch here, and unset it on PC=1 in the generator.
+       */
       if ((tms->interp_period == 7) && (tms->inhibit == 1)) tms->pitch_zero = 1;
-      if (tms->interp_period == 7) { /* RESETL4 */
+      if (tms->interp_period == 7) { // RESETL4
         /* Latch OLDE/OLDP, then TALKD from TALK - this is where an utterance that ran
            out of frames actually stops, and where the talk-status falling edge and its
            interrupt come out of update_status_and_ints */
@@ -1297,20 +1341,20 @@ void tms5220_process_chip(void *chip, INT16 *buffer, unsigned int size)
       tms->PC = 0;
       tms->interp_period++;
       tms->interp_period&=0x7;
-    } else if (tms->subcycle == 3) {
+    }
+    else if (tms->subcycle == 3)
+    {
       tms->subcycle = tms->subc_reload;
       tms->PC++;
     }
     tms->pitch_count++;
-    if ((tms->pitch_count >= tms->current_pitch) || tms->pitch_zero) {
-      tms->pitch_count = 0;
-    }
+    if ((tms->pitch_count >= tms->current_pitch) || tms->pitch_zero) tms->pitch_count = 0;
     tms->pitch_count &= 0x1FF;
    }
    else { /* TALKD == 0: idle, but the counters keep running, as on the chip */
     tms->subcycle++;
-    if ((tms->subcycle == 2) && (tms->PC == 12)) { /* RESETF3 */
-      if (tms->interp_period == 7) { /* RESETL4 */
+    if ((tms->subcycle == 2) && (tms->PC == 12)) { // RESETF3
+      if (tms->interp_period == 7) { // RESETL4
         tms->TALKD = tms->TALK;
         update_status_and_ints(tms);
         if ((!tms->TALK) && tms->SPEN) tms->TALK = 1; /* a new utterance starts here */
@@ -1319,7 +1363,9 @@ void tms5220_process_chip(void *chip, INT16 *buffer, unsigned int size)
       tms->PC = 0;
       tms->interp_period++;
       tms->interp_period&=0x7;
-    } else if (tms->subcycle == 3) {
+    }
+    else if (tms->subcycle == 3)
+    {
       tms->subcycle = tms->subc_reload;
       tms->PC++;
     }
@@ -1342,14 +1388,17 @@ void tms5220_process(INT16 *buffer, unsigned int size) {
 
 static INT16 clip_analog(INT16 cliptemp)
 {
-  /* clipping, just like the patent shows:
-     the top 10 bits of this result are visible on the digital output IO pin.
-     next, if the top 3 bits of the 14 bit result are all the same, the lowest of those 3 bits plus the next 7 bits are the signed analog output, otherwise the low bits are all forced to match the inverse of the topmost bit, i.e.:
-     1x xxxx xxxx xxxx -> 0b10000000
-     11 1bcd efgh xxxx -> 0b1bcdefgh
-     00 0bcd efgh xxxx -> 0b0bcdefgh
-     0x xxxx xxxx xxxx -> 0b01111111
-   */
+	/* clipping, just like the patent shows:
+	 * the top 10 bits of this result are visible on the digital output IO pin.
+	 * next, if the top 3 bits of the 14 bit result are all the same, the
+	 * lowest of those 3 bits plus the next 7 bits are the signed analog
+	 * output, otherwise the low bits are all forced to match the inverse of
+	 * the topmost bit, i.e.:
+	 * 1x xxxx xxxx xxxx -> 0b10000000
+	 * 11 1bcd efgh xxxx -> 0b1bcdefgh
+	 * 00 0bcd efgh xxxx -> 0b0bcdefgh
+	 * 0x xxxx xxxx xxxx -> 0b01111111
+	 */
 #ifdef DEBUG_CLIP
   if ((cliptemp > 2047) || (cliptemp < -2048)) fprintf(stderr,"clipping cliptemp to range; was %d\n", cliptemp);
 #endif
@@ -1409,13 +1458,15 @@ static INT32 matrix_multiply(INT32 a, INT32 b)
 
 static INT32 lattice_filter(struct tms5220 *tms)
 {
-  /* Lattice filter here */
-  /* Aug/05/07: redone as unrolled loop, for clarity - LN*/
-  /* Originally Copied verbatim from table I in US patent 4,209,804, now updated to be in same order as the actual chip does it, not that it matters.
-     notation equivalencies from table:
-     Yn(i) == tms->u[n-1]
-     Kn = tms->current_k[n-1]
-     bn = tms->x[n-1]
+  // Lattice filter here
+  // Aug/05/07: redone as unrolled loop, for clarity - LN
+  /* Originally Copied verbatim from table I in US patent 4,209,804, now
+    updated to be in same order as the actual chip does it, not that it matters.
+
+    notation equivalencies from table:
+    Yn(i) == m_u[n-1]
+    Kn = m_current_k[n-1]
+    bn = m_x[n-1]
    */
   tms->u[10] = matrix_multiply(tms->previous_energy, (tms->excitation_data << 6));  //Y(11)
   tms->u[9] = tms->u[10] - matrix_multiply(tms->current_k[9], tms->x[9]);
@@ -1455,7 +1506,18 @@ static INT32 lattice_filter(struct tms5220 *tms)
 
 /**********************************************************************************************
 
-     process_command -- extract a byte from the FIFO and interpret it as a command
+     process_command -- decode byte and run the command
+
+     During SPEAK, the address counter is locked against modification by
+     LOAD_ADDRESS. In that time, a LOAD_ADDRESS command does not terminate but
+     remains in the command register.
+     When another command is fed into the speech processor, the READY line is
+     lowered until the command register is cleared, then the new command is
+     loaded into the command register.
+
+     Note that the running SPEAK command does not block the command register;
+     it is a command that attempts to change the address during the SPEAK
+     process. [mz]
 
 ***********************************************************************************************/
 
@@ -1483,7 +1545,8 @@ static void process_command(struct tms5220 *tms, unsigned char cmd)
       }
       break;
 
-    case 0x00: case 0x20: /* set rate (tms5220c only), otherwise NOP */
+    case 0x00:
+    case 0x20: /* set rate (tms5220c and cd2501ecd only), otherwise NOP */
       if (tms->variant == SUBTYPE_TMS5220C)
       {
         tms->tms5220c_rate = cmd&0x0F;
@@ -1505,8 +1568,8 @@ static void process_command(struct tms5220 *tms, unsigned char cmd)
     case 0x40 : /* load address */
       if (!TALK_STATUS(tms)) /* TALKST must be clear for LA */
       {
-        /* tms5220 data sheet says that if we load only one 4-bit nibble, it won't work.
-                  This code does not care about this. */
+        // tms5220 data sheet says that if we load only one 4-bit nibble,
+        // it won't work. This code does not care about this.
         if (tms->load_address_callback)
           (*tms->load_address_callback)(cmd & 0x0f);
         tms->schedule_dummy_read = TRUE;
@@ -1530,11 +1593,7 @@ static void process_command(struct tms5220 *tms, unsigned char cmd)
 #ifdef PERFECT_INTERPOLATION_HACK
       tms->old_zpar = tms->old_uv_zpar = 1;
 #endif
-      /* clear out variables before speaking */
-      // TODO: similar to the victory case described above, but for VSM speech
-      tms->subcycle = tms->subc_reload;
-      tms->PC = 0;
-      tms->interp_period = reload_table[tms->tms5220c_rate&0x3];
+      // following is semi-hack but matches idle state observed on chip
       tms->new_frame_energy_idx = 0;
       tms->new_frame_pitch_idx = 0;
       for (i = 0; i < 4; i++)
@@ -1551,13 +1610,22 @@ static void process_command(struct tms5220 *tms, unsigned char cmd)
         //SPKEXT going active activates SPKEE which clears the fifo
         memset(tms->fifo, 0, sizeof(tms->fifo));
         tms->fifo_head = tms->fifo_tail = tms->fifo_count = tms->fifo_bits_taken = 0;
-        /* SPEN comes up later, on the BL falling edge once the FIFO passes half full */
+        // SPEN is enabled when the FIFO passes half full (falling edge of BL signal)
         tms->DDIS = 1;
         tms->zpar = tms->uv_zpar = 1; /* nothing to say yet: zero every parameter */
         tms->OLDE = tms->OLDP = 1;    /* silence/zpar frames are zero energy and zero pitch */
 #ifdef PERFECT_INTERPOLATION_HACK
         tms->old_zpar = tms->old_uv_zpar = 1;
 #endif
+        // following is semi-hack but matches idle state observed on chip
+        tms->new_frame_energy_idx = 0;
+        tms->new_frame_pitch_idx = 0;
+        for (i = 0; i < 4; i++)
+          tms->new_frame_k_idx[i] = 0;
+        for (i = 4; i < 7; i++)
+          tms->new_frame_k_idx[i] = 0xF;
+        for (i = 7; i < tms->coeff->num_k; i++)
+          tms->new_frame_k_idx[i] = 0x7;
         tms->RDB_flag = FALSE;
       }
       break;

@@ -1,16 +1,66 @@
-/* Chip types based on die marks from decap:
-    chip type
-    |||||| rom number
-    |||||| |||||
-    VVVVVV VVVVV
-    T0280A 0281  = 1978 speak & spell, unknown difference to below, assumed same? uses old chirp
-    T0280B 0281A = 1979 speak & spell, also == TMS5100, uses old chirp
-    ?????? ????? (no decap; likely 'T0280D 0281D') = 1980 speak & spell, 1981 speak & spell compact, changed energy table, otherwise same as above, uses old chirp
-    T0280F 2801A = 1980 speak & math, 1980 speak and read, uses old chirp
-    ?????? ????? (no decap; likely 'T0280F 2802') = touch and tell, language translator; uses a unique chirp rom.
-    ?????? ????? = TMS5110
-    T0280F 5110A = TMS5110AN2L
-*/
+// license:BSD-3-Clause
+// copyright-holders:Frank Palazzolo, Couriersud, Jonathan Gevaryahu
+/* TMS51xx and TMS52xx ROM Tables */
+
+/* The following table is assumed to be for TMS5100
+ *
+ * US Patent 4209836
+ *           4331836
+ *           4304964
+ *           4234761
+ *           4189779
+ *           4449233
+ *
+ * All patents give interpolation coefficients
+ *  { 1, 8, 8, 8, 4, 4, 2, 2 }
+ *  This sequence will not calculate the published
+ *  fractions:
+ * 1 8 0.125
+ * 2 8 0.234
+ * 3 8 0.330
+ * 4 4 0.498
+ * 5 4 0.623
+ * 6 2 0.717
+ * 7 2 0.859
+ * 0 1 1.000
+ * (remember, 1 is the FIRST entry!)
+ *
+ * Instead,  { 1, 8, 8, 8, 4, 4, 4, 2 }
+ * will calculate those coefficients.
+ * Howeever, after simulating the actual circuit from the patent in pspice,
+ * the { 1, 8, 8, 8, 4, 4, 2, 2 } pattern is revealed as the correct one.
+ * Since the real chip uses shifters and not true division to achieve those
+ * factors, they have been replaced by the shifting coefficients:
+ * { 0, 3, 3, 3, 2, 2, 1, 1 }
+ */
+
+	/* quick note on derivative analysis:
+	Judging by all the TI chips I (Lord Nightmare) have done this test on,
+	the first derivative between successive values of the LPC tables should
+	follow a roughly triangular or sine shaped curve, the second derivative
+	should start at a value, increase slightly, then decrease smoothly and
+	become negative right around where the LPC curve passes 0, finally
+	increase slightly right near the end. If it doesn't do this, there is
+	probably a wrong value in there somewhere. The pitch and energy tables
+	follow similar patterns but aren't the same since they never cross 0.
+	The chirp table doesn't follow this pattern at all.
+	*/
+
+	/* Chip types based on die marks from decap:
+	chip type
+	|||||| rom number
+	|||||| |||||
+	VVVVVV VVVVV
+	T0280A 0281  = 1978 speak & spell, unknown difference to below, assumed same? uses old chirp
+	T0280B 0281A = 1979 speak & spell, also == TMS5100, uses old chirp
+	T0280F 0281D = 1980 speak & spell, 1981 speak & spell compact, changed energy table, otherwise same as above, uses old chirp
+	T0280F 2801A = 1980 speak & math, 1980 speak and read, uses old chirp
+	T0280F 2802  = touch and tell, language translator; uses a unique chirp rom.
+	?????? ????? = TMS5110
+	T0280F 5110A = TMS5110AN2L
+
+
+	*/
 
 #define COEFF_ENERGY_SENTINEL	(511)
 
@@ -384,8 +434,8 @@ const static char interp_coeff[8] = {
    Decapped by Digshadow in 2014 http://siliconpr0n.org/map/ti/tmc0280fnl/
    Digitally dumped via PROMOUT by PlgDavid in 2014
    The coefficients are exactly the same as the TMS5200.
-   The coefficients also come from US Patents 4,403,965 and 4,946,391 (with
-   one typo in the patent).
+   The coefficients also come from US Patents 4,403,965, 4,631,748 and
+   4,946,391 (with one typo in all 3 patents: K9(3) is 0x3E0, not 0x3ED).
    The chirp table is very slightly different from the 4,209,836 patent one,
    but matches the table in the 4,403,965 and 4,946,391 patents.
    The Mitsubishi M58817 also seems to work best with these coefficients, so
@@ -395,7 +445,12 @@ const static char interp_coeff[8] = {
    * TMC0280NLP // CD2801 with datecodes around 1980 has the same
      interpolation inhibit behavior as 5100/TMC0281 on unvoiced->silent
      transition.
-   * CD2801A-NL with datecodes around 1982 have the 'alternate behavior'
+   * CD2801A-NL with datecodes around 1982 have the 'alternate behavior',
+     which seems to be a somewhat crude workaround for a bug where when
+     an unvoiced frame follows a silent one (which in turn followed a
+     voiced frame), the k5-k10 parameters are not zeroed as they should be,
+     producing a loud noise.
+     This bug is fixed correctly on the tms52xx chips.
 */
 //TI_0280_LATER_ENERGY
 //TI_0280_2801_PATENT_PITCH
@@ -417,7 +472,7 @@ tapped 1 bit higher than on the TI chips. This is emulated within tms5110.c
 
 /* CD2802:
    (1984 era?)
-   Used in Touch and Tell only (and Vocaid?), this chip has a unique pitch, LPC and chirp table.
+   Used in Touch and Tell only (and Vocaid), this chip has a unique pitch, LPC and chirp table.
    Has the 'alternate' interpolation behavior.
 */
 //TI_0280_LATER_ENERGY
@@ -433,8 +488,8 @@ tapped 1 bit higher than on the TI chips. This is emulated within tms5110.c
    by PlgDavid.
    NullMoogleCable decapped a TMS5110AN2L in 2015: http://wtfmoogle.com/wp-content/uploads/2015/03/0317_1.jpg
    which was used to verify the chirp table.
-   The slightly older but otherwise identical TMS5111NLL was decapped and imaged by digshadow in April, 2013.
-   The die is marked "TMS5110AJ"
+   The slightly older but otherwise identical TMS5111NLL was decapped and imaged by digshadow in April, 2013,
+   its die is marked "TMS5110AJ"
    The LPC table is verified from decap to match the values from Jarek and PlgDavid's PROMOUT dumps of the TMS5110.
    The LPC table matches that of the TMS5220.
    It uses the 'newer' 5200-style chirp table.
@@ -446,8 +501,8 @@ tapped 1 bit higher than on the TI chips. This is emulated within tms5110.c
 //TI_LATER_CHIRP
 
 
-/* TMS5200/CD2501E:
-   (1979-1983 era)
+/* TMS5200/CD2501E
+ (1979-1983 era)
 The TMS5200NL was decapped and imaged by digshadow in March, 2013.
 It is equivalent to the CD2501E (internally: "TMC0285") chip used
  on the TI 99/4(A) speech module.
@@ -467,8 +522,8 @@ NOTE FROM DECAP: immediately to the left of each of the K1,2,3,4,5,and 6
  patent 4,335,277. They are likely related to the multiplicative interpolator
  described in us patent 4,419,540; whether the 5200/2501E and the 5220 or 5220C
  actually implement this interpolator or not is unclear. This interpolator
- seems intended for chips with variable frame rate, so it may only exist
- on the TMS/TSP5220C and CD2501ECD.
+ seems intended for chips with variable frame rate, so if it exists at all,
+ it may only exist on the TMS/TSP5220C and CD2501ECD.
 */
 //TI_0285_LATER_ENERGY
 //TI_2501E_PITCH
@@ -477,7 +532,7 @@ NOTE FROM DECAP: immediately to the left of each of the K1,2,3,4,5,and 6
 
 
 /* TMS5220/5220C:
-   (1983 era for 5220, 1986-1992 era for 5220C; 5220C may also be called TSP5220C)
+(1983 era for 5220, 1986-1992 era for 5220C; 5220C may also be called TSP5220C)
 The TMS5220NL was decapped and imaged by digshadow in April, 2013.
 The LPC table table is verified to match the decap.
 The chirp table is verified to match the decap. (sum = 0x3da)
@@ -505,7 +560,7 @@ K1A holds odd values of K1, K1B holds even values.
 K2 holds values for K2 only
 K3 and K4 are actually the table index values <<6
 K5 thru K10 are actually the table index values <<7
-The concept of only having non-binary weighted reflection coefficients for the
+This concept of only having non-binary weighted reflection coefficients for the
 first two k stages is mentioned in Markel & Gray "Linear Prediction of Speech"
 and in Thomas Parsons' "Voice and Speech Processing"
 */
