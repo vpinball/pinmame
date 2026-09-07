@@ -11,6 +11,8 @@
 #include "sound/tms5220.h"
 //#include "sound/msm5205.h"
 
+//#define PLAY_OLD_TMS_HACK // seems like not needed anymore since the 09/2026 update of the TMS core?
+
 /*----------------
 /  Local variables
 /-----------------*/
@@ -252,7 +254,8 @@ static UINT8 snd_ef3(void) {
   sndlocals.ef[3] = ((val & 0x40) >> 6);
   sndlocals.ef[4] = ((val & 0x80) >> 7);
 
-  //!! HACK to fix cerberus, maybe newer TMS5220 core could fix this?
+#ifdef PLAY_OLD_TMS_HACK
+  // HACK to fix cerberus, maybe newer TMS5220 core could fix this?
   if (sndlocals.ef[4] && sndlocals.oldData) {
     sndlocals.ef[0]++;
     if (sndlocals.ef[0] > 20000) {
@@ -262,6 +265,7 @@ static UINT8 snd_ef3(void) {
       sndlocals.oldData = 0;
     }
   }
+#endif
 
   return sndlocals.ef[1] | (sndlocals.ef[2] << 1) | (sndlocals.ef[3] << 2) | (sndlocals.ef[4] << 3);
 }
@@ -278,8 +282,10 @@ static WRITE_HANDLER(out_snd_3) {
   if (sndlocals.enSn) tms5220_data_w(0, data);
   sndlocals.oldData = data;
 
-  //!! HACK to fix cerberus, maybe newer TMS5220 core could fix this?
+#ifdef PLAY_OLD_TMS_HACK
+  // HACK to fix cerberus, maybe newer TMS5220 core could fix this?
   sndlocals.ef[0] = 0; // using unused ef[0] as counter to see if TMS is stuck talking
+#endif
 }
 
 static CDP1802_CONFIG playsound_config3 =

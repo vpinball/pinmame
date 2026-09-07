@@ -318,6 +318,7 @@ in MCU code). Look for a 16-pin chip at U6 labeled "ECHO-3 SN".
 /* *****optional defines***** */
 
 /* Hacky improvements which don't match patent: */
+
 /* Interpolation shift logic:
  * One of the following two lines should be used, and the other commented
  * The second line is more accurate mathematically but not accurate to the patent
@@ -332,7 +333,7 @@ in MCU code). Look for a 16-pin chip at U6 labeled "ECHO-3 SN".
    And the unvoiced speech is ~0x3F(i.e. 0xC0) or 0x40 depending on an LFSR */
 /* HACK: if defined, change the unvoiced excitation to use ~0x7F and 0x80
  * if not defined, acts as shown in patent */
-#undef UNVOICED_HACK
+//#define UNVOICED_HACK
 
 /* HACKS: VOICED waveform hacks;
  * if none defined, acts as shown in patent
@@ -340,19 +341,19 @@ in MCU code). Look for a 16-pin chip at U6 labeled "ECHO-3 SN".
  * if VOICED_ZERO_HACK defined, acts as shown in patent, but the first and >=51 samples are 0x80 (-128)
  * if VOICED_PULSE_HACK defined, acts as a pulse waveform with a period of PWIDTH samples at PAMP, PWIDTH samples at ~PAMP, and the rest at 0
  * if VOICED_PULSE_MONOPOLAR_HACK defined, acts as a pulse waveform with a period of PWIDTH samples at PAMP, and the rest at 0
- * If you want this to sound like MGE, set VOICED_PULSE_MONOPOLAR_HACK to 1, PAMP to 0x3F and PWIDTH to 2, and set the perfect interpolation hack below on as well.
+ * If you want this to sound like MGE, define VOICED_PULSE_MONOPOLAR_HACK, PAMP to 0x3F and PWIDTH to 2, and set the perfect interpolation hack below on as well
  */
 #undef VOICED_INV_HACK
 #undef VOICED_ZERO_HACK
 #undef VOICED_PULSE_HACK
-#define VOICED_PULSE_MONOPOLAR_HACK 1
+#define VOICED_PULSE_MONOPOLAR_HACK
 #define PAMP 0xaf
 #define PWIDTH 1
 
 /* Other hacks */
 /* HACK: if defined, outputs the low 4 bits of the lattice filter to the i/o
  * or clip logic, even though the real hardware doesn't do this, partially verified by decap */
-#undef ALLOW_4_LSB
+//#define ALLOW_4_LSB
 
 
 /* *****configuration of chip connection stuff***** */
@@ -365,7 +366,7 @@ in MCU code). Look for a 16-pin chip at U6 labeled "ECHO-3 SN".
 /* raise TALK the instant a SPEAK/SPKEXT is accepted instead of at the next
    RESETL4, so speech starts without the ~2 frame (~40ms) delay the real chip has.
    Does not match the patent, but on as in MAME. Undefine to get the accurate onset, at the risk of a game clipping its samples */
-#define FAST_START_HACK 1
+//#define FAST_START_HACK
 
 /* If defined, a FIFO underrun mid-frame (parse_frame's 'ranout') resets the whole chip.
    PinMAME has always done this, MAME just returns and lets /BE halt speech (which is more accurate).
@@ -378,9 +379,7 @@ in MCU code). Look for a 16-pin chip at U6 labeled "ECHO-3 SN".
        talk-status falling edge that would follow a frame later never happens at
        all - so a driver waiting on 'speech finished' is never notified
      - the FIFO, frame phase and filter history do not carry into the next utterance */
-#ifndef RANOUT_RESET_HACK
-#define RANOUT_RESET_HACK 1
-#endif
+//#define RANOUT_RESET_HACK
 
 
 /* *****debugging defines***** */
@@ -1735,9 +1734,8 @@ static void parse_frame(struct tms5220 *tms)
 #ifdef DEBUG_FRAME_ERRORS
   logerror("Ran out of bits on a parse!\n");
 #endif
-  /* see RANOUT_RESET_HACK: set it to 0 for MAME's behaviour, where /BE halts speech
-     through TCON and the frame TALKD is holding gets to play out */
-#if RANOUT_RESET_HACK
+
+#ifdef RANOUT_RESET_HACK /* /BE halts speech through TCON and the frame TALKD is holding gets to play out */
   i = tms->variant; /* the reset clobbers it, and it has to survive - see 70fda9fb */
   tms5220_reset_chip(tms);
   tms5220_set_variant_chip(tms, i); /* _chip: see the note in tms5220_reset_chip */
