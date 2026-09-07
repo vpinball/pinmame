@@ -14,10 +14,6 @@
   https://siliconpr0n.org/map/capcom/dl-1425
 
 ***************************************************************************/
-#if (!defined _MSC_VER)
-#define min(x,y) ((x)<(y)?(x):(y))
-#define max(x,y) ((x)>(y)?(x):(y))
-#endif
 
 #include "driver.h"
 #include "../ext/vgm/vgmwrite.h"
@@ -38,6 +34,11 @@ Debug defines
 #define int16_t signed short
 #define uint32_t unsigned int
 #define int32_t signed int
+
+static int32_t mini32(int32_t x, int32_t y) { return x < y ? x : y; }
+static int32_t maxi32(int32_t x, int32_t y) { return x > y ? x : y; }
+static int16_t mini16(int16_t x, int16_t y) { return x < y ? x : y; }
+static int16_t maxi16(int16_t x, int16_t y) { return x > y ? x : y; }
 
 static const uint8_t *qsound_sample_rom; // QSound sample ROM
 static unsigned int qsound_sample_rom_length;
@@ -508,7 +509,7 @@ INLINE int16_t qsound_voice_update(qsound_voice* qv, int32_t *echo_out)
 	if ((new_phase >> 12) >= qv->m_end_addr)
 		new_phase -= (qv->m_loop_len << 12);
 
-	new_phase = min(max(new_phase, (int32_t)-0x8000000), (int32_t)0x7FFFFFF);
+	new_phase = mini32(maxi32(new_phase, (int32_t)-0x8000000), (int32_t)0x7FFFFFF);
 	qv->m_addr = new_phase >> 12;
 	qv->m_phase = (new_phase << 4) & 0xffff;
 
@@ -558,10 +559,10 @@ INLINE int16_t qsound_adpcm_update(qsound_adpcm *qa, int16_t curr_sample, int ni
 	if (step <= 0)
 		delta = -delta;
 	delta += curr_sample;
-	delta = min(max(delta, (int32_t)-32768), (int32_t)32767);
+	delta = mini32(maxi32(delta, (int32_t)-32768), (int32_t)32767);
 
 	qa->m_step_size = (read_dsp_rom(DATA_ADPCM_TAB + 8 + step) * qa->m_step_size) >> 6;
-	qa->m_step_size = min(max(qa->m_step_size, (int16_t)1), (int16_t)2000);
+	qa->m_step_size = mini16(maxi16(qa->m_step_size, (int16_t)1), (int16_t)2000);
 
 	return (delta * qa->m_cur_vol) >> 16;
 }
@@ -603,7 +604,7 @@ static void state_normal_update()
 	else
 		m_echo.m_length = m_echo.m_end_pos - DELAY_BASE_OFFSET;
 
-	m_echo.m_length = min(max(m_echo.m_length, (int16_t)0), (int16_t)1024);
+	m_echo.m_length = mini16(maxi16(m_echo.m_length, (int16_t)0), (int16_t)1024);
 
 	// update PCM voices
 	echo_input = 0;
@@ -634,8 +635,8 @@ static void state_normal_update()
 			wet -= (m_voice_output[i] * (int16_t)read_dsp_rom(pan_index + PAN_TABLE_WET));
 		}
 		// Saturate accumulated voices
-		dry = (min(max(dry, (int32_t)-0x1fffffff), (int32_t)0x1fffffff)) << 2;
-		wet = (min(max(wet, (int32_t)-0x1fffffff), (int32_t)0x1fffffff)) << 2;
+		dry = (mini32(maxi32(dry, (int32_t)-0x1fffffff), (int32_t)0x1fffffff)) << 2;
+		wet = (mini32(maxi32(wet, (int32_t)-0x1fffffff), (int32_t)0x1fffffff)) << 2;
 
 		// Apply FIR filter on 'wet' input
 		wet = qsound_fir_apply(m_filter+ch, wet >> 16);
@@ -649,7 +650,7 @@ static void state_normal_update()
 
 		// DSP round function
 		output = (output + 0x2000) & ~0x3fff;
-		m_out[ch] = (min(max(output >> 14, (int32_t)-0x7fff), (int32_t)0x7fff));
+		m_out[ch] = (mini32(maxi32(output >> 14, (int32_t)-0x7fff), (int32_t)0x7fff));
 
 		if (m_delay_update)
 		{

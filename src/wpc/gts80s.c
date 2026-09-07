@@ -1704,7 +1704,9 @@ static WRITE_HANDLER( techno_dac_data_w )
 //TMS7000 will use dac chip #1
 static WRITE_HANDLER(DAC_TMS_w)
 {
-	DAC_data_w(1,data);
+	/* The TMS7000's only write target is this DAC and it reads from banked ROM, so it is a plain PCM streamer.
+	   Scaled by 0x101/2, exactly what UnsignedVolTable applied, so the level is untouched compared to using DAC_data_w() */
+	DAC_DC_offset_correction_data_16_w(1, data * 0x101 / 2);
 }
 
 static void tsns_diag(int button) {
@@ -1799,7 +1801,7 @@ MACHINE_DRIVER_START(techno)
   MDRV_SOUND_ADD(DAC, techno_6502dacInt)
 
   //MDRV_CPU_ADD(TMS7000, 4000000)
-  MDRV_CPU_ADD(TMS7000, 1500000) //!! Sounds much better at 1.5Mhz than 4Mhz
+  MDRV_CPU_ADD(TMS7000, 1500000) //!! Sounds much better at 1.5Mhz than 4Mhz, e.g. https://www.youtube.com/watch?v=Vm2aED9mO1c
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(tms_readmem, tms_writemem)
   MDRV_CPU_PORTS(tms_readport, tms_writeport)

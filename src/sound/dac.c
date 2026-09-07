@@ -1,8 +1,13 @@
 #include <math.h>
 #include "driver.h"
 
-#define DAC_SAMPLE_RATE (4*48000)
+#define DAC_SAMPLE_RATE (4*48000)  // also change dc_coeff when adapting!
 //#define DAC_ENABLE_INTERPOLATION // if used, machines like Centaur sound way too muffled and crackle, most likely due to the really low sample rate these machines have and this simple upsample mechanism
+
+#if (!defined _MSC_VER)
+static double min(double x, double y) { return x < y ? x : y; }
+static double max(double x, double y) { return x > y ? x : y; }
+#endif
 
 static int n_chips;
 static int channel[MAX_DAC];
@@ -12,7 +17,19 @@ static int output[MAX_DAC];
  static int curr_output[MAX_DAC];
 #endif
 
-// DC offset correction:
+/* DC offset correction, a one-pole high-pass y[n] = R*y[n-1] + (x[n] - x[n-1]) to convert unipolar signals (=0..MAX range instead of centered around 0).
+   Opt-in per channel (if written once through DAC_DC_offset_correction_data_16_w()).
+   Currently: Gottlieb System 80B/Techno's, Taito's sintetizador, and Mr. Game's stereo pair (Bingo is left alone deliberately - there the main CPU pokes the DAC port directly and it is not clear the value is a waveform rather than a level).
+   NOTE: A channel stays enabled once set; do not mix the plain DAC_*_w entry points with this one on the same channel!
+
+   Filtering per output sample pins it to DAC_SAMPLE_RATE, so the cutoff below is what you actually get.
+   10Hz costs -0.04dB at 100Hz and -0.46dB at 30Hz, and settles a DC step in about 16ms */
+#define DAC_DC_CUTOFF_HZ 10.0 // also change dc_coeff when adapting!
+
+static int dc_enabled[MAX_DAC];
+//static double dc_coeff; /* R for DAC_DC_CUTOFF_HZ at DAC_SAMPLE_RATE */
+#define dc_coeff 0.9996728042996023421606962823456233716955572049383392927675559351 // see DAC_sh_start()
+
 static int prev_data[MAX_DAC];
 static double integrator[MAX_DAC];
 
@@ -26,10 +43,25 @@ static void DAC_update(int num,INT16 *const buffer,int length)
 		return;
 	else
 	{
-		int i;
+		if (dc_enabled[num])
+		{
+			/* output[] holds the raw unsigned level for these channels; the filter both removes the offset and lands it in signed range */
+			int i;
+			for (i = 0; i < length; i++)
+			{
+				const int input = output[num];
+				const double out = integrator[num]*dc_coeff + (double)(input - prev_data[num]);
+				integrator[num] = out;
+				prev_data[num] = input;
+				buffer[i] = (INT16)min(max(out, -32768.), 32767.);
+			}
+			return;
+		}
+		{
 #ifdef DAC_ENABLE_INTERPOLATION
 		INT32 data = curr_output[num];
-		INT32 slope = ((output[num] - data) << 15) / length;
+		const INT32 slope = ((output[num] - data) << 15) / length;
+		int i;
 		data <<= 15;
 
 		for (i = 0; i < length; i++, data += slope)
@@ -37,9 +69,11 @@ static void DAC_update(int num,INT16 *const buffer,int length)
 
 		curr_output[num] = output[num];
 #else
+		int i;
 		for (i = 0; i < length; i++)
 			buffer[i] = output[num];
 #endif
+		}
 	}
 }
 
@@ -82,26 +116,16 @@ void DAC_data_16_w(int num,int data)
 	}
 }
 
+/* Takes 0..65535; DAC_update turns that into -32768..32767 with the offset removed (i.e. average = 0) */
 void DAC_DC_offset_correction_data_16_w(int num, int data)
 {
-	// convert from 0..65535 to -32768..32767, including DC offset correction (e.g. average = 0)
-	int out;
+	dc_enabled[num] = 1;
 
-	integrator[num] = integrator[num]*0.995 + (data - prev_data[num]); // 0.7 .. 0.995
-
-	out = (int)integrator[num];
-	if (out < -32768)
-		out = -32768;
-	else if (out > 32767)
-		out = 32767;
-
-	prev_data[num] = data;
-
-	//if (output[num] != out)
+	//if (output[num] != data)
 	{
 		/* update the output buffer before changing the registers */
 		stream_update(channel[num], 0);
-		output[num] = out;
+		output[num] = data;
 	}
 }
 
@@ -138,6 +162,13 @@ int DAC_sh_start(const struct MachineSound *msound)
 
 	DAC_build_voltable();
 
+	/* exact one-pole corner: R = (1-sin w)/cos w, w = 2*pi*fc/fs. The usual
+	   1 - 2*pi*fc/fs approximation agrees to five decimals at these rates */
+	//{
+		//const double w = (2.*M_PI*DAC_DC_CUTOFF_HZ)/(double)DAC_SAMPLE_RATE;
+		//dc_coeff = (1. - sin(w))/cos(w);
+	//}
+
 	n_chips = intf->num;
 	for (i = 0; i < n_chips; i++)
 	{
@@ -155,6 +186,7 @@ int DAC_sh_start(const struct MachineSound *msound)
 #endif
 		integrator[i] = 0.;
 		prev_data[i] = 0;
+		dc_enabled[i] = 0;
 	}
 
 	return 0;

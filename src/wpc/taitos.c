@@ -75,7 +75,9 @@ static void taitos_nmi_timed(int state) {
 static WRITE_HANDLER(pia0a_w)
 {
 //	logerror("pia0a_w: %02x\n", data);
-	DAC_data_w(0, data);
+	/* DC offset correction: this is the sintetizador's sound output (the 6802's PIA port A; port B is the SC-01A).
+	   Scaled by 0x101/2, exactly what UnsignedVolTable applied via DAC_data_w() */
+	DAC_DC_offset_correction_data_16_w(0, data * 0x101 / 2);
 }
 
 static WRITE_HANDLER(pia0b_w)

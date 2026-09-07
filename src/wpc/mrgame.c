@@ -553,8 +553,9 @@ static WRITE_HANDLER(soundg1_2_port_w) {
 	switch(offset)
 	{
 		case 0:
+			/* Scaled by 0x101/2, exactly what UnsignedVolTable applies for DAC_data_w() */
 			//Data to DAC #1
-			DAC_data_w(0,data);
+			DAC_DC_offset_correction_data_16_w(0,data * 0x101 / 2);
 			break;
 		case 2:
 			//Write Status bit for main cpu to read
@@ -566,7 +567,7 @@ static WRITE_HANDLER(soundg1_2_port_w) {
 			break;
 		case 4:
 			//Data to DAC #2
-			DAC_data_w(1,data);
+			DAC_DC_offset_correction_data_16_w(1,data * 0x101 / 2);
 			break;
 		default:
 			LOG(("Unhandled port write on Sound CPU #2 - Port %02x - Data %02x\n",offset,data));
@@ -603,8 +604,9 @@ static WRITE_HANDLER(soundg2_2_port_w) {
 	switch(offset)
 	{
 		case 0:
+			/* Scaled by 0x101/2, exactly what UnsignedVolTable applies for DAC_data_w() */
 			//Data to DAC #1
-			DAC_data_w(0,data);
+			DAC_DC_offset_correction_data_16_w(0,data * 0x101 / 2);
 			break;
 		case 2:
 			//Write Status bit for main cpu to read
@@ -619,7 +621,7 @@ static WRITE_HANDLER(soundg2_2_port_w) {
 		}
 		case 4:
 			//Data to DAC #2
-			DAC_data_w(1,data);
+			DAC_DC_offset_correction_data_16_w(1,data * 0x101 / 2);
 			break;
 		default:
 			LOG(("Unhandled port write on Sound CPU #2 - Port %02x - Data %02x\n",offset,data));

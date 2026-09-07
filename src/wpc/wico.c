@@ -233,7 +233,7 @@ static MACHINE_RESET(WICO) {
 
 struct SN76494interface WICO_sn76494Int = {
   1, /* total number of chips in the machine */
-  { WICO_CLOCK_FREQ/8 }, /* base clock */
+  { WICO_CLOCK_FREQ/64 }, /* base clock */ // seems to be okay, see https://www.youtube.com/watch?v=rwkggZ02r4E, but overall speed of notes is 'too slow'
   { 75 } /* volume */
 };
 
