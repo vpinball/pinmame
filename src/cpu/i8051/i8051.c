@@ -2548,7 +2548,6 @@ void i8752_reset (void *param)
 	i8051.iram_iwrite = i8052_internal_ram_iwrite;
 
 	//Set up serial call back handlers
-	//hold_* deliberately not cleared -- see the note in i8051_reset().
 	i8051.serial_tx_callback = hold_serial_tx_callback;
 	i8051.serial_rx_callback = hold_serial_rx_callback;
 
