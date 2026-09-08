@@ -1,5 +1,6 @@
-#ifndef INC_DENORMALS
-#define INC_DENORMALS
+// license:BSD-3-Clause
+
+#pragma once
 
 /*
   Put the calling thread's FPU into flush-to-zero mode.
@@ -37,15 +38,15 @@
 */
 
 #if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || defined(__amd64__) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1) || defined(__SSE__) || defined(__SSE2__)
-  #define DENORMALS_VIA_MXCSR 1
-  #include <xmmintrin.h>
-  #include <string.h>
-  #if defined(_MSC_VER)
-    #include <intrin.h>
-  #endif
+   #define DENORMALS_VIA_MXCSR 1
+   #include <xmmintrin.h>
+   #include <string.h>
+   #if defined(_MSC_VER)
+      #include <intrin.h>
+   #endif
 #elif defined(_MSC_VER) && (defined(_M_ARM64) || defined(_M_ARM))
-  #define DENORMALS_VIA_CONTROLFP 1
-  #include <float.h>
+   #define DENORMALS_VIA_CONTROLFP 1
+   #include <float.h>
 #endif
 
 #if defined(DENORMALS_VIA_MXCSR)
@@ -53,11 +54,11 @@
 static int denormals_daz_supported(void)
 {
 #if defined(_MSC_VER)
-	__declspec(align(16)) unsigned char buf[512];
+   __declspec(align(16)) unsigned char buf[512];
 #elif defined(__GNUC__) || defined(__clang__)
-	unsigned char buf[512] __attribute__((aligned(16)));
+   unsigned char buf[512] __attribute__((aligned(16)));
 #else
-	return 0; /* no way to run FXSAVE portably here; skip DAZ, keep FTZ */
+   return 0; // no portable way to run FXSAVE here, so skip DAZ and keep FTZ
 #endif
 #if defined(_MSC_VER) || defined(__GNUC__) || defined(__clang__)
 	{
@@ -80,36 +81,34 @@ static int denormals_daz_supported(void)
 static void set_denormals_flush_to_zero(void)
 {
 #if defined(DENORMALS_VIA_MXCSR)
-	unsigned int csr = _mm_getcsr() | 0x8000u; /* FTZ, always available with SSE */
-	if (denormals_daz_supported())
-		csr |= 0x0040u;                        /* DAZ, only where implemented */
-	_mm_setcsr(csr);
+   unsigned int csr = _mm_getcsr() | 0x8000u; // FTZ, always available with SSE
+   if (denormals_daz_supported())
+      csr |= 0x0040u;                         // DAZ, only where implemented
+   _mm_setcsr(csr);
 
 #elif defined(DENORMALS_VIA_CONTROLFP)
-	/* ARM under MSVC: FZ covers operands and results alike, and there is no DAZ bit to probe for */
-	unsigned int old;
-	_controlfp_s(&old, _DN_FLUSH, _MCW_DN);
+   /* ARM under MSVC: FZ covers operands and results alike, and there is no DAZ bit to probe for */
+   unsigned int old;
+   _controlfp_s(&old, _DN_FLUSH, _MCW_DN);
 
 #elif defined(__aarch64__)
-	unsigned long long fpcr;
-	__asm__ __volatile__("mrs %0, fpcr" : "=r"(fpcr));
-	fpcr |= (1ull << 24); /* FPCR.FZ - operands and results both */
-	__asm__ __volatile__("msr fpcr, %0" : : "r"(fpcr));
+   unsigned long long fpcr;
+   __asm__ __volatile__("mrs %0, fpcr" : "=r"(fpcr));
+   fpcr |= (1ull << 24); // FPCR.FZ, operands and results both
+   __asm__ __volatile__("msr fpcr, %0" : : "r"(fpcr));
 
-/* __ARM_FP (ACLE) is the test for "VFP instructions are usable", and is absent under
-   -mfloat-abi=soft.  __VFP_FP__ is NOT usable for this - clang defines it even for
-   soft-float, where these two instructions then fail to assemble.  __ARM_PCS_VFP is
-   kept only as a fallback for toolchains predating __ARM_FP; it means hard-float ABI,
-   so it is narrower (it misses softfp) but never wrong */
+// __ARM_FP (ACLE) is the test for 'VFP instructions are usable', and is absent under
+// -mfloat-abi=soft. __VFP_FP__ is NOT usable for this, as clang defines it even for soft-float,
+// where these two instructions then fail to assemble. __ARM_PCS_VFP is only a fallback for
+// toolchains predating __ARM_FP: it means hard-float ABI, so it is narrower (it misses softfp) but
+// never wrong.
 #elif defined(__arm__) && (defined(__ARM_FP) || defined(__ARM_PCS_VFP))
-	unsigned int fpscr;
-	__asm__ __volatile__("vmrs %0, fpscr" : "=r"(fpscr));
-	fpscr |= (1u << 24); /* FPSCR.FZ, present since VFPv2 - so a Pi Zero too */
-	__asm__ __volatile__("vmsr fpscr, %0" : : "r"(fpscr));
+   unsigned int fpscr;
+   __asm__ __volatile__("vmrs %0, fpscr" : "=r"(fpscr));
+   fpscr |= (1u << 24); // FPSCR.FZ, present since VFPv2, so a Pi Zero too
+   __asm__ __volatile__("vmsr fpscr, %0" : : "r"(fpscr));
 
 #else
-	/* nothing safe to set here; the filters still work, just slower once a machine goes quiet */
+   // nothing safe to set here, everything still works, just slower once values decay to zero
 #endif
 }
-
-#endif /* INC_DENORMALS */
