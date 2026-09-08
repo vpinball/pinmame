@@ -794,6 +794,39 @@ ifdef REMOTE_DEBUG
 CFLAGS += -DREMOTE_DEBUG
 endif
 
+# Sweep instrumentation: audio digest (src/sound/mixer.c) + per-source 8051
+# interrupt dispatch counters (src/cpu/i8051/i8051.c), both printed at exit.
+# Purely observational -- it changes no emulation behaviour -- but it is off by
+# default and OFF is the shipping configuration.  Building with it appends an
+# "s" to NAME, so the instrumented binary and object dir never collide with a
+# normal build.  Build it with neither REMOTE_DEBUG nor DEBUG -- REMOTE_DEBUG's
+# usleep(1) in cpu_run() makes a sweep 24x slower and its polling HTTP thread
+# makes the measurement non-reproducible (see scripts/i8051_sweep.sh):
+#   make -f makefile.unix I8051_SWEEP=1 -j$(nproc)      # -> ./xpinmames.x11
+ifdef I8051_SWEEP
+CFLAGS += -DI8051_SWEEP
+NAME := $(NAME)s
+endif
+
+# Cirsa/Mephisto switch -> sound sweep harness (src/wpc/mephisto.c).  Same rules
+# as I8051_SWEEP -- observational, off by default, and it must be built with
+# neither REMOTE_DEBUG nor DEBUG.  It is armed at run time by CIRSA_SWEEP=1 in
+# the environment, so even the instrumented binary behaves normally without it.
+#   make -f makefile.unix I8051_SWEEP=1 CIRSA_SNDSWEEP=1 -j$(nproc)
+#                                                     # -> ./xpinmamesc.x11
+#
+# It appends a "c" to NAME for the same reason I8051_SWEEP appends an "s", and
+# the reason is not cosmetic: make tracks file timestamps, not CFLAGS, so two
+# configurations sharing one object dir do NOT rebuild when you switch between
+# them.  Without the suffix, building I8051_SWEEP=1 after
+# I8051_SWEEP=1 CIRSA_SNDSWEEP=1 silently links the instrumented mephisto.o into
+# a binary you believe is clean -- which is exactly what happened the first time
+# this was checked.
+ifdef CIRSA_SNDSWEEP
+CFLAGS += -DCIRSA_SNDSWEEP
+NAME := $(NAME)c
+endif
+
 ###########################################################################
 # All done.  Type make -f makefile.unix and enjoy xmame/xmess.  ;)
 # No configurable options below this line.

@@ -123,11 +123,11 @@ and listen to/record the pinball game sounds with the pure PinMAME package itsel
 - *Jeutel* - Le King (1983), Olympic Games (1984)
 - *Valley Manufacturing*
 - *MAC / CICPlay* - MAC Galaxy (1986), Space Train (1987), Space Panther (1988), New MAC Jungle (1995), NBA MAC (1996), Kidnap (1986), Galaxy Play (1986), Galaxy Play 2 (1987)
-- *Stargame* - Space Ship (1986), Mephisto (1986), White Force (1987), Iron Balls (1987), Slalom Code 0.3 (1988)
+- *Stargame* - Space Ship (1986), Mephisto (1986, rev. 1.1 and 1.2 — fully playable), White Force (1987), Iron Balls (1987), Slalom Code 0.3 (1988)
 - *Barni* - Red Baron (1985)
 - *Splin Bingo* -  Golden Game
 - *Playbar* - Bloody Roller
-- *Cirsa*
+- *Cirsa* - Sport 2000 (1988 — fully playable)
 - *Nondum / CIFA*
 - *Maibesa*
 - *ManilaMatic*
