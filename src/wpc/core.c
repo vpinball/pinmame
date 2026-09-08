@@ -1456,7 +1456,7 @@ static void core_seg_video_update(struct mame_bitmap* bitmap, const struct recta
    #ifdef PROC_SUPPORT
       static UINT16 proc_top[16];
       static UINT16 proc_bottom[16];
-      const int char_width = locals.segData[layout->type & 0x0f].cols + 1;
+      const int char_width = locals.segData[layout->type & CORE_SEGALL].cols + 1; // same index as the advance below
    #endif
    const int useDimmedSeg = coreGlobals.nAlphaSegs && (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS));
          int left = layout->left * (locals.segData[layout->type & CORE_SEGMASK].cols + 1) / 2;
@@ -2691,6 +2691,23 @@ static void core_findSize(const core_tLCDLayout *layout, int *maxX, int *maxY) {
     for (; layout->length; layout += 1) {
       int tmpX, tmpY, type = layout->type & CORE_SEGMASK;
 #if defined(VPINMAME) && !defined(MAME_DEBUG)
+      /* This is the only CORE_NODISP test in the file, and the asymmetry it creates is
+         deliberate: updateDisplay() renders these layouts into the bitmap while this
+         leaves them out of the window, which is precisely "not included in the VPinMAME
+         window" - they land outside the visible area, so VPM does not show them and
+         drives them over its own channel instead.
+         The invariant that keeps that safe is therefore NOT maxX/maxY but the BITMAP: a
+         NODISP layout may sit outside the visible area, but it must stay within
+         screen_width/screen_height, or drawChar and the DMD blitter run off the row.
+         Every one of them does today, with room to spare - all are narrower in X than
+         their group's main display, and longer only in Y, where the clamp below takes
+         maxY to the full screen height anyway unless dmd_only is set.  Nothing checks
+         that invariant, and this is the one place that could.
+         Do not make the two symmetric.  Measuring them here defeats the flag (se_apollo
+         and nbaf go 65 -> 94 tall, monopoly 65 -> 83), and skipping them in
+         updateDisplay() would have to keep segPos advancing or coreGlobals.drawSeg
+         shifts for every later layout - segames.c carries a real CORE_SEG7|CORE_NODISP
+         entry, so that is not hypothetical */
       if (layout->type & CORE_NODISP) continue;
 #endif
       if (type == CORE_IMPORT)
@@ -2709,7 +2726,12 @@ static void core_findSize(const core_tLCDLayout *layout, int *maxX, int *maxY) {
         tmpY = (layout->top  + layout->start)  * locals.segData[type].rows + 1;
       }
       else {
-        tmpX = (layout->left + 2*layout->length) * (locals.segData[type & 0x07].cols + 1) / 2 + CORE_SCREENX_INC;
+        /* segData[type], not [type & 0x07]: the renderer indexes the full type (see the
+           start and the advance in core_seg_video_update), and the table has 18 rows, so
+           masking to 3 bits read the wrong row for every type above 7.  It only ever
+           over-measured - 11/12 (SEG7S/SEG7SC, cols 11) were measured as 3/4 (cols 15) -
+           so it was harmless, but it meant the size and the drawing disagreed */
+        tmpX = (layout->left + 2*layout->length) * (locals.segData[type].cols + 1) / 2 + CORE_SCREENX_INC;
         tmpY = (layout->top + 2) * (locals.segData[0].rows + 1) / 2;
       }
       if (tmpX > *maxX) *maxX = tmpX;
