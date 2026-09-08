@@ -206,6 +206,18 @@ const struct KeyboardInfo *osd_get_key_list(void)
 
 int osd_is_key_pressed(int keycode)
 {
+   /* special case: if we're trying to quit, fake up/down/up/down.
+      This is checked before the kbd_fifo guard below on purpose: headless mode
+      never calls osd_input_initpost(), so kbd_fifo stays NULL and the guard used
+      to swallow the fake ESC -- which is the only way trying_to_quit reaches
+      handle_user_interface().  Without this, neither -frames_to_run nor SIGQUIT
+      could end a headless run. */
+   if (keycode == KEY_ESC && trying_to_quit)
+   {
+      static int dummy_state = 1;
+      return dummy_state ^= 1;
+   }
+
    /* blames to the dos-people who want to check key states before
       the display (and under X thus the keyboard) is initialised */
    if (!kbd_fifo)
@@ -213,13 +225,6 @@ int osd_is_key_pressed(int keycode)
    
    if (keycode >= KEY_MAX)
       return 0;
-
-   /* special case: if we're trying to quit, fake up/down/up/down */
-   if (keycode == KEY_ESC && trying_to_quit)
-   {
-      static int dummy_state = 1;
-      return dummy_state ^= 1;
-   }
 
    sysdep_update_keyboard();
 	

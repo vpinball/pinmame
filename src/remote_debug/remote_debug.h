@@ -167,6 +167,20 @@ void remote_debug_get_solenoids(char **buffer, int *len);
  * ready. */
 int remote_debug_set_switch(int sw, int val, int pulse_ms);
 
+/* Force bits high/low in input port `port`'s value, independent of the
+ * normal keyboard/joystick read (see /api/input/port and -holdport) --
+ * lets a dedicated-input button be presented as held, including from
+ * before MACHINE_INIT runs. Returns 0 on success, -1 if port is out of
+ * range. */
+int remote_debug_set_input_port_force(int port, int val);
+
+/* Write switch-matrix column `col` directly, bypassing core_setSw's sw2m
+ * mapping (see /api/input/matrix) -- the only way to reach a dedicated
+ * switch column (e.g. col 0) that sw2m places outside the scanned matrix.
+ * Returns 0 on success, -1 if the core is not ready or col is out of
+ * range. */
+int remote_debug_set_matrix_col(int col, int val);
+
 /* ------------------------------------------------------------------ */
 /* Object monitoring (change log)                                     */
 /* ------------------------------------------------------------------ */

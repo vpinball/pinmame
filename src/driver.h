@@ -99,6 +99,7 @@ typedef struct {
 #ifdef REMOTE_DEBUG
   int http_port;               /* HTTP server port */
   int start_paused;            /* Start emulator in paused state */
+  char *holdport;              /* Force input port bits high from power-on, PORT:HEXMASK[,PORT:HEXMASK...] */
 #endif
 } tPMoptions;
 extern tPMoptions pmoptions;

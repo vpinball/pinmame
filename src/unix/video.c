@@ -773,7 +773,31 @@ void osd_update_video_and_audio(struct mame_display *display)
 #ifdef REMOTE_DEBUG
 	remote_debug_frame_update(display);
 #endif
-	if (pmoptions.headless) return;
+	/* Headless: -frames_to_run has to be honoured here.  The frame counter below
+	   lives inside the `GAME_BITMAP_CHANGED` blit block, and headless never creates
+	   a display, so that block never runs and -ftr N never terminated the run --
+	   headless runs could only be killed on a wall-clock timer.  This function is
+	   called exactly once per emulated frame (from updatescreen(), via
+	   artwork_update_video_and_audio(), whether or not the frame is skipped), so
+	   counting here is the same count the display path would have produced.
+	   Same class of gap as the headless osd_close_display() fix above.
+
+	   The termination test is deliberately spelled the same way as the display
+	   path's below (`frames_displayed + 1 == frames_to_display`) rather than as
+	   `>= frames_to_display`: the two differ by one frame, so the same -ftr N
+	   would otherwise emulate a different number of frames headless than
+	   windowed.  The `> 0` guard is kept because "run forever" is 0 here.
+	   Note the display path's counter still means something slightly different
+	   -- it starts only once start_time is set, a second into the run, and it
+	   skips frames that are not blitted -- so this aligns the comparison, not
+	   the whole meaning of the count. */
+	if (pmoptions.headless)
+	{
+		frames_displayed++;
+		if (frames_to_display > 0 && frames_displayed + 1 == frames_to_display)
+			trying_to_quit = 1;
+		return;
+	}
 	int skip_this_frame;
 	cycles_t curr;
 

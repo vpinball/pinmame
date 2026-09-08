@@ -2717,6 +2717,21 @@ profiler_mark(PROFILER_END);
 
 
 
+#ifdef REMOTE_DEBUG
+/* A forced-value overlay, OR'd into every readinputport() result. Lets a
+ * button be presented as already held from power-on (see -holdport in
+ * src/unix/config.c) or toggled at runtime via /api/input/port, neither of
+ * which the normal keyboard/joystick input path can reach before the
+ * debugger's HTTP API exists. */
+static unsigned short input_port_force[MAX_INPUT_PORTS];
+
+void input_port_set_force(int port, unsigned short mask)
+{
+	if (port >= 0 && port < MAX_INPUT_PORTS) input_port_force[port] = mask;
+}
+
+#endif
+
 int readinputport(int port)
 {
 	struct InputPort *in;
@@ -2728,7 +2743,11 @@ int readinputport(int port)
 		scale_analog_port(port);
 	}
 
+#ifdef REMOTE_DEBUG
+	return input_port_value[port] | input_port_force[port];
+#else
 	return input_port_value[port];
+#endif
 }
 
 READ_HANDLER( input_port_0_r ) { return readinputport(0); }

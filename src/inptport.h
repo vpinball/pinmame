@@ -408,6 +408,12 @@ void update_input_ports(void);	/* called by cpuintrf.c - not for external use */
 void inputport_vblank_end(void);	/* called by cpuintrf.c - not for external use */
 
 int readinputport(int port);
+
+#ifdef REMOTE_DEBUG
+/* Forced-value overlay OR'd into readinputport()'s result -- see inptport.c. */
+void input_port_set_force(int port, unsigned short mask);
+#endif
+
 READ_HANDLER( input_port_0_r );
 READ_HANDLER( input_port_1_r );
 READ_HANDLER( input_port_2_r );

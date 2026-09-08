@@ -141,6 +141,9 @@ static struct rc_option opts[] = {
 	{ "skip_disclaimer", NULL, rc_bool, &options.skip_disclaimer, "0", 0, 0, NULL, "Skip displaying the disclaimer screen" },
 	{ "skip_gameinfo", NULL, rc_bool, &options.skip_gameinfo, "0", 0, 0, NULL, "Skip displaying the game info screen" },
 	{ "skip_gamewarnings", NULL, rc_bool, &options.skip_gamewarnings, "0", 0, 0, NULL, "Skip displaying the game warnings screen (needed for headless runs of GAME_NOT_WORKING games)" },
+#ifdef REMOTE_DEBUG
+	{ "holdport", NULL, rc_string, &pmoptions.holdport, NULL, 0, 0, NULL, "force bits high in an input port from power-on, as PORT:HEXMASK (repeatable, comma separated) - simulates a button held while the machine is switched on" },
+#endif
 	{ "crconly", NULL, rc_bool, &options.crc_only, "0", 0, 0, NULL, "Use only CRC for all integrity checks" },
 	{ "bios", NULL, rc_string, &options.bios, "default", 0, 14, NULL, "change system bios" },
 #ifdef MAME_DEBUG
