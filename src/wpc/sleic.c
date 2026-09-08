@@ -943,7 +943,7 @@ static void ym3812_irq(int irq) {
 static struct YM3812interface SLEIC_ym3812_intf =
 {
 	1,					/* 1 chip */
-	4000000,			/* 4 MHz */
+	2500000,			/* phi-M = OCLK/8 = 20MHz/8 */
 	{ 100 },			/* volume */
 	{ ym3812_irq },		/* IRQ Callback */
 };
