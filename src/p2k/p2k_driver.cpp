@@ -102,21 +102,19 @@ namespace {
 	constexpr unsigned GP_VECTOR_MODE = 0x104 / 4;
 	constexpr unsigned GP_BLT_MODE    = 0x108 / 4;
 	constexpr unsigned GP_BLT_STATUS  = 0x10c / 4;
-	// What the games actually program, watched with P2K_GPWATCH: 0x00 dst x|y<<16, 0x04 width|
-	// height<<16, 0x08 src x|y<<16, and 0x10/0x14/0x20-0x2c set once to ffffffff and never touched
-	// again. Raster mode only ever takes 0x10c6 or 0x00cc, so bit 12 is the source transparency
-	// enable - set with the 0xc6 copy, clear with the opaque 0xcc - and masking to 8 bits below is
-	// equivalent only because those are the sole two values. Since checked against the GXm databook
-	// (gxmdb_v20.pdf, Table 4-24/4-25), which confirms all seven offsets above and names the rest:
-	// bit 12 is TB, Transparent BLIT - a colour key compare, not the monochrome source transparency
-	// on bit 11 - bits 9:8 are the pattern mode (00, solid, in both values here) and ROP really is
-	// bits 7:0, so the 8 bit mask is right by specification rather than by luck. The six registers
-	// held at ffffffff are GP_PAT_COLOR_A/B (0x10/0x14) and GP_PAT_DATA_0-3 (0x20-0x2c), which the
-	// transparent copy requires; its key colour is not a register at all. See color_key in
-	// do_gfx_pipeline for both, and what rests on them. Encore's independent implementation
-	// (qemu/p2k-gp-blt.c) agrees on bit 12 and on one row per trigger, hardcodes the key, and does
-	// strictly less besides - no fills, no vector mode, no other ROPs. README.md has the full
-	// comparison, and the XINA 1.38 investigation that prompted it
+	// What the games actually program, watched with P2K_GPWATCH: 0x00 dst x|y<<16, 0x04
+	// width|height<<16, 0x08 src x|y<<16, and 0x10/0x14/0x20-0x2c set once to ffffffff and never
+	// touched again.  Raster mode only ever takes 0x10c6 or 0x00cc, so bit 12 is the source
+	// transparency enable and masking to 8 bits below is equivalent only because those are the sole two
+	// values.  Since checked against the GXm databook (gxmdb_v20.pdf, Tables 4-24/4-25), which confirms
+	// all seven offsets and names the rest: bit 12 is TB, Transparent BLIT - a colour key compare, not
+	// the monochrome source transparency on bit 11 - bits 9:8 are the pattern mode (00, solid, in both
+	// values here) and ROP really is bits 7:0, so the 8-bit mask is right by specification rather than
+	// by luck.  The six registers held at ffffffff are GP_PAT_COLOR_A/B (0x10/0x14) and GP_PAT_DATA_0-3
+	// (0x20-0x2c), which the transparent copy requires; its key colour is not a register at all - see
+	// color_key in do_gfx_pipeline.  Encore's independent implementation (qemu/p2k-gp-blt.c) agrees on
+	// bit 12 and on one row per trigger, hardcodes the key, and does strictly less besides.  README.md
+	// has the full comparison and the XINA 1.38 investigation that prompted it
 } // anonymous namespace
 
 // P2K_WRITEMAP=1: count every write into 1 MB buckets and print the busiest at the PPM trigger.
@@ -180,33 +178,29 @@ p2k_state::p2k_state()
 	g_state = this;
 }
 
-// The CMOS error log, as the game's own checksum_errors() lays it out. Two ring buffers of fixed
-// records live at 0x11000050; the header in front of them carries, per ring, the record size, the
-// capacity, how many are in use and where the next one goes.
+// The CMOS error log, as the game's own checksum_errors() lays it out: two ring buffers of
+// fixed records at 0x11000050, with a header carrying, per ring, the record size, the capacity,
+// how many are in use and where the next one goes.
 //
-// Why this is seeded at all. A machine in the field always has this header: it is written on the
-// first power-up and survives the software updates, which never clear CMOS. Emulated, the CMOS
-// starts blank, and the newer system software then cannot boot - it never reaches the point that
-// would build the header, because it needs the header first:
-//
+// A field machine always has that header - written on first power-up and never cleared by an
+// update.  Emulated, CMOS starts blank, and the newer system software then cannot boot,
+// because it needs the header before it can reach the point that would build one:
 //   1. left_sling's constructor calls a hook that reads an adjustment resource whose own
-//      constructor is linked later, so the resource is still zeroed BSS. That is a static
-//      initialisation order bug in the game, and it reports NonFatal - by itself harmless.
-//   2. The NonFatal reporter appends the report to the error log. With the header blank the
-//      log's base pointer is 0, so the entry is written over address 0.
-//   3. resched() checks the reserved dword at address 0 on every scheduling decision and now
-//      finds it changed: "reserved memory at zero corrupted".
-//   4. That is Fatal, and the Fatal reporter writes through the same null base pointer, so the
-//      corruption it is reporting is re-made on every pass. The machine never leaves the handler
-//      and walks the stack down until it runs out.
+//      constructor is linked later, so it is still zeroed BSS.  A static initialisation order
+//      bug in the game; it reports NonFatal, by itself harmless.
+//   2. The NonFatal reporter appends to the error log, whose base pointer is 0 with the header
+//      blank, so the entry lands on address 0.
+//   3. resched() checks the reserved dword at address 0 on every scheduling decision and finds
+//      it changed: "reserved memory at zero corrupted".
+//   4. That is Fatal, and the Fatal reporter writes through the same null base, re-making the
+//      corruption it reports on every pass.  The machine never leaves the handler.
+// Booting an older version once and keeping its CMOS is the same fix by hand - a different link
+// order, no reporting during construction, so it builds the header normally.  Seeding here
+// means a fresh install boots.
 //
-// Booting an older version once and keeping its CMOS is the same fix by hand: the older software
-// has a different link order, does not report during construction, and so builds the header
-// normally. Seeding it here means a fresh install boots.
-//
-// The constants are the ones the game computes, not invented: rfm 2.22 builds them at 0x288b48,
-// and the routine is byte-identical in rfm 2.10/2.60 and swep1 2.10. Only the two base pointers
-// and the geometry are set; the four in-use/index words stay 0, which is an empty log
+// The constants are the game's own, not invented: rfm 2.22 builds them at 0x288b48, and the
+// routine is byte-identical in rfm 2.10/2.60 and swep1 2.10.  Only the two base pointers and
+// the geometry are set; the four in-use/index words stay 0, an empty log
 void p2k_state::seed_error_log()
 {
 	constexpr u32 region = 0x23b0;                       // the size the routine works from
@@ -227,29 +221,24 @@ void p2k_state::seed_error_log()
 	write_le(m_nvram, 0x28, base_b,    0xffffffff);
 }
 
-// The real-time clock, taken from the host. mc146818 reads machine().base_datetime() inside
+// The real-time clock, taken from the host.  mc146818 reads machine().base_datetime() inside
 // nvram_default(), but nothing here drives MAME's NVRAM machinery - this subsystem moves its own
-// blocks across p2k_pinmame_nvram_set() - so without this the device sat at its constructed state
-// and every machine booted with the clock at zero, which the firmware reports as 1 Jan 1999.
+// blocks through p2k_pinmame_nvram_set() - so without this the device sat at its constructed state
+// and every machine booted at 1 Jan 1999.
 //
-// keep_year is the whole subtlety. Register 9 is documented as the year, and this firmware does not
-// use it as one: it reads the register, folds it into the clock it keeps in its own CMOS, and then
-// writes zero back. It is a count of year rollovers since the last sync, not a date. On the real
-// board that works because the RTC is battery-backed and keeps running while the machine is off,
-// so the register is normally 0 and reads 1 only if a New Year passed in the meantime.
+// keep_year is the subtlety.  Register 9 is documented as the year and this firmware does not use
+// it as one: it reads the register, folds it into the clock in its own CMOS, then writes zero back.
+// It is a count of year rollovers since the last sync, not a date.  On the real board that works
+// because the RTC is battery-backed and keeps running while the machine is off, so the register is
+// normally 0 and reads 1 only if a New Year passed.  Handing it the host year on every start
+// therefore makes the displayed year climb - a fresh machine has 1999 stored, adds 27 to reach
+// 2026, and adds 27 again on every later start.  Refreshing everything EXCEPT register 9 gives the
+// guest what a ticking battery-backed clock would; rtc_restore() below sets register 9 from the
+// saved stamp when a New Year really did pass while the machine was off.
 //
-// Which is why handing it the host year on every start makes the displayed year climb: a fresh
-// machine has 1999 stored and adds 27 to reach 2026, and every start after that adds 27 again -
-// 2053, 2080. Refreshing everything *except* register 9 gives the guest what a ticking
-// battery-backed clock would: the current date and time, and no years to add. A New Year passing
-// while the machine is off does want that register set to the number of years crossed, and
-// rtc_restore() below is what puts it there, off the saved stamp.
-//
-// The clock as PinMAME saves it: the 64 registers, then the host time_t they were taken at. The
-// stamp is the whole point - the emulated chip stops when the machine does, where the real one
-// keeps running on its battery, so the only way to know how long it was off is to ask the host
-// twice and subtract. What the firmware wants out of that is not the elapsed time but the number
-// of New Years in it, because it reads register 9 as a count of years to fold into its own clock
+// Hence what PinMAME saves: the 64 registers plus the host time_t they were taken at.  The emulated
+// chip stops when the machine does where the real one keeps running, so the only way to know how
+// long it was off is to ask the host twice and subtract
 void p2k_state::rtc_save()
 {
 	if (!m_rtc) return;
@@ -322,106 +311,62 @@ bool p2k_state::set_prism_roms(const u8 *data, size_t len)
 	memcpy(m_prismdata.data(), data, 4 * PRISM_BANK_BYTES); // laid out bank after bank already
 
 	// The MAME driver patches the boot ROM through ROM_FILL in its ROM_START blocks (MAME 0.239,
-	// src/mame/drivers/pinball2k.cpp). Those patches are part of the driver, not of the ROM set,
-	// so they are applied to our copy rather than declared as ROM_FILL - a ROM_FILL would make
-	// the region disagree with the hashes the set is audited against.
+	// src/mame/drivers/pinball2k.cpp).  Those patches belong to the driver, not the ROM set, so
+	// they are applied to our copy instead - a ROM_FILL would make the region disagree with the
+	// hashes the set is audited against.
 	//
-	//   0x191            retf -> nop. The option ROM's init entry ends by restoring the register
-	//                    block at 0x300 and returning to whoever far-called it. Nothing ever
-	//                    calls it: the reset vector jumps straight to 0xc0003, so the far return
-	//                    reads a frame that was never pushed and the CPU lands at 0000:0000.
+	//   0x191            retf -> nop.  The option ROM's init entry ends by restoring the
+	//                    register block at 0x300 and returning to whoever far-called it.  Nothing
+	//                    does: the reset vector jumps straight to 0xc0003, so the far return reads
+	//                    a frame that was never pushed and the CPU lands at 0000:0000.
 	//   0x419a (rfm)     the immediate of `mov eax,0FFFFFFF9h` -> 1, forcing a failing check to
-	//   0x3b33 (swep1)   report success. Same shape in both games, different address. Note this
-	//                    is the immediate: the instruction starts one byte earlier.
+	//   0x3b33 (swep1)   report success.  Same shape in both games, different address; this is the
+	//                    immediate, so the instruction starts one byte earlier.
 	//
-	// What that check is, disassembled from the stock RFM pair (32-bit code, bank 0 offset 0x4184,
-	// the function the patched instruction opens):
-	//
+	// The patched function (stock RFM pair, 32-bit, bank 0 offset 0x4184) opens:
 	//     push ebp / mov ebp,esp / sub esp,0x50 / push edi,esi,ebx
 	//     cmp dword [0x87278], 1      ; "have I already run?" - a one-shot guard in low RAM
 	//     jne  do_the_work
 	//     mov  eax, 0FFFFFFF9h        ; -7, "already initialised"   <-- patched to 1
 	//     jmp  epilogue
-	//
 	// What it guards is the MediaGX PCI bring-up: it walks device numbers 0..0x14 reading config
 	// dword 0, matches vendor 0x1078 (Cyrix), notes the host bridge (device ID 1) and the ISA
-	// bridge (0 or 2, Cx5510 against Cx5520), and returns -1 if either is missing. Otherwise it
-	// programs the BARs - 0x10000000, 0x11000000, 0x12000000, 0x13000000, 0x14000000, 0x18000001 -
-	// sets the command register to 2 and returns 1. So the patch defeats no self-test: it makes the
-	// already-run exit return the same 1 the success path does, so a second call is told the
-	// chipset is ready instead of getting an error it has no handler for.
+	// bridge (0 or 2, Cx5510 vs Cx5520), returns -1 if either is missing, else programs the BARs
+	// (0x10000000, 0x11000000, 0x12000000, 0x13000000, 0x14000000, 0x18000001), sets the command
+	// register to 2 and returns 1.  So the patch defeats no self-test: it makes the already-run
+	// exit return the same 1 as the success path, so a second call is told the chipset is ready
+	// rather than getting an error it has no handler for.
 	//
-	// The address is tied to the boot ROM image, not the game. RFM's alternate bank-0 pair
+	// The address is tied to the boot ROM image, not the game.  RFM's alternate bank-0 pair
 	// (rfm_u100r2/rfm_u101r2, not a declared set - see src/wpc/p2k.c) holds unrelated code at
-	// 0x419a, so this poke would corrupt it; the same function is in there, moved, starting at
-	// 0x4608 with its flag at 0x877c0 and the immediate to patch at 0x461b. To re-find it in any
-	// image, search bank 0 for `78 10 00 00` (the 0x1078 compare) or `68 01 00 00 18`
-	// (push 0x18000001); the prologue is about 0x93 bytes before the former.
+	// 0x419a, so this poke would corrupt it; the same function sits at 0x4608 there, flag at
+	// 0x877c0, immediate at 0x461b.  To re-find it in any image, search bank 0 for `78 10 00 00`
+	// (the 0x1078 compare) or `68 01 00 00 18` (push 0x18000001); the prologue is ~0x93 bytes
+	// before the former.
 	//
-	// P2K_PATCH_PCI_INIT_RETRY exists because the patch looked unnecessary here. It is not, and
-	// measurement says why. The enumeration is fine: with P2K_PCIWATCH=1 the sweep answers
-	//
+	// P2K_PATCH_PCI_INIT_RETRY exists because the patch looked unnecessary here.  It is not.  The
+	// enumeration is fine - with P2K_PCIWATCH=1 the sweep answers all three, twice over:
 	//     device 0    1078:0001  MediaGX host bridge   -> its [0x87290]
 	//     device 8    146e:0001  Prism card PLX bridge -> its [0x8729c]
 	//     device 18   1078:0002  CX5520 ISA bridge     -> its [0x87294]
+	// The failure is upstream: the boot code insists on 1 coming back (Episode I, bank 0 offset
+	// 0x924: `push 0; call 0x3b20; mov ebx,eax` ... `cmp ebx,1; jne` -> "[ PRISM BOARD NOT
+	// PRESENT ]" at 0xb9c, which prints then `jmp $`), but reaches the routine with the guard flag
+	// already set, gets -7 and halts.  The message is that halt, not an enumeration failure.
 	//
-	// all three, twice over, so nothing is missing from the bus. What fails is upstream of that.
-	// The boot code calls this routine and insists on 1 coming back (Episode I, bank 0 offset
-	// 0x924: `push 0; call 0x3b20; mov ebx,eax` ... `cmp ebx,1; jne` -> "[ PRISM BOARD NOT PRESENT ]"
-	// at 0xb9c, which prints and then `jmp $`). It is reaching the routine with the guard flag
-	// already set, so it gets -7 and halts - and the screen message is the halt, not an
-	// enumeration failure. Mode 1 forces that exit to return 1 and the machine goes on.
-	//
-	// The catch is that the early exit returns before doing any of the work, so the BARs are never
-	// programmed and [0x87274] stays 0. Episode I 1.50 tolerates that; 2.10 does not reach a boot
-	// screen with mode 1 either, which is what a version that actually wants the Prism windows set
-	// up would look like. Hence mode 2, which removes the guard rather than its return value: every
-	// call re-enumerates and re-programs, so the caller gets a 1 that means something.
-	//
-	// Measured, and mode 1 stays the default: Revenge From Mars does not boot under mode 2 at all,
-	// any version, and Episode I 2.10 reaches the same point under either. So mode 2 is not an
-	// improvement - re-running the whole bring-up on every call evidently disturbs something RFM
-	// depends on, which is itself a hint that the repeated calls are normal and only their return
-	// value was ever wrong.
-	//
-	// What mode 2 did settle is that the PCI side is complete. Under it the writes go out in full
-	// and correct - dev 8 reg 0x10/0x18/0x1c/0x20/0x24/0x30 taking 0x10000000, 0x11000000,
-	// 0x12000000, 0x13000000, 0x14000000 and 0x18000001, with the command register set to 2 - and
-	// mem_r decodes every one of those windows. Keep it for that: it is the way to prove the
-	// bring-up end to end without reading the disassembly again.
-	//
-	// And 2.10's remaining hang is not in this boot ROM at all, which is worth writing down so the
-	// next person does not start here. After this returns, bank 0 offset 0x98a walks the update
-	// flash at 0x12000000 through four checks - "[ VALIDATING UPDATE BOOT DATA ]", SYS IMAGE, GAME
-	// CODE, SYMBOLS, each with its own fatal exit - and 2.10 passes all four, reaching
-	// "[ STARTING UPDATE GAME CODE ]" at 0xa47. Six instructions later:
-	//
-	//     0xa56  mov eax, [ebx+0x48]      ; ebx = 0x12000000, so the image's own entry
-	//     0xa5e  call eax                 ; -> 0x00100000, into the update's system image
-	//
-	// so the ROM has handed over and what hangs is the version's own code, XINA 1.38 in 2.10's case
-	// against 1.19 in 1.50's. The update flash, its checksums and every window it is read through
-	// are therefore all good.
-	//
-	// That reading held. The hang was in the version's own code exactly as this said, and it was a
-	// blank CMOS - see P2K_SEED_ERROR_LOG above, which fixes it, and the README for the chain. Not
-	// the flash, not the windows, and not the display manager, which was the standing suspect here
-	// and was wrong: nothing in the failure ever reached the blit pipeline.
+	// Mode 1 forces the exit to return 1.  It returns before doing the work, though, so the BARs
+	// are never programmed and [0x87274] stays 0 - which 1.50 tolerates and 2.10 does not.  Hence
+	// mode 2, removing the guard rather than its return value so every call re-enumerates and
+	// re-programs.  Mode 1 stays the default on measurement: RFM does not boot under mode 2 at
+	// all, any version, and 2.10 reaches the same point either way.  So mode 2 is no improvement,
+	// and that it disturbs RFM is itself a hint that the repeated calls are normal and only their
+	// return value was ever wrong.  It did settle that the PCI side is complete - under it the
+	// writes go out in full and correct and mem_r decodes every window - so keep it as the way to
+	// prove the bring-up end to end.
 	//
 	//     P2K_PATCH_PCI_INIT_RETRY=1  MAME's, the default: already-run exit returns 1
 	//     P2K_PATCH_PCI_INIT_RETRY=2  guard removed: init runs in full on every call
 	//     P2K_PATCH_PCI_INIT_RETRY=0  neither, for seeing the failure raw
-	//
-	// Two things this is not. It is not a wrong address for 2.10: the patch lands in the Prism boot
-	// ROM, which P2K_COMMON_SWEP1 shares across every Episode I set, so these are the same bytes for
-	// 1.50 and 2.10 alike. And it is not really about this routine - something is calling it twice,
-	// or entering it with the flag already set, and the 0x191 patch above is a fair suspect, since
-	// it exists precisely because this firmware is entered differently here than on a real machine.
-	// That is the thing to find; both modes are ways of living with it until then.
-	//
-	// 0x191 is not behind the switch, and is `cb` in both revisions and in Episode I so it carries
-	// over unchanged: nothing far-calls the option ROM's init here, so its `retf` has no frame to
-	// return to whatever the PCI bus does
 	auto peek = [this](size_t off) -> u8 {
 		if (off / 4 >= PRISM_BANK_WORDS) return 0; // bank 0 starts at 0, so index == offset
 		return u8(m_prismdata[off / 4] >> (unsigned(off % 4) * 8));
@@ -574,18 +519,18 @@ void p2k_state::build_machine(u32 cpu_clock)
 	m_maincpu->set_irq_acknowledge_callback([this](int) { return int(m_pic1->acknowledge()); });
 
 	// MAME clocked the PIT at 925 kHz with the standard 1.193182 MHz commented out - a deliberate
-	// slowdown to go with the 20 MHz CPU. The firmware programs channel 0 as a rate generator
-	// with divisor 298, so that was a tick every ~6400 CPU cycles.
+	// slowdown to go with the 20 MHz CPU.  The firmware programs channel 0 as a rate generator with
+	// divisor 298, so that was a tick every ~6400 CPU cycles.
 	//
 	// This is also the machine's time base: one_second_proc counts these ticks and bumps the date and
-	// time the firmware keeps in its own CMOS. Not the whole of its clock though - it tracks the RTC
-	// while running too, which is how a stopped divider in that chip showed up as a displayed clock
-	// that never advanced (see PAST_FAILURES.md). What follows is about this tick and holds either
-	// way, however the two divide the work. 1193182/298 is 4004 Hz and
-	// the count it makes a second out of is round, so its second comes up about 0.13% short - measured
-	// at 77563110 cycles against the 77666666 a second really takes, a gain of roughly two minutes a
-	// day. A real board has the same crystal and the same divisor, so it drifts the same way; do not
-	// "fix" it by nudging pit_hz, that would only make the emulated machine keep better time than the one it copies
+	// time the firmware keeps in its own CMOS.  Not the whole of its clock - it tracks the RTC while
+	// running too, which is how a stopped divider in that chip showed up as a displayed clock that
+	// never advanced (PAST_FAILURES.md) - but what follows holds either way.  1193182/298 is 4004 Hz
+	// and the count it makes a second out of is round, so its second comes up about 0.13% short:
+	// measured at 77563110 cycles against the 77666666 a second really takes, a gain of roughly two
+	// minutes a day.  A real board has the same crystal and divisor and drifts the same way, so do not
+	// "fix" it by nudging pit_hz - that would make the emulated machine keep better time than the
+	// original
 	double pit_hz = 1193182.0;
 #if P2K_DEBUG
 	// P2K_PIT_HZ moves it, which is how what the tick handler needs was measured
@@ -800,20 +745,19 @@ void p2k_state::push_switches(const u8 *matrix, unsigned count)
 	// }
 
 #if P2K_DEBUG
-	// The display controller's vertical interrupt, off unless asked for. The databook gives it an
+	// The display controller's vertical interrupt, off unless asked for.  The databook gives it an
 	// enable and a pending flag: DC_GENERAL_CFG bit 6, VIEN, generates "a vertical interrupt on the
-	// occurrence of the next vertical sync pulse", and DC_TIMING_CFG bit 31, VINT, says one is
-	// pending. Both games turn it on - DC_GENERAL_CFG reads 0x00106541, and 0x41 is bits 0 and 6 -
-	// so they ask for a per-frame interrupt that this driver otherwise never delivers.
+	// occurrence of the next vertical sync pulse", and DC_TIMING_CFG bit 31, VINT, says one is pending.
+	// Both games turn it on (DC_GENERAL_CFG reads 0x00106541, and 0x41 is bits 0 and 6), so they ask
+	// for a per-frame interrupt this driver otherwise never delivers.
 	//
-	// XINA does not consume it. It was tried as the cause of the XINA 1.38 wedge and is not - that
-	// was the UART divisor latch, see the note in port_w - and P2K_IDTDUMP shows why it could not
-	// have been: every hardware vector holds a generic XINU trampoline except IRQ 0's clkint.
-	// Delivered on IRQ 9 it is accepted and handled, changes nothing on swep1_210 and leaves
-	// rfm_160 running normally. Kept because the enable is real and the signal is hardware this
-	// driver otherwise ignores, but off by default and unfinished: the line is a guess (9 is where
-	// a VGA-compatible retrace interrupt lands on an AT, and both games unmask it), and it arrives
-	// at frame rate from this hook rather than at the real vertical sync.
+	// XINA does not consume it.  It was tried as the cause of the XINA 1.38 wedge and is not - that was
+	// the UART divisor latch, see the note in port_w - and P2K_IDTDUMP shows why it could not have
+	// been: every hardware vector holds a generic XINU trampoline except IRQ 0's clkint.  Delivered on
+	// IRQ 9 it is accepted and handled, changes nothing on swep1_210 and leaves rfm_160 normal.  Kept
+	// because the enable is real, but off by default and unfinished: the line is a guess (9 is where a
+	// VGA-compatible retrace interrupt lands on an AT, and both games unmask it) and it arrives at
+	// frame rate from this hook rather than at the real vertical sync
 
 	// P2K_IDTDUMP=1: the interrupt descriptor table, hardware vectors only, once. Which lines the
 	// guest has handlers for is the thing to know before delivering an interrupt on one: an
@@ -1107,27 +1051,15 @@ u32 p2k_state::expansion_r(offs_t offset) const // bank 0
 }
 
 // The four mask images - the games' art, im_mask0 through im_mask3 in the update package - live on
-// the Prism card. This window is how they are read, and the driver and the firmware do not agree
-// about it.
+// the Prism card, and this window is how they are read.  Here (as in the MAME driver this came
+// from) 0x14000000-0x14ffffff is ONE BANKED window, selected by prism_1400_w, with the other three
+// mapped again fixed at 0x15000000/0x16000000/0x17000000 in mem_r.  The firmware instead treats all
+// four as fixed windows and never banks - so the two disagree, and where the firmware expects mask
+// 0 (at 0x14400000) this answers 4 MB into whichever bank is selected.
 //
-// Here (as in the MAME driver this came from) 0x14000000-0x14ffffff is one banked window: which of
-// the four m_prismdata[] it serves is whatever prism_1400_w last selected. The other three are
-// mapped again, fixed, at 0x15000000/0x16000000/0x17000000 in mem_r - so bank 0 is reachable only
-// through the bank register, and the other three are reachable both ways.
-//
-// The firmware treats all four as fixed windows and never banks at all. boot_im_mask_bank_is_valid
-// (rfm 2.22 at 0x2861bc) checksums bank n at, in order, 0x14400000, 0x15000000, 0x16000000 and
-// 0x17000000, against the sizes and checksums at BootData +0x5c/+0x60, +0x64/+0x68, +0x6c/+0x70
-// and +0x74/+0x78. Note the first: 0x144-, not 0x140-, so where the firmware expects mask 0 this
-// window answers from 4 MB into whichever bank happens to be selected.
-//
-// Which of the two is right is unresolved. Nothing has been seen to depend on it: both games boot
-// and play through this handler, and a normal power-up never validates the masks at all - the
-// console prints the BOOT DATA, SYS IMAGE, GAME CODE and SYMBOLS banners and no mask one, so that
-// routine looks to run only while an update is being written. It is recorded because a
-// disagreement of this kind is worth resolving before something does depend on it, not because it
-// is known to be a bug. Deciding it needs a machine that reads a mask through 0x14400000 with a
-// bank other than 0 selected, or the Prism card's own address decode
+// Unresolved, and nothing has been seen to depend on it.  Recorded in README.md under "Known
+// limitations", with the checksum routine and BootData offsets that show the firmware's view and
+// what would settle it
 u32 p2k_state::prism_1400_r(offs_t offset) const
 {
 	const size_t base = size_t(m_prismbank & 3) << PRISM_BANK_SHIFT;
@@ -1451,20 +1383,19 @@ void p2k_state::do_gfx_pipeline()
 	const int src_y = int(m_gx_pipeline_reg[GP_SRC_X] >> 16);
 	const int width = int(m_gx_pipeline_reg[GP_WIDTH] & 0xffff);
 
-	// Width 0 draws nothing, which is what already happens: cols clamps to it and every path below
-	// is skipped. The databook settles it - "no pixels are rendered for a width of zero", and the
-	// same sentence for height, which is why the row loop takes height at face value
+	// Width 0 draws nothing, which is what already happens: cols clamps to it and every path below is
+	// skipped.  The databook settles it - "no pixels are rendered for a width of zero", and the same
+	// sentence for height, which is why the row loop takes height at face value.
 	//
-	// Two fields below disagree with the databook, and are left as they are because they are what
-	// renders correctly. Table 4-25 puts PIXEL_WIDTH in GP_WIDTH bits 31:16 and PIXEL_HEIGHT in
-	// 15:0, and SRC_X in bits 31:16 of GP_SRC with SRC_Y in 15:0 - the opposite of both readings
-	// here. GP_DST it agrees with (Y high, X low), so the asymmetry is the databook's, stated the
-	// same way in Tables 4-24 and 4-25. Measured on rfm_160: GP_WIDTH = 0x000100ad and GP_SRC =
-	// 0x02d00000, so the databook reads that blit as 1 wide by 173 tall from column 720, and this
-	// driver as 173 wide by 1 tall from row 720. Both are self-consistent - one draws the line
-	// vertically, the other horizontally - and only this one produces a correct picture, on every
-	// set. Swapping to match the databook transposes every blit. Worth revisiting only with a
-	// second source; see README.md
+	// Two fields below disagree with the databook and are left as they are, because they are what
+	// renders correctly.  Table 4-25 puts PIXEL_WIDTH in GP_WIDTH bits 31:16 and PIXEL_HEIGHT in 15:0,
+	// and SRC_X in GP_SRC 31:16 with SRC_Y in 15:0 - the opposite of both readings here, while GP_DST
+	// it agrees with (Y high, X low), so the asymmetry is the databook's own, stated the same way in
+	// Tables 4-24 and 4-25.  Measured on rfm_160: GP_WIDTH = 0x000100ad and GP_SRC = 0x02d00000, which
+	// the databook reads as 1 wide by 173 tall from column 720 and this driver as 173 wide by 1 tall
+	// from row 720.  Both self-consistent - one draws the line vertically, the other horizontally - and
+	// only this one produces a correct picture, on every set.  Swapping transposes every blit.  Revisit
+	// only with a second source; see README.md
 
 #if P2K_DEBUG
 	// Every path below assumes the pattern is all ones. Table 4-22 makes the ROP a per-bit truth
@@ -1522,23 +1453,23 @@ void p2k_state::do_gfx_pipeline()
 #endif
 
 	// The transparent copy's key colour is neither a constant nor a pipeline register: the databook
-	// puts it "in the BLIT buffer as destination data", the rest of that sentence being the
-	// all-ones pattern the check above guards. P2K_KEYWATCH found it - rfm_160 fills
-	// 0x40000400-0x400008ff, 640 words and exactly one row, with 0x7c1f before drawing anything -
-	// so 0x7c1f is this firmware's choice rather than a hardware default. Every word of the row is
-	// the same, so whether the hardware keys on one value or column by column cannot be told apart
-	// here; the first is taken and the check below watches that.
+	// puts it "in the BLIT buffer as destination data", the rest of that sentence being the all-ones
+	// pattern the check above guards.  P2K_KEYWATCH found it - rfm_160 fills 0x40000400-0x400008ff,
+	// 640 words and exactly one row, with 0x7c1f before drawing anything - so 0x7c1f is this firmware's
+	// choice, not a hardware default.  Every word of the row is the same, so whether the hardware keys
+	// on one value or column by column cannot be told apart here; the first is taken and the check
+	// below watches that.
 	//
-	// Which buffer is GP_BLT_MODE bits 4:2, and where it sits comes from the CPU-access registers
-	// the guest programs with CPU_WRITE: 010 is Buffer 0 at L1_BB0_BASE, 011 Buffer 1 at
-	// L1_BB1_BASE. Measured on rfm_160: BB0_BASE=0x930, BB1_BASE=0x400, so XINA swaps them against
-	// Table 4-5's layout - and every transparent blit selects Buffer 1, the 0x400 the key is written
-	// to. Reading offset 0 unconditionally was right only by that coincidence. 000 means no
-	// destination data, all ones into the raster unit; 100/101 take it from the frame buffer, which
-	// is not a colour key and has not been seen with C6h.
+	// Which buffer is GP_BLT_MODE bits 4:2, and where it sits comes from the CPU-access registers the
+	// guest programs with CPU_WRITE: 010 is Buffer 0 at L1_BB0_BASE, 011 Buffer 1 at L1_BB1_BASE.
+	// Measured on rfm_160: BB0_BASE=0x930, BB1_BASE=0x400, so XINA swaps them against Table 4-5 - and
+	// every transparent blit selects Buffer 1, the 0x400 the key is written to.  Reading offset 0
+	// unconditionally was right only by that coincidence.  000 means no destination data, all ones into
+	// the raster unit; 100/101 take it from the frame buffer, which is not a colour key and has not
+	// been seen with C6h.
 	//
 	// Not modelled: 4.4.1 stages each source scan line into a BLT buffer as the hardware blits, so
-	// Buffer 0 would hold the last line copied. This reads VRAM directly, and nothing reads it back
+	// Buffer 0 would hold the last line copied.  This reads VRAM directly, and nothing reads it back
 	const unsigned blt_rd = (m_gx_pipeline_reg[GP_BLT_MODE] >> 2) & 7u;
 	const u32 key_base = (blt_rd == 2) ? m_maincpu->cpu_access_reg(mediagx_device::L1_BB0_BASE)
 	                   : (blt_rd == 3) ? m_maincpu->cpu_access_reg(mediagx_device::L1_BB1_BASE)
@@ -1775,18 +1706,17 @@ bool p2k_state::in_vblank() const
 u32 p2k_state::disp_ctrl_r(offs_t offset) const
 {
 	offset &= 0x3f;
-	// The vertical line counter has to advance on its own - the MAME driver keeps it moving with
-	// a per-scanline timer tied to its screen device (`m_disp_ctrl_reg[0x54/4] = scanline`). This
-	// port has no screen yet, so the value is derived from emulated time instead - see video_line(),
-	// which counts the lines the controller is actually programmed for. Anything waiting for the
-	// display to move sees it move.
-	// Bit 30 of DC_TIMING_CFG is a vertical blank status: set during active display, clear while
-	// blanking. MAME's own MediaGX driver does this - src/mame/atari/mediagx.cpp, `r |= 0x40000000;
-	// if (m_screen->vpos() >= m_frame_height) r &= ~0x40000000;` - and the pinball2k driver this
-	// port came from dropped it along with the screen device it needed. Without it the register
-	// reads back exactly what was written, so anything polling for the edge waits for ever. The
-	// games do write this register: 0x0002804f and 0x0002806f, so they know it is there. A status bit frozen at whatever was
-	// last written is wrong however little depends on it here
+	// The vertical line counter has to advance on its own - the MAME driver keeps it moving with a
+	// per-scanline timer tied to its screen device (m_disp_ctrl_reg[0x54/4] = scanline).  This port has
+	// no screen yet, so the value is derived from emulated time instead; see video_line(), which counts
+	// the lines the controller is actually programmed for.
+	//
+	// Bit 30 of DC_TIMING_CFG is a vertical blank status, set during active display and clear while
+	// blanking.  MAME's own MediaGX driver does this (src/mame/atari/mediagx.cpp) and the pinball2k
+	// driver this port came from dropped it along with the screen device it needed, so the register
+	// read back exactly what was written and anything polling for the edge waited for ever.  The games
+	// do write it - 0x0002804f and 0x0002806f - so they know it is there, and a status bit frozen at
+	// whatever was last written is wrong however little depends on it
 	if (offset == DC_TIMING_CFG)
 	{
 #if P2K_DEBUG
@@ -2071,19 +2001,18 @@ u32 p2k_state::mem_r(offs_t addr, u32 mem_mask)
 	if (addr < 0x10000000)                       return read_le(m_main_ram, addr, mem_mask);
 	if (addr < 0x10000080)                       return prism_1000_r((addr - 0x10000000) / 4) & mem_mask;
 #if P2K_VBLANK_FLAG
-	// Encore models a vertical blank flag here (qemu/p2k-vsync.c) because, in its words, several
-	// "poll loops in XINU display setup wait for this dword to flip from 0 to 1 each frame before
-	// continuing", gating retrace-only work like palette updates and layer flips. This driver has a
+	// Encore models a vertical blank flag here (qemu/p2k-vsync.c) because, in its words, several "poll
+	// loops in XINU display setup wait for this dword to flip from 0 to 1 each frame before
+	// continuing", gating retrace-only work like palette updates and layer flips.  This driver has a
 	// line counter but no such event, and no display interrupt either.
 	//
 	// Derived from emulated time rather than written into the array the way Encore writes its SRAM:
-	// this region is the CMOS here and is saved to PinMAME's NVRAM file, so a flag stored in it
-	// would be written into battery-backed memory every frame and persist across runs. The header
-	// seed_error_log() builds skips offset 4, which is consistent with it not being storage.
-	// Writing it into the SRAM the way Encore does was tried too - see the commented-out block
-	// above push_switches - and changed nothing either. It did not fix the service menu it was
-	// added for (README.md), so either the address is wrong or that is not what blocks; kept
-	// because the signal is real and the games are unaffected by it
+	// this region is the CMOS here and is saved to PinMAME's NVRAM file, so a flag stored in it would
+	// be written to battery-backed memory every frame and persist across runs (the header
+	// seed_error_log() builds skips offset 4, consistent with it not being storage).  Writing it in
+	// Encore's way was tried too - the commented-out block above push_switches - and changed nothing
+	// either.  It did not fix the service menu it was added for (README.md), so either the address is
+	// wrong or that is not what blocks; kept because the signal is real and the games are unaffected
 	if (addr == 0x11000004)
 	{
 		return (in_vblank() ? 1u : 0u) & mem_mask; // 1 while in vertical blank
@@ -2372,21 +2301,19 @@ u8 p2k_state::pdb_reg_r() const
 	{
 		case 0x00: return sw_column(0);
 		case 0x01: return sw_column(11);
-		// The power driver board's DIP switches, read once during startup: they select the country,
-		// which is what the pricing tables key off (the changelogs talk about "the country dipswitch
-		// setting"). Answers with whatever the user set, through core_getDip(0) and p2k_pinmame_set_dips(), and 1 is still
-		// the default so nothing changes unless someone moves a switch. The machine's own DIP Switch
-		// Test in the service menu shows what it sees, which is how a value is checked.
+		// The power driver board's DIP switches, read once during startup: they select the country, which
+		// is what the pricing tables key off.  Answers with whatever the user set, through core_getDip(0)
+		// and p2k_pinmame_set_dips(); the machine's own DIP Switch Test in the service menu shows what it
+		// sees, which is how a value is checked.
 		//
-		// Only bits 0-3 matter, as a country code: 0 USA/Canada, 1 Germany, 2 France, 3 United
-		// Kingdom, 4 Spain, 7 Europe, 8 Japan, and the machine calls 5, 6 and 9-15 Unused. Measured
-		// by walking every combination against its own DIP Switch Test. The default is now 0, USA/Canada.
+		// Only bits 0-3 matter, as a country code: 0 USA/Canada, 1 Germany, 2 France, 3 United Kingdom,
+		// 4 Spain, 7 Europe, 8 Japan, with 5, 6 and 9-15 called Unused by the machine.  Measured by walking
+		// every combination against that test.  Default 0, USA/Canada.
 		//
-		// Encore hardcodes this one to 0xf0 and calls it a "status hi nibble"
-		// (qemu/p2k-lpt-board.c). Both constants boot, which fits a country selector where any
-		// value picks some country - but the manual has a DIP Switch Test and both changelogs talk
-		// about the country dipswitch setting, so switches is what this is. Encore agrees with the
-		// 0x00 for the fuses below, which the service menu fuse test confirms is the healthy reading
+		// Encore hardcodes this to 0xf0 and calls it a "status hi nibble" (qemu/p2k-lpt-board.c).  Both
+		// constants boot, which fits a country selector where any value picks some country - but the manual
+		// has a DIP Switch Test and both changelogs mention the country dipswitch, so switches is what this
+		// is.  Encore agrees on the 0x00 for the fuses below, which the service menu's fuse test confirms
 		case 0x02: return m_dip_switches;
 		case 0x03: return sw_column(10);
 		case 0x04:
@@ -2416,20 +2343,16 @@ u8 p2k_state::pdb_reg_r() const
 		case 0x0f: return 0x10;
 		case 0x10: case 0x11:
 		{
-			// Lamp matrix diagnostics - Pinball 2000's lamp fault detection, which is what lets an
-			// operator see any dead bulb in the test menu directly. On the power
-			// driver board it is a 74LS240 buffering the lamp row lines back to the CPU: the
-			// operations manual's lamp matrix pages show it, marked "Lamp Status" and "used for
-			// diagnostics only".
+			// Lamp matrix diagnostics.  On the power driver board a 74LS240 buffers the lamp row lines back to
+			// the CPU - the operations manual's lamp matrix pages mark it "Lamp Status", diagnostics only - so
+			// the game drives a column, reads the rows back here and compares.  Agreement means the bulb is
+			// there and conducting; the two ways of disagreeing are an open filament and a short, which is how
+			// one sense line yields three verdicts.  The game side is diagnostics_is_lamp_bad(),
+			// lamp_powerup_tests() and the poweron_open_matrix it fills, all named in symbols.rom.
 			//
-			// The game drives a column, reads the rows back here and compares them with what it
-			// drove. Agreement means the bulb is there and conducting; the two ways of disagreeing
-			// are an open filament and a short, which is how one sense line yields three verdicts.
-			// The game side of it is diagnostics_is_lamp_bad(), lamp_powerup_tests() and the
-			// poweron_open_matrix it fills - all named in the packages' symbols.rom.
-			//
-			// Echoing the row latches models a playfield where every bulb is present and working. See P2K_LAMP_STATUS_INVERT for how the sense was
-			// measured - the test drives one row bit at a time and reads back after each
+			// Echoing the row latches models a playfield where every bulb is present and working.  What is and
+			// is not confirmed, and how P2K_LAMP_STATUS_INVERT was measured, is in README.md under "Known
+			// limitations"
 			const u8 row = (m_pdb_index == 0x10) ? m_lamp_row_a : m_lamp_row_b;
 			return P2K_LAMP_STATUS_INVERT ? (u8)~row : row;
 		}
@@ -2501,17 +2424,14 @@ void p2k_state::lpt_w(offs_t offset, u8 data)
 		// eight is forty outputs, which does not fit one word, so D goes into the second one.
 		case 0x0d: m_solenoids  = (m_solenoids & ~0xff000000u) | (u32(data) << 24); break;// drivers 25-32
 		case 0x0c: m_solenoids2 = (m_solenoids2 & ~0x000000ffu) | u32(data); break;       // drivers 33-40
-		// 0x0e is the sixth group, "solenoid logic" in the register map above: drivers 41-48. Both
-		// games' own driver tables reach into it - Revenge From Mars names 48 Ticket Dispenser and
-		// Episode I 41 Neon Tube, 42 Knocker, 43 Shaker Motor, 44 Topper - and this is where the
-		// last three of those come out.
-		//
-		// Still unverified, unlike 0x0c/0x0d, and one attempt has come back empty: Revenge From
-		// Mars 1.60's own coil test walks 33-40 one at a time, 0x01 through 0x80 in 0x0c, and never
-		// touches 0x0e at all. That fits - 48 is a ticket dispenser nobody fits, and 41-47 are Not
-		// Used on that playfield, so there is nothing there to test. It leaves the mapping resting
-		// on the register map's own name plus Episode I's driver table, and Episode I's 2.x sets
-		// are the ones that would exercise it. First thing to doubt if a shaker misbehaves
+		// 0x0e is the sixth group, "solenoid logic" in the register map above: drivers 41-48.  Both
+		// games' driver tables reach into it - RFM names 48 Ticket Dispenser, Episode I 41 Neon
+		// Tube, 42 Knocker, 43 Shaker Motor, 44 Topper - and this is where the last three come out.
+		// Still unverified, unlike 0x0c/0x0d: RFM 1.60's coil test walks 33-40 one at a time in
+		// 0x0c and never touches 0x0e, which fits, since 48 is a dispenser nobody fits and 41-47
+		// are Not Used on that playfield.  So the mapping rests on the register map's name plus
+		// Episode I's driver table, and Episode I's 2.x sets are what would exercise it.  First
+		// thing to doubt if a shaker misbehaves
 		case 0x0e: m_solenoids2 = (m_solenoids2 & ~0x0000ff00u) | (u32(data) << 8); break;// drivers 41-48
 		default: break; // diagnostics: later
 	}
@@ -2536,29 +2456,12 @@ u8 p2k_state::port_r(offs_t port)
 	return value;
 }
 
-// What this costs has NOT been measured, and it is not free. pic8259_device schedules its
-// zero-delay timer on every write, so by the time we get here the pending flag is essentially
-// always set and this is a real scheduler pass: advance_to() scans the timer list, fires the
-// callback, then scans again to find nothing and stop. From P2K_IOWATCH the guest writes these
-// ports on the order of once per few hundred cycles, which puts it around 2-6% - an estimate off a
-// log, not a number.
-//
-// Nor is the comparison with the thing it replaced as favourable as it looks. The clkint gate now
-// defaults off, and off it costs nothing at all - without P2K_DEBUG the frame tracking and the
-// per-instruction hook are not compiled in, and shim/debugger.h leaves the i386 execute loop with
-// no call site at all. So against the old arrangement this trades a per-instruction tax for a
-// per-PIC-write one, and which is cheaper is genuinely open.
-//
-// It cannot be measured with what is here: report_progress()'s host= and mips= are P2K_DEBUG only,
-// and the configuration in question is a release build. That needs PinMAME's own speed readout or a
-// timed fixed run.
-//
-// If it does turn out to cost, the expense is not the pump but the route: two whole timer-list
-// scans to reach one device we already know we want. A check_irqs_now() on pic8259_device doing
-// what its device_timer(TIMER_CHECK_IRQ) does would let this call it straight - no scan, no flag,
-// and note_zero_delay() would drop back to a backstop for other devices. That is not done here only
-// because it means editing imported MAME code, which this port has otherwise kept pristine. Worth
-// doing with a number in hand; not on an estimate
+// What this costs has NOT been measured, and it is not free: pic8259_device schedules its
+// zero-delay timer on every write, so this is a real scheduler pass rather than a flag test, and
+// P2K_IOWATCH puts it at a rough 2-6%.  Whether it beats the per-instruction hook it replaced is
+// genuinely open, and cannot be settled from inside a P2K_DEBUG build.  The analysis, and the
+// check_irqs_now() shortcut that would remove the two timer-list scans, are in README.md under
+// "Possible performance related extensions -> The PIC interrupt pump"
 void p2k_state::pics_settle()
 {
 	m_machine->machine().scheduler().run_due_timers();
@@ -2726,18 +2629,17 @@ void p2k_state::port_w(offs_t port, u8 data)
 
 	if (port >= 0x03f8 && port <= 0x03ff)
 	{
-		// Ports 0 and 1 are two registers each: with DLAB - bit 7 of the line control register -
-		// set they are the baud rate divisor latch, and only with it clear are they the transmit
-		// register and the interrupt enable.
+		// Ports 0 and 1 are two registers each: with DLAB - bit 7 of the line control register - set they
+		// are the baud rate divisor latch, and only with it clear are they the transmit register and the
+		// interrupt enable.
 		//
-		// Honouring that for port 0 but not for port 1 is what wedged swep1_210. XINA calls
-		// tty_set_port_param(), which sets DLAB, writes divisor 0x000c for 9600 baud, and clears
-		// DLAB again - and the divisor's high byte, zero, landed on the interrupt enable shadow.
-		// That switched the transmit interrupt off for good about 3.8 seconds in, so the console
-		// queue stopped draining; it filled after some 35 seconds of ordinary messages, ttyputc
-		// blocked on the semaphore that guards it, and the 0.25 ms watchdog reported the process
-		// behind it as hung. Anything that printed more - a coin, the service menu - got there
-		// sooner, which is why those looked like the trigger for a long time
+		// Honouring that for port 0 but not port 1 is what wedged swep1_210.  XINA calls
+		// tty_set_port_param(), which sets DLAB, writes divisor 0x000c for 9600 baud and clears DLAB again
+		// - and the divisor's high byte, zero, landed on the interrupt enable shadow.  That switched the
+		// transmit interrupt off for good about 3.8 s in, so the console queue stopped draining, filled
+		// after some 35 s of ordinary messages, ttyputc blocked on the semaphore guarding it, and the
+		// 0.25 ms watchdog reported the process behind it as hung.  Anything that printed more - a coin,
+		// the service menu - got there sooner, which is why those looked like the trigger for a long time
 		const bool dlab = (m_uart_reg[3] & 0x80) != 0;
 		switch (port & 7)
 		{

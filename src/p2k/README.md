@@ -977,6 +977,32 @@ the actual pain), or declare a real memory map and have the subsystem's address 
 it. The second has a run-time cost; measure before keeping it. Note that PinMAME 0.76's memory
 system has no notion of the PCI-relocatable windows the MediaGX moves at run time.
 
+### The PIC interrupt pump
+
+`note_zero_delay()` costs something on every PIC write, and it has never been measured.
+`pic8259_device` schedules its zero-delay timer on every write, so by the time the driver reaches
+the pump the pending flag is essentially always set and this is a real scheduler pass -
+`advance_to()` scans the timer list, fires the callback, then scans again to find nothing. From
+`P2K_IOWATCH` the guest writes those ports on the order of once per few hundred cycles, which puts
+it around **2-6%** - an estimate off a log, not a number.
+
+The comparison with what it replaced is not as favourable as it looks either. The `clkint` gate now
+defaults off, and off it costs nothing at all: without `P2K_DEBUG` the frame tracking and the
+per-instruction hook are not compiled in, and `shim/debugger.h` leaves the i386 execute loop with no
+call site. So this trades a per-instruction tax for a per-PIC-write one, and which is cheaper is
+genuinely open.
+
+It cannot be measured with what is here - `report_progress()`'s `host=` and `mips=` are `P2K_DEBUG`
+only, and the configuration in question is a release build. That needs PinMAME's own speed readout
+or a timed fixed run.
+
+If it does cost, the expense is the route rather than the pump: two whole timer-list scans to reach
+one device we already know we want. A `check_irqs_now()` on `pic8259_device` doing what its
+`device_timer(TIMER_CHECK_IRQ)` does would let the driver call it straight - no scan, no flag - and
+`note_zero_delay()` would drop back to a backstop for other devices. Not done, only because it means
+editing imported MAME code this port has otherwise kept pristine. Worth doing with a number in hand.
+
+
 ### Smaller items
 
 Caching instruction fetch - `FETCH()` translates the address per byte - and the per-slice overhead
@@ -990,6 +1016,21 @@ of the 2000-cycle execution chunks.
   column is `core_findSize()`'s `+ 1` and every `CORE_VIDEO` game has it - Baby Pac-Man and Granny
   report 257 for a 256-pixel screen. It is left alone deliberately: changing it would move those
   games' output too.
+* **The mask window disagreement is unresolved.** The four mask images (`im_mask0`..`im_mask3` in
+  the update package) live on the Prism card. This driver, like the MAME one it came from, maps
+  `0x14000000-0x14ffffff` as one *banked* window selected by `prism_1400_w`, and maps the other
+  three again fixed at `0x15000000`/`0x16000000`/`0x17000000` - so bank 0 is reachable only through
+  the bank register. The firmware treats all four as fixed windows and never banks:
+  `boot_im_mask_bank_is_valid` (rfm 2.22 at `0x2861bc`) checksums them at `0x14400000`,
+  `0x15000000`, `0x16000000`, `0x17000000` against the sizes and checksums at BootData
+  `+0x5c/+0x60`, `+0x64/+0x68`, `+0x6c/+0x70`, `+0x74/+0x78`. Note the first is `0x144-`, not
+  `0x140-`, so where the firmware expects mask 0 the window answers from 4 MB into whichever bank is
+  selected. Nothing has been seen to depend on it - both games boot and play, and a normal power-up
+  never validates the masks at all (the console prints BOOT DATA, SYS IMAGE, GAME CODE and SYMBOLS
+  banners and no mask one, so that routine appears to run only while an update is written). Settling
+  it needs a machine that reads a mask through `0x14400000` with a bank other than 0 selected, or
+  the Prism card's own address decode.
+
 * **Lamp fault detection: per-lamp works, the matrix test is unconfirmed.** Pinball 2000 lets an
   operator find a dead bulb from the test menu, by driving a lamp and reading it back. That
   readback is registers `0x10`/`0x11` on the power driver board - the 74LS240 the operations
