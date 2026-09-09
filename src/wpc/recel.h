@@ -70,9 +70,14 @@
    recel.zip contains only these two dumps), so it is what the `recel`
    NOT_A_DRIVER parent set must be built from. Mirrors gts1.c's
    GTS1_2_ROMSTART pattern (src/wpc/gts1.h). */
+/* The region has to span every address the PPS-4 core can put on the bus, not
+   just the ROM: RM/WM mask to 0x1fff (pps4.c), and MRA_RAM/MWA_RAM at
+   0x1000-0x10ff are backed by this region at that offset. Sizing it 0x1000
+   left every RAM access one byte past the end, which corrupted the adjacent
+   heap chunk and aborted in free() at exit. */
 #define RECEL_BIOS_ROMSTART(name) \
   ROM_START(name) \
-    NORMALREGION(0x1000, RECEL_MEMREG_CPU) \
+    NORMALREGION(0x2000, RECEL_MEMREG_CPU) \
       ROM_LOAD("a2361.b1", 0x0000, 0x0800, CRC(d0c4695d) SHA1(4846adb3f6c292626840ba5255ffc5e788a69301)) \
       ROM_LOAD("a2362.b2", 0x0400, 0x0800, CRC(39a70611) SHA1(8545e168a5f256150bcff12d1e6d8efffd08c3cd))
 
