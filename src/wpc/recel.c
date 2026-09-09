@@ -52,6 +52,10 @@ static void recel_decode_prom(void) {
 
 static INTERRUPT_GEN(RECEL_vblank) {
   locals.vblankCount++;
+  /*-- lamps --*/
+  if ((locals.vblankCount % RECEL_LAMPSMOOTH) == 0)
+    memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix,
+           sizeof(coreGlobals.lampMatrix));
   core_updateSw(TRUE);
 }
 
@@ -124,6 +128,18 @@ static void gpkd_w(int cmd, int accu) {
   }
 }
 
+/* A17xx RRIOT command (docs/recel-system3-hardware.md §7.1): cmd bit 0 is c
+   -- c=0 SES touches the shared output-enable F/F for all 16 lines, not a
+   single line's value; c=1 SOS loads the addressed line's holding F/F from
+   accu bit 3 (A4), unchanged. The boot loop at PC 0x6c5 issues SOS/A4=1 for
+   all 16 lines and is documented as switching every lamp off, so the F/F is
+   active low: 1 = lamp off, 0 = lamp on. */
+static void b2_w(int line, int cmd, int accu) {
+  if (!(cmd & 0x1)) return;
+  if (accu & 0x08) coreGlobals.tmpLampMatrix[line / 8] &= ~(1 << (line % 8));
+  else             coreGlobals.tmpLampMatrix[line / 8] |=  (1 << (line % 8));
+}
+
 /* IOL issues a write then a read on the same port. The command nibble only
    travels with the write, so the read handler recovers it from locals.cmd. */
 static WRITE_HANDLER(recel_port_w) {
@@ -135,7 +151,7 @@ static WRITE_HANDLER(recel_port_w) {
          activecpu_get_pc(), device, locals.cmd, locals.accu, line));
   switch (device) {
     case RECEL_DEV_B1:   break;
-    case RECEL_DEV_B2:   break;
+    case RECEL_DEV_B2:   b2_w(line, locals.cmd, locals.accu); break;
     case RECEL_DEV_PIO:  break;
     case RECEL_DEV_GPKD: gpkd_w(locals.cmd, locals.accu); break;
     default: break;
