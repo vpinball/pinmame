@@ -4,24 +4,37 @@
 #include "core.h"
 #include "sim.h"
 
-/* Recel System III (Rockwell PPS-4/2). Object numbering follows the factory
-   service manuals: switch = strobe*10 + bit index (A..D = 1..4), solenoid =
-   PIO output number, lamp = printed register code. */
+/* Recel System III (Rockwell PPS-4/2). Switch and solenoid numbering follows
+   the factory service manuals: switch = strobe*10 + bit index (A..D = 1..4),
+   solenoid = PIO output number -- true of the raw bitmask in
+   coreGlobals.solenoids, but PinMAME's own user-facing solenoid ids (via
+   core_getSol(), the generic /api/monitor?type=sol endpoint) are one higher;
+   see tests/test_solenoids.py. Lamps do NOT follow the factory register
+   code: there is no MDRV_LAMP_CONV, so a lamp is exposed at its raw A1762
+   (device 0x2) line index instead -- column 0 = lines 0-7 = factory codes
+   51/52/54/58/41/42/44/48, column 1 = lines 8-15 = factory codes
+   31/32/34/38/21/22/24/28 (RECEL_LAMP_CODES below, in line order). lamp2m/
+   m2lamp are consumed only by src/wpc/vpintf.c (VPinMAME, a declared
+   spec non-goal), and vpintf assumes lamps start at column 1 while Recel's
+   live in columns 0-1, so implementing the conversion would only serve that
+   out-of-scope consumer. See docs/driver-notes.md for the recorded
+   deviation from spec §5.4. */
 
-#define RECEL_SOLSMOOTH     4
 #define RECEL_LAMPSMOOTH    1
-#define RECEL_DISPLAYSMOOTH 1
 
 #define RECEL_MEMREG_CPU  REGION_CPU1
 #define RECEL_MEMREG_PROM REGION_USER1
-
-#define RECEL_CPU 0
 
 /* IOL device ids */
 #define RECEL_DEV_B2   0x2  /* A1762 - playfield lamp registers */
 #define RECEL_DEV_B1   0x4  /* A1761 - NVRAM and printer control */
 #define RECEL_DEV_PIO  0xD  /* 11696 */
 #define RECEL_DEV_GPKD 0xF  /* 10788 */
+
+/* A1762 (device 0x2) line -> factory lamp code, index = line (see the header
+   comment above). Kept as a single parseable list so tests/test_lamps.py can
+   derive its code_to_line() mapping from here instead of duplicating it. */
+#define RECEL_LAMP_CODES { 51,52,54,58,41,42,44,48, 31,32,34,38,21,22,24,28 }
 
 /* Inport for the cabinet switches (strobes 8-9), read by SWITCH_UPDATE(RECEL).
    Bit layout matches the MAIN SWITCH CODE table (platform-level, same on every
@@ -52,12 +65,21 @@
    tied to VSS on the board, so only the first 1KB is reachable). Both are
    loaded whole and overlapping: a2362 lands on a2361's zero upper half, and
    its own zero upper half falls in 0x800-0xBFF, which recel_decode_prom()
-   fills afterwards. Order matters. The raw game PROM goes to REGION_USER1. */
-#define RECEL_ROMSTART(name, promfile, promsize, promhash) \
+   fills afterwards. Order matters. This is the shared program -- the BIOS --
+   common to every machine; it ships no game PROM of its own (roms/pinmame/
+   recel.zip contains only these two dumps), so it is what the `recel`
+   NOT_A_DRIVER parent set must be built from. Mirrors gts1.c's
+   GTS1_2_ROMSTART pattern (src/wpc/gts1.h). */
+#define RECEL_BIOS_ROMSTART(name) \
   ROM_START(name) \
     NORMALREGION(0x1000, RECEL_MEMREG_CPU) \
       ROM_LOAD("a2361.b1", 0x0000, 0x0800, CRC(d0c4695d) SHA1(4846adb3f6c292626840ba5255ffc5e788a69301)) \
-      ROM_LOAD("a2362.b2", 0x0400, 0x0800, CRC(39a70611) SHA1(8545e168a5f256150bcff12d1e6d8efffd08c3cd)) \
+      ROM_LOAD("a2362.b2", 0x0400, 0x0800, CRC(39a70611) SHA1(8545e168a5f256150bcff12d1e6d8efffd08c3cd))
+
+/* A real game: the BIOS plus its own game PROM, decoded through the BICs by
+   recel_decode_prom() and loaded raw into REGION_USER1. */
+#define RECEL_ROMSTART(name, promfile, promsize, promhash) \
+  RECEL_BIOS_ROMSTART(name) \
     NORMALREGION(0x0800, RECEL_MEMREG_PROM) \
       ROM_LOAD(promfile, 0x0000, promsize, promhash)
 

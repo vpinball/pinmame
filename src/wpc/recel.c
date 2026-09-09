@@ -39,12 +39,14 @@ static struct {
   /* 11696 PIO (device 0xD): 24 outputs in six nibble groups A-F (pio[0..5]).
      Outputs 0-5 sound, 6-15 coils, 16-19 bonus BCD, 20-23 indicators --
      docs/driver-notes.md §7 "Full PIO output allocation". solenoids mirrors
-     every output bit-for-bit (bit N = PIO output N); sound/bonus additionally
-     decode their own slice for other subsystems to read directly. */
+     every output bit-for-bit (bit N = PIO output N); sound additionally
+     decodes its own slice, since recel_snd_w() needs it as a 6-bit value
+     rather than individual bits. The bonus BCD nibble has no such consumer
+     -- tests/test_solenoids.py reads it straight off the solenoids bitmask
+     ((solenoids >> 16) & 0xF) -- so it is not separately decoded here. */
   UINT8 pio[6];
   UINT8 pioPrevWrite;  /* group write returns the pre-write value; §5 table */
   UINT8 sound;
-  UINT8 bonus;
   UINT32 solenoids;
   /* A17xx RRIOT I/O (B1 and B2): one holding F/F per line. 1 = released, so
      the pin floats; 0 = driven to +5V. a17_pin() turns that into what a read
@@ -65,8 +67,11 @@ static struct {
 static void recel_decode_prom(void) {
   UINT8 *raw = memory_region(RECEL_MEMREG_PROM);
   UINT8 *cpu = memory_region(RECEL_MEMREG_CPU);
-  const int size = (core_gameData->hw.gameSpecific1 == 2) ? 0x800 : 0x100;
-  int i;
+  int size, i;
+  /* The `recel` BIOS parent set (RECEL_BIOS_ROMSTART) ships no game PROM, so
+     it has no REGION_USER1 at all. Nothing to decode. */
+  if (!raw || !cpu) return;
+  size = (core_gameData->hw.gameSpecific1 == 2) ? 0x800 : 0x100;
   for (i = 0; i < size; i++)
     cpu[0x800 + i] = ~raw[size - 1 - i];
   /* Hardware version 2: the upper half of the decoded image replaces the
@@ -87,16 +92,23 @@ static INTERRUPT_GEN(RECEL_vblank) {
 }
 
 static MACHINE_INIT(RECEL) {
-  /* core_nvram() loads NVRAM into locals.nvData/nvAddr before cpu_run()
-     starts, but cpu_run() then calls machine_init on every (re)start -- so
-     the blanket clear below would erase what was just loaded. Round-trip
-     the two persisted fields across it. */
+  /* core_nvram() loads NVRAM into locals.nvData before cpu_run() starts, but
+     cpu_run() then calls machine_init on every (re)start -- so the blanket
+     clear below would erase what was just loaded. Round-trip the one field
+     core_nvram() actually persists (NVRAM_HANDLER(RECEL) below serializes
+     only nvData, not nvAddr) across it.
+     nvAddr is reset to 0, not round-tripped: a warm reset releases RSET,
+     which asserts the CD4040's reset and forces the counter to 0 on real
+     hardware, so carrying the old address forward would be *less* faithful.
+     nvRset/nvClk/nvWr start released (1), matching every A17xx line after
+     reset -- memset()'ing them to 0 ("driven") would let b1_w()'s edge
+     detectors see a first re-release as a spurious rising edge. */
   UINT8 nvData[sizeof locals.nvData];
-  const UINT16 nvAddr = locals.nvAddr;
   memcpy(nvData, locals.nvData, sizeof nvData);
   memset(&locals, 0, sizeof locals);
   memcpy(locals.nvData, nvData, sizeof nvData);
-  locals.nvAddr = nvAddr;
+  locals.nvAddr = 0;
+  locals.nvRset = locals.nvClk = locals.nvWr = 1;
   locals.ptrA = locals.ptrB = 15;
   locals.blankA = locals.blankB = 1;
   locals.coilSense = RECEL_SENSE_OPEN;
@@ -197,17 +209,14 @@ static void update_coil_sense(void) {
 /* 11696 PIO output -> subsystem state. `out` is the factory register number
    from docs/recel-system3-hardware.md §7.2.2 (solenoid N = register #N):
    #0-#5 sound, #6-#F coils, 16-19 bonus BCD, 20-23 indicators. solenoids
-   mirrors every output as a flat bitmask for /api/info; sound and bonus
-   additionally get their own decoded fields. */
+   mirrors every output as a flat bitmask for /api/info; sound additionally
+   gets its own decoded field, since recel_snd_w() wants a 6-bit value. */
 static void pio_set(int out, int on) {
   if (on) locals.solenoids |=  (1u << out);
   else    locals.solenoids &= ~(1u << out);
-  if (out < 6) {                                     /* sound (Task 12) */
+  if (out < 6) {                                     /* sound */
     locals.sound = (UINT8)((locals.sound & ~(1 << out)) | (on << out));
     recel_snd_w(locals.sound);
-  } else if (out >= 16 && out < 20) {                 /* bonus BCD nibble */
-    const int bit = out - 16;
-    locals.bonus = (UINT8)((locals.bonus & ~(1 << bit)) | (on << bit));
   }
   update_coil_sense();
 }
@@ -252,6 +261,12 @@ static void pio_w(int cmd, int accu) {
 
 static int pio_r(int cmd) {
   switch (cmd) {
+    /* A mutation here (returning locals.pio[cmd], the post-write value,
+       instead) survives the test suite -- but this is grounded in the
+       documented "returns the port's previous state in A" (§5's command
+       table), and no observable behaviour depends on which one runs, so it
+       is left as specified rather than as whatever the tests happen to
+       pin down. */
     case 0x00: case 0x01: case 0x02: case 0x03: case 0x04: case 0x05:
       return locals.pioPrevWrite;   /* group write returns the pre-write value */
     case 0x08: return locals.pio[0];
@@ -318,17 +333,17 @@ static int nv_bit(void) {
    M[00..0F], the 33ms delay at 0x1D2 would overwrite M[00]/M[01] on every
    call, and the eight-identical-samples loop at 0x7EA could never settle
    for register #1. */
-#define RECEL_B2_OPEN 0x8000
+#define RECEL_B2_TIEDHIGH 0x8000
 
 /* What a read of one A17xx line sees. A driven line reads back as its own
    +5V; a released one reads the external signal, which is -12V (= 1) on
    every Recel line except B1's IO0 while the HM6508 is answering and the
-   three open B2 outputs above. */
+   one tied-high B2 output (IO15) above. */
 static int a17_pin(int device, int line) {
   if (!(locals.a17Rel[A17IDX(device)] & (1 << line))) return 0x00;
   if (device == RECEL_DEV_B1 && line == RECEL_NV_RDAT && locals.nvEnab)
     return nv_bit() ? 0x0f : 0x00;
-  if (device == RECEL_DEV_B2 && (RECEL_B2_OPEN & (1 << line))) return 0x00;
+  if (device == RECEL_DEV_B2 && (RECEL_B2_TIEDHIGH & (1 << line))) return 0x00;
   return 0x0f;
 }
 
@@ -424,7 +439,11 @@ static READ_HANDLER(recel_port_r) {
   if (device == RECEL_DEV_GPKD) return 0x0f;
   if (device == RECEL_DEV_PIO) return pio_r(locals.cmd);
   if (device == RECEL_DEV_B1 || device == RECEL_DEV_B2) return locals.ioPrev;
-  return locals.accu;
+  /* Unreachable today (devices 0x2/0x4/0xD/0xF cover every case above), but
+     this is the exact shape of the bug that gated the self-check for most
+     of this project: returning the just-written accumulator instead of a
+     floating bus. Return 0x0f, matching every other undriven read here. */
+  return 0x0f;
 }
 
 /* Factory numbering: switch = strobe*10 + bit index (A..D = 1..4). Column 0 of
@@ -507,7 +526,7 @@ MACHINE_DRIVER_START(RECEL)
   MDRV_CPU_VBLANK_INT(RECEL_vblank, 1)
   MDRV_CORE_INIT_RESET_STOP(RECEL,NULL,RECEL)
   MDRV_NVRAM_HANDLER(RECEL)
-  MDRV_DIPS(8)
+  MDRV_DIPS(8)  /* Recel has no physical DIP switches; used purely as an inport allocator */
   MDRV_SWITCH_UPDATE(RECEL)
   MDRV_SWITCH_CONV(recel_sw2m, recel_m2sw)
   MDRV_IMPORT_FROM(recel_snd)

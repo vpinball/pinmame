@@ -14,7 +14,7 @@
    lines summing rather than selecting -- e.g. registers #1 and #2 go high together for one frame
    at the start of a coil kick, and #4/#5 are held together for the ~2s of a ball-serve buzz.  A
    mutually-exclusive tone selector could not produce that overlap, so this is six independent
-   gated taps added together, as the brief's starting skeleton assumed. What is *not* confirmed is
+   gated taps added together. What is *not* confirmed is
    which physical division ratio belongs to which line; F0/2..F0/64 in ascending register order is
    a labelled guess, not a measurement.
 

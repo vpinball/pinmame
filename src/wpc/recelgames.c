@@ -53,7 +53,7 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 / Recel System III shared program (not a game)
 /-------------------------------------------------------------------*/
 INIT_RECEL(recel, recel_disp, 1)
-RECEL_ROMSTART(recel, "fa.c5", 0x0100, CRC(5d3694da) SHA1(4d0a8033acb6ef2e2af107f76540fd19b4a39b12))
+RECEL_BIOS_ROMSTART(recel)
 RECEL_ROMEND
 GAMEX(1978,recel,0,RECEL,recel,recel,ROT0,"Recel","System III",NOT_A_DRIVER)
 
