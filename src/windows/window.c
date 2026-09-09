@@ -290,14 +290,25 @@
  }
 
  // bilinear resample srcbits (sw x sh) into dstbits (dw x dh), both tightly packed
- static void bm_resample(const int fmt, void *dstbits, const int dw, const int dh, const void *srcbits, const int sw, const int sh)
+ // sw is the source IMAGE width, sp its row PITCH in pixels; they differ whenever the
+ // visible width is not a multiple of 4, because win_perform_blit() pads each row out
+ // to params.dstpitch.  Passing the pitch as the width (as this used to be called)
+ // scales the padding in as picture: every DMD game is affected, since core_findSize()
+ // returns (left+length)*cols + 1 for CORE_DMD/CORE_VIDEO, which is always odd
+ static void bm_resample(const int fmt, void *dstbits, const int dw, const int dp, const int dh, const void *srcbits, const int sw, const int sp, const int sh)
  {
 	const int dbpp = bm_bpp(fmt);
 	const int is32 = (fmt == X8R8G8B8);
-	const INT32 offx = (sw == dw) ? 0 : 0x8000;
-	const INT32 offy = (sh == dh) ? 0 : 0x8000;
-	const INT32 incx = ((INT32)sw << 16) / dw;
-	const INT32 incy = ((INT32)sh << 16) / dh;
+	const INT32 incx = (dw > 0) ? (((INT32)sw << 16) / dw) : 0;
+	const INT32 incy = (dh > 0) ? (((INT32)sh << 16) / dh) : 0;
+	// Map DESTINATION pixel centres onto source coordinates: sx = (dx+0.5)*sw/dw - 0.5.
+	// The old offset of a flat +0.5 sampled up to a full source pixel too far right/down,
+	// so the picture crept towards the top left and the last source row/column was
+	// smeared over a whole zoom factor's worth of destination pixels (at 4x that is 24
+	// of 512 columns frozen to a copy of the last one).  srcrow carries a duplicated
+	// left edge at index 0 so the -0.5 cannot make the sample index negative
+	const INT32 offx = (sw == dw) ? 0x10000 : (0x8000 + incx / 2);
+	const INT32 offy = (sh == dh) ? 0 : (incy / 2 - 0x8000);
 	const int need = is32 ? 0 : (sw * 2);
 	const size_t want = (size_t)(sw + 4 + dw + need);
 	UINT32 *srcrow, *cache, *scanline1 = NULL, *scanline2 = NULL;
@@ -305,6 +316,9 @@
 	int old_y1 = (int)0x80000000;
 	int old_y2 = (int)0x80000000;
 	int j;
+
+	if (dw <= 0 || dh <= 0 || sw <= 0 || sh <= 0) // e.g. a minimised window results in a 0x0 client rect
+		return;
 
 	if (bm_scratch_size < want) {
 		free(bm_scratch);
@@ -314,7 +328,7 @@
 	if (bm_scratch == NULL)
 		return;
 
-	srcrow = bm_scratch;
+	srcrow = bm_scratch; // srcrow[0] duplicates the left edge, the row itself lives at srcrow[1..sw]
 	cache = bm_scratch + sw + 4;
 	if (!is32) {
 		scanline1 = cache + dw;
@@ -322,7 +336,7 @@
 	}
 
 	for (j = 0; j < dh; j++) {
-		UINT8 *dstrow = (UINT8*)dstbits + (size_t)j * dw * dbpp;
+		UINT8 *dstrow = (UINT8*)dstbits + (size_t)j * (dp * dbpp);
 		const UINT32 *row1, *row2;
 		const int my = sh - 1;
 		int y1 = starty >> 16;
@@ -331,30 +345,32 @@
 		y2 = (y2 < 0) ? 0 : ((y2 > my) ? my : y2);
 
 		if (is32) {
-			row1 = (const UINT32*)srcbits + (size_t)y1 * sw;
-			row2 = (const UINT32*)srcbits + (size_t)y2 * sw;
+			row1 = (const UINT32*)srcbits + (size_t)y1 * sp;
+			row2 = (const UINT32*)srcbits + (size_t)y2 * sp;
 		} else {
 			row1 = scanline1;
 			row2 = scanline2;
 			if (old_y1 != y1) {
-				fetch_row(fmt, (const UINT8*)srcbits + (size_t)y1 * sw * dbpp, sw, scanline1);
+				fetch_row(fmt, (const UINT8*)srcbits + (size_t)y1 * (sp * dbpp), sw, scanline1);
 				old_y1 = y1;
 			}
 			if (old_y2 != y2) {
-				fetch_row(fmt, (const UINT8*)srcbits + (size_t)y2 * sw * dbpp, sw, scanline2);
+				fetch_row(fmt, (const UINT8*)srcbits + (size_t)y2 * (sp * dbpp), sw, scanline2);
 				old_y2 = y2;
 			}
 		}
 
-		interp_row(srcrow, sw, row1, row2, starty & 0xffff);
+		interp_row(srcrow + 1, sw, row1, row2, starty & 0xffff);
 		starty += incy;
 
-		// repeat right edge for the horizontal interpolation reading src[xi + 1]
-		srcrow[sw] = srcrow[sw - 1];
-		srcrow[sw + 1] = srcrow[sw - 1];
+		// repeat both edges: interp_col reads src[xi] and src[xi + 1], and the half-pixel
+		// offset lets xi reach -1 (as index 0 here) at the left and sw at the right
+		srcrow[0] = srcrow[1];
+		srcrow[sw + 1] = srcrow[sw];
+		srcrow[sw + 2] = srcrow[sw];
 
 		if (dw == sw) {
-			store_row(fmt, dstrow, dw, srcrow, j);
+			store_row(fmt, dstrow, dw, srcrow + 1, j);
 		} else if (is32) {
 			interp_col((UINT32*)dstrow, dw, srcrow, offx, incx);
 		} else {
@@ -2011,16 +2027,16 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 		{
 		case 16: //!! 16 also seems to mean 15??!
 		case 15:
-			bm_resample(X1R5G5B5, upscale_bitmap, video_dib_info->bmiHeader.biWidth, (client.bottom - client.top),
-			            converted_bitmap, params.dstpitch / (depth / 8), win_visible_height * ymult);
+			bm_resample(X1R5G5B5, upscale_bitmap, (client.right - client.left), video_dib_info->bmiHeader.biWidth, (client.bottom - client.top),
+			            converted_bitmap, win_visible_width * xmult, params.dstpitch / (depth / 8), win_visible_height * ymult);
 			break;
 		case 24:
-			bm_resample(R8G8B8, upscale_bitmap, video_dib_info->bmiHeader.biWidth, (client.bottom - client.top),
-			            converted_bitmap, params.dstpitch / (depth / 8), win_visible_height * ymult);
+			bm_resample(R8G8B8, upscale_bitmap, (client.right - client.left), video_dib_info->bmiHeader.biWidth, (client.bottom - client.top),
+			            converted_bitmap, win_visible_width * xmult, params.dstpitch / (depth / 8), win_visible_height * ymult);
 			break;
 		case 32:
-			bm_resample(X8R8G8B8, upscale_bitmap, video_dib_info->bmiHeader.biWidth, (client.bottom - client.top),
-			            converted_bitmap, params.dstpitch / (depth / 8), win_visible_height * ymult);
+			bm_resample(X8R8G8B8, upscale_bitmap, (client.right - client.left), video_dib_info->bmiHeader.biWidth, (client.bottom - client.top),
+			            converted_bitmap, win_visible_width * xmult, params.dstpitch / (depth / 8), win_visible_height * ymult);
 			break;
 		default:
 			logerror("Cannot Resample, unknown bit depth");
