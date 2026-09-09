@@ -179,7 +179,10 @@ static void gpkd_w(int cmd, int accu) {
    Registers #6-#F are the ten BDX33C coil drivers; #0-#5 drive the discrete
    sound section, which is not on power play, so they read "no consumption" --
    which is exactly why the manual prints X.4.7 for X<5 as "test sound"
-   rather than as a fault. */
+   rather than as a fault. Simplification: all ten drivers count as loaded.
+   A game that wires fewer (Fair Fight uses #6-#B) would report the rest as
+   "coil open" on real hardware; modelling that needs per-game coil data the
+   driver does not carry. */
 #define RECEL_COIL_LO 6
 #define RECEL_COIL_HI 15
 static void update_coil_sense(void) {
@@ -296,21 +299,21 @@ static int nv_bit(void) {
   return (locals.nvData[(locals.nvAddr >> 3) & 0x7f] >> (locals.nvAddr & 7)) & 1;
 }
 
-/* B2's three lamp registers with nothing on the far side of their buffer.
-   docs/recel-system3-hardware.md §7.1.2 marks MA's REG 22/24/28 -- A1762
-   IO13/IO14/IO15 -- N.C. on every model, and §5.7 counts only 14 MC140 lamp
-   drivers for 16 outputs. Step 4 of the self-check reads every output back
-   and, in the manual's own words, "an open-circuit output is reported as
-   +5" (§3.2), so these three report as driven even when released. That is
-   not cosmetic: it makes step 4 stop at B2 line 13 with the minor fault
-   2.4.D, which is what leaves BM=4 and X=2 in the CPU for the coil test to
-   run on -- exactly the register state the manual's own coil codes X.4.7 /
-   X.4.4 and power-play codes 2.4.5 / 2.4.6 spell out. With all 16 reading
-   clean instead, step 4 ends at 0x75C's "lbl 00", the coil test's per-coil
-   scratch lands in the SAG page at M[00..0F], the 33ms delay at 0x1D2
-   overwrites M[00]/M[01] every call, and the eight-identical-samples loop
-   at 0x7EA can never settle for coil #1. */
-#define RECEL_B2_OPEN 0xe000
+/* B2's IO15 is hard-tied to +5V on the board, so it reads back as driven
+   however its holding F/F is set (docs/driver-notes.md §10.3, from
+   spider.pps4.fr). That is not cosmetic. Step 4 of the self-check reads
+   every A1762 output back one at a time and stops at the first that does
+   not answer, so it ends on the minor fault 2.4.F -- which §10.3 notes
+   displays as the documented "2.4." pass indication, because nibble F
+   blanks. Stopping there is what leaves BM=4 and X=2 in the CPU for step 5
+   to run on, and those are exactly the registers the manual's own coil
+   codes X.4.7 / X.4.4 and power-play codes 2.4.5 / 2.4.6 spell out. Were
+   all 16 lines to read clean, step 4 would instead fall through 0x75C's
+   "lbl 00", step 5's per-coil scratch would land in the SAG page at
+   M[00..0F], the 33ms delay at 0x1D2 would overwrite M[00]/M[01] on every
+   call, and the eight-identical-samples loop at 0x7EA could never settle
+   for register #1. */
+#define RECEL_B2_OPEN 0x8000
 
 /* What a read of one A17xx line sees. A driven line reads back as its own
    +5V; a released one reads the external signal, which is -12V (= 1) on
