@@ -49,11 +49,24 @@
 #define RECEL_LAMPCOL_P2STATUS  (CORE_CUSTLAMPCOL+3)  /* group A col A */
 #define RECEL_LAMPCOL_P4STATUS  (CORE_CUSTLAMPCOL+4)  /* group B col 2 */
 #define RECEL_LAMPCOL_P3STATUS  (CORE_CUSTLAMPCOL+5)  /* group B col A */
+/* hw.lampCol: core.c draws and counts CORE_CUSTLAMPCOL + lampCol columns, so
+   without this the six columns above exist in coreGlobals.lampMatrix but are
+   never rendered -- the ball-in-play/game-over indicator was invisible on
+   screen, leaving a started game looking identical to attract. */
+#define RECEL_LAMPCOLS 6
 
 /* Inport for the cabinet switches (strobes 8-9), read by SWITCH_UPDATE(RECEL).
    Bit layout matches the MAIN SWITCH CODE table (platform-level, same on every
    machine): low nibble = strobe 8 (A=Fault,B=Coin3,C=Coin1,D=Coin2), high
-   nibble = strobe 9 (A=Tilt/Door,B=Replays,C=Button2,D=Button1). */
+   nibble = strobe 9 (A=Tilt/Door,B=Replays,C=Button2,D=Button1).
+
+   The manual's "BUTTON 1"/"BUTTON 2" are S1/S2, the two adjustment buttons
+   inside the door -- SELECT 1 and SELECT 2 (system3-operation-maintenance.md
+   3.5). The player's button is the REPLAYS one, so that is what carries
+   KEYCODE_1 and the name "Start"; the two door buttons move out of the way
+   to 8 and 9. All three do serve a ball when a credit is on the machine
+   (they share the dispatch's 0x461/0x370 handlers), but only SELECT 2 serves
+   one with no credit at all -- the service play. See tests/test_cabinet.py. */
 #define RECEL_COMINPORT CORE_COREINPORT
 
 #define RECEL_COMPORTS \
@@ -63,9 +76,9 @@
     COREPORT_BIT(   0x0004, "Coin 1",      KEYCODE_3) \
     COREPORT_BIT(   0x0008, "Coin 2",      KEYCODE_4) \
     COREPORT_BIT(   0x0010, "Tilt/Door",   KEYCODE_DEL) \
-    COREPORT_BIT(   0x0020, "Replays",     KEYCODE_6) \
-    COREPORT_BIT(   0x0040, "Button 2",    KEYCODE_2) \
-    COREPORT_BIT(   0x0080, "Button 1",    KEYCODE_1)
+    COREPORT_BIT(   0x0020, "Start",       KEYCODE_1) \
+    COREPORT_BIT(   0x0040, "Select 2",    KEYCODE_9) \
+    COREPORT_BIT(   0x0080, "Select 1",    KEYCODE_8)
 
 #define RECEL_INPUT_PORTS_START(name, balls) \
   INPUT_PORTS_START(name) \

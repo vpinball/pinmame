@@ -32,11 +32,16 @@
    docs/gpkd-protocol.md §8's, and one entry of it is measured: inserting
    coins one at a time moves scan time B1 and nothing else in all 32
    positions, which puts credit on row 4's indicator pair and so player 4,
-   not player 3, on B7..B2. Which digit of that pair is the tens is still
-   open (§11.1). A9/A8 (match number and ball/tilt/game-over) are likewise
-   latched, not digits (§6), and are exposed as lamps rather than laid out
-   here; which of the two is which is still open (§11.6). B9/B8 drive no
-   indicator on a real machine (§4) and are not modelled at all. */
+   not player 3, on B7..B2. Column 1 is therefore the credit *units* and
+   column 0 the tens, which is also what the factory's own lite-box map says
+   (sys3simulator.pdf Fig. 1.6, docs/flippers-be-notes.md §2.7: column 1 =
+   "Extra Ball | Credit units", column 0 = "Free Play | Credit tens"), and
+   the columns run F..0 left to right. Both small fields used to be laid out
+   the other way round, so one credit read as "10". A9/A8 (match number and
+   ball/tilt/game-over) are likewise latched, not digits (§6), and are
+   exposed as lamps rather than laid out here; which of the two is which is
+   still open (§11.6). B9/B8 drive no indicator on a real machine (§4) and
+   are not modelled at all. */
 #define RECEL_D(row, col, pos) {row, col, pos, 1, CORE_SEG7},
 /* 5 GPKD-multiplexed score digits, MSD first; base = the ×10 digit's GPKD
    position (docs/gpkd-protocol.md §11.4 -- the ×1 digit is not multiplexed
@@ -47,25 +52,26 @@
   RECEL_D(row, (col)+8,(base))
 
 static core_tLCDLayout recel_disp[] = {
-  /* row 1: player 1 (A7..A3), then extra games / extra balls (A1, A0).
-     A2 (status LEDs) is a lamp, not a digit -- see the header comment. */
-  RECEL_COUNTER(0, 0, 3)  RECEL_D(0, 12, 1) RECEL_D(0, 14, 0)
+  /* row 1: player 1 (A7..A3), then the two single-digit indicators, spaced
+     apart because they are independent, not a two-digit number: free play
+     (A0) and extra ball (A1). A2 (status LEDs) is a lamp, not a digit. */
+  RECEL_COUNTER(0, 0, 3)  RECEL_D(0, 12, 0) RECEL_D(0, 16, 1)
   /* row 2: player 2 (AF..AB) -- the self-check display. AA (status) is a
      lamp; A9/A8 (match, ball/tilt/game-over) are lamps, not laid out here. */
   RECEL_COUNTER(2, 0, 11)
   /* row 3: player 3 (BF..BB). BA (status) is a lamp; B9/B8 have no
      indicator on a real machine (§4) and are not modelled. */
   RECEL_COUNTER(4, 0, 27)
-  /* row 4: player 4 (B7..B3), then the two credit digits (B1, B0).
+  /* row 4: player 4 (B7..B3), then credit, tens (B0) before units (B1).
      B2 (status) is a lamp. */
-  RECEL_COUNTER(6, 0, 19) RECEL_D(6, 12, 17) RECEL_D(6, 14, 16)
+  RECEL_COUNTER(6, 0, 19) RECEL_D(6, 12, 16) RECEL_D(6, 14, 17)
   {0}
 };
 
 #define INIT_RECEL(name, dsp, hwver) \
 RECEL_INPUT_PORTS_START(name, 1) RECEL_INPUT_PORTS_END \
 static core_tGameData name##GameData = { \
-  GEN_RECEL, dsp, {FLIP_SW(FLIP_L),0,0,0,SNDBRD_NONE,0,hwver}}; \
+  GEN_RECEL, dsp, {FLIP_SW(FLIP_L),0,RECEL_LAMPCOLS,0,SNDBRD_NONE,0,hwver}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
 /*-------------------------------------------------------------------
