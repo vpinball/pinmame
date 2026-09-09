@@ -23,15 +23,22 @@
 #define RECEL_DEV_PIO  0xD  /* 11696 */
 #define RECEL_DEV_GPKD 0xF  /* 10788 */
 
+/* Inport for the cabinet switches (strobes 8-9), read by SWITCH_UPDATE(RECEL).
+   Bit layout matches the MAIN SWITCH CODE table (platform-level, same on every
+   machine): low nibble = strobe 8 (A=Fault,B=Coin3,C=Coin1,D=Coin2), high
+   nibble = strobe 9 (A=Tilt/Door,B=Replays,C=Button2,D=Button1). */
+#define RECEL_COMINPORT CORE_COREINPORT
+
 #define RECEL_COMPORTS \
-  PORT_START /* 0 */ \
-    COREPORT_BIT(   0x0001, "Coin 1",      KEYCODE_3) \
-    COREPORT_BIT(   0x0002, "Coin 2",      KEYCODE_4) \
-    COREPORT_BIT(   0x0004, "Coin 3",      KEYCODE_5) \
-    COREPORT_BIT(   0x0008, "Start",       KEYCODE_1) \
-    COREPORT_BIT(   0x0010, "Replays",     KEYCODE_6) \
-    COREPORT_BIT(   0x0020, "Tilt/Door",   KEYCODE_DEL) \
-    COREPORT_BIT(   0x0040, "Fault",       KEYCODE_7)
+  PORT_START /* 2 */ \
+    COREPORT_BIT(   0x0001, "Fault",       KEYCODE_7) \
+    COREPORT_BIT(   0x0002, "Coin 3",      KEYCODE_5) \
+    COREPORT_BIT(   0x0004, "Coin 1",      KEYCODE_3) \
+    COREPORT_BIT(   0x0008, "Coin 2",      KEYCODE_4) \
+    COREPORT_BIT(   0x0010, "Tilt/Door",   KEYCODE_DEL) \
+    COREPORT_BIT(   0x0020, "Replays",     KEYCODE_6) \
+    COREPORT_BIT(   0x0040, "Button 2",    KEYCODE_2) \
+    COREPORT_BIT(   0x0080, "Button 1",    KEYCODE_1)
 
 #define RECEL_INPUT_PORTS_START(name, balls) \
   INPUT_PORTS_START(name) \

@@ -26,6 +26,7 @@ static struct {
   UINT8 accu;
   int cmd;
   int strobe;
+  UINT8 coilSense;  /* returns read at strobe 10; §5.4 */
   /* GPKD (10788) state: two independent 16 x 4-bit registers, scanned in
      lockstep. docs/gpkd-protocol.md §1, §8. */
   UINT8 dispA[16], dispB[16];
@@ -58,6 +59,7 @@ static MACHINE_INIT(RECEL) {
   memset(&locals, 0, sizeof locals);
   locals.ptrA = locals.ptrB = 15;
   locals.blankA = locals.blankB = 1;
+  locals.coilSense = 0x0f;
   recel_decode_prom();
 }
 
@@ -147,12 +149,55 @@ static READ_HANDLER(recel_port_r) {
   return locals.accu;
 }
 
+/* Factory numbering: switch = strobe*10 + bit index (A..D = 1..4). Column 0 of
+   swMatrix is reserved for dedicated switches (not part of Recel's strobed
+   matrix), so strobe S lives in column S+1, bit (index-1). A plain
+   "(col-1)*10 + row" / "(no/10+1)*8 + no%10" pair round-trips correctly for
+   every real switch but is off by one bit within the column, and also fails
+   core.c's MACHINE_INIT self-check loop at column 0 (C truncates negative
+   division so (0-1)*10+row never maps back to column 0). Column 0 is folded
+   into the disjoint negative range below instead, since no real switch number
+   is negative. */
+static int recel_sw2m(int no) {
+  return (no / 10 + 1) * 8 + (no % 10 - 1);
+}
+static int recel_m2sw(int col, int row) {
+  return col ? (col - 1) * 10 + (row + 1) : row - 7;
+}
+
+/* Cabinet switches (strobes 8-9) come from the input port, not the JC matrix.
+   RECEL_COMPORTS packs strobe 8 in the low nibble and strobe 9 in the high
+   nibble; column = strobe+1 as above. */
+static SWITCH_UPDATE(RECEL) {
+  if (inports) {
+    CORE_SETKEYSW(inports[RECEL_COMINPORT], 0x0f, 9);
+    CORE_SETKEYSW(inports[RECEL_COMINPORT] >> 4, 0x0f, 10);
+  }
+}
+
+/* DOA -> 7404 -> 7445: 10 strobes, latched from the accumulator (port 0x100).
+   The PPS-4/2's DOA also writes the X register to port 0x101 (pps4.c, the DOA
+   case) but the Recel board wires only the four accumulator lines to the
+   7445 [hardware notes §11.14]; that second nibble reaches no hardware here
+   and is intentionally ignored. */
+/* Traced as "RECELSW", not "RECEL ", so tests/test_ports.py's IOL-device
+   trace parser (which requires every "RECEL "-prefixed line to be a strict
+   key=value list keyed by IOL device id) does not try to parse it: DOA/DIA
+   are dedicated CPU output/input instructions, not an IOL device access. */
 static WRITE_HANDLER(sw_w) {
+  TRACE(("RECELSW PC=%03x doa=%x offset=%x\n", activecpu_get_pc(), data, offset));
   if (!offset) locals.strobe = data & 0x0f;
 }
 
 static READ_HANDLER(sw_r) {
-  return 0x0f;  /* all returns open until Task 6 */
+  UINT8 value;
+  if (offset) return 0x0f;
+  if (locals.strobe == 10) value = locals.coilSense;
+  else if (locals.strobe > 9) value = 0x0f;
+  /* Returns are active-low: +5V open, 0V closed. */
+  else value = ~coreGlobals.swMatrix[locals.strobe + 1] & 0x0f;
+  TRACE(("RECELSW PC=%03x strobe=%x dia=%x\n", activecpu_get_pc(), locals.strobe, value));
+  return value;
 }
 
 static PORT_READ_START(RECEL_readport)
@@ -173,4 +218,6 @@ MACHINE_DRIVER_START(RECEL)
   MDRV_CPU_VBLANK_INT(RECEL_vblank, 1)
   MDRV_CORE_INIT_RESET_STOP(RECEL,NULL,RECEL)
   MDRV_DIPS(8)
+  MDRV_SWITCH_UPDATE(RECEL)
+  MDRV_SWITCH_CONV(recel_sw2m, recel_m2sw)
 MACHINE_DRIVER_END
