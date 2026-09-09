@@ -127,18 +127,61 @@ static MEMORY_WRITE_START(RECEL_writemem)
   {0x1000,0x10ff, MWA_RAM},
 MEMORY_END
 
+/* Columns 2, 8, 9 and A of a group are latched raw in a 7475, not decoded by
+   a 7448 (docs/gpkd-protocol.md §6): 2/A are a player's status LEDs, 8 is
+   ball/tilt/game over, 9 is the match number. Group B's 8/9 drive no
+   indicator on a real machine (§4). Returns the custom lamp column that
+   should carry column `col`'s raw nibble via *lampcol, or GPKD_DIGIT/
+   GPKD_UNUSED. */
+enum { GPKD_DIGIT, GPKD_LAMP, GPKD_UNUSED };
+static int gpkd_kind(int group, int col, int *lampcol) {
+  switch (col) {
+    case 2:
+      *lampcol = group ? RECEL_LAMPCOL_P4STATUS : RECEL_LAMPCOL_P1STATUS;
+      return GPKD_LAMP;
+    case 10:
+      *lampcol = group ? RECEL_LAMPCOL_P3STATUS : RECEL_LAMPCOL_P2STATUS;
+      return GPKD_LAMP;
+    case 8:
+      if (group) return GPKD_UNUSED;
+      *lampcol = RECEL_LAMPCOL_GAMESTATE;
+      return GPKD_LAMP;
+    case 9:
+      if (group) return GPKD_UNUSED;
+      *lampcol = RECEL_LAMPCOL_MATCH;
+      return GPKD_LAMP;
+    default:
+      return GPKD_DIGIT;
+  }
+}
+
 /* 10788 GPKD, device 0xF. Push one group's 16 scan-time nibbles into
-   coreGlobals.segments; canonical position = 16*group + scan time, group A
-   at base 0, group B at base 16. docs/gpkd-protocol.md §4. core_bcd2seg7a[]
+   coreGlobals.segments for genuine digit columns, or coreGlobals.tmpLampMatrix
+   for latched columns; canonical position = 16*group + scan time, group A at
+   base 0, group B at base 16. docs/gpkd-protocol.md §4, §6. core_bcd2seg7a[]
    already reads 0 for nibble 0xF, so per-digit blanking (7448, §7) falls out
-   without a special case. */
+   without a special case. Latched columns get no such treatment: a 7475 has
+   no blanking input, so they always show the last nibble written regardless
+   of blankA/blankB. */
 static void gpkd_refresh(int group) {
   const UINT8 *disp  = group ? locals.dispB : locals.dispA;
   const int    blank = group ? locals.blankB : locals.blankA;
   const int    base  = group ? 16 : 0;
-  int i;
-  for (i = 0; i < 16; i++)
-    coreGlobals.segments[base + i].w = blank ? 0 : core_bcd2seg7a[disp[i]];
+  int i, lampcol;
+  for (i = 0; i < 16; i++) {
+    switch (gpkd_kind(group, i, &lampcol)) {
+      case GPKD_LAMP:
+        coreGlobals.tmpLampMatrix[lampcol] = disp[i];
+        coreGlobals.segments[base + i].w = 0;
+        break;
+      case GPKD_UNUSED:
+        coreGlobals.segments[base + i].w = 0;
+        break;
+      default: /* GPKD_DIGIT */
+        coreGlobals.segments[base + i].w = blank ? 0 : core_bcd2seg7a[disp[i]];
+        break;
+    }
+  }
 }
 
 /* Command table: docs/gpkd-protocol.md §1, §3. KAF/KBF blank a group

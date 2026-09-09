@@ -36,6 +36,20 @@
    derive its code_to_line() mapping from here instead of duplicating it. */
 #define RECEL_LAMP_CODES { 51,52,54,58,41,42,44,48, 31,32,34,38,21,22,24,28 }
 
+/* GPKD (device 0xF) columns 2, 8, 9 and A are latched in a 7475, not decoded
+   by a 7448 (docs/gpkd-protocol.md §6) -- they are not digits. Each is
+   exposed as its raw 4-bit nibble (DA1 = bit 0 .. DA4 = bit 3) in a custom
+   lamp column instead, one column per source. Group B's columns 8/9 drive no
+   indicator on a real machine and get no column. Custom columns start at
+   CORE_CUSTLAMPCOL (8) since Recel's real lamp driver (A1762) only ever uses
+   columns 0-1. */
+#define RECEL_LAMPCOL_P1STATUS  (CORE_CUSTLAMPCOL+0)  /* group A col 2 */
+#define RECEL_LAMPCOL_GAMESTATE (CORE_CUSTLAMPCOL+1)  /* group A col 8: ball/tilt/game over */
+#define RECEL_LAMPCOL_MATCH     (CORE_CUSTLAMPCOL+2)  /* group A col 9: match number */
+#define RECEL_LAMPCOL_P2STATUS  (CORE_CUSTLAMPCOL+3)  /* group A col A */
+#define RECEL_LAMPCOL_P4STATUS  (CORE_CUSTLAMPCOL+4)  /* group B col 2 */
+#define RECEL_LAMPCOL_P3STATUS  (CORE_CUSTLAMPCOL+5)  /* group B col A */
+
 /* Inport for the cabinet switches (strobes 8-9), read by SWITCH_UPDATE(RECEL).
    Bit layout matches the MAIN SWITCH CODE table (platform-level, same on every
    machine): low nibble = strobe 8 (A=Fault,B=Coin3,C=Coin1,D=Coin2), high

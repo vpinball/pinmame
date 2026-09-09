@@ -18,28 +18,47 @@
    §7.4's lite box is four rows of a six-digit counter plus a pair of small
    indicators, which is exactly the 8 + 8 nibbles of one group: group A
    carries players 1 and 2, group B players 3 and 4, and the self-check's
-   own results land on player 2 as the manual says they do. The rest of the
-   allocation is docs/gpkd-protocol.md §8's, and one entry of it is
-   measured: inserting coins one at a time moves scan time B1 and nothing
-   else in all 32 positions, which puts credit on row 4's indicator pair and
-   so player 4, not player 3, on B7..B2. Which digit of that pair is the
-   tens is still open (§11.1), as is the order of A9/A8 -- §7.4 names the
-   match digit and the ball/tilt/game-over block but not which is which. */
+   own results land on player 2 as the manual says they do. But the "six
+   digits" are the counter unit's own six 7448-driven positions (×1 .. ×100
+   000, system3-operation-maintenance.md §5.4); the GPKD only multiplexes
+   five of them (×10 .. ×100 000, docs/gpkd-protocol.md §11.4) plus a
+   *separate* status-LED nibble on the same scan column as the counter's
+   decimal point/LEDs, latched raw rather than run through a 7448 (§6). That
+   nibble is not the counter's missing ×1 digit -- treating it as one is a
+   real bug, not a rendering choice, and is what used to make the ball/tilt/
+   game-over latch (see below) render as a flashing numeral. So each score
+   field below is 5 digits, and the status nibble is exposed as a lamp
+   instead (gpkd_refresh() in recel.c). The rest of the allocation is
+   docs/gpkd-protocol.md §8's, and one entry of it is measured: inserting
+   coins one at a time moves scan time B1 and nothing else in all 32
+   positions, which puts credit on row 4's indicator pair and so player 4,
+   not player 3, on B7..B2. Which digit of that pair is the tens is still
+   open (§11.1). A9/A8 (match number and ball/tilt/game-over) are likewise
+   latched, not digits (§6), and are exposed as lamps rather than laid out
+   here; which of the two is which is still open (§11.6). B9/B8 drive no
+   indicator on a real machine (§4) and are not modelled at all. */
 #define RECEL_D(row, col, pos) {row, col, pos, 1, CORE_SEG7},
+/* 5 GPKD-multiplexed score digits, MSD first; base = the ×10 digit's GPKD
+   position (docs/gpkd-protocol.md §11.4 -- the ×1 digit is not multiplexed
+   and is not modelled). */
 #define RECEL_COUNTER(row, col, base) \
-  RECEL_D(row, col,    (base)+5) RECEL_D(row, (col)+2,  (base)+4) \
-  RECEL_D(row, (col)+4,(base)+3) RECEL_D(row, (col)+6,  (base)+2) \
-  RECEL_D(row, (col)+8,(base)+1) RECEL_D(row, (col)+10, (base))
+  RECEL_D(row, col,    (base)+4) RECEL_D(row, (col)+2,  (base)+3) \
+  RECEL_D(row, (col)+4,(base)+2) RECEL_D(row, (col)+6,  (base)+1) \
+  RECEL_D(row, (col)+8,(base))
 
 static core_tLCDLayout recel_disp[] = {
-  /* row 1: player 1 (A7..A2), then extra games / extra balls (A1, A0) */
-  RECEL_COUNTER(0, 0, 2)  RECEL_D(0, 14, 1) RECEL_D(0, 16, 0)
-  /* row 2: player 2 (AF..AA) -- the self-check display -- then the A9/A8 pair */
-  RECEL_COUNTER(2, 0, 10) RECEL_D(2, 14, 9) RECEL_D(2, 16, 8)
-  /* row 3: player 3 (BF..BA), then B9/B8 (no indicator fitted, §7.4) */
-  RECEL_COUNTER(4, 0, 26) RECEL_D(4, 14, 25) RECEL_D(4, 16, 24)
-  /* row 4: player 4 (B7..B2), then the two credit digits (B1, B0) */
-  RECEL_COUNTER(6, 0, 18) RECEL_D(6, 14, 17) RECEL_D(6, 16, 16)
+  /* row 1: player 1 (A7..A3), then extra games / extra balls (A1, A0).
+     A2 (status LEDs) is a lamp, not a digit -- see the header comment. */
+  RECEL_COUNTER(0, 0, 3)  RECEL_D(0, 12, 1) RECEL_D(0, 14, 0)
+  /* row 2: player 2 (AF..AB) -- the self-check display. AA (status) is a
+     lamp; A9/A8 (match, ball/tilt/game-over) are lamps, not laid out here. */
+  RECEL_COUNTER(2, 0, 11)
+  /* row 3: player 3 (BF..BB). BA (status) is a lamp; B9/B8 have no
+     indicator on a real machine (§4) and are not modelled. */
+  RECEL_COUNTER(4, 0, 27)
+  /* row 4: player 4 (B7..B3), then the two credit digits (B1, B0).
+     B2 (status) is a lamp. */
+  RECEL_COUNTER(6, 0, 19) RECEL_D(6, 12, 17) RECEL_D(6, 14, 16)
   {0}
 };
 
