@@ -51,7 +51,7 @@
 #  define CORE_SCREENX 320
 #  define CORE_SCREENY 256
 #endif /* VPINMAME */
-#define CORE_SCREENX_INC 4 // hack: increases window width by 4 for alpha/segmented displays, otherwise there is some weird wrap of last segments
+#define CORE_SCREENX_INC 0 // previous hack: had increased window width by 4 for alpha/segmented displays, otherwise there was some weird wrap of last segments (x86,VPM,32bit only,VS2022)
 
 /*-----------------
 /  define the game
