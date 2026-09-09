@@ -493,42 +493,40 @@ static int cirsa_irq_callback(int irqline) {
 }
 
 /*-- PPCERO, and what actually drives EXTINT -----------------------------
-/  The same circuit on both boards (Sport 2000 plate 5, Mephisto plate 4):
-/  the LM393 IC25 comparator's open-collector output goes to MUART Port 1
-/  pin 38 -- P11, labelled PPCERO, "paso por cero", the mains zero crossing
-/  -- and also into 74HC02 IC26 / 74LS14 IC24 -> 8256 pin 16 EXTINT, together
-/  with MUART P12 (an output).  So EXTINT = PPCERO OR NOT(P12).  It is NOT
-/  the quick-contact line, which an earlier reading of this board claimed.
+/  Same circuit on both boards (Sport 2000 plate 5, Mephisto plate 4): the
+/  LM393 IC25 comparator's open-collector output goes to MUART Port 1 pin 38
+/  -- P11, PPCERO, "paso por cero", the mains zero crossing -- and also into
+/  74HC02 IC26 / 74LS14 IC24 -> 8256 pin 16 EXTINT, together with MUART P12
+/  (an output).  So EXTINT = PPCERO OR NOT(P12).  It is NOT the quick-contact
+/  line, which an earlier reading of this board claimed.
 /
-/  NOT modelled, deliberately: the NOT(P12) half.  Both ROMs clear P12 before
-/  their first sti and never set it again, so on the real board that term
-/  holds EXTINT asserted for the whole run -- and i8256.c requests only on a
-/  0->1 transition of the pin, so a permanently asserted level would give
-/  exactly one level-2 interrupt for the session.  Driving the pin with
-/  PPCERO instead reproduces the rate the ROM is written around and leaves
-/  i8256.c's shared semantics alone.  If it ever grows a true level-sensitive
-/  EXTINT that re-requests after EOI, this is the place to revisit.
+/  The NOT(P12) half is deliberately not modelled: both ROMs clear P12 before
+/  their first sti and never set it again, so on hardware that term holds
+/  EXTINT asserted for the whole run - and i8256.c requests only on a 0->1
+/  transition, so a permanently asserted level would give exactly one level-2
+/  interrupt per session.  Driving the pin from PPCERO reproduces the rate the
+/  ROM is written around and leaves i8256.c's shared semantics alone.  Revisit
+/  here if it ever grows a true level-sensitive EXTINT that re-requests on EOI.
 /
 /  100 Hz is 50 Hz Spanish mains, full-wave rectified.
 /
-/  PPCERO IS A NARROW HIGH PULSE, NOT A SQUARE WAVE -- do not "fix" it into a
-/  50 % duty cycle.  R18/R19 divide 5 V down to 0.877 V on the comparator's
-/  non-inverting input, so the output is released high only in the sliver
-/  either side of the crossing where the unsmoothed rail falls below that,
-/  about 0.33 ms of every 10 ms.  CIRSA_ZC_PULSE_US is that sliver, and it
-/  gates Sport 2000's whole coil pipeline: the four-phase round robin at
-/  0x08B3 has its phase counter [0x31] forced back to 0 by every pass that
-/  finds P11 high (0x08AA, 0x090C and the level-2 ISR at 0x095A), so reaching
-/  phase 3 -- 0xC3CA, the only writer of the coil-frame bytes -- needs ~8.3 ms
-/  of unbroken P11-low.  Anything from 50 us to 1.5 ms of high time behaves
-/  identically; 3 ms degrades, and the 5 ms this code used to emit gives zero
-/  coils, ever.  If coils go quiet, check CIRSA_ZC_PULSE_US and [0x31] before
-/  touching the coil bus.
+/  PPCERO IS A NARROW HIGH PULSE, NOT A SQUARE WAVE -- do not "fix" it to 50%
+/  duty.  R18/R19 divide 5 V to 0.877 V on the comparator's non-inverting
+/  input, so the output is released high only in the sliver either side of the
+/  crossing where the unsmoothed rail falls below that, ~0.33 ms of every 10.
+/  CIRSA_ZC_PULSE_US is that sliver, and it gates Sport 2000's whole coil
+/  pipeline: the four-phase round robin at 0x08B3 has its phase counter [0x31]
+/  forced back to 0 by every pass that finds P11 high (0x08AA, 0x090C and the
+/  level-2 ISR at 0x095A), so reaching phase 3 - 0xC3CA, the only writer of the
+/  coil-frame bytes - needs ~8.3 ms of unbroken P11-low.  50 us to 1.5 ms of
+/  high time all behave identically; 3 ms degrades, and the 5 ms this code once
+/  emitted gives zero coils, ever.  If coils go quiet, check CIRSA_ZC_PULSE_US
+/  and [0x31] before touching the coil bus.
 /
 /  Mephisto needs the pulse for the opposite reason: its level-2 ISR (0x143B)
-/  updates INH LF / INH FLIP / INH L.C. only when it finds P11 HIGH, so
-/  resting the pin low would freeze those outputs.  Its coils are not gated on
-/  P11 at all, which is why the square wave was a Sport 2000-only bug.
+/  updates INH LF / INH FLIP / INH L.C. only when it finds P11 HIGH, so resting
+/  the pin low would freeze those outputs.  Its coils are not gated on P11 at
+/  all, which is why the square wave was a Sport 2000-only bug.
 /----------------------------------------------------------------------*/
 #define CIRSA_ZC_HZ 100          /* mains zero crossings per second */
 #define CIRSA_ZC_PULSE_US 300    /* PPCERO high time per crossing, see above */
@@ -584,33 +582,30 @@ static void cirsa_p1_out(UINT8 data) {
 /*-- MUART Port 2 (plate 5) ---------------------------------------------
 /  P20 EG1, P21 EG2, P22 TEST, P23 AVANCE are inputs, buffered through
 /  74HC240s with 10K pull-ups, so a pressed button reads as 1.  P24 RST ASIN
-/  (sound board reset), P25 INH LF, P26 INH FLIP and P27 INH L.C. are
-/  outputs -- these are the bits the ROM sets and clears around 0x0A29, not
-/  display strobes as first assumed.
+/  (sound board reset), P25 INH LF, P26 INH FLIP, P27 INH L.C. are outputs --
+/  the bits the ROM sets and clears around 0x0A29, not display strobes as
+/  first assumed.
 /
 /  POLARITY: LOW enables, HIGH inhibits, and nothing inverts.  Each line
-/  crosses exactly ONE buffer on the control board -- a 7407, open collector,
-/  non-inverting, no output bubble -- and then drives either a PNP emitter
-/  follower or an opto LED whose anode is pulled up on the far side at the
-/  power supply.  So current, and therefore the triac that switches that
-/  transformer secondary, flows only while the CPU pulls the line LOW:
+/  crosses exactly ONE buffer on the control board (a 7407: open collector,
+/  non-inverting, no output bubble) and then drives either a PNP emitter
+/  follower or an opto LED pulled up on the far side at the power supply, so
+/  current - and the triac switching that transformer secondary - flows only
+/  while the CPU pulls the line LOW:
+/      P25/P26/P27 LOW  = supply present (NOT inhibited)
+/      P25/P26/P27 HIGH = supply removed (inhibited)
+/  The Mephisto manual agrees from the operator's side (p.9): the supply's own
+/  LEDs sit in series with these lines, and DL15 "stays off, since it
+/  corresponds to the flipper inhibit and therefore lights only when the
+/  machine enters Game".
 /
-/      P25/P26/P27 LOW  = supply present  (NOT inhibited)
-/      P25/P26/P27 HIGH = supply removed  (inhibited)
-/
-/  The Mephisto manual says the same from the operator's side (p.9): the
-/  power supply's own LEDs sit in series with these lines, and DL15 "stays
-/  off, since it corresponds to the flipper inhibit and therefore lights only
-/  when the machine enters Game".
-/
-/  INH BOB is NOT a port-2 bit.  Sport 2000 rides it in the coil frame
-/  instead -- bit 6 of [0x673], set and cleared at 0x0A53/0x0A5A.
+/  INH BOB is NOT a port-2 bit - Sport 2000 rides it in the coil frame
+/  instead, bit 6 of [0x673], set and cleared at 0x0A53/0x0A5A.
 /
 /  LF is luces fijas, the 6.3/7 VAC general illumination; L.C. is luces
 /  controladas, the V LUCES rail feeding the eight BDX34C lamp-COLUMN drivers
 /  on plate 6.  Do not confuse either with the control board's own LC0-LC7 /
-/  LF0-LF7, which are the lamp matrix's column and row lines -- an unlucky
-/  collision of abbreviations.
+/  LF0-LF7, the lamp matrix's column and row lines - an unlucky collision.
 /----------------------------------------------------------------------*/
 static void cirsa_p2_out(UINT8 data) {
   /* P24 = RST ASIN, the sound board's reset line.  Both manuals draw the same

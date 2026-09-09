@@ -349,26 +349,20 @@ WRITE_HANDLER(i8256_w) {
       return;
 
     /* Reset Interrupts (6W) disables levels; it does NOT clear their request
-       latches.  Datasheet, "Interrupt Enable Register": "Interrupts are
-       enabled by writing to the Set Interrupts Register (5W).  Interrupts are
-       disabled by writing to the Reset Interrupts Register (6W).  Each bit set
-       by the Set Interrupts Register (5W) will enable that level interrupt,
-       and each bit set in the Reset Interrupts Register (6W) will disable that
-       level interrupt."  Nothing there touches the Interrupt Request Register,
-       which the datasheet names separately in both of its reset lists and
-       which only an acknowledge (INTA, or a read of the interrupt address
-       register), CMD3.RST or a hardware reset clears.  MAME's i8256.cpp agrees
-       -- it does `m_interrupts = m_interrupts & ~data;` and no more.
+       latches.  The datasheet's "Interrupt Enable Register" only ever speaks of
+       enabling and disabling levels, and names the Interrupt Request Register
+       separately in both of its reset lists - only an acknowledge (INTA, or a
+       read of the interrupt address register), CMD3.RST or a hardware reset
+       clears that.  MAME's i8256.cpp agrees: `m_interrupts &= ~data;` and no more.
 
-       This used to also do `i8256.pending &= ~data;`.  Both ROMs reload the
-       whole 16-register file from a canned image 8191 times in a boot delay
-       loop (sport2k 0x041F..0x0453, mephisto 0x0413..0x0447; the image is at
-       ROM 0x698 / 0x864 and is byte-identical between them), and its RSTINT
-       byte is 0xFF -- so that line silently discarded 8190 latched transmitter
-       requests per boot on the link that carries every sound command.  It made
-       no difference in the end, because neither ROM ever re-enables level 5
-       after init, but it was not what the part does.  See docs/ISSUES.md #29
-       for the before/after measurements. */
+       This used to also do `i8256.pending &= ~data;`.  Both ROMs reload the whole
+       16-register file from a canned image 8191 times in a boot delay loop
+       (sport2k 0x041F..0x0453, mephisto 0x0413..0x0447; the image at ROM 0x698 /
+       0x864 is byte-identical between them) and its RSTINT byte is 0xFF, so that
+       line discarded 8190 latched transmitter requests per boot on the link that
+       carries every sound command.  Harmless in the end - neither ROM re-enables
+       level 5 after init - but not what the part does.  docs/ISSUES.md #29 has the
+       before/after measurements. */
     case R_RSTINT:                       /* clear interrupt enables */
       i8256.inten &= ~data;
       i8256_update_int();

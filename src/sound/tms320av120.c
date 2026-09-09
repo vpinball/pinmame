@@ -10,6 +10,9 @@
 /**********************************************************************************************
  *   NOTE: Supports ONLY MPEG1 Layer 2 Mono data @ 32KHz/32kbps at this time!
  *         Not configurable to anything else, for speed purposes and coding simplicity at this time!
+ *         Seems to be fine in practice: scanning the frame headers of Kingpin's sample
+ *         ROMs (u28/u29/u30/u31) with 20130 frames, every single one is MPEG1 Layer 2 32kbps
+ *         32kHz mono, so the format is constant and a general decoder would buy nothing here AFAIK.
  *
  *   TODO:
  *		   1) Not sure where to set BOF line properly
