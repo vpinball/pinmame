@@ -555,6 +555,9 @@ set(PINMAME_SOURCES
    src/wpc/play.h
    src/wpc/playgames.c
    src/wpc/playsnd.c
+   src/wpc/recel.c
+   src/wpc/recel.h
+   src/wpc/recelgames.c
    src/wpc/regama.c
    src/wpc/rfranco.c
    src/wpc/rfranco.h

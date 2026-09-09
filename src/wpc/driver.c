@@ -984,8 +984,6 @@ DRIVERNV(pp100)         //Pool Player v1.0 (2000)
 // ----------------
 // INDER GAMES
 // ----------------
-                        //Hot and Cold (1978)
-                        //Screech (1978)
 DRIVERNV(centauri)      //Centaur (1979)
 DRIVERNV(centaurj)      //Centaur (1979, alternate set)
 DRIVERNV(topazi)        //Topaz (1979)
@@ -1010,6 +1008,14 @@ DRIVERNV(larana2 )      //La Rana (1990, alternate set)
 DRIVERNV(atleta  )      //Atleta (1991)
 DRIVERNV(ind250cc)      //250 CC (1992)
 DRIVERNV(metalman)      //Metal Man (1992)
+
+// ----------------
+// RECEL GAMES
+// ----------------
+DRIVERNV(recel)         //System III (not a game)
+DRIVERNV(r_fairfght)    //Fair Fight (1978)
+                        //Hot & Cold (1978)
+                        //Screech (1978)
 
 // ----------------
 // JAC VAN HAM
