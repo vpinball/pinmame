@@ -21,6 +21,9 @@
 #define TRACE(x)
 #endif
 
+#define RECEL_SENSE_OPEN  0x0f  /* both comparators high: nothing drawing */
+#define RECEL_SENSE_NORM  0x0d  /* return B drops: normal coil consumption */
+
 static struct {
   int vblankCount;
   UINT8 accu;
@@ -43,11 +46,17 @@ static struct {
   UINT8 sound;
   UINT8 bonus;
   UINT32 solenoids;
+  /* A17xx RRIOT I/O (B1 and B2): one holding F/F per line. 1 = released, so
+     the pin floats; 0 = driven to +5V. a17_pin() turns that into what a read
+     of the line sees. ioPrev holds the pin state sampled before the current
+     access, which is what SES/SOS return (§7.1's command table). */
+  UINT16 a17Rel[2];
+  int ioPrev;
   /* HM6508 NVRAM (1024x1 bit = 128 bytes), addressed serially by a CD4040
      counter driven from B1 (device 0x4) -- see b1_w(). */
   UINT16 nvAddr;
   UINT8 nvData[128];
-  int nvClk, nvEnab, nvRset;
+  int nvClk, nvEnab, nvRset, nvDin, nvWr;
 } locals;
 
 /* The game PROM is read through the BICs, which invert both the address and the
@@ -90,7 +99,8 @@ static MACHINE_INIT(RECEL) {
   locals.nvAddr = nvAddr;
   locals.ptrA = locals.ptrB = 15;
   locals.blankA = locals.blankB = 1;
-  locals.coilSense = 0x0f;
+  locals.coilSense = RECEL_SENSE_OPEN;
+  locals.a17Rel[0] = locals.a17Rel[1] = 0xffff;
   recel_decode_prom();
 }
 
@@ -155,63 +165,73 @@ static void gpkd_w(int cmd, int accu) {
   }
 }
 
-/* Coils sit on PIO outputs 6-15 (10 drivers, docs/driver-notes.md §7); 0-5 are
-   sound and have no coil behind them. The self-check's coil test sets one
-   output, immediately reads the power-play sense on switch strobe 10 (sw_r),
-   then clears the output again (see the traced D6/tml-0x36E/DB sequence at
-   ROM 0x7C5-0x7CD) -- so coilSense should follow whether *any* coil output is
-   presently energized. Bit weights and the open-vs-normal split below are
-   inferred from recel-system3-hardware.md's item 14 ("the manual describes
-   the concept but ... that path is not identified") plus the one point that
-   is measured: the constant 0x0F this replaces reliably renders the
-   self-check's "coil open" digit, so 0x0F must mean open and is kept as the
-   baseline. Flag as inference if this needs revisiting, same as the lamp
-   polarity note above. */
+/* Power-play / driver / coil sense, read as returns A and B during strobe 10
+   (docs/manuals/system3-operation-maintenance.md §5.7): the K relay's contact
+   is bridged by a 39 ohm resistor so the CPU can measure how much the coil
+   chain draws with power play off. The manual's own table gives three states,
+   and the self-check at ROM 0x7C0 masks the reading with 3 and demands
+   exactly those values:
+     3 = IN > 15V, no consumption   -> idle, or "coil X open"  (code X.4.7)
+     1 = 4V < IN < 15V, normal draw -> the coil answered       (loop continues)
+     0 = IN < 4V, short             -> "short in coil X"       (code X.4.4)
+   The self-check sets one output, reads the sense eight times over ~260ms
+   (0x7EA insists on eight identical samples), then clears it again.
+   Registers #6-#F are the ten BDX33C coil drivers; #0-#5 drive the discrete
+   sound section, which is not on power play, so they read "no consumption" --
+   which is exactly why the manual prints X.4.7 for X<5 as "test sound"
+   rather than as a fault. */
 #define RECEL_COIL_LO 6
 #define RECEL_COIL_HI 15
 static void update_coil_sense(void) {
   const UINT32 coilMask = ((2u << RECEL_COIL_HI) - (1u << RECEL_COIL_LO));
-  locals.coilSense = (locals.solenoids & coilMask) ? 0x0e : 0x0f;
+  locals.coilSense = (locals.solenoids & coilMask) ? RECEL_SENSE_NORM
+                                                   : RECEL_SENSE_OPEN;
 }
 
-/* 11696 PIO output line -> subsystem state. `line` is the 0-based PIO output
-   number from the table in docs/driver-notes.md §7 (solenoid N = PIO output
-   N). solenoids mirrors every line as a flat bitmask for /api/info; sound and
-   bonus additionally get their own decoded fields. */
-static void pio_set(int line, int on) {
-  if (on) locals.solenoids |=  (1u << line);
-  else    locals.solenoids &= ~(1u << line);
-  if (line < 6) {                                    /* sound (Task 12) */
-    locals.sound = (UINT8)((locals.sound & ~(1 << line)) | (on << line));
-  } else if (line >= 16 && line < 20) {               /* bonus BCD nibble */
-    const int bit = line - 16;
+/* 11696 PIO output -> subsystem state. `out` is the factory register number
+   from docs/recel-system3-hardware.md §7.2.2 (solenoid N = register #N):
+   #0-#5 sound, #6-#F coils, 16-19 bonus BCD, 20-23 indicators. solenoids
+   mirrors every output as a flat bitmask for /api/info; sound and bonus
+   additionally get their own decoded fields. */
+static void pio_set(int out, int on) {
+  if (on) locals.solenoids |=  (1u << out);
+  else    locals.solenoids &= ~(1u << out);
+  if (out < 6) {                                     /* sound (Task 12) */
+    locals.sound = (UINT8)((locals.sound & ~(1 << out)) | (on << out));
+  } else if (out >= 16 && out < 20) {                 /* bonus BCD nibble */
+    const int bit = out - 16;
     locals.bonus = (UINT8)((locals.bonus & ~(1 << bit)) | (on << bit));
   }
   update_coil_sense();
 }
 
+/* Group A-D bit -> register number. The 11696's own output index and Recel's
+   register numbering run in opposite directions: group A bit 1 is IO1, which
+   the factory calls #F, down to group D bit 8 = IO16 = #0
+   (docs/recel-system3-hardware.md §7.2.2). Groups E and F are not
+   bit-addressable and keep the flat 16-23 numbering. */
+static int pio_reg(int group, int bit) {
+  return (group < 4) ? 0x0f - (group * 4 + bit) : group * 4 + bit;
+}
+
 /* Command table: docs/driver-notes.md §5 "11696 PIO command encoding".
-   Group write D0-D5 covers outputs 0-23 four at a time (group*4+bit); set/
-   reset D6/DB address one of the 16 bit-addressable lines in groups A-D
-   (outputs 0-15) by accumulator, datasheet-numbered IO1 (accu F) down to
-   IO16 (accu 0) -- so output = 15-accu (accu F -> output 0, accu 0 ->
-   output 15), algebraically the only formula fitting both given endpoints.
-   Confirmed against the running ROM: the self-check's coil-test loop at
-   0x7C5 drives the accumulator through 0..F in order (traced via -log,
-   "dev=d cmd=6 accu=0".."accu=f"), which under this formula pulses outputs
-   15 down to 0 -- the 10 coil outputs first (accu 0-9), then the 6 sound
-   outputs (accu A-F), matching the "10 coils + 6 sound = 16 bit-addressable
-   lines" allocation exactly with no leftover or overlap. */
+   Group write D0-D5 covers all 24 outputs four at a time; set/reset D6/DB
+   address one of the 16 lines in groups A-D by accumulator, and the
+   accumulator value *is* the factory register number -- #F down to #0, which
+   is why the self-check's coil loop at 0x7C5 walks the accumulator 0..F and
+   the manual reads the same digit back as "coil X open / test sound when
+   X<5" (system3-operation-maintenance.md §3.2 step 5). pio_reg() converts a
+   group write's bit position into the same numbering. */
 static void pio_w(int cmd, int accu) {
   int i;
   if (cmd <= 0x05) {                        /* write group A..F */
     locals.pioPrevWrite = locals.pio[cmd];
-    for (i = 0; i < 4; i++) pio_set(cmd * 4 + i, (accu >> i) & 1);
+    for (i = 0; i < 4; i++) pio_set(pio_reg(cmd, i), (accu >> i) & 1);
     locals.pio[cmd] = (UINT8)accu;
   } else if (cmd == 0x06 || cmd == 0x0b) {  /* set / reset one bit */
     const int line = 0x0f - accu;
     const int group = line / 4, bit = line % 4;
-    pio_set(line, cmd == 0x06);
+    pio_set(accu, cmd == 0x06);
     if (cmd == 0x06) locals.pio[group] |= (UINT8)(1 << bit);
     else             locals.pio[group] &= (UINT8)~(1 << bit);
   } else if (cmd == 0x07 || cmd == 0x0e) {
@@ -239,58 +259,99 @@ static int pio_r(int cmd) {
 /* B1 (A1761, device 0x4) drives the HM6508 NVRAM (1024x1 bit = 128 bytes)
    bit-serially through an external CD4040 address counter. Line numbers are
    the A17xx's own I/O0..I/O15 pin index (docs/recel-system3-hardware.md
-   §7.1.1's pin table, sourced from the disassembly), NOT the 0/1/2/3 first
-   guessed for this task -- confirmed by disassembling the two RRIOT ROMs
-   (`cat A1761-13_1K.bin A1762-13_1K.bin | unidasm -arch pps4`) and matching
-   the result against the pin table:
-     - RSET = line 5 ("RESET of the CD4040", active high). Both NVRAM entry
-       points -- 0x2F4 "transfer RAM to HM6508" and 0x510 "test CMOS RAM and
-       write it to working RAM" -- open with the identical `lbl 05; ldi 0;
-       iol 41`, releasing reset exactly once at the start of the transfer.
-     - ENAB = line 2 ("ENABLE HM6508", active low). 0x528 ("read one bit at
-       current address") asserts it (accu=0) as its first action and
-       deasserts it (accu=8) as its last, bracketing the whole access.
-     - CLCK = line 4 ("CLOCK -- advances the CD4040"). Touched exactly once
-       per call to 0x528, immediately after ENAB's deassert and right before
-       return -- the structurally right spot to advance to the next address
-       between accesses. The traced run only ever completes one partial pass
-       (device 0x4 sees the same 36 accesses whether run for 900 or 3000
-       frames, then goes silent), so a clean assert/deassert pulse pair was
-       never observed here; the edge convention below follows the datasheet.
-     - WTOU = line 1 ("Data out to HM6508"). The only line whose accu value
-       differs between two otherwise-identical calls to the same PC (0x5B7)
-       in different loop passes -- the signature of a serial data line, not
-       a control strobe.
-   Lines 0 (data in), 3 (read/write select) and 6/7 (STPR/RDPR, mini-printer)
-   are outside this task's interface and are not modelled. */
+   §7.1.1's pin table).
+
+   Signal sense. An A17xx line's holding F/F either releases the pin (it
+   floats to -12V, which the part reads back as 1) or drives it to +5V (read
+   back as 0); SOS with A4=1 releases. Two statements in §7.1.1 fix that
+   direction independently -- "IO2 = 0 => output +5V => HM6508 enabled" and
+   "IO5 = 1 => pin Hi-Z"; the ROM agrees, since its write-a-1 helper (0x5B2)
+   loads A4=0 and its write-a-0 helper (0x5B1) loads A4=1. That is the
+   inversion §7.1.1 flags on IO1, and it is now applied.
+
+     IO0 RDAT  data in.  Left released; the HM6508's data output drives it
+                         while the chip is enabled.
+     IO1 WTOU  data out. HM6508 sees the *complement* of the F/F.
+     IO2 ENAB  chip enable, asserted when the pin is driven.
+     IO3 RWRT  write strobe. Driven low then released around the data bit
+                (ROM 0x5B0 and 0x5C0); the trailing edge latches, as on any
+                SRAM /WE, which also keeps step 4's line-by-line I/O test
+                from writing through a half-set-up bus.
+     IO4 CLCK  clocks the CD4040 one address forward per pulse.
+     IO5 RSET  holds the CD4040 at 0 while released.
+   IO6/IO7 (STPR/RDPR, mini-printer) are touched by the NVRAM routines but
+   drive nothing here, and IO8-IO15 are playfield outputs; all of them still
+   need their released/driven state tracked, because step 4 of the self-check
+   reads every line back. */
+#define RECEL_NV_RDAT 0
 #define RECEL_NV_WTOU 1
 #define RECEL_NV_ENAB 2
+#define RECEL_NV_RWRT 3
 #define RECEL_NV_CLCK 4
 #define RECEL_NV_RSET 5
 
+#define A17IDX(dev) ((dev) == RECEL_DEV_B1 ? 0 : 1)
+
+static int nv_bit(void) {
+  return (locals.nvData[(locals.nvAddr >> 3) & 0x7f] >> (locals.nvAddr & 7)) & 1;
+}
+
+/* B2's three lamp registers with nothing on the far side of their buffer.
+   docs/recel-system3-hardware.md §7.1.2 marks MA's REG 22/24/28 -- A1762
+   IO13/IO14/IO15 -- N.C. on every model, and §5.7 counts only 14 MC140 lamp
+   drivers for 16 outputs. Step 4 of the self-check reads every output back
+   and, in the manual's own words, "an open-circuit output is reported as
+   +5" (§3.2), so these three report as driven even when released. That is
+   not cosmetic: it makes step 4 stop at B2 line 13 with the minor fault
+   2.4.D, which is what leaves BM=4 and X=2 in the CPU for the coil test to
+   run on -- exactly the register state the manual's own coil codes X.4.7 /
+   X.4.4 and power-play codes 2.4.5 / 2.4.6 spell out. With all 16 reading
+   clean instead, step 4 ends at 0x75C's "lbl 00", the coil test's per-coil
+   scratch lands in the SAG page at M[00..0F], the 33ms delay at 0x1D2
+   overwrites M[00]/M[01] every call, and the eight-identical-samples loop
+   at 0x7EA can never settle for coil #1. */
+#define RECEL_B2_OPEN 0xe000
+
+/* What a read of one A17xx line sees. A driven line reads back as its own
+   +5V; a released one reads the external signal, which is -12V (= 1) on
+   every Recel line except B1's IO0 while the HM6508 is answering and the
+   three open B2 outputs above. */
+static int a17_pin(int device, int line) {
+  if (!(locals.a17Rel[A17IDX(device)] & (1 << line))) return 0x00;
+  if (device == RECEL_DEV_B1 && line == RECEL_NV_RDAT && locals.nvEnab)
+    return nv_bit() ? 0x0f : 0x00;
+  if (device == RECEL_DEV_B2 && (RECEL_B2_OPEN & (1 << line))) return 0x00;
+  return 0x0f;
+}
+
 static void b1_w(int line, int cmd, int accu) {
-  const int on = (accu & 0x08) ? 1 : 0;
+  const int rel = (accu & 0x08) ? 1 : 0;
   if (!(cmd & 0x1)) return;   /* SES: global enable, not a per-line value */
+  if (rel) locals.a17Rel[0] |=  (UINT16)(1 << line);
+  else     locals.a17Rel[0] &= (UINT16)~(1 << line);
   switch (line) {
     case RECEL_NV_RSET:
-      locals.nvRset = on;          /* active high, level-held */
-      if (on) locals.nvAddr = 0;
+      locals.nvRset = rel;         /* released = reset asserted, level-held */
+      if (rel) locals.nvAddr = 0;
       break;
     case RECEL_NV_ENAB:
-      locals.nvEnab = !on;         /* active low */
+      locals.nvEnab = !rel;
       break;
     case RECEL_NV_CLCK:
-      /* rising edge advances the counter, unless RSET is holding it at 0 */
-      if (on && !locals.nvClk && !locals.nvRset)
+      if (rel && !locals.nvClk && !locals.nvRset)
         locals.nvAddr = (locals.nvAddr + 1) & 0x3ff;
-      locals.nvClk = on;
+      locals.nvClk = rel;
       break;
     case RECEL_NV_WTOU:
-      if (locals.nvEnab) {
-        const int byte = locals.nvAddr >> 3, bit = locals.nvAddr & 7;
-        if (on) locals.nvData[byte] |=  (1 << bit);
-        else    locals.nvData[byte] &= ~(1 << bit);
+      locals.nvDin = !rel;
+      break;
+    case RECEL_NV_RWRT:
+      if (rel && !locals.nvWr && locals.nvEnab) {
+        const int byte = (locals.nvAddr >> 3) & 0x7f, bit = locals.nvAddr & 7;
+        if (locals.nvDin) locals.nvData[byte] |=  (UINT8)(1 << bit);
+        else              locals.nvData[byte] &= (UINT8)~(1 << bit);
       }
+      locals.nvWr = rel;
       break;
     default: break;
   }
@@ -316,8 +377,13 @@ static NVRAM_HANDLER(RECEL) {
    and pin (§3.3: PPS-4 logic 1 = -12V) and so does not settle it either. */
 static void b2_w(int line, int cmd, int accu) {
   if (!(cmd & 0x1)) return;   /* SES: global enable, not a per-line value */
-  if (accu & 0x08) coreGlobals.tmpLampMatrix[line / 8] &= ~(1 << (line % 8));
-  else             coreGlobals.tmpLampMatrix[line / 8] |=  (1 << (line % 8));
+  if (accu & 0x08) {
+    locals.a17Rel[1] |= (UINT16)(1 << line);
+    coreGlobals.tmpLampMatrix[line / 8] &= ~(1 << (line % 8));
+  } else {
+    locals.a17Rel[1] &= (UINT16)~(1 << line);
+    coreGlobals.tmpLampMatrix[line / 8] |=  (1 << (line % 8));
+  }
 }
 
 /* IOL issues a write then a read on the same port. The command nibble only
@@ -330,8 +396,13 @@ static WRITE_HANDLER(recel_port_w) {
   TRACE(("RECEL PC=%03x dev=%x cmd=%x accu=%x b=%x\n",
          activecpu_get_pc(), device, locals.cmd, locals.accu, line));
   switch (device) {
-    case RECEL_DEV_B1:   b1_w(line, locals.cmd, locals.accu); break;
-    case RECEL_DEV_B2:   b2_w(line, locals.cmd, locals.accu); break;
+    /* SES and SOS both answer with the addressed pin's state *before* the
+       access (§7.1's command table); the ROM leans on that hard, e.g. to
+       turn "drive low, then write back what you read" into a strobe pulse. */
+    case RECEL_DEV_B1:   locals.ioPrev = a17_pin(device, line);
+                         b1_w(line, locals.cmd, locals.accu); break;
+    case RECEL_DEV_B2:   locals.ioPrev = a17_pin(device, line);
+                         b2_w(line, locals.cmd, locals.accu); break;
     case RECEL_DEV_PIO:  pio_w(locals.cmd, locals.accu); break;
     case RECEL_DEV_GPKD: gpkd_w(locals.cmd, locals.accu); break;
     default: break;
@@ -341,8 +412,10 @@ static WRITE_HANDLER(recel_port_w) {
 static READ_HANDLER(recel_port_r) {
   /* GPKD does not drive I/D for any of its commands; the bus floats to
      all-ones. docs/gpkd-protocol.md §3.2. */
-  if ((offset >> 4) == RECEL_DEV_GPKD) return 0x0f;
-  if ((offset >> 4) == RECEL_DEV_PIO) return pio_r(locals.cmd);
+  const int device = offset >> 4;
+  if (device == RECEL_DEV_GPKD) return 0x0f;
+  if (device == RECEL_DEV_PIO) return pio_r(locals.cmd);
+  if (device == RECEL_DEV_B1 || device == RECEL_DEV_B2) return locals.ioPrev;
   return locals.accu;
 }
 
@@ -386,13 +459,24 @@ static WRITE_HANDLER(sw_w) {
   if (!offset) locals.strobe = data & 0x0f;
 }
 
+/* Contact node is +5V open / 0V closed, and each of the four data bits goes
+   through a pair of 2N4291s on the way to DIA (docs/manuals/system3-
+   operation-maintenance.md §5.7, which states outright that the manual does
+   not give the resulting polarity at the DIA pin). The ROM settles it: a
+   closed contact must read 1. Only then does the resting machine -- every
+   contact open -- present all-zero returns, does a ball sitting on the "ball
+   home" contact make the start button fire the ball-return coil, and do
+   playfield contacts score. With the opposite sense the ROM sees every
+   contact permanently closed, the door reads open so the start button
+   becomes §3.3's representation-area advance, and no game can begin.
+   Strobe 10 is not a contact group at all but the power-play sense; §5.7
+   gives its levels directly, so it is not affected by this. */
 static READ_HANDLER(sw_r) {
   UINT8 value;
   if (offset) return 0x0f;
   if (locals.strobe == 10) value = locals.coilSense;
   else if (locals.strobe > 9) value = 0x0f;
-  /* Returns are active-low: +5V open, 0V closed. */
-  else value = ~coreGlobals.swMatrix[locals.strobe + 1] & 0x0f;
+  else value = coreGlobals.swMatrix[locals.strobe + 1] & 0x0f;
   TRACE(("RECELSW PC=%03x strobe=%x dia=%x\n", activecpu_get_pc(), locals.strobe, value));
   return value;
 }
