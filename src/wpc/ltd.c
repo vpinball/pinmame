@@ -140,6 +140,16 @@ static DISCRETE_SOUND_START(ltd3_discInt)
 	DISCRETE_MULTADD(NODE_03,1,NODE_01,10,200)
 	DISCRETE_TRIANGLEWAVE(NODE_04,NODE_02,NODE_03,20000,10000,0)
 	DISCRETE_GAIN(NODE_05,NODE_04,12)
+	/* TODO: needs a DISCRETE_CRFILTER before the output - the node below is unipolar,
+	   a triangle of BIAS 10000 gained x12 (AMPL is peak-to-peak, so the mean is the
+	   bias), about +120000 of DC - far past the 32767 the output stage clamps to, so
+	   most of the waveform is lost, and it is there even in silence: a disabled wave
+	   node in disc_wav.c still outputs its BIAS.
+	   On the real board the output coupling capacitor removes that; by35snd.c is the
+	   one driver here that models it (DISCRETE_CRFILTER, "capacitor in series between
+	   pre-amp and output amp"). A plausible placeholder until the schematic is checked
+	   is RES_K(10)/CAP_U(10), i.e. a 10uF electrolytic into a ~10k amp input, which
+	   corners at ~1.6Hz - low enough to touch nothing audible */
 	DISCRETE_OUTPUT(NODE_05,50)
 DISCRETE_SOUND_END
 

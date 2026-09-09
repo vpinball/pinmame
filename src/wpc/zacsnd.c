@@ -30,6 +30,15 @@ static DISCRETE_SOUND_START(zac1311_discInt)
 
   DISCRETE_ADDER4(NODE_50,1,NODE_10,NODE_20,NODE_30,NODE_40) // Mix all four sound sources
 
+  /* TODO: needs a DISCRETE_CRFILTER before the output - the node below is unipolar,
+     four sawtooths with BIAS 10000 summed, so roughly +40000 of DC, which then
+     clips against the 32767 the output stage clamps to - and it is there even in
+     silence, a disabled wave node in disc_wav.c still outputs its BIAS.
+     On the real board the output coupling capacitor removes that; by35snd.c is the
+     one driver here that models it (DISCRETE_CRFILTER, "capacitor in series between
+     pre-amp and output amp"). A plausible placeholder until the schematic is checked
+     is RES_K(10)/CAP_U(10), i.e. a 10uF electrolytic into a ~10k amp input, which
+     corners at ~1.6Hz - low enough to touch nothing audible */
   DISCRETE_OUTPUT(NODE_50, 50)                               // Take the output from the mixer
 DISCRETE_SOUND_END
 
@@ -270,6 +279,15 @@ static DISCRETE_SOUND_START(zac1146_discInt)
   DISCRETE_INPUT(NODE_01,1,0x0003,0)
   DISCRETE_555_ASTABLE(NODE_10,NODE_01,12.0,RES_K(1),RES_K(56),CAP_N(10),NODE_NC,type)
   DISCRETE_GAIN(NODE_20,NODE_10,1250)
+  /* TODO: needs a DISCRETE_CRFILTER before the output - the node below is unipolar,
+     a 555 astable swinging 0..12V (out type 0, no AC flag, so no vcc/2 subtracted)
+     gained x1250; duty (R1+R2)/(R1+2*R2) ~= 50.4%, so about +7500 of DC while it
+     sounds (unlike a wave node, a disabled 555 outputs 0).
+     On the real board the output coupling capacitor removes that; by35snd.c is the
+     one driver here that models it (DISCRETE_CRFILTER, "capacitor in series between
+     pre-amp and output amp"). A plausible placeholder until the schematic is checked
+     is RES_K(10)/CAP_U(10), i.e. a 10uF electrolytic into a ~10k amp input, which
+     corners at ~1.6Hz - low enough to touch nothing audible. */
   DISCRETE_OUTPUT(NODE_20, 50)
 DISCRETE_SOUND_END
 

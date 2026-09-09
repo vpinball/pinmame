@@ -389,6 +389,16 @@ static DISCRETE_SOUND_START(b18555_discInt)
 	DISCRETE_GAIN(NODE_50,NODE_20,1250)
 	DISCRETE_GAIN(NODE_60,NODE_30,1250)
 	DISCRETE_ADDER3(NODE_70,1,NODE_40,NODE_50,NODE_60)
+	/* TODO: needs a DISCRETE_CRFILTER before the output - the node below is unipolar,
+	   three 555 astables swinging 0..12V (out type 0: no DISC_555_ASTBL_AC flag, so
+	   disc_dev.c does not subtract vcc/2), gained x1250 and summed. Duty here is
+	   (R1+R2)/(R1+2*R2) ~= 50.2%, so each enabled chip means ~6.03V*1250 = +7500 of
+	   DC, up to about +22600 with all three sounding (a disabled one outputs 0).
+	   On the real board the output coupling capacitor removes that; by35snd.c is the
+	   one driver here that models it (DISCRETE_CRFILTER, "capacitor in series between
+	   pre-amp and output amp"). A plausible placeholder until the schematic is checked
+	   is RES_K(10)/CAP_U(10), i.e. a 10uF electrolytic into a ~10k amp input, which
+	   corners at ~1.6Hz - low enough to touch nothing audible */
 	DISCRETE_OUTPUT(NODE_70, 50)
 DISCRETE_SOUND_END
 
