@@ -26,6 +26,11 @@ static struct {
   UINT8 accu;
   int cmd;
   int strobe;
+  /* GPKD (10788) state: two independent 16 x 4-bit registers, scanned in
+     lockstep. docs/gpkd-protocol.md §1, §8. */
+  UINT8 dispA[16], dispB[16];
+  int ptrA, ptrB;
+  int blankA, blankB;
 } locals;
 
 /* The game PROM is read through the BICs, which invert both the address and the
@@ -51,6 +56,8 @@ static INTERRUPT_GEN(RECEL_vblank) {
 
 static MACHINE_INIT(RECEL) {
   memset(&locals, 0, sizeof locals);
+  locals.ptrA = locals.ptrB = 15;
+  locals.blankA = locals.blankB = 1;
   recel_decode_prom();
 }
 
@@ -65,6 +72,56 @@ static MEMORY_WRITE_START(RECEL_writemem)
   {0x1000,0x10ff, MWA_RAM},
 MEMORY_END
 
+/* 10788 GPKD, device 0xF. Push one group's 16 scan-time nibbles into
+   coreGlobals.segments; canonical position = 16*group + scan time, group A
+   at base 0, group B at base 16. docs/gpkd-protocol.md §4. core_bcd2seg7a[]
+   already reads 0 for nibble 0xF, so per-digit blanking (7448, §7) falls out
+   without a special case. */
+static void gpkd_refresh(int group) {
+  const UINT8 *disp  = group ? locals.dispB : locals.dispA;
+  const int    blank = group ? locals.blankB : locals.blankA;
+  const int    base  = group ? 16 : 0;
+  int i;
+  for (i = 0; i < 16; i++)
+    coreGlobals.segments[base + i].w = blank ? 0 : core_bcd2seg7a[disp[i]];
+}
+
+/* Command table: docs/gpkd-protocol.md §1, §3. KAF/KBF blank a group
+   without touching its contents; KLA/KLB write at the current pointer and
+   then move it down one position. */
+static void gpkd_w(int cmd, int accu) {
+  switch (cmd) {
+    case 0xe: /* KLA */
+      locals.dispA[locals.ptrA] = accu;
+      locals.ptrA = (locals.ptrA - 1) & 0x0f;
+      gpkd_refresh(0);
+      break;
+    case 0xd: /* KLB */
+      locals.dispB[locals.ptrB] = accu;
+      locals.ptrB = (locals.ptrB - 1) & 0x0f;
+      gpkd_refresh(1);
+      break;
+    case 0xb: /* KAF */
+      locals.ptrA = 15;
+      locals.blankA = 1;
+      gpkd_refresh(0);
+      break;
+    case 0x7: /* KBF */
+      locals.ptrB = 15;
+      locals.blankB = 1;
+      gpkd_refresh(1);
+      break;
+    case 0x3: /* KDN */
+      locals.blankA = locals.blankB = 0;
+      gpkd_refresh(0);
+      gpkd_refresh(1);
+      break;
+    default:
+      TRACE(("RECEL unhandled GPKD cmd=%x\n", cmd));
+      break;
+  }
+}
+
 /* IOL issues a write then a read on the same port. The command nibble only
    travels with the write, so the read handler recovers it from locals.cmd. */
 static WRITE_HANDLER(recel_port_w) {
@@ -78,12 +135,15 @@ static WRITE_HANDLER(recel_port_w) {
     case RECEL_DEV_B1:   break;
     case RECEL_DEV_B2:   break;
     case RECEL_DEV_PIO:  break;
-    case RECEL_DEV_GPKD: break;
+    case RECEL_DEV_GPKD: gpkd_w(locals.cmd, locals.accu); break;
     default: break;
   }
 }
 
 static READ_HANDLER(recel_port_r) {
+  /* GPKD does not drive I/D for any of its commands; the bus floats to
+     all-ones. docs/gpkd-protocol.md §3.2. */
+  if ((offset >> 4) == RECEL_DEV_GPKD) return 0x0f;
   return locals.accu;
 }
 

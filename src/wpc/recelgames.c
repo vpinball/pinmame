@@ -3,12 +3,20 @@
 #include "sndbrd.h"
 #include "recel.h"
 
-/* 4 players x 6 digits, plus credit/ball. Positions are provisional until the
-   GPKD scan mapping is derived in Task 4. */
+/* GPKD position layout: canonical position = 16*group + scan time (group A =
+   0-15, group B = 16-31). docs/gpkd-protocol.md §4, §8.
+   Group A (upper line): free play/extra ball, player 1, ball/match, player 2.
+   Group B (lower line): credit, player 4, unused, player 3. */
 static core_tLCDLayout recel_disp[] = {
-  {0, 0, 0,6,CORE_SEG7}, {0,16, 6,6,CORE_SEG7},
-  {2, 0,12,6,CORE_SEG7}, {2,16,18,6,CORE_SEG7},
-  {4, 8,24,2,CORE_SEG7}, {4,16,26,2,CORE_SEG7},
+  {0, 0,  0,2,CORE_SEG7}, /* A0-A1: free play, extra ball */
+  {0, 4,  2,6,CORE_SEG7}, /* A2-A7: player 1, status nibble + score */
+  {0,12,  8,1,CORE_SEG7}, /* A8: ball in play / game over / tilt */
+  {0,14,  9,1,CORE_SEG7}, /* A9: match number */
+  {0,16, 10,6,CORE_SEG7}, /* AA-AF: player 2, status nibble + score */
+  {2, 0, 16,2,CORE_SEG7}, /* B0-B1: credit (digit order unverified, §11.1) */
+  {2, 4, 18,6,CORE_SEG7}, /* B2-B7: player 4, status nibble + score */
+  {2,12, 24,2,CORE_SEG7}, /* B8-B9: no equivalent on a real machine, §4 */
+  {2,16, 26,6,CORE_SEG7}, /* BA-BF: player 3, status nibble + score */
   {0}
 };
 
