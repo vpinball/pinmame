@@ -423,8 +423,22 @@ static void b1_w(int line, int cmd, int accu) {
   }
 }
 
+/* CMOS nibble n backs RAM cell n (restore loop at 0x540), so an adjustment in
+   RAM cell c lives in CMOS byte c/2, low half for even c. Cells A0/A1/B0 are
+   the three coin tables. A blank CMOS reads 0, which the ROM takes as the
+   manuals' value 0: chute 1 "2 coins, 1 play" and chute 3 "0 plays per coin",
+   a dead chute. Faithful to an unprogrammed board, useless as a shipped
+   default, so only a first run is seeded. driver-notes.md §8.1. */
+#define RECEL_NV_CHUTE1 (0xa0 / 2)   /* value 4 = 4*(1 coin) + (plays-1) */
+#define RECEL_NV_CHUTE3 (0xb0 / 2)   /* value = plays per coin */
+
 static NVRAM_HANDLER(RECEL) {
+  const int firstRun = !read_or_write && !file;
   core_nvram(file, read_or_write, locals.nvData, sizeof locals.nvData, 0x00);
+  if (firstRun) {
+    locals.nvData[RECEL_NV_CHUTE1] = 0x04;
+    locals.nvData[RECEL_NV_CHUTE3] = 0x01;
+  }
 }
 
 /* A17xx RRIOT command (docs/recel-system3-hardware.md §7.1): cmd bit 0 is c --
