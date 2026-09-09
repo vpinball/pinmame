@@ -204,6 +204,7 @@ static void pio_set(int out, int on) {
   else    locals.solenoids &= ~(1u << out);
   if (out < 6) {                                     /* sound (Task 12) */
     locals.sound = (UINT8)((locals.sound & ~(1 << out)) | (on << out));
+    recel_snd_w(locals.sound);
   } else if (out >= 16 && out < 20) {                 /* bonus BCD nibble */
     const int bit = out - 16;
     locals.bonus = (UINT8)((locals.bonus & ~(1 << bit)) | (on << bit));
@@ -509,4 +510,5 @@ MACHINE_DRIVER_START(RECEL)
   MDRV_DIPS(8)
   MDRV_SWITCH_UPDATE(RECEL)
   MDRV_SWITCH_CONV(recel_sw2m, recel_m2sw)
+  MDRV_IMPORT_FROM(recel_snd)
 MACHINE_DRIVER_END

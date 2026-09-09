@@ -66,4 +66,8 @@
 extern MACHINE_DRIVER_EXTERN(RECEL);
 #define gl_mRECEL RECEL
 
+/* recelsnd.c: discrete sound, PIO outputs 0-5 */
+extern MACHINE_DRIVER_EXTERN(recel_snd);
+void recel_snd_w(int bits);
+
 #endif /* INC_RECEL */
