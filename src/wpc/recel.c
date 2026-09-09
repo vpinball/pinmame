@@ -26,12 +26,23 @@ static struct {
   UINT8 accu;
   int cmd;
   int strobe;
-  UINT8 coilSense;  /* returns read at strobe 10; §5.4 */
+  UINT8 coilSense;  /* returns read at strobe 10; §5.4. Recomputed from PIO
+                        state by pio_set() -- see the comment there. */
   /* GPKD (10788) state: two independent 16 x 4-bit registers, scanned in
      lockstep. docs/gpkd-protocol.md §1, §8. */
   UINT8 dispA[16], dispB[16];
   int ptrA, ptrB;
   int blankA, blankB;
+  /* 11696 PIO (device 0xD): 24 outputs in six nibble groups A-F (pio[0..5]).
+     Outputs 0-5 sound, 6-15 coils, 16-19 bonus BCD, 20-23 indicators --
+     docs/driver-notes.md §7 "Full PIO output allocation". solenoids mirrors
+     every output bit-for-bit (bit N = PIO output N); sound/bonus additionally
+     decode their own slice for other subsystems to read directly. */
+  UINT8 pio[6];
+  UINT8 pioPrevWrite;  /* group write returns the pre-write value; §5 table */
+  UINT8 sound;
+  UINT8 bonus;
+  UINT32 solenoids;
 } locals;
 
 /* The game PROM is read through the BICs, which invert both the address and the
@@ -56,6 +67,8 @@ static INTERRUPT_GEN(RECEL_vblank) {
   if ((locals.vblankCount % RECEL_LAMPSMOOTH) == 0)
     memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix,
            sizeof(coreGlobals.lampMatrix));
+  /*-- solenoids (PIO outputs 0-23, see locals.pio) --*/
+  coreGlobals.solenoids = locals.solenoids;
   core_updateSw(TRUE);
 }
 
@@ -128,6 +141,87 @@ static void gpkd_w(int cmd, int accu) {
   }
 }
 
+/* Coils sit on PIO outputs 6-15 (10 drivers, docs/driver-notes.md §7); 0-5 are
+   sound and have no coil behind them. The self-check's coil test sets one
+   output, immediately reads the power-play sense on switch strobe 10 (sw_r),
+   then clears the output again (see the traced D6/tml-0x36E/DB sequence at
+   ROM 0x7C5-0x7CD) -- so coilSense should follow whether *any* coil output is
+   presently energized. Bit weights and the open-vs-normal split below are
+   inferred from recel-system3-hardware.md's item 14 ("the manual describes
+   the concept but ... that path is not identified") plus the one point that
+   is measured: the constant 0x0F this replaces reliably renders the
+   self-check's "coil open" digit, so 0x0F must mean open and is kept as the
+   baseline. Flag as inference if this needs revisiting, same as the lamp
+   polarity note above. */
+#define RECEL_COIL_LO 6
+#define RECEL_COIL_HI 15
+static void update_coil_sense(void) {
+  const UINT32 coilMask = ((2u << RECEL_COIL_HI) - (1u << RECEL_COIL_LO));
+  locals.coilSense = (locals.solenoids & coilMask) ? 0x0e : 0x0f;
+}
+
+/* 11696 PIO output line -> subsystem state. `line` is the 0-based PIO output
+   number from the table in docs/driver-notes.md §7 (solenoid N = PIO output
+   N). solenoids mirrors every line as a flat bitmask for /api/info; sound and
+   bonus additionally get their own decoded fields. */
+static void pio_set(int line, int on) {
+  if (on) locals.solenoids |=  (1u << line);
+  else    locals.solenoids &= ~(1u << line);
+  if (line < 6) {                                    /* sound (Task 12) */
+    locals.sound = (UINT8)((locals.sound & ~(1 << line)) | (on << line));
+  } else if (line >= 16 && line < 20) {               /* bonus BCD nibble */
+    const int bit = line - 16;
+    locals.bonus = (UINT8)((locals.bonus & ~(1 << bit)) | (on << bit));
+  }
+  update_coil_sense();
+}
+
+/* Command table: docs/driver-notes.md §5 "11696 PIO command encoding".
+   Group write D0-D5 covers outputs 0-23 four at a time (group*4+bit); set/
+   reset D6/DB address one of the 16 bit-addressable lines in groups A-D
+   (outputs 0-15) by accumulator, datasheet-numbered IO1 (accu F) down to
+   IO16 (accu 0) -- so output = 15-accu (accu F -> output 0, accu 0 ->
+   output 15), algebraically the only formula fitting both given endpoints.
+   Confirmed against the running ROM: the self-check's coil-test loop at
+   0x7C5 drives the accumulator through 0..F in order (traced via -log,
+   "dev=d cmd=6 accu=0".."accu=f"), which under this formula pulses outputs
+   15 down to 0 -- the 10 coil outputs first (accu 0-9), then the 6 sound
+   outputs (accu A-F), matching the "10 coils + 6 sound = 16 bit-addressable
+   lines" allocation exactly with no leftover or overlap. */
+static void pio_w(int cmd, int accu) {
+  int i;
+  if (cmd <= 0x05) {                        /* write group A..F */
+    locals.pioPrevWrite = locals.pio[cmd];
+    for (i = 0; i < 4; i++) pio_set(cmd * 4 + i, (accu >> i) & 1);
+    locals.pio[cmd] = (UINT8)accu;
+  } else if (cmd == 0x06 || cmd == 0x0b) {  /* set / reset one bit */
+    const int line = 0x0f - accu;
+    const int group = line / 4, bit = line % 4;
+    pio_set(line, cmd == 0x06);
+    if (cmd == 0x06) locals.pio[group] |= (UINT8)(1 << bit);
+    else             locals.pio[group] &= (UINT8)~(1 << bit);
+  } else if (cmd == 0x07 || cmd == 0x0e) {
+    TRACE(("RECEL unhandled PIO cmd=%x\n", cmd));
+  }
+  /* else: cmd is a read-group opcode (8,9,a,c,d,f). IOL always writes then
+     reads the same port with the same command byte, so every PIO read also
+     reaches here first; there is nothing to do on the write side of a read. */
+}
+
+static int pio_r(int cmd) {
+  switch (cmd) {
+    case 0x00: case 0x01: case 0x02: case 0x03: case 0x04: case 0x05:
+      return locals.pioPrevWrite;   /* group write returns the pre-write value */
+    case 0x08: return locals.pio[0];
+    case 0x09: return locals.pio[1];
+    case 0x0a: return locals.pio[2];
+    case 0x0f: return locals.pio[3];  /* group D reads with DF, not DB */
+    case 0x0c: return locals.pio[4];
+    case 0x0d: return locals.pio[5];
+  }
+  return 0x0f;  /* set/reset/undocumented: bus floats high */
+}
+
 /* A17xx RRIOT command (docs/recel-system3-hardware.md §7.1): cmd bit 0 is c --
    c=0 SES sets the shared enable F/F for all 16 lines (A4=1 enable, A4=0
    disable/float; disable is never seen in the traced ROM and unmodelled
@@ -160,7 +254,7 @@ static WRITE_HANDLER(recel_port_w) {
   switch (device) {
     case RECEL_DEV_B1:   break;
     case RECEL_DEV_B2:   b2_w(line, locals.cmd, locals.accu); break;
-    case RECEL_DEV_PIO:  break;
+    case RECEL_DEV_PIO:  pio_w(locals.cmd, locals.accu); break;
     case RECEL_DEV_GPKD: gpkd_w(locals.cmd, locals.accu); break;
     default: break;
   }
@@ -170,6 +264,7 @@ static READ_HANDLER(recel_port_r) {
   /* GPKD does not drive I/D for any of its commands; the bus floats to
      all-ones. docs/gpkd-protocol.md §3.2. */
   if ((offset >> 4) == RECEL_DEV_GPKD) return 0x0f;
+  if ((offset >> 4) == RECEL_DEV_PIO) return pio_r(locals.cmd);
   return locals.accu;
 }
 
