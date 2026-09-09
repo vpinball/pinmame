@@ -177,9 +177,12 @@ static void gpkd_w(int cmd, int accu) {
    The self-check sets one output, reads the sense eight times over ~260ms
    (0x7EA insists on eight identical samples), then clears it again.
    Registers #6-#F are the ten BDX33C coil drivers; #0-#5 drive the discrete
-   sound section, which is not on power play, so they read "no consumption" --
-   which is exactly why the manual prints X.4.7 for X<5 as "test sound"
-   rather than as a fault. Simplification: all ten drivers count as loaded.
+   sound section, which is not on power play, so they read "no consumption"
+   and the check reports X.4.7 for each -- not a fault, but the sound half of
+   step 5. The manual writes that condition as "X<5" while the driver table
+   in §7.2.2 gives six sound registers #0-#5 and the ROM's loop emits six
+   codes, 0.4.7..5.4.7; treat the manual's bound as an off-by-one or an OCR
+   artefact rather than as confirmation. Simplification: all ten drivers count as loaded.
    A game that wires fewer (Fair Fight uses #6-#B) would report the rest as
    "coil open" on real hardware; modelling that needs per-game coil data the
    driver does not carry. */
@@ -223,8 +226,9 @@ static int pio_reg(int group, int bit) {
    accumulator value *is* the factory register number -- #F down to #0, which
    is why the self-check's coil loop at 0x7C5 walks the accumulator 0..F and
    the manual reads the same digit back as "coil X open / test sound when
-   X<5" (system3-operation-maintenance.md §3.2 step 5). pio_reg() converts a
-   group write's bit position into the same numbering. */
+   X<5" (system3-operation-maintenance.md §3.2 step 5; on that bound see
+   update_coil_sense above). pio_reg() converts a group write's bit position
+   into the same numbering. */
 static void pio_w(int cmd, int accu) {
   int i;
   if (cmd <= 0x05) {                        /* write group A..F */

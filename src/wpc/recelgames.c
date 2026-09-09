@@ -18,9 +18,13 @@
    §7.4's lite box is four rows of a six-digit counter plus a pair of small
    indicators, which is exactly the 8 + 8 nibbles of one group: group A
    carries players 1 and 2, group B players 3 and 4, and the self-check's
-   own results land on player 2 as the manual says they do. Which of each
-   indicator pair is which is not established -- §7.4 names them but not
-   their order. */
+   own results land on player 2 as the manual says they do. The rest of the
+   allocation is docs/gpkd-protocol.md §8's, and one entry of it is
+   measured: inserting coins one at a time moves scan time B1 and nothing
+   else in all 32 positions, which puts credit on row 4's indicator pair and
+   so player 4, not player 3, on B7..B2. Which digit of that pair is the
+   tens is still open (§11.1), as is the order of A9/A8 -- §7.4 names the
+   match digit and the ball/tilt/game-over block but not which is which. */
 #define RECEL_D(row, col, pos) {row, col, pos, 1, CORE_SEG7},
 #define RECEL_COUNTER(row, col, base) \
   RECEL_D(row, col,    (base)+5) RECEL_D(row, (col)+2,  (base)+4) \
@@ -32,10 +36,10 @@ static core_tLCDLayout recel_disp[] = {
   RECEL_COUNTER(0, 0, 2)  RECEL_D(0, 14, 1) RECEL_D(0, 16, 0)
   /* row 2: player 2 (AF..AA) -- the self-check display -- then the A9/A8 pair */
   RECEL_COUNTER(2, 0, 10) RECEL_D(2, 14, 9) RECEL_D(2, 16, 8)
-  /* row 3: player 3 (B7..B2), then B1/B0 (no indicator fitted, §7.4) */
-  RECEL_COUNTER(4, 0, 18) RECEL_D(4, 14, 17) RECEL_D(4, 16, 16)
-  /* row 4: player 4 (BF..BA), then the two credit digits (B9, B8) */
-  RECEL_COUNTER(6, 0, 26) RECEL_D(6, 14, 25) RECEL_D(6, 16, 24)
+  /* row 3: player 3 (BF..BA), then B9/B8 (no indicator fitted, §7.4) */
+  RECEL_COUNTER(4, 0, 26) RECEL_D(4, 14, 25) RECEL_D(4, 16, 24)
+  /* row 4: player 4 (B7..B2), then the two credit digits (B1, B0) */
+  RECEL_COUNTER(6, 0, 18) RECEL_D(6, 14, 17) RECEL_D(6, 16, 16)
   {0}
 };
 
