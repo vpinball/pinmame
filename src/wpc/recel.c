@@ -43,6 +43,11 @@ static struct {
   UINT8 sound;
   UINT8 bonus;
   UINT32 solenoids;
+  /* HM6508 NVRAM (1024x1 bit = 128 bytes), addressed serially by a CD4040
+     counter driven from B1 (device 0x4) -- see b1_w(). */
+  UINT16 nvAddr;
+  UINT8 nvData[128];
+  int nvClk, nvEnab, nvRset;
 } locals;
 
 /* The game PROM is read through the BICs, which invert both the address and the
@@ -73,7 +78,16 @@ static INTERRUPT_GEN(RECEL_vblank) {
 }
 
 static MACHINE_INIT(RECEL) {
+  /* core_nvram() loads NVRAM into locals.nvData/nvAddr before cpu_run()
+     starts, but cpu_run() then calls machine_init on every (re)start -- so
+     the blanket clear below would erase what was just loaded. Round-trip
+     the two persisted fields across it. */
+  UINT8 nvData[sizeof locals.nvData];
+  const UINT16 nvAddr = locals.nvAddr;
+  memcpy(nvData, locals.nvData, sizeof nvData);
   memset(&locals, 0, sizeof locals);
+  memcpy(locals.nvData, nvData, sizeof nvData);
+  locals.nvAddr = nvAddr;
   locals.ptrA = locals.ptrB = 15;
   locals.blankA = locals.blankB = 1;
   locals.coilSense = 0x0f;
@@ -222,6 +236,70 @@ static int pio_r(int cmd) {
   return 0x0f;  /* set/reset/undocumented: bus floats high */
 }
 
+/* B1 (A1761, device 0x4) drives the HM6508 NVRAM (1024x1 bit = 128 bytes)
+   bit-serially through an external CD4040 address counter. Line numbers are
+   the A17xx's own I/O0..I/O15 pin index (docs/recel-system3-hardware.md
+   §7.1.1's pin table, sourced from the disassembly), NOT the 0/1/2/3 first
+   guessed for this task -- confirmed by disassembling the two RRIOT ROMs
+   (`cat A1761-13_1K.bin A1762-13_1K.bin | unidasm -arch pps4`) and matching
+   the result against the pin table:
+     - RSET = line 5 ("RESET of the CD4040", active high). Both NVRAM entry
+       points -- 0x2F4 "transfer RAM to HM6508" and 0x510 "test CMOS RAM and
+       write it to working RAM" -- open with the identical `lbl 05; ldi 0;
+       iol 41`, releasing reset exactly once at the start of the transfer.
+     - ENAB = line 2 ("ENABLE HM6508", active low). 0x528 ("read one bit at
+       current address") asserts it (accu=0) as its first action and
+       deasserts it (accu=8) as its last, bracketing the whole access.
+     - CLCK = line 4 ("CLOCK -- advances the CD4040"). Touched exactly once
+       per call to 0x528, immediately after ENAB's deassert and right before
+       return -- the structurally right spot to advance to the next address
+       between accesses. The traced run only ever completes one partial pass
+       (device 0x4 sees the same 36 accesses whether run for 900 or 3000
+       frames, then goes silent), so a clean assert/deassert pulse pair was
+       never observed here; the edge convention below follows the datasheet.
+     - WTOU = line 1 ("Data out to HM6508"). The only line whose accu value
+       differs between two otherwise-identical calls to the same PC (0x5B7)
+       in different loop passes -- the signature of a serial data line, not
+       a control strobe.
+   Lines 0 (data in), 3 (read/write select) and 6/7 (STPR/RDPR, mini-printer)
+   are outside this task's interface and are not modelled. */
+#define RECEL_NV_WTOU 1
+#define RECEL_NV_ENAB 2
+#define RECEL_NV_CLCK 4
+#define RECEL_NV_RSET 5
+
+static void b1_w(int line, int cmd, int accu) {
+  const int on = (accu & 0x08) ? 1 : 0;
+  if (!(cmd & 0x1)) return;   /* SES: global enable, not a per-line value */
+  switch (line) {
+    case RECEL_NV_RSET:
+      locals.nvRset = on;          /* active high, level-held */
+      if (on) locals.nvAddr = 0;
+      break;
+    case RECEL_NV_ENAB:
+      locals.nvEnab = !on;         /* active low */
+      break;
+    case RECEL_NV_CLCK:
+      /* rising edge advances the counter, unless RSET is holding it at 0 */
+      if (on && !locals.nvClk && !locals.nvRset)
+        locals.nvAddr = (locals.nvAddr + 1) & 0x3ff;
+      locals.nvClk = on;
+      break;
+    case RECEL_NV_WTOU:
+      if (locals.nvEnab) {
+        const int byte = locals.nvAddr >> 3, bit = locals.nvAddr & 7;
+        if (on) locals.nvData[byte] |=  (1 << bit);
+        else    locals.nvData[byte] &= ~(1 << bit);
+      }
+      break;
+    default: break;
+  }
+}
+
+static NVRAM_HANDLER(RECEL) {
+  core_nvram(file, read_or_write, locals.nvData, sizeof locals.nvData, 0x00);
+}
+
 /* A17xx RRIOT command (docs/recel-system3-hardware.md §7.1): cmd bit 0 is c --
    c=0 SES sets the shared enable F/F for all 16 lines (A4=1 enable, A4=0
    disable/float; disable is never seen in the traced ROM and unmodelled
@@ -252,7 +330,7 @@ static WRITE_HANDLER(recel_port_w) {
   TRACE(("RECEL PC=%03x dev=%x cmd=%x accu=%x b=%x\n",
          activecpu_get_pc(), device, locals.cmd, locals.accu, line));
   switch (device) {
-    case RECEL_DEV_B1:   break;
+    case RECEL_DEV_B1:   b1_w(line, locals.cmd, locals.accu); break;
     case RECEL_DEV_B2:   b2_w(line, locals.cmd, locals.accu); break;
     case RECEL_DEV_PIO:  pio_w(locals.cmd, locals.accu); break;
     case RECEL_DEV_GPKD: gpkd_w(locals.cmd, locals.accu); break;
@@ -336,6 +414,7 @@ MACHINE_DRIVER_START(RECEL)
   MDRV_CPU_PORTS(RECEL_readport, RECEL_writeport)
   MDRV_CPU_VBLANK_INT(RECEL_vblank, 1)
   MDRV_CORE_INIT_RESET_STOP(RECEL,NULL,RECEL)
+  MDRV_NVRAM_HANDLER(RECEL)
   MDRV_DIPS(8)
   MDRV_SWITCH_UPDATE(RECEL)
   MDRV_SWITCH_CONV(recel_sw2m, recel_m2sw)
