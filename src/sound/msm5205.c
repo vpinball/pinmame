@@ -58,6 +58,7 @@
 
 #include "driver.h"
 #include "msm5205.h"
+#include "../ext/vgm/vgmwrite.h"
 
 /*
  * ADPCM lookup table
@@ -126,7 +127,16 @@ struct MSM5205Voice
 	int signal;             /* current ADPCM signal         */
 	int step;               /* current ADPCM step           */
 	int dac_bits;           /* msm6585: 12, msm5205: 10     */
+	unsigned short vgm_idx;
 };
+
+/* Rate select as libvgm (currently) wants it in a VGM, which is not 100% what we do.
+   libvgm's own S1/S2 decode is right for the 6585 and transposed for the 5205,
+   and per libvgm issue #159 it may(!) not be changed - so an exporter
+   has to pre-compensate or playback comes out at the wrong rate. Straight through for
+   the 6585, swapped for the 5205. This is exactly what ValleyBell's VGM-logging fork of
+   MAME emits, too, (m_s2<<1)|m_s1 versus (m_s1<<1)|m_s2 */
+#define MSM5205_VGM_RATESEL(sel) (((sel) & 8) ? ((sel) & 3) : ((((sel) & 1) << 1) | (((sel) >> 1) & 1)))
 
 static const struct MSM5205interface *msm5205_intf;
 static struct MSM5205Voice msm5205[MAX_MSM5205];
@@ -215,6 +225,11 @@ int MSM5205_sh_start (const struct MachineSound *msound)
 		                        Machine->sample_rate,i,
 		                        MSM5205_update);
 		voice->timer = timer_alloc(MSM5205_vclk_callback);
+
+		voice->vgm_idx = vgm_open(VGMC_MSM5205, msm5205_intf->baseclock);
+		vgm_header_set(voice->vgm_idx, 0x00, (msm5205_intf->select[i] & 8) ? 1 : 0); /* 0 = MSM5205, 1 = MSM6585 */
+		vgm_header_set(voice->vgm_idx, 0x01, MSM5205_VGM_RATESEL(msm5205_intf->select[i]));
+		vgm_header_set(voice->vgm_idx, 0x02, (msm5205_intf->select[i] & 4) ? 1 : 0); /* 4 bit ADPCM */
 	}
 	/* initialize */
 	MSM5205_sh_reset();
@@ -286,6 +301,7 @@ void MSM5205_vclk_w (int num, int vclk)
 		if (msm5205[num].vclk != vclk)
 		{
 			msm5205[num].vclk = vclk;
+			vgm_write(msm5205[num].vgm_idx, 0x00, 0x02, vclk ? 1 : 0);
 			if( !vclk ) MSM5205_vclk_callback(num);
 		}
 	}
@@ -304,6 +320,7 @@ void MSM5205_reset_w (int num, int reset)
 		return;
 	}
 	msm5205[num].reset = reset;
+	vgm_write(msm5205[num].vgm_idx, 0x00, 0x00, reset ? 1 : 0);
 }
 
 /*
@@ -316,6 +333,7 @@ void MSM5205_data_w (int num, int data)
 		msm5205[num].data = data & 0x0f;
 	else
 		msm5205[num].data = (data & 0x07) << 1; /* unknown */
+	vgm_write(msm5205[num].vgm_idx, 0x00, 0x01, (UINT8)msm5205[num].data);
 }
 
 /*
@@ -328,7 +346,7 @@ void MSM5205_playmode_w(int num,int select)
 	static const int prescaler_table[2][4] =
 	{
 		{ 96, 48, 64,  0},
-		{160, 40, 80, 20} // msm6585
+		{160, 80, 40, 20} // msm6585 - see the note in msm5205.h
 	};
 	int prescaler = prescaler_table[select >> 3 & 1][select & 3];
 	int bitwidth = (select & 4) ? 4 : 3;
@@ -346,6 +364,10 @@ void MSM5205_playmode_w(int num,int select)
 		}
 		else
 			timer_adjust(voice->timer, TIME_NEVER, 0, 0);
+
+		/* as ValleyBell's VGM fork of MAME does, both on any rate change */
+		vgm_write(voice->vgm_idx, 0x00, 0x04, (UINT8)MSM5205_VGM_RATESEL(select));
+		vgm_write(voice->vgm_idx, 0x00, 0x05, (select & 4) ? 1 : 0);
 	}
 
 	if (voice->bitwidth != bitwidth)
@@ -353,6 +375,7 @@ void MSM5205_playmode_w(int num,int select)
 		stream_update(voice->stream,0);
 
 		voice->bitwidth = bitwidth;
+		vgm_write(voice->vgm_idx, 0x00, 0x05, (select & 4) ? 1 : 0);
 	}
 }
 

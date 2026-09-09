@@ -16,11 +16,28 @@
 #define MSM5205_SEX_4B 7     /* VCLK slave mode      , data 4bit */
 
 #define MSM6585_S160_4B (4|8)/* prescaler 1/160(4KHz), data 4bit */
-#define MSM6585_S40_4B (5|8) /* prescaler 1/40(16KHz), data 4bit */
-#define MSM6585_S80_4B (6|8) /* prescaler 1/80(8KHz) , data 4bit */
+#define MSM6585_S80_4B (5|8) /* prescaler 1/80(8KHz) , data 4bit */
+#define MSM6585_S40_4B (6|8) /* prescaler 1/40(16KHz), data 4bit */
 #define MSM6585_S20_4B (7|8) /* prescaler 1/20(32KHz), data 4bit */
 
 // | 8 = msm6585, but only 4 bit modes and master clock 640kHz
+
+/* Correct against the datasheet's "Functional Description, 1. Sampling Frequency" table, at a 640kHz master clock:
+     S1 S2   fSAM    fCUT    div        S1 S2   fSAM    fCUT    div
+     L  L     4kHz  1.6kHz  /160        L  H    16kHz  6.4kHz   /40
+     H  L     8kHz  3.2kHz   /80        H  H    32kHz 12.8kHz   /20
+   With S1 as the code's low bit that is 0..3 -> 160/80/40/20, which prescaler_table in
+   msm5205.c now holds; MAME computes the same as (S1 ? 20 : 40) * (S2 ? 1 : 4). (matches MAME)
+
+   The 5205 table (fosc=384kHz) is L/L 4kHz (/96), L/H 6kHz (/64), H/L 8kHz (/48), H/H prohibited - undocumented slave mode (MAME).
+
+   The likely resolution for spinball is the oscillator, not the pins: the 5205
+   datasheet notes that "a 384kHz oscillator can be used to select 4kHz, 6kHz or 8kHz.  A
+   768kHz oscillator can be used to select 8kHz, 12kHz or 16kHz", so double-clocking this
+   family is normal.  At 1.28MHz, S2=L with S1 toggling gives 8 and 16KHz - which fits the
+   schematic as drawn, our 16KHz as the S1=H leg (and MAME's current 4KHz being a full 4x slow),
+   and spinb.c's "toggles between 4Khz, 8Khz" header as those same pin states computed at 640kHz.
+   Settling it needs the crystal data from a real board */
 
 struct MSM5205interface
 {

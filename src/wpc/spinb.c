@@ -168,9 +168,8 @@ SND CPU #2 8255 PPI
 //#define VERBOSE
 
 #ifdef VERBOSE
-#define LOG(x)	logerror x
+#define LOG(x)    logerror x // printf x
 #define LOGSND(x) printf x
-//#define LOG(x)	printf x
 #else
 #define LOG(x)
 #define LOGSND(x)
@@ -277,6 +276,7 @@ static struct {
   int    S1_PC0;
   int    S1_MSMDATA;
   int    S1_Reset;
+  int    S1_S1pin; /* last seen PC5 = S1 rate select, -1 = not yet written */
   int    S2_ALO;
   int    S2_AHI;
   int    S2_CS0;
@@ -288,6 +288,7 @@ static struct {
   int    S2_PC0;
   int    S2_MSMDATA;
   int    S2_Reset;
+  int    S2_S1pin; /* last seen PC5 = S1 rate select, -1 = not yet written */
   int    SoundReady;
   int    SoundCmd;
   int    TestContactos;
@@ -302,7 +303,7 @@ static struct {
 } SPINBlocals;
 
 // meaning of the DMD stat0/1 lines and a macro to evaluate them
-enum DMDSTATUSCODE { IDLE=0, ERROR, UNKNOWN, BUSY };
+enum DMDSTATUSCODE { IDLE=0, SB_ERROR, UNKNOWN, BUSY };
 #define DMDSTATUS (SPINBlocals.DMDStat1*2 + SPINBlocals.DMDStat0)
 
 /* -------------------*/
@@ -330,11 +331,34 @@ static struct MSM5205interface SPINB_msm5205Int = { // Bushido, Mach 2
 	{100,75}								//Volume
 };
 /* MSM6585 ADPCM CHIP INTERFACE */
+
+/* PC5 drives S1 on both chips (S2 is tied low per the schematic), so the two reachable
+   rates are the S2=L pair of the datasheet table: /160 and /80. Which two frequencies
+   that actually is, depends on the crystal (i.e. needs confirmation):
+     0 = the nominal 640kHz, so S1 picks 4KHz / 8KHz. This is the schematic taken at
+         standard value (and what MAME currently does = too slow)
+     1 = 1.28MHz, so S1 picks 8KHz / 16KHz (default). The 5205 datasheet documents
+         running these parts at double the nominal clock to double every rate, and this
+         is the only reading found so far that explains all of: the schematic as drawn,
+         the 16KHz we used and that sounds right, and MAME's result being a full 4x slow. See explanation in msm5205.h
+   Either way, S1 high is the faster of the pair, and the power-on selector below is the
+   S1-high one, so until the game first writes PC5 the rate is what it has always been
+   (16KHz with the default, i.e. no change unless the pin actually moves) */
+#define SPINB_MSM6585_DOUBLE_CLOCK 1
+
+#if SPINB_MSM6585_DOUBLE_CLOCK
+ #define SPINB_MSM6585_CLOCK 1280000
+#else
+ #define SPINB_MSM6585_CLOCK 640000
+#endif
+/* S2 tied low: S1=L -> /160, S1=H -> /80 */
+#define SPINB_MSM6585_S1(hi) ((hi) ? MSM6585_S80_4B : MSM6585_S160_4B)
+
 static struct MSM5205interface SPINB_msm6585Int = { // Jolly Park, Verne's World
 	2,										//# of chips
-	640000,									//640Khz Clock Frequency
+	SPINB_MSM6585_CLOCK,					//Clock Frequency, see above
 	{SPINB_S1_msmIrq, SPINB_S2_msmIrq},		//VCLK Int. Callback
-	{MSM6585_S40_4B, MSM6585_S40_4B},		//Sample Mode // 16KHz 4-bit
+	{MSM6585_S80_4B, MSM6585_S80_4B},		//Sample Mode, S1 high = the faster rate
 	{1,1},
 	{100,75}								//Volume
 };
@@ -705,6 +729,14 @@ WRITE_HANDLER(snd1_portc_w)
 	//Set Reset Line on the chip
 	MSM5205_reset_w(0, GET_BIT6);
 
+	/* PC5 = S1, the sample rate selector. Only the MSM6585 boards (nmiSeries != 0, i.e.
+	   Jolly Park and Verne's World); Bushido, Mach 2 and (maybe) Gun Shot share this handler but carry an MSM5205 */
+	if (SPINBlocals.nmiSeries && GET_BIT5 != SPINBlocals.S1_S1pin) {
+		SPINBlocals.S1_S1pin = GET_BIT5;
+		MSM5205_playmode_w(0, SPINB_MSM6585_S1(SPINBlocals.S1_S1pin));
+		LOG(("MSM6585 #0: S1 -> %d, %d Hz\n", SPINBlocals.S1_S1pin, SPINB_MSM6585_CLOCK / (SPINBlocals.S1_S1pin ? 80 : 160)));
+	}
+
 	//PC0 = 1 on Reset
 	if(GET_BIT6)
 		SPINBlocals.S1_PC0 = 1;
@@ -755,6 +787,13 @@ WRITE_HANDLER(snd2_portc_w)
 
 	//Set Reset Line on the chip
 	MSM5205_reset_w(1, GET_BIT6);
+
+	/* PC5 = S1, see the note in snd1_portc_w */
+	if (SPINBlocals.nmiSeries && GET_BIT5 != SPINBlocals.S2_S1pin) {
+		SPINBlocals.S2_S1pin = GET_BIT5;
+		MSM5205_playmode_w(1, SPINB_MSM6585_S1(SPINBlocals.S2_S1pin));
+		LOG(("MSM6585 #1: S1 -> %d, %d Hz\n", SPINBlocals.S2_S1pin, SPINB_MSM6585_CLOCK / (SPINBlocals.S2_S1pin ? 80 : 160)));
+	}
 
 	//PC0 = 1 on Reset
 	if(GET_BIT6)
@@ -868,6 +907,8 @@ static INTERRUPT_GEN(spinb_z80nmi) {  cpu_set_nmi_line(SPINB_CPU_GAME, PULSE_LIN
 /*Machine Init*/
 static MACHINE_INIT(spinb) {
   memset(&SPINBlocals, 0, sizeof(SPINBlocals));
+  /* -1 so the first PC5 write is always treated as a change, whichever level it is */
+  SPINBlocals.S1_S1pin = SPINBlocals.S2_S1pin = -1;
 
   memset(dmd32RAM,0,sizeof(dmd32RAM));
   SPINBlocals.dmdframes = core_gameData->hw.display;
@@ -1010,7 +1051,7 @@ static void P1_update(int data)
 {
   static int prvstat;
   int newstat=DMDSTATUS;
-  if (newstat!=prvstat && newstat==ERROR) logerror("DMD reports error\n");
+  if (newstat!=prvstat && newstat==SB_ERROR) logerror("DMD reports error\n");
   prvstat=newstat;
 }
 #endif
@@ -1376,10 +1417,10 @@ MACHINE_DRIVER_START(spinbs1n2)
   MDRV_CPU_MEMORY(spinb_readmem2, spinb_writemem2)
   MDRV_CPU_PERIODIC_INT(spinb_z80nmi, SPINB_NMIFREQ)
   MDRV_IMPORT_FROM(spinbdmd)
-  MDRV_CPU_ADD(Z80, 5000000)		// Schem shows 5/2 = 2.5Mhz, but sound distorted then
+  MDRV_CPU_ADD(Z80, 5000000)		//!! Schem shows 5/2 = 2.5Mhz, but sound distorted then
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(spinbsnd1_readmem, spinbsnd1_writemem)
-  MDRV_CPU_ADD(Z80, 5000000)		// Schem shows 5/2 = 2.5Mhz, but sound distorted then
+  MDRV_CPU_ADD(Z80, 5000000)		//!! Schem shows 5/2 = 2.5Mhz, but sound distorted then
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(spinbsnd2_readmem, spinbsnd2_writemem)
   MDRV_INTERLEAVE(50)
@@ -1388,12 +1429,19 @@ MACHINE_DRIVER_START(spinbs1n2)
   MDRV_SOUND_CMDHEADING("spinb")
 MACHINE_DRIVER_END
 
-// Gun Shot: single MSM6585 sound board, no display, no NVRAM, just 8 DIPs
+// Gun Shot: single MSM6585(?) sound board, no display, no NVRAM, just 8 DIPs
 static SWITCH_UPDATE(gunshot) {
   if (inports) {
     CORE_SETKEYSW(inports[CORE_COREINPORT], 0x29, 1);
   }
 }
+/* TODO: Which chip Gun Shot actually carries is not 100% clear yet AFAIK. The name here says 6585 but
+   everything in it describes an MSM5205 - 384kHz rather than 640kHz, an MSM5205_ rate
+   selector, and variant 0 - and it is only the 5205 that has a 384kHz mode at all, so
+   the name is the part that looks wrong. MAME reached the same place from the other
+   side: "Gun Shot has been connected to MSM5205 for now, and the sounds are correct".
+   Left as is for now; needs to be verified, and then the clock and the selector both have to change with it, not just the variant flag.
+   Note this also decides what a VGM log claims the chip is, via the header attr in MSM5205_sh_start() */
 static struct MSM5205interface gunshot_msm6585Int = {
   1,
   384000,

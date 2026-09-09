@@ -3,7 +3,7 @@ What's new in PinMAME:
 (see whatsnewVPM.txt for the Visual PinMAME exclusive changes!)
 
 
-Version 3.7 (XX XXth, 2026) - ""
+Version 3.7 (XX XXth, 2026) - "Rise of the Machines"
 ------------------------------------------------------------------------------
 
 Users now can set the 'serial_device' setting (registry key) to a COM port,
@@ -62,9 +62,13 @@ Slightly improved YM262 sound for Sir Lancelot
 Improved AY8910 sound emulation (more accurate noise, measured DAC curve, 16-step envelope)
 Improved TMS52X0 sound emulation (more accurate, many previously needed hacks disabled)
 Improved (slightly) the SN76496/SN76489(A)/SN76494 sound emulation (more accurate noise and fix lowest note)
+Improved MSM6585 sound emulation (accurate sample rate/prescale mapping)
+Wired up sample rate selection for Verne's World and Jolly Park (potentially fixes some samples played)
 Fixed sound problems if a OKI6295 game is used after a OKI6376 game (e.g. GTS3 after Sleic)
 Fixed VGM recording for machines using OKI6295 sound
 Added VGM recording for machines using BSMT2000 sound
+Added VGM recording for machines using MSM5205/MSM6585 sound
+(VGM should now be supported for all chips directly featured within libvgm, but that misses all voice synthesizers/decompressors, etc, that some PinMAME drivers also need to use)
 Fixed flipped left/right channel for Alvin G. BSMT2000 sound (must have regressed at some point when extending the BSMT2000 core)
 Fixed noise filter/pass and injection filter/pass in the Votrax/SC01 emulation (some GTS80(A)s and Taitos)
 Used YMFM's OPL cores (OPL/YM3526, OPL2/YM3812, OPL3/YMF262) for a more accurate emulation (Tabart; AlvinG, JVH, Mephisto, Sleic; Lancelot)
