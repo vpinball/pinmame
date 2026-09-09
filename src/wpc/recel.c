@@ -128,14 +128,22 @@ static void gpkd_w(int cmd, int accu) {
   }
 }
 
-/* A17xx RRIOT command (docs/recel-system3-hardware.md §7.1): cmd bit 0 is c
-   -- c=0 SES touches the shared output-enable F/F for all 16 lines, not a
-   single line's value; c=1 SOS loads the addressed line's holding F/F from
-   accu bit 3 (A4), unchanged. The boot loop at PC 0x6c5 issues SOS/A4=1 for
-   all 16 lines and is documented as switching every lamp off, so the F/F is
-   active low: 1 = lamp off, 0 = lamp on. */
+/* A17xx RRIOT command (docs/recel-system3-hardware.md §7.1): cmd bit 0 is c --
+   c=0 SES sets the shared enable F/F for all 16 lines (A4=1 enable, A4=0
+   disable/float; disable is never seen in the traced ROM and unmodelled
+   here); c=1 SOS loads the addressed line's holding F/F from accu bit 3
+   (A4), unchanged.
+
+   On/off sense is an inference, not a measurement -- see docs/driver-notes.md
+   "Lamp polarity (unresolved)". Device 0x2 is written 17 times total in the
+   traced run (16x SOS then 1x SES, all at boot, never again); if that preset
+   meant "all on", every lamp would stay lit while the self-check sits
+   reporting a coil fault, which is implausible, so F/F=1 is treated as OFF
+   here. The competing physical-chain reading (4050 buffer, MC140 sink, pin
+   high => lamp on => F/F=1 is ON) skips the negative-logic bus between F/F
+   and pin (§3.3: PPS-4 logic 1 = -12V) and so does not settle it either. */
 static void b2_w(int line, int cmd, int accu) {
-  if (!(cmd & 0x1)) return;
+  if (!(cmd & 0x1)) return;   /* SES: global enable, not a per-line value */
   if (accu & 0x08) coreGlobals.tmpLampMatrix[line / 8] &= ~(1 << (line % 8));
   else             coreGlobals.tmpLampMatrix[line / 8] |=  (1 << (line % 8));
 }
