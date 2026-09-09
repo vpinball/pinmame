@@ -46,7 +46,7 @@ static void WICO_firq_housekeeping(int data) {
 
   // Gen. timer irq of command CPU kicks in every 4 interrupts of this timer
   locals.firqtimer++;
-  if (locals.firqtimer > 4) {
+  if (locals.firqtimer > 3) { //!! was 4 before, but that does not match the comment above
     cpu_set_irq_line(COMMAND, M6809_IRQ_LINE, PULSE_LINE);
     locals.firqtimer = 0;
   }

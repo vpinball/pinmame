@@ -38,6 +38,14 @@
 
 #include "../ext/vgm/vgmwrite.h"
 
+/* Cold boot behaviour. On this chip a volume register of 0 means NO attenuation, and
+   the registers power up at 0, so a real non-Sega part may trigger all four channels at full
+   volume until the game programs it - at least MAME reproduces that and files the resulting noise
+   under BTANB. We have always forced silence instead.
+   Brave Team (SN76489) and Af-Tor (SN76494) are affected, as they are the only SN7649x machines in the tree so far.
+   Only Af-Tor features a nasty sound though on startup if defined, to be verified on a real machine if this also happens there! */
+#define AUTHENTIC_COLD_BOOT
+
 #define MAX_OUTPUT 0x7fff
 
 #define STEP 0x10000
@@ -354,6 +362,18 @@ static int generic_start(const struct MachineSound *msound, int feedbackmask, in
 		SN76496_set_gain(chip,(intf->volume[chip] >> 8) & 0xff);
 
 		R = &sn[chip];
+
+#ifdef AUTHENTIC_COLD_BOOT
+		/* Seed the volumes from the registers instead of forcing silence, i.e. what
+		   MAME does. Has to be here rather than in SN76496_init(), because VolTable is
+		   only built by SN76496_set_gain() just above. Register 0 means no attenuation,
+		   so this is VolTable[0] = full output on all four channels */
+		{
+			int v;
+			for (v = 0; v < 4; v++)
+				R->Volume[v] = R->VolTable[R->Register[v*2 + 1] & 0x0f];
+		}
+#endif
 
 		R->FeedbackMask = feedbackmask;
 		R->WhitenoiseTap1 = noisetap1;
