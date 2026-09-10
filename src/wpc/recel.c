@@ -447,16 +447,24 @@ static void b1_w(int line, int cmd, int accu) {
    the three coin tables. A blank CMOS reads 0, which the ROM takes as the
    manuals' value 0: chute 1 "2 coins, 1 play" and chute 3 "0 plays per coin",
    a dead chute. Faithful to an unprogrammed board, useless as a shipped
-   default, so only a first run is seeded. driver-notes.md §8.1. */
+   default, so only a first run is seeded. driver-notes.md §8.1.
+
+   Cell B1, the high half of chute 3's byte, is the mode of play: bit 3 picks
+   3 balls per game over 5 (measured; the manuals give the field as A+B+C with
+   C = 0 for 5 balls, 8 for 3). Blank reads 5, but Fair Fight's own instruction
+   card says "3 BALLS PER PLAYER", so the shipped default matches the card. */
 #define RECEL_NV_CHUTE1 (0xa0 / 2)   /* value 4 = 4*(1 coin) + (plays-1) */
-#define RECEL_NV_CHUTE3 (0xb0 / 2)   /* value = plays per coin */
+#define RECEL_NV_CHUTE3 (0xb0 / 2)   /* low nibble: plays per coin.  The high
+                                        nibble of the same byte is cell B1,
+                                        the mode of play. */
+#define RECEL_NV_3BALLS 0x80         /* B1 bit 3, in that high nibble */
 
 static NVRAM_HANDLER(RECEL) {
   const int firstRun = !read_or_write && !file;
   core_nvram(file, read_or_write, locals.nvData, sizeof locals.nvData, 0x00);
   if (firstRun) {
     locals.nvData[RECEL_NV_CHUTE1] = 0x04;
-    locals.nvData[RECEL_NV_CHUTE3] = 0x01;
+    locals.nvData[RECEL_NV_CHUTE3] = 0x01 | RECEL_NV_3BALLS;
   }
 }
 
