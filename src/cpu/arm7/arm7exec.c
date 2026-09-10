@@ -282,9 +282,13 @@ extern unsigned at91_get_reg(int regnum);
 						R15 += 4;
 						break;
 
-					// Halfword Data Transfer
+					// Halfword Data Transfer (bit7 = bit4 = 1, SH = bits 6-5 != 00).
+					// 0xf0 (SH = 11) belongs here too: it is post-indexed LDRSH, and
+					// with L = 0 the UNDEFINED-on-ARMv4 STRD encoding - it used to fall
+					// through to HandleALU, which decoded it as a data processing op
 					case 0xb0:		//1011
 					case 0xd0:		//1101
+					case 0xf0:		//1111
 						HandleHalfWordDT(insn);
 						break;
 					// Data Proc (Cannot be PSR Transfer since bit 24 = 0)
@@ -327,9 +331,29 @@ extern unsigned at91_get_reg(int regnum);
 					/* PSR Transfer (MRS & MSR) */
 					if( ((insn&0x0100000)==0) && ((insn&0x01800000)==0x01000000) ) //( S bit must be clear, and bit 24,23 = 10 )
 					{
-						HandlePSRTransfer(insn);
-						ARM7_ICOUNT += 2;		//PSR only takes 1 - S Cycle, so we add + 2, since at end, we -3..
-						R15 += 4;
+						// "cond 00010 xx0 ...." with bits 7-4 != 0000 is the rest of the
+						// miscellaneous space (BX and the swap/halfword group were routed
+						// above; what is left are the ARMv5/v5TE additions - BLX Rn, BKPT,
+						// CLZ, QADD/QDADD, SMLA*/SMUL* - which an ARM7TDMI does not have).
+						// Those are NOT MSR/MRS and must take the undefined instruction
+						// trap instead of being executed as a PSR transfer, which would
+						// trash the CPSR (upstream MAME cd60f3a2)
+						if ((insn & 0xf0) != 0)
+						{
+							#if ARM7_DEBUG_CORE
+								LOG(("%08x: undefined instruction %08X\n", pc, insn));
+							#endif
+							R15 += 4;
+							ARM7.pendingUnd = 1;
+							ARM7_ICOUNT -= 1;	//undefined takes 4 cycles (page 77)
+							ARM7_CHECKIRQ;
+						}
+						else
+						{
+							HandlePSRTransfer(insn);
+							ARM7_ICOUNT += 2;		//PSR only takes 1 - S Cycle, so we add + 2, since at end, we -3..
+							R15 += 4;
+						}
 					}
 					/* Data Processing */
 					else
@@ -361,6 +385,21 @@ extern unsigned at91_get_reg(int regnum);
 			case 5:
 			case 6:
 			case 7:
+				// A register offset with bit 4 set is not a valid LDR/STR shift: that
+				// encoding is the ARMv6 media space, which an ARM7TDMI does not have.
+				// Take the undefined instruction trap instead of executing it as a
+				// single data transfer (upstream MAME cd60f3a2)
+				if ((insn & INSN_I) && (insn & 0x10))
+				{
+					#if ARM7_DEBUG_CORE
+						LOG(("%08x: undefined instruction %08X in the single data transfer space\n", pc, insn));
+					#endif
+					R15 += 4;
+					ARM7.pendingUnd = 1;
+					ARM7_ICOUNT -= 1;	//undefined takes 4 cycles (page 77)
+					ARM7_CHECKIRQ;
+					break;
+				}
 				HandleMemSingle(insn);
 				R15 += 4;
 				ARM7_CHECKIRQ;

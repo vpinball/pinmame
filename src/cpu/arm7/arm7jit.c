@@ -462,10 +462,53 @@ static void gen_mem_write(struct jit_ctl *jit, int siz, data32_t addr, int rd, i
 static void gen_mem(struct jit_ctl *jit, int rd, int ld, int siz, int sx, int addr, int *is_br,
 					int nativeReg, data32_t immAddr, int sp_inc)
 {
+	// set when the LDRSH path below has already produced the final sign-extended
+	// 32-bit value in EAX, so the generic extend step at the end must be skipped
+	int sx16_done = 0;
+
 	if (ld)
 	{
-		// Loading register 'rd':  generate the memory reader call to load the value.
-		gen_mem_read(jit, siz, nativeReg, immAddr, 0);
+		// LDRSH from an ODD address is UNPREDICTABLE in the architecture. A real
+		// ARM7TDMI reads the halfword at (addr & ~1) and shifts the sign-extended
+		// result down by 8, which is identically the SIGNED BYTE at addr - so the
+		// odd case is just an LDRSB. HandleHalfWordDT does the same thing; this
+		// keeps the translated code in step with it
+		if (siz == 16 && sx)
+		{
+			if (nativeReg == Imm)
+			{
+				// address known at translate time - pick the reader now, no branch
+				if (immAddr & 1) {
+					gen_mem_read(jit, 8, Imm, immAddr, 0);
+					emit(MOVSX, EAX, AL);
+				}
+				else {
+					gen_mem_read(jit, 16, Imm, immAddr, 0);
+					emit(CWDE);
+				}
+			}
+			else
+			{
+				// run-time address: test bit 0 and read a halfword or a byte
+				struct jit_label *lOdd = jit_new_fwd_label();
+				struct jit_label *lDone = jit_new_fwd_label();
+				emit(TEST, nativeReg, Imm, 1);
+				emit(JNE, Label, lOdd);
+				gen_mem_read(jit, 16, nativeReg, immAddr, 0);
+				emit(CWDE);
+				emit(JMP, Label, lDone);
+				jit_resolve_label(lOdd);
+				gen_mem_read(jit, 8, nativeReg, immAddr, 0);
+				emit(MOVSX, EAX, AL);
+				jit_resolve_label(lDone);
+			}
+			sx16_done = 1;
+		}
+		else
+		{
+			// Loading register 'rd':  generate the memory reader call to load the value.
+			gen_mem_read(jit, siz, nativeReg, immAddr, 0);
+		}
 
 		// for a 64-bit operand, we need to do a second memory access
 		if (siz == 64) {
@@ -498,13 +541,10 @@ static void gen_mem(struct jit_ctl *jit, int rd, int ld, int siz, int sx, int ad
 				// Nothing to do, this was being generated twice.
 				// emit(MOV, Rn(rd), EAX);
 			}*/
-			else if (siz == 16)
+			else if (siz == 16 && !sx16_done)
 			{
-				// 16 bits - sign-extend or zero-extend AX to EAX 
-				if (sx)
-					emit(CWDE);
-				else
-					emit(MOVZX, EAX, AX);
+				// 16 bits, zero-extend AX to EAX (the signed form was fully handled above)
+				emit(MOVZX, EAX, AX);
 			}
 			else if (siz == 8)
 			{
@@ -584,19 +624,11 @@ static int LDRHB_STRHB(struct jit_ctl *jit, data32_t addr, data32_t insn, int *i
 	up = insn & INSN_SDT_U;
 	ddinstr = (!ld && ((insn & 0x60) == 0x40 || (insn & 0x60) == 0x60));
 
-	// If we have a double-word instruction (LDRD, STRD), the encoding is special.
-	// NOTE!  These instructions aren't exercised in any Whitestar code.
-	// Update: Triggered with mt_140 (at least)
+	// LDRD/STRD need the ARMv5TE DSP extensions; on this ARM7TDMI core those
+	// encodings are UNDEFINED and the interpreter takes the undefined instruction
+	// trap for them (upstream MAME cd60f3a2), so decline to translate them here
 	if (ddinstr)
-	{
-		assert(0); // if this happens, test following code
-
-		// the load/store status isn't in the usual place - it's in !(bit 6)
-		ld = ((insn & 0x60) == 0x40);
-
-		// note the 64-bit operand size
-		siz = 64;
-	}
+		return 0;
 
 	// The W bit has a special meaning in post-indexing mode: it sets non-privileged
 	// memory access if the CPU is running in a privileged mode.  The MAME ARM7
@@ -637,7 +669,8 @@ static int LDRHB_STRHB(struct jit_ctl *jit, data32_t addr, data32_t insn, int *i
 		emit(MOV, EBX, Rn(rn));
 
 	// If post-indexing, do the load/store now, ahead of the indexing operation
-	if (!preIdx && !ddinstr)
+	// (the double-word encodings returned above, so siz is 8 or 16 from here on)
+	if (!preIdx)
 	{
 		// If we're not writing back, the memory operation is the only effect, so
 		// we can just generate it and return.  Otherwise, we'll have to save the
@@ -982,8 +1015,8 @@ static int genShift(data32_t insn, data32_t addr, int carry_out)
 // by the R15 load.
 static void spsr_to_cpsr(void)
 {
-	// this operation isn't allowed in user mode
-	if (GET_MODE != eARM7_MODE_USER)
+	// this operation isn't allowed in user mode, nor in system mode (no SPSR there either)
+	if (GET_MODE != eARM7_MODE_USER && GET_MODE != eARM7_MODE_SYS)
 	{
 		// load CPSR from SPSR
 		SET_CPSR(GET_REGISTER(SPSR));
@@ -1683,6 +1716,12 @@ static int LDM_STM(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br
 			++rcnt;
 	}
 
+	// An empty register list is UNPREDICTABLE and is NOT a no-op: it transfers R15
+	// and moves the base by 0x40 (upstream MAME cd60f3a2). Leave that rare case to
+	// the interpreter rather than modelling it here
+	if (rcnt == 0)
+		return 0;
+
 	// generate a label for ABORT
 	lAbort = jit_new_fwd_label();
 
@@ -2159,6 +2198,8 @@ static int xlat(struct jit_ctl *jit, data32_t pc)
 
 			case 0xb0: // 1011 - halfword data transfer
 			case 0xd0: // 1101 - halfword data transfer
+			case 0xf0: // 1111 - halfword data transfer (post-indexed LDRSH; STRD when L=0,
+			           //        which LDRHB_STRHB declines so the interpreter can trap it)
 				ok = LDRHB_STRHB(jit, addr, insn, &br, &cycles);
 				break;
 
@@ -2186,7 +2227,10 @@ static int xlat(struct jit_ctl *jit, data32_t pc)
 			}
 			else if (((insn & 0x0100000) == 0) && ((insn & 0x01800000) == 0x01000000)) // S=0, and bits 24-23 == 10 -> PSR transfer
 			{
-				ok = PSRX(jit, addr, insn, &cycles);
+				// bits 7-4 != 0000 here is the rest of the miscellaneous space (the
+				// ARMv5/v5TE ops this core lacks), not MSR/MRS: the interpreter takes
+				// the undefined instruction trap, so decline to translate it
+				ok = ((insn & 0xf0) != 0) ? 0 : PSRX(jit, addr, insn, &cycles);
 			}
 			else // anything else is arithmetic
 			{
@@ -2211,8 +2255,10 @@ static int xlat(struct jit_ctl *jit, data32_t pc)
 		case 5:
 		case 6:
 		case 7:
-			// data transfer - single data access
-			ok = LDR_STR(jit, addr, insn, &br, &cycles);
+			// data transfer - single data access. A register offset (bit 25) with bit 4
+			// set is not a valid shift here: that is the ARMv6 media space, which the
+			// interpreter now traps as undefined - decline to translate it
+			ok = ((insn & INSN_I) && (insn & 0x10)) ? 0 : LDR_STR(jit, addr, insn, &br, &cycles);
 			break;
 
 		case 8:

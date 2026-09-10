@@ -933,8 +933,12 @@ bool emit_arm_ldrstr(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint3
             else           a.mov(x86::dword_ptr(ctx, reg_off((int)Rd)), x86::eax);
         } else {                                        // store: write(addr, value)
             a.mov(x86::ecx, x86::edx);                  // arg0 = address
-            if (Rd == 15u) a.mov(x86::edx, pc + 12u);   // STR of PC stores instr+12
-            else           a.mov(x86::edx, x86::dword_ptr(ctx, reg_off((int)Rd))); // arg1 = value
+            // A store reads its data BEFORE the base write-back, so "STR Rn,[Rn,#off]!"
+            // stores the ORIGINAL Rn -- which the write-back above has already
+            // overwritten in ctx. EAX still holds it (upstream MAME 1065e0e5)
+            if (Rd == 15u)     a.mov(x86::edx, pc + 12u);   // STR of PC stores instr+12
+            else if (Rd == Rn) a.mov(x86::edx, x86::eax);   // original base
+            else               a.mov(x86::edx, x86::dword_ptr(ctx, reg_off((int)Rd))); // arg1 = value
             emit_mem_call(a, B ? s_memcb.w8 : s_memcb.w32, true);
         }
         // LDR into PC exited above WITHOUT the post-check or the irq flag, so the
@@ -971,13 +975,17 @@ bool emit_arm_ldrstr(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint3
         else           a.mov(x86::eax, x86::dword_ptr(ctx, reg_off((int)Rd)));
         if (B) a.mov(mb, x86::al); else a.mov(mw, x86::eax);
     }
-    // writeback
-    if (!P) {                          // post-index: Rn = base +/- offset (always)
+    // writeback. On a LOAD with Rd == Rn the write-back happens in the pipeline
+    // BEFORE the value arrives from memory, so the loaded value wins and the
+    // write-back is effectively lost -- the interpreter models that, and the
+    // mock path emits its write-back after the load, so it must skip it entirely
+    const bool wbLost = L && (Rd == Rn);
+    if (!P && !wbLost) {               // post-index: Rn = base +/- offset (always)
         if (offIsReg) { if (U) a.add(x86::ecx, x86::esi); else a.sub(x86::ecx, x86::esi); }
         else          { if (U) a.add(x86::ecx, off);      else a.sub(x86::ecx, off); }
         if (Rn == 15u) { a.mov(x86::eax, x86::ecx); branchToPc = true; } // PC-base writeback = branch
         else             a.mov(rnm, x86::ecx);
-    } else if (W) {                    // pre-index with writeback: Rn = computed address
+    } else if (P && W && !wbLost) {    // pre-index with writeback: Rn = computed address
         if (Rn == 15u) { a.mov(x86::eax, x86::edx); branchToPc = true; }
         else             a.mov(rnm, x86::edx);
     }
@@ -1041,16 +1049,37 @@ bool emit_arm_halfword(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uin
         } else if (W) {                                 // pre-index writeback: Rn = effective address
             a.mov(x86::dword_ptr(ctx, reg_off((int)Rn)), x86::edx);
         }
-        if (L) {                                        // load
+        // LDRSH from an ODD address is UNPREDICTABLE in the architecture; a real
+        // ARM7TDMI reads the halfword at (addr & ~1) and shifts the sign-extended
+        // result down by 8, which is identically the SIGNED BYTE at addr. So the
+        // odd case is just an LDRSB -- no aligned-read-plus-shift needed, and the
+        // interpreter (HandleHalfWordDT) does the same thing
+        if (L && sh == 3u) {                            // LDRSH: alignment-dependent
+            Label odd = a.new_label(), done = a.new_label();
+            a.test(x86::edx, 1);                        // branch on the address BEFORE the call
+            a.jnz(odd);
+            a.mov(x86::ecx, x86::edx);                  // arg0 = address (even)
+            emit_mem_call(a, s_memcb.r16, false);
+            a.movsx(x86::eax, x86::ax);
+            emit_jump(a, done);
+            a.bind(odd);
+            a.mov(x86::ecx, x86::edx);                  // arg0 = address (odd)
+            emit_mem_call(a, s_memcb.r8, false);
+            a.movsx(x86::eax, x86::al);
+            a.bind(done);
+            a.mov(x86::dword_ptr(ctx, reg_off((int)Rd)), x86::eax);
+        } else if (L) {                                 // load
             a.mov(x86::ecx, x86::edx);                  // arg0 = address
-            emit_mem_call(a, (sh == 2u) ? s_memcb.r8 : s_memcb.r16, false); // SB reads a byte, H/SH a half
-            if      (sh == 1u) {}                       // LDRH : value already zero-extended in EAX
-            else if (sh == 2u) a.movsx(x86::eax, x86::al); // LDRSB: sign-extend byte
-            else               a.movsx(x86::eax, x86::ax); // LDRSH: sign-extend half
+            emit_mem_call(a, (sh == 2u) ? s_memcb.r8 : s_memcb.r16, false); // SB reads a byte, H a half
+            if (sh == 2u) a.movsx(x86::eax, x86::al);   // LDRSB: sign-extend byte
+            //  else LDRH  : value already zero-extended in EAX
             a.mov(x86::dword_ptr(ctx, reg_off((int)Rd)), x86::eax);
         } else {                                        // STRH (low 16 bits of Rd)
             a.mov(x86::ecx, x86::edx);                  // arg0 = address
-            a.mov(x86::edx, x86::dword_ptr(ctx, reg_off((int)Rd))); // arg1 = value (w16 truncates)
+            // store data is read BEFORE the base write-back (see emit_arm_ldrstr);
+            // EAX still holds the original base
+            if (Rd == Rn) a.mov(x86::edx, x86::eax);
+            else          a.mov(x86::edx, x86::dword_ptr(ctx, reg_off((int)Rd))); // arg1 = value (w16 truncates)
             emit_mem_call(a, s_memcb.w16, true);
         }
         // NB: no abort/IRQ post-check here -- the interpreter checks IRQ only after a
@@ -1072,17 +1101,28 @@ bool emit_arm_halfword(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uin
     if (L) {                                   // load
         if      (sh == 1u) a.movzx(x86::eax, mh); // LDRH  : zero-extend 16
         else if (sh == 2u) a.movsx(x86::eax, mb); // LDRSB : sign-extend 8
-        else               a.movsx(x86::eax, mh); // LDRSH : sign-extend 16
+        else {                                    // LDRSH : sign-extend 16, or the
+            Label odd = a.new_label(), done = a.new_label();  // signed byte if unaligned
+            a.test(x86::edx, 1);
+            a.jnz(odd);
+            a.movsx(x86::eax, mh);
+            emit_jump(a, done);
+            a.bind(odd);
+            a.movsx(x86::eax, mb);
+            a.bind(done);
+        }
         a.mov(x86::dword_ptr(ctx, reg_off((int)Rd)), x86::eax);
     } else {                                   // STRH (low 16 bits of Rd)
         a.mov(x86::eax, x86::dword_ptr(ctx, reg_off((int)Rd)));
         a.mov(mh, x86::ax);
     }
-    if (!P) {                                  // post-index writeback (Rn != 15 here)
+    // a LOAD with Rd == Rn loses its write-back to the loaded value (see emit_arm_ldrstr)
+    const bool wbLost = L && (Rd == Rn);
+    if (!P && !wbLost) {                       // post-index writeback (Rn != 15 here)
         if (offIsReg) { if (U) a.add(x86::ecx, x86::esi); else a.sub(x86::ecx, x86::esi); }
         else          { if (U) a.add(x86::ecx, off);      else a.sub(x86::ecx, off); }
         a.mov(rnm, x86::ecx);
-    } else if (W) {
+    } else if (P && W && !wbLost) {
         a.mov(rnm, x86::edx);
     }
     return true;
@@ -1396,6 +1436,9 @@ bool emit_arm_psr(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn)
     if (s_memMode != MemMode::Callback || !s_memcb.psr_transfer) return false;
     if (!((insn >> 21) & 1u) && ((insn >> 12) & 0xFu) == 15u)
         return false;  // MRS into PC: would be a control transfer -> defer (invalid anyway)
+    if ((insn & 0xF0u) != 0u)
+        return false;  // not MSR/MRS but the rest of the miscellaneous space (ARMv5/v5TE
+                       // ops this core lacks): the interpreter takes the UND trap -> defer
     a.mov(x86::ecx, insn);                         // arg0 = instruction word
     emit_mem_call(a, s_memcb.psr_transfer, false); // HandlePSRTransfer(insn)
     return true;
@@ -1809,6 +1852,14 @@ bool emit_arm_ldrstr(a64::Assembler& a, const a64::Gp& ctx, uint32_t insn, uint3
     }
 
     if (s_memMode == MemMode::Callback) {
+        // A store reads its data BEFORE the base write-back, so "STR Rn,[Rn,#off]!"
+        // stores the ORIGINAL Rn (upstream MAME 1065e0e5). The write-back below
+        // clobbers both ctx[Rn] and w1, so stash the base first.
+        // NB: w16/x16 is emit_mem_call's call-target scratch, so this stash must be
+        // consumed before the next call -- it is: saveBase implies !L, and the store
+        // branch below reads it immediately before its emit_mem_call
+        const bool saveBase = !L && (Rd == Rn);
+        if (saveBase) a.mov(a64::w16, a64::w1);
         if (!P) {                             // post-index writeback: Rn = base +/- off
             if (offIsReg) { if (U) a.add(a64::w1, a64::w1, a64::w3); else a.sub(a64::w1, a64::w1, a64::w3); }
             else          { if (U) a.add(a64::w1, a64::w1, off);     else a.sub(a64::w1, a64::w1, off); }
@@ -1826,8 +1877,9 @@ bool emit_arm_ldrstr(a64::Assembler& a, const a64::Gp& ctx, uint32_t insn, uint3
             }
             else a.str(a64::w0, a64::ptr(ctx, reg_off((int)Rd)));
         } else {
-            if (Rd == 15u) a.mov(a64::w1, pc + 12u); // STR of PC stores instr+12
-            else           a.ldr(a64::w1, a64::ptr(ctx, reg_off((int)Rd))); // arg1 = value
+            if (Rd == 15u)  a.mov(a64::w1, pc + 12u);   // STR of PC stores instr+12
+            else if (saveBase) a.mov(a64::w1, a64::w16); // original base
+            else            a.ldr(a64::w1, a64::ptr(ctx, reg_off((int)Rd))); // arg1 = value
             a.mov(a64::w0, a64::w2);          // arg0 = address
             emit_mem_call(a, B ? s_memcb.w8 : s_memcb.w32, true);
         }
@@ -1851,12 +1903,14 @@ bool emit_arm_ldrstr(a64::Assembler& a, const a64::Gp& ctx, uint32_t insn, uint3
         if (B) a.strb(a64::w0, a64::ptr(a64::x16, memOff));
         else   a.str (a64::w0, a64::ptr(a64::x16, memOff));
     }
-    if (!P) {                                 // post-index writeback (always)
+    // a LOAD with Rd == Rn loses its write-back to the loaded value (see the x86 twin)
+    const bool wbLost = L && (Rd == Rn);
+    if (!P && !wbLost) {                      // post-index writeback (always)
         if (offIsReg) { if (U) a.add(a64::w1, a64::w1, a64::w3); else a.sub(a64::w1, a64::w1, a64::w3); }
         else          { if (U) a.add(a64::w1, a64::w1, off);     else a.sub(a64::w1, a64::w1, off); }
         if (Rn == 15u) { a.mov(a64::w0, a64::w1); branchToPc = true; } // PC-base writeback = branch
         else             a.str(a64::w1, a64::ptr(ctx, reg_off((int)Rn)));
-    } else if (W) {
+    } else if (P && W && !wbLost) {
         if (Rn == 15u) { a.mov(a64::w0, a64::w2); branchToPc = true; }
         else             a.str(a64::w2, a64::ptr(ctx, reg_off((int)Rn)));
     }
@@ -1905,6 +1959,10 @@ bool emit_arm_halfword(a64::Assembler& a, const a64::Gp& ctx, uint32_t insn, uin
     }
 
     if (s_memMode == MemMode::Callback) {
+        // store data is read BEFORE the base write-back (see emit_arm_ldrstr, including
+        // the note on why parking it in w16 is safe here)
+        const bool saveBase = !L && (Rd == Rn);
+        if (saveBase) a.mov(a64::w16, a64::w1);
         if (!P) {
             if (offIsReg) { if (U) a.add(a64::w1, a64::w1, a64::w3); else a.sub(a64::w1, a64::w1, a64::w3); }
             else          { if (U) a.add(a64::w1, a64::w1, off);     else a.sub(a64::w1, a64::w1, off); }
@@ -1912,14 +1970,29 @@ bool emit_arm_halfword(a64::Assembler& a, const a64::Gp& ctx, uint32_t insn, uin
         } else if (W) {
             a.str(a64::w2, a64::ptr(ctx, reg_off((int)Rn)));
         }
-        if (L) {
+        // LDRSH from an ODD address is identically an LDRSB at that address -- see
+        // the x86 twin for why, and HandleHalfWordDT for the interpreter side
+        if (L && sh == 3u) {
+            Label odd = a.new_label(), done = a.new_label();
+            a.tbnz(a64::w2, 0, odd);                     // branch on the address before the call
+            a.mov(a64::w0, a64::w2);
+            emit_mem_call(a, s_memcb.r16, false);
+            a.sxth(a64::w0, a64::w0);
+            a.b(done);
+            a.bind(odd);
+            a.mov(a64::w0, a64::w2);
+            emit_mem_call(a, s_memcb.r8, false);
+            a.sxtb(a64::w0, a64::w0);
+            a.bind(done);
+            a.str(a64::w0, a64::ptr(ctx, reg_off((int)Rd)));
+        } else if (L) {
             a.mov(a64::w0, a64::w2);
             emit_mem_call(a, (sh == 2u) ? s_memcb.r8 : s_memcb.r16, false);
-            if      (sh == 2u) a.sxtb(a64::w0, a64::w0); // LDRSB
-            else if (sh == 3u) a.sxth(a64::w0, a64::w0); // LDRSH (LDRH already zero-extended)
+            if (sh == 2u) a.sxtb(a64::w0, a64::w0);      // LDRSB (LDRH already zero-extended)
             a.str(a64::w0, a64::ptr(ctx, reg_off((int)Rd)));
         } else {
-            a.ldr(a64::w1, a64::ptr(ctx, reg_off((int)Rd))); // arg1 (w16 write truncates)
+            if (saveBase) a.mov(a64::w1, a64::w16);      // original base
+            else          a.ldr(a64::w1, a64::ptr(ctx, reg_off((int)Rd))); // arg1 (w16 write truncates)
             a.mov(a64::w0, a64::w2);
             emit_mem_call(a, s_memcb.w16, true);
         }
@@ -1931,17 +2004,27 @@ bool emit_arm_halfword(a64::Assembler& a, const a64::Gp& ctx, uint32_t insn, uin
     if (L) {
         if      (sh == 1u) a.ldrh (a64::w0, a64::ptr(a64::x16, memOff));
         else if (sh == 2u) a.ldrsb(a64::w0, a64::ptr(a64::x16, memOff));
-        else               a.ldrsh(a64::w0, a64::ptr(a64::x16, memOff));
+        else {                                          // LDRSH, or the signed byte if unaligned
+            Label odd = a.new_label(), done = a.new_label();
+            a.tbnz(a64::w2, 0, odd);
+            a.ldrsh(a64::w0, a64::ptr(a64::x16, memOff));
+            a.b(done);
+            a.bind(odd);
+            a.ldrsb(a64::w0, a64::ptr(a64::x16, memOff));
+            a.bind(done);
+        }
         a.str(a64::w0, a64::ptr(ctx, reg_off((int)Rd)));
     } else {
         a.ldr(a64::w0, a64::ptr(ctx, reg_off((int)Rd)));
         a.strh(a64::w0, a64::ptr(a64::x16, memOff));
     }
-    if (!P) {
+    // a LOAD with Rd == Rn loses its write-back to the loaded value (see the x86 twin)
+    const bool wbLost = L && (Rd == Rn);
+    if (!P && !wbLost) {
         if (offIsReg) { if (U) a.add(a64::w1, a64::w1, a64::w3); else a.sub(a64::w1, a64::w1, a64::w3); }
         else          { if (U) a.add(a64::w1, a64::w1, off);     else a.sub(a64::w1, a64::w1, off); }
         a.str(a64::w1, a64::ptr(ctx, reg_off((int)Rn)));
-    } else if (W) {
+    } else if (P && W && !wbLost) {
         a.str(a64::w2, a64::ptr(ctx, reg_off((int)Rn)));
     }
     return true;
@@ -2167,6 +2250,8 @@ bool emit_arm_psr(a64::Assembler& a, const a64::Gp& ctx, uint32_t insn)
     if (s_memMode != MemMode::Callback || !s_memcb.psr_transfer) return false;
     if (!((insn >> 21) & 1u) && ((insn >> 12) & 0xFu) == 15u)
         return false;  // MRS into PC -> defer (invalid anyway)
+    if ((insn & 0xF0u) != 0u)
+        return false;  // rest of the miscellaneous space -> interpreter takes the UND trap
     a.mov(a64::w0, insn);                          // arg0 = instruction word
     emit_mem_call(a, s_memcb.psr_transfer, false); // HandlePSRTransfer(insn)
     return true;
@@ -4124,6 +4209,89 @@ static int jit_asmjit_memcb_half_selftest(void)
             cpu.r[4] == 0xFFFFFF80u && cpu.r[5] == 0x8000u && cpu.r[6] == 0xFFFF8000u) ? 1 : 0;
 }
 
+namespace {
+// little-endian views of the MOCK memory buffer (ArmCpuSelfTest::mem, addressed
+// directly by the emulated address)
+uint32_t mock_w(const ArmCpuSelfTest &c, uint32_t a) {
+    return (uint32_t)c.mem[a] | ((uint32_t)c.mem[a+1] << 8) |
+           ((uint32_t)c.mem[a+2] << 16) | ((uint32_t)c.mem[a+3] << 24);
+}
+uint32_t mock_h(const ArmCpuSelfTest &c, uint32_t a) {
+    return (uint32_t)c.mem[a] | ((uint32_t)c.mem[a+1] << 8);
+}
+uint32_t cb_h(uint32_t a) {
+    const uint8_t *b = memcb_bytes();
+    return (uint32_t)b[a] | ((uint32_t)b[a+1] << 8);
+}
+
+// LDR/STR/STRH where the base register is ALSO the transfer register. Two rules
+// that this core used to get wrong (upstream MAME 1065e0e5 and cd60f3a2):
+//   - a STORE reads its data BEFORE the base write-back, so "STR r0,[r0,#4]!"
+//     stores the ORIGINAL r0 while still writing the new base back;
+//   - a LOAD with Rd == Rn loses the write-back, because it happens in the
+//     pipeline before the value arrives from memory.
+// The interpreter (HandleMemSingle / HandleHalfWordDT) implements both; this
+// pins the translated code to the same answers in BOTH memory modes
+const uint32_t k_base_eq_rd_prog[] = {
+    0xE3A00010u, // MOV  r0,#16
+    0xE5A00004u, // STR  r0,[r0,#4]! -> word[20] = 16 (the ORIGINAL r0); r0 = 20
+    0xE3A01020u, // MOV  r1,#32
+    0xE4811004u, // STR  r1,[r1],#4  -> word[32] = 32; r1 = 36 (a store DOES write back)
+    0xE3A02040u, // MOV  r2,#64
+    0xE3A03055u, // MOV  r3,#0x55
+    0xE5823000u, // STR  r3,[r2]     -> word[64] = 0x55
+    0xE4922004u, // LDR  r2,[r2],#4  -> r2 = 0x55; the write-back to r2 is LOST (not 68)
+    0xE3A04064u, // MOV  r4,#100
+    0xE1E440B2u, // STRH r4,[r4,#2]! -> half[102] = 100 (the ORIGINAL r4); r4 = 102
+};
+
+// LDRSH from an ODD address: UNPREDICTABLE in the architecture, but a real
+// ARM7TDMI yields the SIGNED BYTE at that address (see emit_arm_halfword and
+// HandleHalfWordDT). Verified against an aligned LDRSH of the same halfword
+const uint32_t k_ldrsh_align_prog[] = {
+    0xE3A00010u, // MOV   r0,#16
+    0xE3A01C80u, // MOV   r1,#0x8000
+    0xE1C010B0u, // STRH  r1,[r0]    -> half[16] = 0x8000 (byte[16] = 0x00, byte[17] = 0x80)
+    0xE1D030F0u, // LDRSH r3,[r0]    -> aligned -> 0xFFFF8000
+    0xE1D020F1u, // LDRSH r2,[r0,#1] -> odd -> signed byte at 17 (0x80) -> 0xFFFFFF80
+};
+} // namespace
+
+static int jit_asmjit_base_eq_rd_selftest(void)
+{
+    const int count = (int)(sizeof(k_base_eq_rd_prog) / sizeof(k_base_eq_rd_prog[0]));
+
+    // (A) mock memory
+    ArmCpuSelfTest cpu{};
+    uint32_t pc = 0;
+    if (!run_block(k_base_eq_rd_prog, count, cpu, pc)) return 0;
+    if (!(cpu.r[0] == 20u && cpu.r[1] == 36u && cpu.r[2] == 0x55u && cpu.r[4] == 102u)) return 0;
+    if (!(mock_w(cpu, 20) == 16u && mock_w(cpu, 32) == 32u && mock_h(cpu, 102) == 100u)) return 0;
+
+    // (B) the same program through the real host call path -- must agree exactly
+    for (int i = 0; i < 128; ++i) g_memcb_words[i] = 0;
+    ArmCpuSelfTest cpuB{};
+    if (!run_block_cb(k_base_eq_rd_prog, count, cpuB)) return 0;
+    if (!(cpuB.r[0] == 20u && cpuB.r[1] == 36u && cpuB.r[2] == 0x55u && cpuB.r[4] == 102u)) return 0;
+    return (g_memcb_words[20 >> 2] == 16u && g_memcb_words[32 >> 2] == 32u &&
+            cb_h(102) == 100u) ? 1 : 0;
+}
+
+static int jit_asmjit_ldrsh_align_selftest(void)
+{
+    const int count = (int)(sizeof(k_ldrsh_align_prog) / sizeof(k_ldrsh_align_prog[0]));
+
+    ArmCpuSelfTest cpu{};
+    uint32_t pc = 0;
+    if (!run_block(k_ldrsh_align_prog, count, cpu, pc)) return 0;
+    if (!(cpu.r[3] == 0xFFFF8000u && cpu.r[2] == 0xFFFFFF80u)) return 0;
+
+    for (int i = 0; i < 128; ++i) g_memcb_words[i] = 0;
+    ArmCpuSelfTest cpuB{};
+    if (!run_block_cb(k_ldrsh_align_prog, count, cpuB)) return 0;
+    return (cpuB.r[3] == 0xFFFF8000u && cpuB.r[2] == 0xFFFFFF80u) ? 1 : 0;
+}
+
 // LDM/STM in CALLBACK mode: (A) STMIA then LDMIA round-trip with writeback (all
 // in one block), and (B) LDMIA r0!,{r2,pc} - a call per register, writeback, and
 // the loaded PC ending the block (return value)
@@ -4826,6 +4994,8 @@ const SelfTest k_selftests[] = {
     { "real-mode (defer)", jit_asmjit_realmode_selftest },  // partial-JIT (memory deferred to interpreter)
     { "memory callbacks",  jit_asmjit_memcb_selftest },     // LDR/STR via real host calls (callback mode)
     { "memcb halfword",    jit_asmjit_memcb_half_selftest },// LDRH/STRH/LDRSB/LDRSH via real host calls
+    { "base == Rd order",  jit_asmjit_base_eq_rd_selftest },// store-before-writeback / lost load writeback
+    { "LDRSH alignment",   jit_asmjit_ldrsh_align_selftest },// odd-address LDRSH == signed byte
     { "memcb LDM/STM",     jit_asmjit_memcb_ldm_selftest }, // LDM/STM (incl. LDM ...,PC) via real host calls
     { "memcb abort/IRQ",   jit_asmjit_memcb_irq_selftest }, // mid-block abort/IRQ exit (gen_test_irq parity)
     { "MRS/MSR (psr cb)",  jit_asmjit_psr_selftest },       // PSR transfer via the psr_transfer callback

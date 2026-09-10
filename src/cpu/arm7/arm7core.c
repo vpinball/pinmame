@@ -695,7 +695,8 @@ static void     arm7_aj_w32(uint32_t addr, uint32_t data) { WRITE32((int)addr, (
 // vectored), which the block returns to the exec loop as the resume address
 static uint32_t arm7_aj_exc_return(uint32_t newpc)
 {
-	if (GET_MODE != eARM7_MODE_USER)
+	// no SPSR in User or System mode: leave the CPSR alone (see HandleALU / HandleLDMS_ModeChange)
+	if (GET_MODE != eARM7_MODE_USER && GET_MODE != eARM7_MODE_SYS)
 	{
 		SET_CPSR(GET_REGISTER(SPSR));
 		SwitchMode(GET_MODE);
@@ -995,7 +996,12 @@ static void HandleCoProcRT(data32_t insn)
 			if(arm7_coproc_rt_r_callback)
 			{
 				data32_t res = arm7_coproc_rt_r_callback(insn,0);	//RT Read handler must parse opcode & return appropriate result
-				SET_REGISTER((insn>>12)&0xf,res);
+				data32_t rd = (insn>>12)&0xf;
+				// MRC with R15 as the destination writes the flags, NOT the PC (upstream MAME cd60f3a2)
+				if (rd == eR15)
+					SET_CPSR((GET_CPSR & ~(N_MASK|Z_MASK|C_MASK|V_MASK)) | (res & (N_MASK|Z_MASK|C_MASK|V_MASK)));
+				else
+					SET_REGISTER(rd,res);
 			}
 #if ARM7_DEBUG_CORE
 			else
@@ -1112,6 +1118,8 @@ static void HandleBranch(  data32_t insn, data8_t h_bit )
 static void HandleMemSingle( data32_t insn )
 {
 	data32_t rn, rnv, off, rd, rnv_old = 0;
+	data32_t store_value;
+	int is_load;
 
 	/* Fetch the offset */
 	if (insn & INSN_I)
@@ -1127,6 +1135,13 @@ static void HandleMemSingle( data32_t insn )
 
 	/* Calculate Rn, accounting for PC */
 	rn = (insn & INSN_RN) >> INSN_RN_SHIFT;
+	rd = (insn & INSN_RD) >> INSN_RD_SHIFT;
+	is_load = (insn & INSN_SDT_L) != 0;
+
+	// A store reads its data BEFORE the base write-back, so e.g. "STR Rn,[Rn,#off]!"
+	// stores the ORIGINAL Rn (upstream MAME 1065e0e5). The manual says STR of R15
+	// stores the instruction address + 12
+	store_value = is_load ? 0 : ((rd == eR15) ? (R15 + 8 + 4) : GET_REGISTER(rd));
 
 	if (insn & INSN_SDT_P)
 	{
@@ -1174,8 +1189,7 @@ static void HandleMemSingle( data32_t insn )
 	// and privileged memory accesses.
 
 	/* Do the transfer */
-	rd = (insn & INSN_RD) >> INSN_RD_SHIFT;
-	if (insn & INSN_SDT_L)
+	if (is_load)
 	{
 		/* Load */
 		if (insn & INSN_SDT_B)
@@ -1215,7 +1229,7 @@ static void HandleMemSingle( data32_t insn )
 					LOG(("Wrote R15 in byte mode\n"));
 			#endif
 
-			WRITE8(rnv, (data8_t) GET_REGISTER(rd) & 0xffu);
+			WRITE8(rnv, (data8_t)(store_value & 0xffu));
 		}
 		else
 		{
@@ -1224,8 +1238,7 @@ static void HandleMemSingle( data32_t insn )
 					LOG(("Wrote R15 in 32bit mode\n"));
 			#endif
 
-			//WRITE32(rnv, rd == eR15 ? R15 + 8 : GET_REGISTER(rd));
-			WRITE32(rnv, rd == eR15 ? R15 + 8 + 4 : GET_REGISTER(rd)); //manual says STR rd = PC, +12
+			WRITE32(rnv, store_value); //manual says STR rd = PC, +12 (folded into store_value above)
 #if JIT_ENABLED
 			// This is to handle code in self-modifying color patches.
 			jit_untranslate(ARM7.jit, rnv);
@@ -1262,9 +1275,11 @@ static void HandleMemSingle( data32_t insn )
 		// is implied by post-index mode whether or not the W flag is set.
 		if (insn & INSN_SDT_U)
 		{
-			/* Writeback is applied in pipeline, before value is read from mem,
-				so writeback is effectively ignored */
-			if (rd==rn) {
+			/* On a LOAD the write-back is applied in the pipeline, before the value is
+			   read from memory, so the loaded value wins and the write-back is
+			   effectively ignored. On a STORE there is no such conflict, so the base
+			   is written back normally (upstream MAME cd60f3a2) */
+			if (rd==rn && is_load) {
 				SET_REGISTER(rn,GET_REGISTER(rd));
 				//todo: check for offs... ?
 			}
@@ -1280,9 +1295,8 @@ static void HandleMemSingle( data32_t insn )
 		}
 		else
 		{
-			/* Writeback is applied in pipeline, before value is read from mem,
-				so writeback is effectively ignored */
-			if (rd==rn) {
+			/* see the LOAD/STORE note above */
+			if (rd==rn && is_load) {
 				SET_REGISTER(rn,GET_REGISTER(rd));
 			}
 			else {
@@ -1295,7 +1309,7 @@ static void HandleMemSingle( data32_t insn )
 			}
 		}
 	}
-	// Can't do this here, R15 gets incremented after. 
+	// Can't do this here, R15 gets incremented after.
 	//ARM7_CHECKIRQ;
 
 } /* HandleMemSingle */
@@ -1303,6 +1317,8 @@ static void HandleMemSingle( data32_t insn )
 static void HandleHalfWordDT(data32_t insn)
 {
 	data32_t rn, rnv, off, rd, rnv_old = 0;
+	data32_t store_value;
+	int is_load;
 
 	//Immediate or Register Offset?
 	if(insn & 0x400000) {				//Bit 22 - 1 = immediate, 0 = register
@@ -1316,6 +1332,12 @@ static void HandleHalfWordDT(data32_t insn)
 
 	/* Calculate Rn, accounting for PC */
 	rn = (insn & INSN_RN) >> INSN_RN_SHIFT;
+	rd = (insn & INSN_RD) >> INSN_RD_SHIFT;
+	is_load = (insn & INSN_SDT_L) != 0;
+
+	// As in HandleMemSingle: a store reads its data BEFORE the base write-back
+	// (upstream MAME 1065e0e5). STRH of R15 stores the instruction address + 12
+	store_value = is_load ? 0 : ((rd == eR15) ? (R15 + 8 + 4) : GET_REGISTER(rd));
 
 	if (insn & INSN_SDT_P)
 	{
@@ -1355,7 +1377,6 @@ static void HandleHalfWordDT(data32_t insn)
 	}
 
 	/* Do the transfer */
-	rd = (insn & INSN_RD) >> INSN_RD_SHIFT;
 
 	// TODO: Determine if post-index + write-back (P=0 + W=1) mode triggers the
 	// same special user-mode memory access as in LDR/STR.  In LDR/STR, P=0 W=1
@@ -1378,16 +1399,15 @@ static void HandleHalfWordDT(data32_t insn)
 
 			//Signed Half Word?
 			if(insn & 0x20) {
-				//!! TODO the unaligned-LDRSH quirk is NOT modeled yet: real ARM7 reads
-				// (rnv & ~1) and, for an odd address, effectively sign-extends the
-				// HIGH byte (upstream MAME: READ16(rnv & ~1), then >>= 8 when rnv
-				// is odd). Real code should not do unaligned LDRSH in
-				// practice. The JIT's LDRSH path (r16 thunk) would need the
-				// same treatment to stay in interpreter/JIT parity
-				data16_t signbyte,databyte;
-				databyte = READ16(rnv) & 0xFFFF;
-				signbyte = (databyte & 0x8000) ? 0xffff : 0;
-				newval = (data32_t)(signbyte<<16)|databyte;
+				// LDRSH from an unaligned address is UNPREDICTABLE in the architecture.
+				// A real ARM7TDMI reads the halfword at (rnv & ~1) and, for an ODD
+				// address, shifts the sign-extended result down by 8 - so what lands in
+				// Rd is the sign-extended HIGH byte of that halfword, i.e. exactly the
+				// signed byte AT rnv (upstream MAME: READ16(rnv & ~1) then >>= 8)
+				INT32 data = (INT32)(INT16)(data16_t)READ16(rnv & ~1);
+				if (rnv & 1)
+					data >>= 8;
+				newval = (data32_t)data;
 			}
 			//Signed Byte
 			else {
@@ -1456,32 +1476,34 @@ static void HandleHalfWordDT(data32_t insn)
 			}
 		}
 	}
-	/* Store or ARMv5+ dword insns */
+	/* Store, or (on ARMv5TE) the dword insns - which this ARM7TDMI core does not have */
 	else
 	{
-		if ((insn & 0x60) == 0x40)  // LDRD
+		if ((insn & 0x60) == 0x40 || (insn & 0x60) == 0x60)  // LDRD / STRD
 		{
-			SET_REGISTER(rd, READ32(rnv));
-			SET_REGISTER(rd+1, READ32(rnv+4));
+			// LDRD/STRD need the DSP (E) extensions; on an ARM7TDMI these encodings are
+			// UNDEFINED and must take the undefined instruction trap rather than being
+			// executed as a double-word transfer (upstream MAME cd60f3a2)
+			#if ARM7_DEBUG_CORE
+				LOG(("%08x: LDRD/STRD on a core without the DSP extensions\n", R15));
+			#endif
+			if ((insn & INSN_SDT_P) && (insn & INSN_SDT_W))
+			{
+				SET_REGISTER(rn, rnv_old);
+			}
 			R15 += 4;
-		}
-		else if ((insn & 0x60) == 0x60) // STRD
-		{
-			WRITE32(rnv, GET_REGISTER(rd));
-			WRITE32(rnv+4, GET_REGISTER(rd+1));
-			R15 += 4;
+			ARM7.pendingUnd = 1;
+			ARM7_ICOUNT -= 1;	//undefined takes 4 cycles (page 77)
+			ARM7_CHECKIRQ;
+			return;
 		}
 		/* Store */
 		else
 		{
-			//WRITE16(rnv, rd == eR15 ? R15 + 8 : GET_REGISTER(rd));
-			WRITE16(rnv, rd == eR15 ? R15 + 8 + 4 : GET_REGISTER(rd)); //manual says STR RD=PC, +12 of address
-			
+			WRITE16(rnv, store_value); //manual says STR RD=PC, +12 of address (folded into store_value above)
+
 			// if R15 is not increased then e.g. "STRH R10, [R15,#$10]" will be executed over and over again
-#if 0
-			if(rn != eR15)
-#endif
-				R15 += 4;
+			R15 += 4;
 			//STRH takes 2 cycles, so we add + 1
 			ARM7_ICOUNT += 1;
 		}
@@ -1505,9 +1527,10 @@ static void HandleHalfWordDT(data32_t insn)
 		// This always happens in post-index mode regardless of the W flag.
 		if (insn & INSN_SDT_U)
 		{
-			/* Writeback is applied in pipeline, before value is read from mem,
-				so writeback is effectively ignored */
-			if (rd==rn) {
+			/* On a LOAD the write-back is applied in the pipeline, before the value is
+			   read from memory, so the loaded value wins. On a STORE the base is
+			   written back normally (upstream MAME cd60f3a2) */
+			if (rd==rn && is_load) {
 				SET_REGISTER(rn,GET_REGISTER(rd));
 				//todo: check for offs... ?
 			}
@@ -1523,9 +1546,8 @@ static void HandleHalfWordDT(data32_t insn)
 		}
 		else
 		{
-			/* Writeback is applied in pipeline, before value is read from mem,
-				so writeback is effectively ignored */
-			if (rd==rn) {
+			/* see the LOAD/STORE note above */
+			if (rd==rn && is_load) {
 				SET_REGISTER(rn,GET_REGISTER(rd));
 			}
 			else {
@@ -1848,7 +1870,9 @@ static void HandleALU( data32_t insn )
 				// the current mode is moved to the CPSR. This allows state changes which automatically restore both PC and
 				// CPSR. --> This form of instruction should not be used in User mode. <--
 
-				if (GET_MODE != eARM7_MODE_USER)
+				// User and System mode have no SPSR: the S-bit write to R15 is
+				// UNPREDICTABLE there, so leave the CPSR alone (upstream MAME cd60f3a2)
+				if (GET_MODE != eARM7_MODE_USER && GET_MODE != eARM7_MODE_SYS)
 				{
 					// Update CPSR from SPSR
 					SET_CPSR(GET_REGISTER(SPSR));
@@ -1877,7 +1901,10 @@ static void HandleALU( data32_t insn )
 			#if ARM7_DEBUG_CORE
 				LOG(("%08x: TST class on R15 s bit set\n",R15));
 			#endif
-			R15 = rd;
+			// Rd is SBZ for the compare instructions in the 32-bit architectures
+			// (UNPREDICTABLE otherwise): the flags were set normally above and R15
+			// is left alone - it must NOT be loaded with the discarded ALU result
+			// (upstream MAME cd60f3a2)
 
 			/* IRQ masks may have changed in this instruction */
 			ARM7_CHECKIRQ;
@@ -2058,7 +2085,9 @@ static void HandleUMulLong( data32_t insn)
 // rules, and it's non-sensical in that no SPSR exists in user mode.
 static void HandleLDMS_ModeChange(void)
 {
-	if (GET_MODE != eARM7_MODE_USER)
+	// User and System mode have no SPSR: an LDM with PC and the S bit is
+	// UNPREDICTABLE there, so leave the CPSR alone (upstream MAME cd60f3a2)
+	if (GET_MODE != eARM7_MODE_USER && GET_MODE != eARM7_MODE_SYS)
 	{
 		SET_CPSR(GET_REGISTER(SPSR));
 		SwitchMode(GET_MODE);
@@ -2070,6 +2099,40 @@ static void HandleMemBlock( data32_t insn)
 	data32_t rb = (insn & INSN_RN) >> INSN_RN_SHIFT;
 	data32_t rbp = GET_REGISTER(rb);
 	int result;
+
+	// An empty register list is UNPREDICTABLE, and NOT a no-op: real cores write the
+	// base back by 0x40 as if all 16 registers had been transferred, and ARMv4 cores
+	// (ARM7TDMI) also transfer R15 through the first slot (upstream MAME cd60f3a2)
+	if ((insn & 0xffff) == 0)
+	{
+		data32_t addr = (insn & INSN_BDT_U)
+			? (rbp + ((insn & INSN_BDT_P) ? 4 : 0))
+			: (rbp - ((insn & INSN_BDT_P) ? 0x40 : 0x3c));
+		#if ARM7_DEBUG_CORE
+			LOG(("%08x: %s with an empty register list\n", R15, (insn & INSN_BDT_L) ? "LDM" : "STM"));
+		#endif
+		if (insn & INSN_BDT_L)
+		{
+			data32_t data = READ32(addr & ~3);
+			if (ARM7.pendingAbtD == 0)
+				R15 = (data & ~3) - 4;	// PC bits 1:0 ignored in ARM state; -4 because the dispatcher adds 4
+			// as for a single-register LDM: nS + 1N + 1I with n = 1
+			ARM7_ICOUNT -= 3;
+		}
+		else
+		{
+			// (no jit_untranslate here, matching the normal storeInc/storeDec STM paths)
+			WRITE32(addr & ~3, R15 + 12);
+			// as for a single-register STM: (n-1)S + 2N with n = 1
+			ARM7_ICOUNT -= 2;
+		}
+		if ((insn & INSN_BDT_W) && (ARM7.pendingAbtD == 0))
+			SET_REGISTER(rb, (insn & INSN_BDT_U) ? (rbp + 0x40) : (rbp - 0x40));
+
+		// cancel the -3 the dispatch loop applies to every instruction
+		ARM7_ICOUNT += 3;
+		return;
+	}
 
 #if ARM7_DEBUG_CORE
 	if(rbp & 3)
