@@ -50,29 +50,32 @@
    counter alone, row 4 a counter plus CREDIT -- which really is two digits,
    the 095-106 panel, its limit adjustable from 9 to 99. */
 #define RECEL_D(row, col, pos) {row, col, pos, 1, CORE_SEG7},
-/* 5 GPKD-multiplexed score digits, MSD first; base = the ×10 digit's GPKD
-   position (docs/gpkd-protocol.md §11.4 -- the ×1 digit is not multiplexed
-   and is not modelled). */
+/* One score counter: the 5 GPKD-multiplexed digits, MSD first, then the x1
+   digit. base = the x10 digit's GPKD position. The x1 is not multiplexed --
+   the 095-105 unit's sixth 7448 position is wired to a permanent 0 -- so it
+   comes from RECEL_SEG_UNITS, which RECEL_vblank holds at 0. A photograph of
+   a running cabinet reads 010100 where the five multiplexed digits alone
+   read 01010. docs/gpkd-protocol.md §11.4. */
 #define RECEL_COUNTER(row, col, base) \
   RECEL_D(row, col,    (base)+4) RECEL_D(row, (col)+2,  (base)+3) \
   RECEL_D(row, (col)+4,(base)+2) RECEL_D(row, (col)+6,  (base)+1) \
-  RECEL_D(row, (col)+8,(base))
+  RECEL_D(row, (col)+8,(base))   RECEL_D(row, (col)+10, RECEL_SEG_UNITS)
 
 static core_tLCDLayout recel_disp[] = {
   /* row 1: player 1 (A7..A3), then the two single-digit indicators, spaced
      apart because they are independent, not a two-digit number: free play
      (A0) and extra ball (A1). A2 (status LEDs) is a lamp, not a digit. */
-  RECEL_COUNTER(0, 0, 3)  RECEL_D(0, 12, 0) RECEL_D(0, 16, 1)
+  RECEL_COUNTER(0, 0, 3)  RECEL_D(0, 14, 0) RECEL_D(0, 18, 1)
   /* row 2: player 2 (AF..AB) -- the self-check display -- then the match
      number (A9), a digit on the 095-108 unit. AA (status) and A8 (the
      ball/tilt/game-over block) are lamps and are not laid out here. */
-  RECEL_COUNTER(2, 0, 11) RECEL_D(2, 12, 9)
+  RECEL_COUNTER(2, 0, 11) RECEL_D(2, 14, 9)
   /* row 3: player 3 (BF..BB). BA (status) is a lamp; B9/B8 have no
      indicator on a real machine (§4) and are not modelled. */
   RECEL_COUNTER(4, 0, 27)
   /* row 4: player 4 (B7..B3), then credit, tens (B0) before units (B1).
      B2 (status) is a lamp. */
-  RECEL_COUNTER(6, 0, 19) RECEL_D(6, 12, 16) RECEL_D(6, 14, 17)
+  RECEL_COUNTER(6, 0, 19) RECEL_D(6, 14, 16) RECEL_D(6, 16, 17)
   {0}
 };
 

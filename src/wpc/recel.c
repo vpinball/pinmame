@@ -88,6 +88,8 @@ static INTERRUPT_GEN(RECEL_vblank) {
            sizeof(coreGlobals.lampMatrix));
   /*-- solenoids (PIO outputs 0-23, see locals.pio) --*/
   coreGlobals.solenoids = locals.solenoids;
+  /*-- the counters' hardwired x1 digit (recel.h, RECEL_SEG_UNITS) --*/
+  coreGlobals.segments[RECEL_SEG_UNITS].w = core_bcd2seg7a[0];
   core_updateSw(TRUE);
 }
 

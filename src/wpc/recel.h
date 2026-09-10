@@ -50,6 +50,13 @@
 #define RECEL_LAMPCOL_P3STATUS  (CORE_CUSTLAMPCOL+4)  /* group B col A */
 /* Column 9 is the match number: a decoded digit, laid out in recel_disp, not
    a lamp. See gpkd_kind() in recel.c. */
+
+/* Each score counter's x1 digit. The 095-105 unit has six 7448-driven
+   positions but the GPKD multiplexes only five (gpkd-protocol.md 11.4), so
+   the last is wired to a permanent 0 -- Recel scores in tens. A real cabinet
+   therefore reads 010100 where five digits would read 01010. Synthesised at a
+   segment position the GPKD never writes, so recel_disp can lay it out. */
+#define RECEL_SEG_UNITS 32
 /* hw.lampCol: core.c draws and counts CORE_CUSTLAMPCOL + lampCol columns, so
    without this the six columns above exist in coreGlobals.lampMatrix but are
    never rendered -- the ball-in-play/game-over indicator was invisible on
