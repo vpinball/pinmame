@@ -6,6 +6,7 @@
  *
  **********************************************************************************************/
 
+#include <assert.h>
 #include "driver.h"
 #include "i8256.h"
 
@@ -25,7 +26,7 @@
 #define R_STATUS  15   /* write: modification register;   read: status */
 
 /*-- CMD1 --*/
-#define CMD1_FRQ(c)   ((c) & 0x01)   /* 0 = 16 kHz timer base, 1 = 1 kHz */
+#define CMD1_FRQ(c)   ((c) & 0x01)   /* 1 divides the CLK-derived base by a further 16 */
 #define CMD1_8086(c)  (((c) >> 1) & 1)
 #define CMD1_BITI(c)  (((c) >> 2) & 1)   /* 1 = level 1 is P17 edge, 0 = timer 2 */
 
@@ -71,6 +72,7 @@ static const UINT8 timer_level[5] = {
 
 static struct {
   const I8256interface *intf;
+  UINT32 clock;         /* frequency at the CLK pin, from i8256_init */
   UINT8 reg[16];        /* shadow of the last value written -- reads of the
                            command registers must return it, several routines
                            do read-modify-write on CMD1 and the ports */
@@ -84,25 +86,24 @@ static struct {
   int   extint;
   int   curlevel;       /* level presented at the last acknowledge, -1 if none */
   int   intline;        /* current state of the INT pin */
-  int   prescale;       /* 16 kHz -> 1 kHz divider when CMD1.FRQ is set */
+  int   prescale;       /* the further /16 applied when CMD1.FRQ is set */
   int   initialised;
   mame_timer *tick;     /* the common time base */
   int   tickdiv;        /* CMD2 prescaler selection the tick is armed for */
 } i8256;
 
-/*-- CMD2 bits 5,4 = C1,C0, the system clock prescaler.  The divider ratio
-/  and the CLK frequency the datasheet expects with it (all four make an
-/  internal 1.024 MHz, which /64 is the quoted 16 kHz).  --*/
+/*-- CMD2 bits 5,4 = C1,C0, the system clock prescaler.  The datasheet's quoted
+/  16 kHz base assumes the board picks a CLK that makes the prescaler output
+/  1.024 MHz (5.12 MHz on /5), which neither board served here does: Mephisto
+/  runs 5 MHz and Sport 2000 6 MHz, so their /5 bases are 15625 and 18750 Hz.
+/  Both also switch /5 -> /2 at runtime, so this really has to be per-write --*/
 static const int i8256_sysdiv[4] = { 5, 3, 2, 1 };
-#define I8256_NOMINAL_CLK 5120000   /* the divide-by-5 setting's nominal CLK */
 
 /* Arm (or re-arm) the common time base for the current CLK and prescaler. */
 static void i8256_tick(int dummy);
 static void i8256_arm_base(void) {
-  UINT32 clk = (i8256.intf && i8256.intf->clock) ? i8256.intf->clock
-                                                 : I8256_NOMINAL_CLK;
   int div = i8256_sysdiv[(i8256.reg[R_CMD2] >> 4) & 3];
-  double hz = (double)clk / (div * 64.0);
+  double hz = (double)i8256.clock / (div * 64.0);
   i8256.tickdiv = div;
   if (!i8256.tick) i8256.tick = timer_alloc(i8256_tick);
   timer_adjust(i8256.tick, TIME_IN_HZ(hz), 0, TIME_IN_HZ(hz));
@@ -184,9 +185,9 @@ static void i8256_end_of_interrupt(void) {
 /*-------------------------------------------------------------------------
 /  Counter/timers
 /
-/  All five run continuously from a common time base selected by CMD1.FRQ
-/  (16 kHz or 1 kHz).  An interrupt is generated on the 1 -> 0 transition of a
-/  single timer, or of the low half of a cascaded pair.  The counters wrap and
+/  All five run continuously from the CLK-derived common time base, divided by a
+/  further 16 when CMD1.FRQ is set.  An interrupt is generated on the 1 -> 0
+/  transition of a single timer, or of the low half of a cascaded pair.  The counters wrap and
 /  keep running; software reloads them by writing the register, and the Sport
 /  2000 timer-1 handler relies on being able to read the live value back.
 /-------------------------------------------------------------------------*/
@@ -455,10 +456,12 @@ int i8256_is_8086_mode(void) { return CMD1_8086(i8256.reg[R_CMD1]); }
 /-------------------------------------------------------------------------*/
 void i8256_reset(void) {
   const I8256interface *intf = i8256.intf;
+  UINT32 clock = i8256.clock; /* board wiring, not chip state: a reset cannot change the crystal */
   int init = i8256.initialised;
   mame_timer *tick = i8256.tick;
   memset(&i8256, 0, sizeof(i8256));
   i8256.intf = intf;
+  i8256.clock = clock;
   i8256.initialised = init;
   i8256.tick = tick;
   i8256.curlevel = -1;
@@ -467,9 +470,11 @@ void i8256_reset(void) {
   if (intf && intf->int_out) intf->int_out(0);
 }
 
-void i8256_init(const I8256interface *intf) {
+void i8256_init(const I8256interface *intf, UINT32 clock) {
+  assert(clock);   /* the board's CLK pin frequency; there is no sensible default */
   i8256_reset();
   i8256.intf = intf;
+  i8256.clock = clock;
   i8256.initialised = 1;
   /* Timers are resource-tracked and freed on every machine reset (cpu_pre_run
      -> begin_resource_tracking, end_resource_tracking -> timer_free), so the

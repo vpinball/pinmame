@@ -981,7 +981,7 @@ static PALETTE_INIT(core) {
 // Render to internal display, using provided luminance, if there is a visible display (PinMAME always, and VPinMAME when its window is shown)
 // FIXME apply colors LUT ?
 #if defined(PINMAME) || defined(VPINMAME)
-static void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int y, const int width, const int height, const float* const dmdDotLum, const int apply_aa) {
+static void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int y, const int width, const int height, const float* const dmdDotLum) {
   #define DMD_OFS(row, col) ((row)*width + (col))
   BMTYPE **lines = ((BMTYPE **)bitmap->line) + (y * locals.displaySize);
   for (int ii = 0; ii < height; ii++) {
@@ -992,13 +992,13 @@ static void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, co
     }
     lines += locals.displaySize;
   }
-  // Apply antialiasing if enabled, or clear pixels between dots otherwise, do via a triangle filter:
+  // Fill the pixels between the dots, if antialiasing is enabled, via a triangle filter:
   // 1 2 1
   // 2 4 2
   // 1 2 1
-  // Note that pixels which are off are always counted as contributing 0 (so NOT the 'off-color/brightness')
+  // Otherwise they are simply left black. Note that pixels which are off are always counted as contributing 0 (so NOT the 'off-color/brightness')
   assert((locals.displaySize == 1) || (locals.displaySize == 2));
-  if (apply_aa && locals.displaySize == 2) {
+  if (pmoptions.dmd_antialias && locals.displaySize == 2) {
     lines = ((BMTYPE **)bitmap->line) + (y * 2);
     for (int ii = 0; ii < height * 2 - 1; ii++) {
       const int pi = (ii - 1) >> 1;
@@ -1279,7 +1279,7 @@ static void core_dmd_video_update(struct mame_bitmap *bitmap, const struct recta
       const UINT8* rawFrame = core_dmd_update_identify(layout, &rawFrameId);
       const float* lumFrame = core_dmd_update_pwm(layout, &lumFrameId);
       // FIXME check for VPinMame window hidden/shown state, and do not render if hidden
-      core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, lumFrame, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA));
+      core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, lumFrame);
       core_dmd_capture_frame(layout->length, layout->start, rawFrame, g_raw_dmd_frame_count, raw_dmd_frames);
       core_dmd_send_vpm(layout->length, layout->start, lumFrame, rawFrame);
       core_dmd_send_dmddevice(layout->length, layout->start, lumFrame, rawFrame, layout->top != 0);
@@ -1288,7 +1288,7 @@ static void core_dmd_video_update(struct mame_bitmap *bitmap, const struct recta
   #elif defined(PINMAME)
     unsigned int lumFrameId;
     const float* lumFrame = core_dmd_update_pwm(layout, &lumFrameId);
-    core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, lumFrame, pmoptions.dmd_antialias && !(layout->type & CORE_DMDNOAA));
+    core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, lumFrame);
 
   #endif
 }
@@ -2704,7 +2704,7 @@ static void core_findSize(const core_tLCDLayout *layout, int *maxX, int *maxY) {
          maxY to the full screen height anyway unless dmd_only is set.  Nothing checks
          that invariant, and this is the one place that could.
          Do not make the two symmetric.  Measuring them here defeats the flag (se_apollo
-         and nbaf go 65 -> 94 tall, monopoly 65 -> 83), and skipping them in
+         and nbaf go 64 -> 94 tall, monopoly 64 -> 82), and skipping them in
          updateDisplay() would have to keep segPos advancing or coreGlobals.drawSeg
          shifts for every later layout - segames.c carries a real CORE_SEG7|CORE_NODISP
          entry, so that is not hypothetical */
@@ -2713,17 +2713,11 @@ static void core_findSize(const core_tLCDLayout *layout, int *maxX, int *maxY) {
       if (type == CORE_IMPORT)
         { core_findSize(layout->importedLayout, maxX, maxY); continue; }
       if (type == CORE_DMD || type == CORE_VIDEO) {
-        /* The trailing +1 costs a DMD nothing - dots are two pixels apart, so it is just the
-           gap after the last one. A CORE_VIDEO display has cols == rows == 1 and no such gap,
-           so it makes the visible area one pixel WIDER than the renderer draws: 257 for Baby
-           Pac-Man's and Granny & the Gators' 256, 641 for Pinball 2000's 640. Nothing writes
-           that column. Harmless to MAME (bitmaps carry a BITMAP_SAFETY border) but visible to
-           a frontend, since Controller.DmdWidth reports the visible area and
-           Controller.updateDmdPixels hands over that many pixels per row. Left alone
-           deliberately: removing it for CORE_VIDEO would change the size every existing
-           video-display game reports to every table built against it */
-        tmpX = (layout->left + layout->length) * locals.segData[type].cols + 1;
-        tmpY = (layout->top  + layout->start)  * locals.segData[type].rows + 1;
+        /* No trailing +1: core_dmd_render_internal() draws its last dot at
+           (left+length-1)*cols and the AA pass ends on that same pixel, so this fits
+           exactly for cols == 1 and leaves one spare column for a 2 pixel dot pitch (it is also what Controller.DmdWidth reports) */
+        tmpX = (layout->left + layout->length) * locals.segData[type].cols;
+        tmpY = (layout->top  + layout->start)  * locals.segData[type].rows;
       }
       else {
         /* segData[type], not [type & 0x07]: the renderer indexes the full type (see the
@@ -2731,7 +2725,7 @@ static void core_findSize(const core_tLCDLayout *layout, int *maxX, int *maxY) {
            masking to 3 bits read the wrong row for every type above 7.  It only ever
            over-measured - 11/12 (SEG7S/SEG7SC, cols 11) were measured as 3/4 (cols 15) -
            so it was harmless, but it meant the size and the drawing disagreed */
-        tmpX = (layout->left + 2*layout->length) * (locals.segData[type].cols + 1) / 2 + CORE_SCREENX_INC;
+        tmpX = (layout->left + 2*layout->length) * (locals.segData[type].cols + 1) / 2;
         tmpY = (layout->top + 2) * (locals.segData[0].rows + 1) / 2;
       }
       if (tmpX > *maxX) *maxX = tmpX;

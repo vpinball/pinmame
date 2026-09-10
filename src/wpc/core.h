@@ -51,7 +51,6 @@
 #  define CORE_SCREENX 320
 #  define CORE_SCREENY 256
 #endif /* VPINMAME */
-#define CORE_SCREENX_INC 0 // previous hack: had increased window width by 4 for alpha/segmented displays, otherwise there was some weird wrap of last segments (x86,VPM,32bit only,VS2022)
 
 /*-----------------
 /  define the game
@@ -198,7 +197,6 @@
 
 #define CORE_SEGHIBIT     0x040
 #define CORE_SEGREV       0x080
-#define CORE_DMDNOAA      0x100
 #define CORE_NODISP       0x200 // VPinMAME only: if flag is set, the display is not included in VPinMAME window
 #define CORE_VIDEO_ROT90  0x400 // Video is rotated 90 degrees
 

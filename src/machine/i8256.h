@@ -46,18 +46,14 @@ typedef struct {
   void  (*p2_out)(UINT8 data);
   /* A byte written to the transmit buffer.  May be NULL. */
   void  (*txd_out)(UINT8 data);
-  /* Frequency at the CLK pin, in Hz.  The chip divides it by the CMD2
-     system-clock prescaler (C1,C0 = bits 5,4: 5 / 3 / 2 / 1), and that by 64
-     (CMD1.FRQ = 0) or 1024 (FRQ = 1) to make the time base for all five
-     counter/timers.  The datasheet's 16 kHz / 1 kHz assume the board feeds
-     each prescaler setting its own nominal CLK - 5.12 MHz on divide-by-5 -
-     so a board feeding anything else gets a proportionally different base.
-     Left 0, CLK is assumed to be that 5.12 MHz, which yields the nominal
-     16 kHz on divide-by-5 only; every other prescaler then scales from it. */
-  UINT32 clock;
 } I8256interface;
 
-void i8256_init(const I8256interface *intf);
+/* clock is the frequency at the CLK pin, in Hz.  The chip divides it by the
+   CMD2 system-clock prescaler (C1,C0 = bits 5,4: 5 / 3 / 2 / 1), and that by
+   64 (CMD1.FRQ = 0) or 1024 (FRQ = 1), to make the time base for all five
+   counter/timers.  The datasheet's 16 kHz / 1 kHz hold only for a board whose
+   CLK makes the prescaler output 1.024 MHz, so pass the real crystal */
+void i8256_init(const I8256interface *intf, UINT32 clock);
 void i8256_reset(void);
 
 WRITE_HANDLER(i8256_w);

@@ -1008,7 +1008,7 @@ MACHINE_DRIVER_END
 
 //SAM1 Display Data
 static struct core_dispLayout sam1_dmd128x32[] = {
-  {0,0, 32,128, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_dmd32_update}, {0}
+  {0,0, 32,128, CORE_DMD, (genf *)sam1_dmd32_update}, {0}
 };
 
 static PINMAME_VIDEO_UPDATE(sam1_minidmd_update) {
@@ -1036,21 +1036,21 @@ static PINMAME_VIDEO_UPDATE(sam1_minidmd_update) {
 }
 
 static struct core_dispLayout sam1_wptDisp[] = {
-  {0,0, 32,128, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_dmd32_update},
-  {34,10, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {34,17, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {34,24, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {34,31, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {34,38, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {34,45, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {34,52, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {43,10, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {43,17, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {43,24, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {43,31, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {43,38, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {43,45, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {43,52, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
+  {0,0, 32,128, CORE_DMD, (genf *)sam1_dmd32_update},
+  {34,10, 7, 5, CORE_DMD, (genf *)sam1_minidmd_update},
+  {34,17, 7, 5, CORE_DMD, (genf *)sam1_minidmd_update},
+  {34,24, 7, 5, CORE_DMD, (genf *)sam1_minidmd_update},
+  {34,31, 7, 5, CORE_DMD, (genf *)sam1_minidmd_update},
+  {34,38, 7, 5, CORE_DMD, (genf *)sam1_minidmd_update},
+  {34,45, 7, 5, CORE_DMD, (genf *)sam1_minidmd_update},
+  {34,52, 7, 5, CORE_DMD, (genf *)sam1_minidmd_update},
+  {43,10, 7, 5, CORE_DMD, (genf *)sam1_minidmd_update},
+  {43,17, 7, 5, CORE_DMD, (genf *)sam1_minidmd_update},
+  {43,24, 7, 5, CORE_DMD, (genf *)sam1_minidmd_update},
+  {43,31, 7, 5, CORE_DMD, (genf *)sam1_minidmd_update},
+  {43,38, 7, 5, CORE_DMD, (genf *)sam1_minidmd_update},
+  {43,45, 7, 5, CORE_DMD, (genf *)sam1_minidmd_update},
+  {43,52, 7, 5, CORE_DMD, (genf *)sam1_minidmd_update},
   {0}
 };
 
@@ -1076,8 +1076,8 @@ static PINMAME_VIDEO_UPDATE(sam1_minidmd2_update) {
 }
 
 static struct core_dispLayout sam1_wofDisp[] = {
-  {0,0, 32,128, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_dmd32_update},
-  {34,10, 5,35, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd2_update},
+  {0,0, 32,128, CORE_DMD, (genf *)sam1_dmd32_update},
+  {34,10, 5,35, CORE_DMD, (genf *)sam1_minidmd2_update},
   {0}
 };
 

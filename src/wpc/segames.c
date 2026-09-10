@@ -1038,7 +1038,7 @@ DE2S_SOUNDROM1888("rcsndu7.100", CRC(e6cde9b1) SHA1(cbaadafd18ad9c0338bf2cce94b2
 
 static core_tLCDLayout dispRCT[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
-  {34,10, 5,21, CORE_DMD | CORE_DMDNOAA | CORE_NODISP, NULL, NULL}, {0}
+  {34,10, 5,21, CORE_DMD | CORE_NODISP, NULL, NULL}, {0}
 };
 INITGAME(rctycn, GEN_WS, dispRCT, SE_BOARDID_520_5192_00_J3 | SE_BOARDID_520_5221_00)
 SE128_ROMSTART(rctycn, "rctcpu.702",CRC(5736a816) SHA1(fcfd06eeca74df0bca2c0bc57aeaa00400e4ab55))
@@ -1203,8 +1203,8 @@ DE2S_SOUNDROM18888("spp101.u7",   CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598c
 
 static core_tLCDLayout dispSPP[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
-  {34,30,10,14, CORE_DMD | CORE_DMDNOAA | CORE_NODISP, NULL, NULL}, // MiniDMD: Green Leds
-  {34,50,10,14, CORE_DMD | CORE_DMDNOAA | CORE_NODISP, NULL, NULL}, // MiniDMD: Red Leds
+  {34,30,10,14, CORE_DMD | CORE_NODISP, NULL, NULL}, // MiniDMD: Green Leds
+  {34,50,10,14, CORE_DMD | CORE_NODISP, NULL, NULL}, // MiniDMD: Red Leds
   {34,10,10,14, CORE_VIDEO, (genf *)seminidmd_update, NULL}, // MiniDMD: custom color renderer for internal renderer
   {0}
 };

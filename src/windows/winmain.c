@@ -109,6 +109,52 @@ static void stop_profiler(void);
 
 
 //============================================================
+//	set_dpi_awareness
+//============================================================
+
+/* Tell Windows we address physical pixels.  Without this a scaled desktop (125%,
+   150%, ...) bitmap-stretches the whole window on its way to the screen, and that
+   e.g. leads to the 2 pixel pitch of a DMD dot grid showing a moiree pattern.  Resolved at
+   runtime, newest API first, so this still runs on Windows that predate each:
+     PerMonitorV2  Win10 1703+, also gets us correct behaviour on mixed-DPI setups
+     PerMonitor    Win8.1+
+     system-wide   Vista+
+   Only the standalone builds call this; VPinMAME is a DLL and must leave the
+   choice to its host, as DPI awareness is a process-wide setting */
+static void set_dpi_awareness(void)
+{
+	HMODULE u32 = GetModuleHandleA("user32.dll");
+	if (u32)
+	{
+		typedef BOOL (WINAPI *pSPDAC)(HANDLE);
+		pSPDAC spdac = (pSPDAC)GetProcAddress(u32, "SetProcessDpiAwarenessContext");
+		/* DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 == (HANDLE)-4 */
+		if (spdac && spdac((HANDLE)-4))
+			return;
+	}
+	{
+		HMODULE shc = LoadLibraryA("shcore.dll");
+		if (shc)
+		{
+			typedef HRESULT (WINAPI *pSPDA)(int);
+			pSPDA spda = (pSPDA)GetProcAddress(shc, "SetProcessDpiAwareness");
+			if (spda && spda(2) == S_OK)   /* PROCESS_PER_MONITOR_DPI_AWARE */
+			{
+				FreeLibrary(shc);
+				return;
+			}
+			FreeLibrary(shc);
+		}
+	}
+	if (u32)
+	{
+		typedef BOOL (WINAPI *pSPDA0)(void);
+		pSPDA0 spda0 = (pSPDA0)GetProcAddress(u32, "SetProcessDPIAware");
+		if (spda0) spda0();
+	}
+}
+
+//============================================================
 //	main
 //============================================================
 
@@ -124,6 +170,8 @@ int main(int argc, char **argv)
 	int game_index;
 	char *ext;
 	int res = 0;
+
+	set_dpi_awareness();
 
 #if 1
  #ifndef WINUI

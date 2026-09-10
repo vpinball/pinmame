@@ -19,7 +19,7 @@
 
 /* Dot-Matrix display */
 static core_tLCDLayout GTS3_dispDMD[] = {
-  {0,0,32,128,CORE_DMD|CORE_DMDNOAA,NULL,NULL}, {0}
+  {0,0,32,128,CORE_DMD,NULL,NULL}, {0}
 };
 
 /* 2 X 20 AlphaNumeric Rows */

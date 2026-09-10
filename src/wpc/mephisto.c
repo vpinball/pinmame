@@ -687,13 +687,11 @@ static void cirsa_snd_tx(int data) {
   i8256_receive((UINT8)data);
 }
 
-/* .clock is filled in per game by MACHINE_INIT(CIRSA) -- see there. */
 static I8256interface cirsa_i8256 = {
   cirsa_muart_int,
   cirsa_p1_in, cirsa_p1_out,
   cirsa_p2_in, cirsa_p2_out,
-  cirsa_txd_out,
-  0
+  cirsa_txd_out
 };
 
 /*-- IC20: the lamp and switch matrices (plate 6) ------------------------
@@ -1160,9 +1158,8 @@ static MACHINE_INIT(CIRSA) {
      question -- probably its net labelled PCLK is the PAT's own CLK output
      (15/5 = 3 MHz) rather than the 8284-A's pin 2.  It does not affect the
      timer base either way. */
-  cirsa_i8256.clock = core_gameData->hw.gameSpecific1 ? 5000000  /* mephisto */
-                                                      : 6000000; /* sport2k  */
-  i8256_init(&cirsa_i8256);
+  i8256_init(&cirsa_i8256, core_gameData->hw.gameSpecific1 ? 5000000   /* mephisto */
+                                                           : 6000000); /* sport2k  */
   /* PPCERO: a narrow 100 Hz pulse on MUART P11 and, through IC26/IC24,
      on the MUART's EXTINT pin.  One timer per crossing; the falling edge
      is scheduled by cirsa_zc_tick itself.  See cirsa_p1_in's block
