@@ -51,6 +51,16 @@
 /* Column 9 is the match number: a decoded digit, laid out in recel_disp, not
    a lamp. See gpkd_kind() in recel.c. */
 
+/* Bits of RECEL_LAMPCOL_GAMESTATE. Column 8's nibble is not what a backbox
+   shows: DA1..DA3 drive a 7445 whose outputs are the BALL 1..5 and GAME OVER
+   indicators, and DA4 drives TILT. Measured against the ROM -- ball n is
+   code n-1 and game over is code 7, codes 5 and 6 never appearing -- so
+   gpkd_refresh() decodes it into these named bits rather than leaving four
+   anonymous ones. docs/gpkd-protocol.md §11.6. */
+#define RECEL_IND_BALL1    0x01   /* .. BALL 5 at 0x10 */
+#define RECEL_IND_GAMEOVER 0x20
+#define RECEL_IND_TILT     0x40
+
 /* Each score counter's x1 digit. The 095-105 unit has six 7448-driven
    positions but the GPKD multiplexes only five (gpkd-protocol.md 11.4), so
    the last is wired to a permanent 0 -- Recel scores in tens. A real cabinet

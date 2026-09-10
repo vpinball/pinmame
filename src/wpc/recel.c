@@ -161,6 +161,17 @@ static int gpkd_kind(int group, int col, int *lampcol) {
   }
 }
 
+/* Column 8's raw nibble -> the named indicator bits a backbox actually
+   lights (recel.h, RECEL_IND_*). Exactly one of BALL 1..5 / GAME OVER is on
+   at a time, which is what a 7445 does. */
+static UINT8 gamestate_lamps(UINT8 nibble) {
+  const int code = nibble & 0x07;
+  UINT8 out = (nibble & 0x08) ? RECEL_IND_TILT : 0;
+  if (code <= 4)       out |= (UINT8)(RECEL_IND_BALL1 << code);
+  else if (code == 7)  out |= RECEL_IND_GAMEOVER;
+  return out;
+}
+
 /* 10788 GPKD, device 0xF. Push one group's 16 scan-time nibbles into
    coreGlobals.segments for genuine digit columns, or coreGlobals.tmpLampMatrix
    for latched columns; canonical position = 16*group + scan time, group A at
@@ -177,7 +188,9 @@ static void gpkd_refresh(int group) {
   for (i = 0; i < 16; i++) {
     switch (gpkd_kind(group, i, &lampcol)) {
       case GPKD_LAMP:
-        coreGlobals.tmpLampMatrix[lampcol] = disp[i];
+        coreGlobals.tmpLampMatrix[lampcol] =
+          (lampcol == RECEL_LAMPCOL_GAMESTATE) ? gamestate_lamps(disp[i])
+                                               : disp[i];
         coreGlobals.segments[base + i].w = 0;
         break;
       case GPKD_UNUSED:
