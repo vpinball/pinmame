@@ -63,11 +63,10 @@
 
    The manual's "BUTTON 1"/"BUTTON 2" are S1/S2, the two adjustment buttons
    inside the door -- SELECT 1 and SELECT 2 (system3-operation-maintenance.md
-   3.5). The player's button is the REPLAYS one, so that is what carries
-   KEYCODE_1 and the name "Start"; the two door buttons move out of the way
-   to 8 and 9. All three do serve a ball when a credit is on the machine
-   (they share the dispatch's 0x461/0x370 handlers), but only SELECT 2 serves
-   one with no credit at all -- the service play. See tests/test_cabinet.py. */
+   3.5). The player's button is the REPLAYS one: measured, it is the only one
+   of the three that serves a ball, and it refuses to with no credit up. So
+   that is what carries KEYCODE_1 and the name "Start", and the two door
+   buttons move out of the way to 8 and 9. tests/test_cabinet.py. */
 #define RECEL_COMINPORT CORE_COREINPORT
 
 #define RECEL_COMPORTS \
