@@ -45,15 +45,16 @@
    columns 0-1. */
 #define RECEL_LAMPCOL_P1STATUS  (CORE_CUSTLAMPCOL+0)  /* group A col 2 */
 #define RECEL_LAMPCOL_GAMESTATE (CORE_CUSTLAMPCOL+1)  /* group A col 8: ball/tilt/game over */
-#define RECEL_LAMPCOL_MATCH     (CORE_CUSTLAMPCOL+2)  /* group A col 9: match number */
-#define RECEL_LAMPCOL_P2STATUS  (CORE_CUSTLAMPCOL+3)  /* group A col A */
-#define RECEL_LAMPCOL_P4STATUS  (CORE_CUSTLAMPCOL+4)  /* group B col 2 */
-#define RECEL_LAMPCOL_P3STATUS  (CORE_CUSTLAMPCOL+5)  /* group B col A */
+#define RECEL_LAMPCOL_P2STATUS  (CORE_CUSTLAMPCOL+2)  /* group A col A */
+#define RECEL_LAMPCOL_P4STATUS  (CORE_CUSTLAMPCOL+3)  /* group B col 2 */
+#define RECEL_LAMPCOL_P3STATUS  (CORE_CUSTLAMPCOL+4)  /* group B col A */
+/* Column 9 is the match number: a decoded digit, laid out in recel_disp, not
+   a lamp. See gpkd_kind() in recel.c. */
 /* hw.lampCol: core.c draws and counts CORE_CUSTLAMPCOL + lampCol columns, so
    without this the six columns above exist in coreGlobals.lampMatrix but are
    never rendered -- the ball-in-play/game-over indicator was invisible on
    screen, leaving a started game looking identical to attract. */
-#define RECEL_LAMPCOLS 6
+#define RECEL_LAMPCOLS 5
 
 /* Inport for the cabinet switches (strobes 8-9), read by SWITCH_UPDATE(RECEL).
    Bit layout matches the MAIN SWITCH CODE table (platform-level, same on every

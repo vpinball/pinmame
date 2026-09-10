@@ -127,9 +127,15 @@ static MEMORY_WRITE_START(RECEL_writemem)
   {0x1000,0x10ff, MWA_RAM},
 MEMORY_END
 
-/* Columns 2, 8, 9 and A of a group are latched raw in a 7475, not decoded by
-   a 7448 (docs/gpkd-protocol.md §6): 2/A are a player's status LEDs, 8 is
-   ball/tilt/game over, 9 is the match number. Group B's 8/9 drive no
+/* Columns 2, 8, 9 and A of a group are latched in a 7475 rather than clocked
+   with the digit scan (docs/gpkd-protocol.md §6), but latched is not the same
+   as undecoded. 2/A are a player's status LEDs and 8 is the ball/tilt/game
+   over block -- `DA1..DA3` through a 7445 to BALL 1..5 / GAME OVER, `DA4` to
+   TILT -- so those are lamps. Column 9 is not: it is the match number, a
+   decoded digit on the 095-108 unit, and the manual's lite-box map has row 2
+   carrying "the TILT / GAME OVER / BALL IN PLAY lamp block, and the MATCH
+   NUMBER digit" (system3-operation-maintenance.md §7.4). It reads 0-9 in
+   play, where column 8 only ever reads 0 or F. Group B's 8/9 drive no
    indicator on a real machine (§4). Returns the custom lamp column that
    should carry column `col`'s raw nibble via *lampcol, or GPKD_DIGIT/
    GPKD_UNUSED. */
@@ -147,9 +153,7 @@ static int gpkd_kind(int group, int col, int *lampcol) {
       *lampcol = RECEL_LAMPCOL_GAMESTATE;
       return GPKD_LAMP;
     case 9:
-      if (group) return GPKD_UNUSED;
-      *lampcol = RECEL_LAMPCOL_MATCH;
-      return GPKD_LAMP;
+      return group ? GPKD_UNUSED : GPKD_DIGIT;
     default:
       return GPKD_DIGIT;
   }

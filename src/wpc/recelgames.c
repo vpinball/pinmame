@@ -37,11 +37,18 @@
    (sys3simulator.pdf Fig. 1.6, docs/flippers-be-notes.md §2.7: column 1 =
    "Extra Ball | Credit units", column 0 = "Free Play | Credit tens"), and
    the columns run F..0 left to right. Both small fields used to be laid out
-   the other way round, so one credit read as "10". A9/A8 (match number and
-   ball/tilt/game-over) are likewise latched, not digits (§6), and are
-   exposed as lamps rather than laid out here; which of the two is which is
-   still open (§11.6). B9/B8 drive no indicator on a real machine (§4) and
-   are not modelled at all. */
+   the other way round, so one credit read as "10". A9 and A8 are latched
+   rather than scan-clocked (§6), but only A8 is a lamp block -- DA1..DA3
+   through a 7445 to BALL 1..5 / GAME OVER, DA4 to TILT. A9 is the match
+   number, a decoded digit on the 095-108 unit, so it is laid out on row 2
+   where the manual's lite-box map puts it. B9/B8 drive no indicator on a
+   real machine (§4) and are not modelled at all.
+
+   That map (system3-operation-maintenance.md §7.4) is what the four rows
+   below are: row 1 a counter plus *two* small displays (extra games, extra
+   balls), row 2 a counter plus the lamp block and the match digit, row 3 a
+   counter alone, row 4 a counter plus CREDIT -- which really is two digits,
+   the 095-106 panel, its limit adjustable from 9 to 99. */
 #define RECEL_D(row, col, pos) {row, col, pos, 1, CORE_SEG7},
 /* 5 GPKD-multiplexed score digits, MSD first; base = the ×10 digit's GPKD
    position (docs/gpkd-protocol.md §11.4 -- the ×1 digit is not multiplexed
@@ -56,9 +63,10 @@ static core_tLCDLayout recel_disp[] = {
      apart because they are independent, not a two-digit number: free play
      (A0) and extra ball (A1). A2 (status LEDs) is a lamp, not a digit. */
   RECEL_COUNTER(0, 0, 3)  RECEL_D(0, 12, 0) RECEL_D(0, 16, 1)
-  /* row 2: player 2 (AF..AB) -- the self-check display. AA (status) is a
-     lamp; A9/A8 (match, ball/tilt/game-over) are lamps, not laid out here. */
-  RECEL_COUNTER(2, 0, 11)
+  /* row 2: player 2 (AF..AB) -- the self-check display -- then the match
+     number (A9), a digit on the 095-108 unit. AA (status) and A8 (the
+     ball/tilt/game-over block) are lamps and are not laid out here. */
+  RECEL_COUNTER(2, 0, 11) RECEL_D(2, 12, 9)
   /* row 3: player 3 (BF..BB). BA (status) is a lamp; B9/B8 have no
      indicator on a real machine (§4) and are not modelled. */
   RECEL_COUNTER(4, 0, 27)
