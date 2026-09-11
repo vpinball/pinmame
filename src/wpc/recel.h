@@ -1,0 +1,125 @@
+#ifndef INC_RECEL
+#define INC_RECEL
+
+#include "core.h"
+#include "sim.h"
+
+/* Recel System III (Rockwell PPS-4/2).
+
+   Switch numbering follows the factory manuals: switch = strobe*10 + bit
+   index (A..D = 1..4). Solenoid = PIO output number in the raw
+   coreGlobals.solenoids bitmask; core_getSol() ids are one higher.
+
+   Lamps are exposed at their raw A1762 (device 0x2) line index, not the
+   factory register code: there is no MDRV_LAMP_CONV, because lamp2m/m2lamp
+   serve only vpintf.c, which assumes lamps start at column 1 while Recel's
+   live in columns 0-1. RECEL_LAMP_CODES below maps line -> factory code. */
+
+#define RECEL_LAMPSMOOTH    1
+
+#define RECEL_MEMREG_CPU  REGION_CPU1
+#define RECEL_MEMREG_PROM REGION_USER1
+
+/* IOL device ids */
+#define RECEL_DEV_B2   0x2  /* A1762 - playfield lamp registers */
+#define RECEL_DEV_B1   0x4  /* A1761 - NVRAM and printer control */
+#define RECEL_DEV_PIO  0xD  /* 11696 */
+#define RECEL_DEV_GPKD 0xF  /* 10788 */
+
+/* A1762 line -> factory lamp code, index = line. */
+#define RECEL_LAMP_CODES { 51,52,54,58,41,42,44,48, 31,32,34,38,21,22,24,28 }
+
+/* GPKD columns 2, 8 and A are latched in a 7475, not 7448-decoded, so they
+   are lamps rather than digits: one custom column each, carrying the raw
+   nibble (DA1 = bit 0 .. DA4 = bit 3) except for column 8, which
+   gpkd_refresh() decodes. Custom columns start at CORE_CUSTLAMPCOL because
+   the A1762 uses columns 0-1. */
+#define RECEL_LAMPCOL_P1STATUS  (CORE_CUSTLAMPCOL+0)  /* group A col 2 */
+#define RECEL_LAMPCOL_GAMESTATE (CORE_CUSTLAMPCOL+1)  /* group A col 8: ball/tilt/game over */
+#define RECEL_LAMPCOL_P2STATUS  (CORE_CUSTLAMPCOL+2)  /* group A col A */
+#define RECEL_LAMPCOL_P4STATUS  (CORE_CUSTLAMPCOL+3)  /* group B col 2 */
+#define RECEL_LAMPCOL_P3STATUS  (CORE_CUSTLAMPCOL+4)  /* group B col A */
+/* Bits of RECEL_LAMPCOL_GAMESTATE. Column 8's DA1..DA3 drive a 7445 whose
+   outputs are the BALL 1..5 and GAME OVER indicators; DA4 drives TILT. Ball
+   n is code n-1, game over is code 7. */
+#define RECEL_IND_BALL1    0x01   /* .. BALL 5 at 0x10 */
+#define RECEL_IND_GAMEOVER 0x20
+#define RECEL_IND_TILT     0x40
+
+/* Each counter's x1 digit: the 095-105 unit's sixth 7448 position, wired to
+   a permanent 0. A segment slot the GPKD never writes, held at 0 by
+   RECEL_vblank. */
+#define RECEL_SEG_UNITS 32
+/* hw.lampCol. core.c draws and counts CORE_CUSTLAMPCOL + lampCol columns;
+   without this the custom columns above are never rendered. */
+#define RECEL_LAMPCOLS 5
+
+/* Inport for the cabinet switches (strobes 8-9), read by SWITCH_UPDATE(RECEL).
+   Bit layout matches the MAIN SWITCH CODE table (platform-level, same on every
+   machine): low nibble = strobe 8 (A=Fault,B=Coin3,C=Coin1,D=Coin2), high
+   nibble = strobe 9 (A=Tilt/Door,B=Replays,C=Button2,D=Button1).
+
+   The manual's "BUTTON 1"/"BUTTON 2" are S1/S2, the two adjustment buttons
+   inside the door -- SELECT 1 and SELECT 2 (System III Operation and
+   Maintenance manual §3.5). The player's button is the REPLAYS one: measured, it is the only one
+   of the three that serves a ball, and it refuses to with no credit up. So
+   that is what carries KEYCODE_1 and the name "Start", and the two door
+   buttons move out of the way to 8 and 9. */
+#define RECEL_COMINPORT CORE_COREINPORT
+
+#define RECEL_COMPORTS \
+  PORT_START /* 2 */ \
+    COREPORT_BIT(   0x0001, "Fault",       KEYCODE_7) \
+    COREPORT_BIT(   0x0002, "Coin 3",      KEYCODE_5) \
+    COREPORT_BIT(   0x0004, "Coin 1",      KEYCODE_3) \
+    COREPORT_BIT(   0x0008, "Coin 2",      KEYCODE_4) \
+    COREPORT_BIT(   0x0010, "Tilt/Door",   KEYCODE_DEL) \
+    COREPORT_BIT(   0x0020, "Start",       KEYCODE_1) \
+    COREPORT_BIT(   0x0040, "Select 2",    KEYCODE_9) \
+    COREPORT_BIT(   0x0080, "Select 1",    KEYCODE_8)
+
+#define RECEL_INPUT_PORTS_START(name, balls) \
+  INPUT_PORTS_START(name) \
+    CORE_PORTS \
+    SIM_PORTS(balls) \
+    RECEL_COMPORTS
+
+#define RECEL_INPUT_PORTS_END INPUT_PORTS_END
+
+/* The two spider chips are 2KB dumps whose upper half is unprogrammed (A11 is
+   tied to VSS on the board, so only the first 1KB is reachable). Both are
+   loaded whole and overlapping: a2362 lands on a2361's zero upper half, and
+   its own zero upper half falls in 0x800-0xBFF, which recel_decode_prom()
+   fills afterwards. Order matters. This is the shared program -- the BIOS --
+   common to every machine; it ships no game PROM of its own (roms/pinmame/
+   recel.zip contains only these two dumps), so it is what the `recel`
+   NOT_A_DRIVER parent set must be built from. Mirrors gts1.c's
+   GTS1_2_ROMSTART pattern (src/wpc/gts1.h). */
+/* The region has to span every address the PPS-4 core can put on the bus, not
+   just the ROM: RM/WM mask to 0x1fff (pps4.c), and MRA_RAM/MWA_RAM at
+   0x1000-0x10ff are backed by this region at that offset. Sizing it 0x1000
+   left every RAM access one byte past the end, which corrupted the adjacent
+   heap chunk and aborted in free() at exit. */
+#define RECEL_BIOS_ROMSTART(name) \
+  ROM_START(name) \
+    NORMALREGION(0x2000, RECEL_MEMREG_CPU) \
+      ROM_LOAD("a2361.b1", 0x0000, 0x0800, CRC(d0c4695d) SHA1(4846adb3f6c292626840ba5255ffc5e788a69301)) \
+      ROM_LOAD("a2362.b2", 0x0400, 0x0800, CRC(39a70611) SHA1(8545e168a5f256150bcff12d1e6d8efffd08c3cd))
+
+/* A real game: the BIOS plus its own game PROM, decoded through the BICs by
+   recel_decode_prom() and loaded raw into REGION_USER1. */
+#define RECEL_ROMSTART(name, promfile, promsize, promhash) \
+  RECEL_BIOS_ROMSTART(name) \
+    NORMALREGION(0x0800, RECEL_MEMREG_PROM) \
+      ROM_LOAD(promfile, 0x0000, promsize, promhash)
+
+#define RECEL_ROMEND ROM_END
+
+extern MACHINE_DRIVER_EXTERN(RECEL);
+#define gl_mRECEL RECEL
+
+/* recelsnd.c: discrete sound, PIO outputs 0-5 */
+extern MACHINE_DRIVER_EXTERN(recel_snd);
+void recel_snd_w(int bits);
+
+#endif /* INC_RECEL */

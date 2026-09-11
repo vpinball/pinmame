@@ -46,6 +46,7 @@
 #define GEN_GTS80       U64(0x0000200000000) /* GTS80 */
 #define GEN_GTS80A      GEN_GTS80
 #define GEN_GTS80B      U64(0x0000400000000) /* GTS80B */
+#define GEN_RECEL       U64(0x0000800000000) /* Recel System III */
 #define GEN_WS          U64(0x0004000000000) /* Whitestar */
 #define GEN_WS_1        U64(0x0008000000000) /* Whitestar with extra RAM */
 #define GEN_WS_2        U64(0x0010000000000) /* Whitestar with extra DMD */

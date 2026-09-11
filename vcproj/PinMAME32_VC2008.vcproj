@@ -3900,6 +3900,22 @@
 					>
 				</File>
 				<File
+					RelativePath=".\..\src\wpc\recel.c"
+					>
+				</File>
+				<File
+					RelativePath=".\..\src\wpc\recelgames.c"
+					>
+				</File>
+				<File
+					RelativePath=".\..\src\wpc\recelsnd.c"
+					>
+				</File>
+				<File
+					RelativePath=".\..\src\wpc\recel.h"
+					>
+				</File>
+				<File
 					RelativePath=".\..\src\wpc\rowamet.c"
 					>
 				</File>

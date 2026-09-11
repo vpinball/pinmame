@@ -1132,6 +1132,9 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile Include="..\src\wpc\play.c" />
     <ClCompile Include="..\src\wpc\playgames.c" />
     <ClCompile Include="..\src\wpc\playsnd.c" />
+    <ClCompile Include="..\src\wpc\recel.c" />
+    <ClCompile Include="..\src\wpc\recelgames.c" />
+    <ClCompile Include="..\src\wpc\recelsnd.c" />
     <ClCompile Include="..\src\wpc\regama.c" />
     <ClCompile Include="..\src\wpc\rfranco.c" />
     <ClCompile Include="..\src\wpc\rfrancogames.c" />
@@ -1472,6 +1475,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClInclude Include="..\src\wpc\peyper.h" />
     <ClInclude Include="..\src\pinmame.h" />
     <ClInclude Include="..\src\wpc\play.h" />
+    <ClInclude Include="..\src\wpc\recel.h" />
     <ClInclude Include="..\src\wpc\rfranco.h" />
     <ClInclude Include="..\src\wpc\s11.h" />
     <ClInclude Include="..\src\wpc\s4.h" />
