@@ -32,7 +32,7 @@ Get rid of BASS external dependency (used for internal AltSound mode 1 support) 
 *** CORE/CPU ***
 Added Pinball 2000 emulation. It works in principle, but the CPU is clocked way too low (0.33x) for performance reasons (for now)! Still, it seems to work reasonably well, most likely as the graphics/video part is not emulated cycle-accurate and thus much faster than the clock rate implies.
 Added Recreativos Franco emulation (Super Star), including improved i8085 emulation
-Added Recel System III emulation (Fair Fight)
+Added Recel System III emulation (Fair Fight, Mr. Evil, Mr. Doom)
 Fixed and extended Sleic emulation (Bike Race, Io Moon, Pin-Ball), including some i86 fixes
 Fixed and extended Cirsa Sport 2000, including more i86 fixes and i8256 emulation
 Fixed and extended Stargame Mephisto, dto.

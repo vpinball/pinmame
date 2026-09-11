@@ -58,3 +58,20 @@ INIT_RECEL(r_fairfght, recel_disp, 1)
 RECEL_ROMSTART(r_fairfght, "fa.c5", 0x0100, CRC(5d3694da) SHA1(4d0a8033acb6ef2e2af107f76540fd19b4a39b12))
 RECEL_ROMEND
 CORE_CLONEDEFNV(r_fairfght,recel,"Fair Fight",1978,"Recel",gl_mRECEL,0)
+
+/*-------------------------------------------------------------------
+/ Mr. Evil (1978) - model 1.055, doc 035-626
+/-------------------------------------------------------------------*/
+INIT_RECEL(r_mrevil, recel_disp, 1)
+RECEL_ROMSTART(r_mrevil, "me.c5", 0x0100, CRC(53ce24a0) SHA1(42d376e3e7a4e94a09db2f974af8d4869579d0f5))
+RECEL_ROMEND
+CORE_CLONEDEFNV(r_mrevil,recel,"Mr. Evil",1978,"Recel",gl_mRECEL,0)
+
+/*-------------------------------------------------------------------
+/ Mr. Doom (1979) - model 1.060, doc 035-635. Mr. Evil re-themed: same
+/ switch matrix and driver table, different ROM and rules.
+/-------------------------------------------------------------------*/
+INIT_RECEL(r_mrdoom, recel_disp, 1)
+RECEL_ROMSTART(r_mrdoom, "md.c5", 0x0100, CRC(ca679a69) SHA1(f08f0cfe646f08882473dcd5d23889fffe4a03c8))
+RECEL_ROMEND
+CORE_CLONEDEFNV(r_mrdoom,recel,"Mr. Doom",1979,"Recel",gl_mRECEL,0)
