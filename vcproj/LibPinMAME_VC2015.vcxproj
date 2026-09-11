@@ -1028,6 +1028,9 @@
     <ClCompile Include="..\src\wpc\rfranco.c" />
     <ClCompile Include="..\src\wpc\rfrancogames.c" />
     <ClCompile Include="..\src\wpc\rotation.c" />
+    <ClCompile Include="..\src\wpc\recel.c" />
+    <ClCompile Include="..\src\wpc\recelgames.c" />
+    <ClCompile Include="..\src\wpc\recelsnd.c" />
     <ClCompile Include="..\src\wpc\rowamet.c" />
     <ClCompile Include="..\src\wpc\s11.c" />
     <ClCompile Include="..\src\wpc\s11games.c" />
@@ -1330,6 +1333,7 @@
     <ClInclude Include="..\src\pinmame.h" />
     <ClInclude Include="..\src\wpc\play.h" />
     <ClInclude Include="..\src\wpc\rfranco.h" />
+    <ClInclude Include="..\src\wpc\recel.h" />
     <ClInclude Include="..\src\wpc\s11.h" />
     <ClInclude Include="..\src\wpc\s4.h" />
     <ClInclude Include="..\src\wpc\s6.h" />
