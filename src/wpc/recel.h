@@ -4,21 +4,16 @@
 #include "core.h"
 #include "sim.h"
 
-/* Recel System III (Rockwell PPS-4/2). Switch and solenoid numbering follows
-   the factory service manuals: switch = strobe*10 + bit index (A..D = 1..4),
-   solenoid = PIO output number -- true of the raw bitmask in
-   coreGlobals.solenoids, but PinMAME's own user-facing solenoid ids (via
-   core_getSol(), the generic /api/monitor?type=sol endpoint) are one higher;
-   see tests/test_solenoids.py. Lamps do NOT follow the factory register
-   code: there is no MDRV_LAMP_CONV, so a lamp is exposed at its raw A1762
-   (device 0x2) line index instead -- column 0 = lines 0-7 = factory codes
-   51/52/54/58/41/42/44/48, column 1 = lines 8-15 = factory codes
-   31/32/34/38/21/22/24/28 (RECEL_LAMP_CODES below, in line order). lamp2m/
-   m2lamp are consumed only by src/wpc/vpintf.c (VPinMAME, a declared
-   spec non-goal), and vpintf assumes lamps start at column 1 while Recel's
-   live in columns 0-1, so implementing the conversion would only serve that
-   out-of-scope consumer. See docs/driver-notes.md for the recorded
-   deviation from spec §5.4. */
+/* Recel System III (Rockwell PPS-4/2).
+
+   Switch numbering follows the factory manuals: switch = strobe*10 + bit
+   index (A..D = 1..4). Solenoid = PIO output number in the raw
+   coreGlobals.solenoids bitmask; core_getSol() ids are one higher.
+
+   Lamps are exposed at their raw A1762 (device 0x2) line index, not the
+   factory register code: there is no MDRV_LAMP_CONV, because lamp2m/m2lamp
+   serve only vpintf.c, which assumes lamps start at column 1 while Recel's
+   live in columns 0-1. RECEL_LAMP_CODES below maps line -> factory code. */
 
 #define RECEL_LAMPSMOOTH    1
 
@@ -31,46 +26,32 @@
 #define RECEL_DEV_PIO  0xD  /* 11696 */
 #define RECEL_DEV_GPKD 0xF  /* 10788 */
 
-/* A1762 (device 0x2) line -> factory lamp code, index = line (see the header
-   comment above). Kept as a single parseable list so tests/test_lamps.py can
-   derive its code_to_line() mapping from here instead of duplicating it. */
+/* A1762 line -> factory lamp code, index = line. */
 #define RECEL_LAMP_CODES { 51,52,54,58,41,42,44,48, 31,32,34,38,21,22,24,28 }
 
-/* GPKD (device 0xF) columns 2, 8, 9 and A are latched in a 7475, not decoded
-   by a 7448 (docs/gpkd-protocol.md §6) -- they are not digits. Each is
-   exposed as its raw 4-bit nibble (DA1 = bit 0 .. DA4 = bit 3) in a custom
-   lamp column instead, one column per source. Group B's columns 8/9 drive no
-   indicator on a real machine and get no column. Custom columns start at
-   CORE_CUSTLAMPCOL (8) since Recel's real lamp driver (A1762) only ever uses
-   columns 0-1. */
+/* GPKD columns 2, 8 and A are latched in a 7475, not 7448-decoded, so they
+   are lamps rather than digits: one custom column each, carrying the raw
+   nibble (DA1 = bit 0 .. DA4 = bit 3) except for column 8, which
+   gpkd_refresh() decodes. Custom columns start at CORE_CUSTLAMPCOL because
+   the A1762 uses columns 0-1. */
 #define RECEL_LAMPCOL_P1STATUS  (CORE_CUSTLAMPCOL+0)  /* group A col 2 */
 #define RECEL_LAMPCOL_GAMESTATE (CORE_CUSTLAMPCOL+1)  /* group A col 8: ball/tilt/game over */
 #define RECEL_LAMPCOL_P2STATUS  (CORE_CUSTLAMPCOL+2)  /* group A col A */
 #define RECEL_LAMPCOL_P4STATUS  (CORE_CUSTLAMPCOL+3)  /* group B col 2 */
 #define RECEL_LAMPCOL_P3STATUS  (CORE_CUSTLAMPCOL+4)  /* group B col A */
-/* Column 9 is the match number: a decoded digit, laid out in recel_disp, not
-   a lamp. See gpkd_kind() in recel.c. */
-
-/* Bits of RECEL_LAMPCOL_GAMESTATE. Column 8's nibble is not what a backbox
-   shows: DA1..DA3 drive a 7445 whose outputs are the BALL 1..5 and GAME OVER
-   indicators, and DA4 drives TILT. Measured against the ROM -- ball n is
-   code n-1 and game over is code 7, codes 5 and 6 never appearing -- so
-   gpkd_refresh() decodes it into these named bits rather than leaving four
-   anonymous ones. docs/gpkd-protocol.md §11.6. */
+/* Bits of RECEL_LAMPCOL_GAMESTATE. Column 8's DA1..DA3 drive a 7445 whose
+   outputs are the BALL 1..5 and GAME OVER indicators; DA4 drives TILT. Ball
+   n is code n-1, game over is code 7. */
 #define RECEL_IND_BALL1    0x01   /* .. BALL 5 at 0x10 */
 #define RECEL_IND_GAMEOVER 0x20
 #define RECEL_IND_TILT     0x40
 
-/* Each score counter's x1 digit. The 095-105 unit has six 7448-driven
-   positions but the GPKD multiplexes only five (gpkd-protocol.md 11.4), so
-   the last is wired to a permanent 0 -- Recel scores in tens. A real cabinet
-   therefore reads 010100 where five digits would read 01010. Synthesised at a
-   segment position the GPKD never writes, so recel_disp can lay it out. */
+/* Each counter's x1 digit: the 095-105 unit's sixth 7448 position, wired to
+   a permanent 0. A segment slot the GPKD never writes, held at 0 by
+   RECEL_vblank. */
 #define RECEL_SEG_UNITS 32
-/* hw.lampCol: core.c draws and counts CORE_CUSTLAMPCOL + lampCol columns, so
-   without this the six columns above exist in coreGlobals.lampMatrix but are
-   never rendered -- the ball-in-play/game-over indicator was invisible on
-   screen, leaving a started game looking identical to attract. */
+/* hw.lampCol. core.c draws and counts CORE_CUSTLAMPCOL + lampCol columns;
+   without this the custom columns above are never rendered. */
 #define RECEL_LAMPCOLS 5
 
 /* Inport for the cabinet switches (strobes 8-9), read by SWITCH_UPDATE(RECEL).
@@ -79,11 +60,11 @@
    nibble = strobe 9 (A=Tilt/Door,B=Replays,C=Button2,D=Button1).
 
    The manual's "BUTTON 1"/"BUTTON 2" are S1/S2, the two adjustment buttons
-   inside the door -- SELECT 1 and SELECT 2 (system3-operation-maintenance.md
-   3.5). The player's button is the REPLAYS one: measured, it is the only one
+   inside the door -- SELECT 1 and SELECT 2 (System III Operation and
+   Maintenance manual §3.5). The player's button is the REPLAYS one: measured, it is the only one
    of the three that serves a ball, and it refuses to with no credit up. So
    that is what carries KEYCODE_1 and the name "Start", and the two door
-   buttons move out of the way to 8 and 9. tests/test_cabinet.py. */
+   buttons move out of the way to 8 and 9. */
 #define RECEL_COMINPORT CORE_COREINPORT
 
 #define RECEL_COMPORTS \

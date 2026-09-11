@@ -3,78 +3,36 @@
 #include "sndbrd.h"
 #include "recel.h"
 
-/* Lite box layout. coreGlobals.segments keeps the 10788's own index -- scan
-   time, group A at 0-15 and group B at 16-31 (docs/gpkd-protocol.md §4) --
-   but the *display* runs the other way: the pointer starts at time 15 and
-   walks down, so time 15 is a field's leftmost digit. Two independent
-   readings of the same ROM say so. The self-check writes its result digits
-   at times 15, 13 and 11 and the manual reads that back as "X.Y.Z", e.g.
-   "9.8.7" for a RAM fault at address 87 (system3-operation-maintenance.md
-   §3.2). And a score written from time 2 upward only reads correctly in
-   that direction: three hits on Fair Fight's 500-point target walk group A
-   times 7..3 through 00050, 00100, 00150. PinMAME layouts only run left to
-   right, so each field is spelled out a digit at a time, descending.
+/* Lite box layout. System III Operation and Maintenance manual §7.4.
 
-   §7.4's lite box is four rows of a six-digit counter plus a pair of small
-   indicators, which is exactly the 8 + 8 nibbles of one group: group A
-   carries players 1 and 2, group B players 3 and 4, and the self-check's
-   own results land on player 2 as the manual says they do. But the "six
-   digits" are the counter unit's own six 7448-driven positions (×1 .. ×100
-   000, system3-operation-maintenance.md §5.4); the GPKD only multiplexes
-   five of them (×10 .. ×100 000, docs/gpkd-protocol.md §11.4) plus a
-   *separate* status-LED nibble on the same scan column as the counter's
-   decimal point/LEDs, latched raw rather than run through a 7448 (§6). That
-   nibble is not the counter's missing ×1 digit -- treating it as one is a
-   real bug, not a rendering choice, and is what used to make the ball/tilt/
-   game-over latch (see below) render as a flashing numeral. So each score
-   field below is 5 digits, and the status nibble is exposed as a lamp
-   instead (gpkd_refresh() in recel.c). The rest of the allocation is
-   docs/gpkd-protocol.md §8's, and one entry of it is measured: inserting
-   coins one at a time moves scan time B1 and nothing else in all 32
-   positions, which puts credit on row 4's indicator pair and so player 4,
-   not player 3, on B7..B2. Column 1 is therefore the credit *units* and
-   column 0 the tens, which is also what the factory's own lite-box map says
-   (sys3simulator.pdf Fig. 1.6, docs/flippers-be-notes.md §2.7: column 1 =
-   "Extra Ball | Credit units", column 0 = "Free Play | Credit tens"), and
-   the columns run F..0 left to right. Both small fields used to be laid out
-   the other way round, so one credit read as "10". A9 and A8 are latched
-   rather than scan-clocked (§6), but only A8 is a lamp block -- DA1..DA3
-   through a 7445 to BALL 1..5 / GAME OVER, DA4 to TILT. A9 is the match
-   number, a decoded digit on the 095-108 unit, so it is laid out on row 2
-   where the manual's lite-box map puts it. B9/B8 drive no indicator on a
-   real machine (§4) and are not modelled at all.
+   coreGlobals.segments keeps the 10788's scan-time index: group A at 0-15,
+   group B at 16-31. The display runs the other way -- the write pointer
+   starts at time 15 and walks down -- so the higher scan time is a field's
+   leftmost digit, and each field is spelled out descending because PinMAME
+   layouts only run left to right.
 
-   That map (system3-operation-maintenance.md §7.4) is what the four rows
-   below are: row 1 a counter plus *two* small displays (extra games, extra
-   balls), row 2 a counter plus the lamp block and the match digit, row 3 a
-   counter alone, row 4 a counter plus CREDIT -- which really is two digits,
-   the 095-106 panel, its limit adjustable from 9 to 99. */
+     row 1   player 1  A7..A3   free play A0, extra ball A1 (two 1-digit units)
+     row 2   player 2  AF..AB   match number A9
+     row 3   player 3  BF..BB   --
+     row 4   player 4  B7..B3   credit: tens B0, units B1 (one 2-digit unit)
+
+   Columns 2 and A (player status LEDs) and A8 (ball/tilt/game over) are
+   latched lamps rather than digits and are not laid out here; see
+   gpkd_kind() in recel.c. B8/B9 drive no indicator on a real machine. */
 #define RECEL_D(row, col, pos) {row, col, pos, 1, CORE_SEG7},
-/* One score counter: the 5 GPKD-multiplexed digits, MSD first, then the x1
+/* One counter: the five GPKD-multiplexed digits, MSD first, then the x1
    digit. base = the x10 digit's GPKD position. The x1 is not multiplexed --
    the 095-105 unit's sixth 7448 position is wired to a permanent 0 -- so it
-   comes from RECEL_SEG_UNITS, which RECEL_vblank holds at 0. A photograph of
-   a running cabinet reads 010100 where the five multiplexed digits alone
-   read 01010. docs/gpkd-protocol.md §11.4. */
+   comes from RECEL_SEG_UNITS. */
 #define RECEL_COUNTER(row, col, base) \
   RECEL_D(row, col,    (base)+4) RECEL_D(row, (col)+2,  (base)+3) \
   RECEL_D(row, (col)+4,(base)+2) RECEL_D(row, (col)+6,  (base)+1) \
   RECEL_D(row, (col)+8,(base))   RECEL_D(row, (col)+10, RECEL_SEG_UNITS)
 
 static core_tLCDLayout recel_disp[] = {
-  /* row 1: player 1 (A7..A3), then the two single-digit indicators, spaced
-     apart because they are independent, not a two-digit number: free play
-     (A0) and extra ball (A1). A2 (status LEDs) is a lamp, not a digit. */
-  RECEL_COUNTER(0, 0, 3)  RECEL_D(0, 14, 0) RECEL_D(0, 18, 1)
-  /* row 2: player 2 (AF..AB) -- the self-check display -- then the match
-     number (A9), a digit on the 095-108 unit. AA (status) and A8 (the
-     ball/tilt/game-over block) are lamps and are not laid out here. */
+  RECEL_COUNTER(0, 0,  3) RECEL_D(0, 14, 0) RECEL_D(0, 18, 1)
   RECEL_COUNTER(2, 0, 11) RECEL_D(2, 14, 9)
-  /* row 3: player 3 (BF..BB). BA (status) is a lamp; B9/B8 have no
-     indicator on a real machine (§4) and are not modelled. */
   RECEL_COUNTER(4, 0, 27)
-  /* row 4: player 4 (B7..B3), then credit, tens (B0) before units (B1).
-     B2 (status) is a lamp. */
   RECEL_COUNTER(6, 0, 19) RECEL_D(6, 14, 16) RECEL_D(6, 16, 17)
   {0}
 };

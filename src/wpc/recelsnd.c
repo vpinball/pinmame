@@ -9,9 +9,8 @@
    hardware gives roughly 6 kHz and it is trimmer-dependent. RECEL_SND_F0 below is a single named,
    tunable guess, not a documented value.
 
-   Topology confirmed by observation (docs/driver-notes.md §7 "Sound"): tracing dev=0xD writes
-   against driven game events (games/r_fairfght.json switches, via /api/input) shows the six
-   lines summing rather than selecting -- e.g. registers #1 and #2 go high together for one frame
+   Topology confirmed by observation: tracing dev=0xD writes against driven game events shows
+   the six lines summing rather than selecting -- e.g. registers #1 and #2 go high together for one frame
    at the start of a coil kick, and #4/#5 are held together for the ~2s of a ball-serve buzz.  A
    mutually-exclusive tone selector could not produce that overlap, so this is six independent
    gated taps added together. What is *not* confirmed is

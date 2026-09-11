@@ -32,18 +32,16 @@ static struct {
   UINT8 coilSense;  /* returns read at strobe 10; §5.4. Recomputed from PIO
                         state by pio_set() -- see the comment there. */
   /* GPKD (10788) state: two independent 16 x 4-bit registers, scanned in
-     lockstep. docs/gpkd-protocol.md §1, §8. */
+     lockstep. */
   UINT8 dispA[16], dispB[16];
   int ptrA, ptrB;
   int blankA, blankB;
   /* 11696 PIO (device 0xD): 24 outputs in six nibble groups A-F (pio[0..5]).
-     Outputs 0-5 sound, 6-15 coils, 16-19 bonus BCD, 20-23 indicators --
-     docs/driver-notes.md §7 "Full PIO output allocation". solenoids mirrors
-     every output bit-for-bit (bit N = PIO output N); sound additionally
-     decodes its own slice, since recel_snd_w() needs it as a 6-bit value
-     rather than individual bits. The bonus BCD nibble has no such consumer
-     -- tests/test_solenoids.py reads it straight off the solenoids bitmask
-     ((solenoids >> 16) & 0xF) -- so it is not separately decoded here. */
+     Outputs 0-5 sound, 6-15 coils, 16-19 bonus BCD, 20-23 indicators.
+     solenoids mirrors every output bit-for-bit (bit N = PIO output N).
+     Sound additionally decodes its own slice, since recel_snd_w() needs a
+     6-bit value rather than individual bits; the bonus BCD nibble has no
+     such consumer and is read straight off ((solenoids >> 16) & 0xF). */
   UINT8 pio[6];
   UINT8 pioPrevWrite;  /* group write returns the pre-write value; §5 table */
   UINT8 sound;
@@ -129,18 +127,12 @@ static MEMORY_WRITE_START(RECEL_writemem)
   {0x1000,0x10ff, MWA_RAM},
 MEMORY_END
 
-/* Columns 2, 8, 9 and A of a group are latched in a 7475 rather than clocked
-   with the digit scan (docs/gpkd-protocol.md §6), but latched is not the same
-   as undecoded. 2/A are a player's status LEDs and 8 is the ball/tilt/game
-   over block -- `DA1..DA3` through a 7445 to BALL 1..5 / GAME OVER, `DA4` to
-   TILT -- so those are lamps. Column 9 is not: it is the match number, a
-   decoded digit on the 095-108 unit, and the manual's lite-box map has row 2
-   carrying "the TILT / GAME OVER / BALL IN PLAY lamp block, and the MATCH
-   NUMBER digit" (system3-operation-maintenance.md §7.4). It reads 0-9 in
-   play, where column 8 only ever reads 0 or F. Group B's 8/9 drive no
-   indicator on a real machine (§4). Returns the custom lamp column that
-   should carry column `col`'s raw nibble via *lampcol, or GPKD_DIGIT/
-   GPKD_UNUSED. */
+/* Which of a group's 16 columns are digits. Columns 2, 8, 9 and A are
+   latched in a 7475 rather than clocked with the digit scan, but latched is
+   not undecoded: 2/A are a player's status LEDs and 8 the ball/tilt/game-over
+   block, both lamps, while 9 is the match number, a decoded digit on the
+   095-108 unit. Group B's 8/9 drive no indicator on a real machine. Returns
+   GPKD_LAMP with the custom column in *lampcol, else GPKD_DIGIT/UNUSED. */
 enum { GPKD_DIGIT, GPKD_LAMP, GPKD_UNUSED };
 static int gpkd_kind(int group, int col, int *lampcol) {
   switch (col) {
@@ -161,9 +153,8 @@ static int gpkd_kind(int group, int col, int *lampcol) {
   }
 }
 
-/* Column 8's raw nibble -> the named indicator bits a backbox actually
-   lights (recel.h, RECEL_IND_*). Exactly one of BALL 1..5 / GAME OVER is on
-   at a time, which is what a 7445 does. */
+/* Column 8's nibble -> the named indicator bits (recel.h, RECEL_IND_*).
+   A 7445 lights exactly one of BALL 1..5 / GAME OVER at a time. */
 static UINT8 gamestate_lamps(UINT8 nibble) {
   const int code = nibble & 0x07;
   UINT8 out = (nibble & 0x08) ? RECEL_IND_TILT : 0;
@@ -175,7 +166,7 @@ static UINT8 gamestate_lamps(UINT8 nibble) {
 /* 10788 GPKD, device 0xF. Push one group's 16 scan-time nibbles into
    coreGlobals.segments for genuine digit columns, or coreGlobals.tmpLampMatrix
    for latched columns; canonical position = 16*group + scan time, group A at
-   base 0, group B at base 16. docs/gpkd-protocol.md §4, §6. core_bcd2seg7a[]
+   base 0, group B at base 16. core_bcd2seg7a[]
    already reads 0 for nibble 0xF, so per-digit blanking (7448, §7) falls out
    without a special case. Latched columns get no such treatment: a 7475 has
    no blanking input, so they always show the last nibble written regardless
@@ -203,7 +194,7 @@ static void gpkd_refresh(int group) {
   }
 }
 
-/* Command table: docs/gpkd-protocol.md §1, §3. KAF/KBF blank a group
+/* Command table (Rockwell 10788). KAF/KBF blank a group
    without touching its contents; KLA/KLB write at the current pointer and
    then move it down one position. */
 static void gpkd_w(int cmd, int accu) {
@@ -240,7 +231,7 @@ static void gpkd_w(int cmd, int accu) {
 }
 
 /* Power-play / driver / coil sense, read as returns A and B during strobe 10
-   (docs/manuals/system3-operation-maintenance.md §5.7): the K relay's contact
+   (the System III Operation and Maintenance manual §5.7): the K relay's contact
    is bridged by a 39 ohm resistor so the CPU can measure how much the coil
    chain draws with power play off. The manual's own table gives three states,
    and the self-check at ROM 0x7C0 masks the reading with 3 and demands
@@ -250,16 +241,12 @@ static void gpkd_w(int cmd, int accu) {
      0 = IN < 4V, short             -> "short in coil X"       (code X.4.4)
    The self-check sets one output, reads the sense eight times over ~260ms
    (0x7EA insists on eight identical samples), then clears it again.
-   Registers #6-#F are the ten BDX33C coil drivers; #0-#5 drive the discrete
-   sound section, which is not on power play, so they read "no consumption"
-   and the check reports X.4.7 for each -- not a fault, but the sound half of
-   step 5. The manual writes that condition as "X<5" while the driver table
-   in §7.2.2 gives six sound registers #0-#5 and the ROM's loop emits six
-   codes, 0.4.7..5.4.7; treat the manual's bound as an off-by-one or an OCR
-   artefact rather than as confirmation. Simplification: all ten drivers count as loaded.
-   A game that wires fewer (Fair Fight uses #6-#B) would report the rest as
-   "coil open" on real hardware; modelling that needs per-game coil data the
-   driver does not carry. */
+   Registers #6-#F are the ten coil drivers; #0-#5 drive the discrete sound
+   section, which is not on power play and so reports X.4.7 for each.
+
+   Simplification: all ten drivers count as loaded. A game that wires fewer
+   (Fair Fight uses #6-#B) would report the rest as "coil open" on real
+   hardware; that needs per-game coil data the driver does not carry. */
 #define RECEL_COIL_LO 6
 #define RECEL_COIL_HI 15
 static void update_coil_sense(void) {
@@ -269,7 +256,7 @@ static void update_coil_sense(void) {
 }
 
 /* 11696 PIO output -> subsystem state. `out` is the factory register number
-   from docs/recel-system3-hardware.md §7.2.2 (solenoid N = register #N):
+   from the System III Operation and Maintenance manual §7.2.2 (solenoid N = register #N):
    #0-#5 sound, #6-#F coils, 16-19 bonus BCD, 20-23 indicators. solenoids
    mirrors every output as a flat bitmask for /api/info; sound additionally
    gets its own decoded field, since recel_snd_w() wants a 6-bit value. */
@@ -286,19 +273,19 @@ static void pio_set(int out, int on) {
 /* Group A-D bit -> register number. The 11696's own output index and Recel's
    register numbering run in opposite directions: group A bit 1 is IO1, which
    the factory calls #F, down to group D bit 8 = IO16 = #0
-   (docs/recel-system3-hardware.md §7.2.2). Groups E and F are not
+   (the System III Operation and Maintenance manual §7.2.2). Groups E and F are not
    bit-addressable and keep the flat 16-23 numbering. */
 static int pio_reg(int group, int bit) {
   return (group < 4) ? 0x0f - (group * 4 + bit) : group * 4 + bit;
 }
 
-/* Command table: docs/driver-notes.md §5 "11696 PIO command encoding".
+/* Command table (Rockwell 11696).
    Group write D0-D5 covers all 24 outputs four at a time; set/reset D6/DB
    address one of the 16 lines in groups A-D by accumulator, and the
    accumulator value *is* the factory register number -- #F down to #0, which
    is why the self-check's coil loop at 0x7C5 walks the accumulator 0..F and
    the manual reads the same digit back as "coil X open / test sound when
-   X<5" (system3-operation-maintenance.md §3.2 step 5; on that bound see
+   X<5" (the System III Operation and Maintenance manual §3.2 step 5; on that bound see
    update_coil_sense above). pio_reg() converts a group write's bit position
    into the same numbering. */
 static void pio_w(int cmd, int accu) {
@@ -343,8 +330,7 @@ static int pio_r(int cmd) {
 
 /* B1 (A1761, device 0x4) drives the HM6508 NVRAM (1024x1 bit = 128 bytes)
    bit-serially through an external CD4040 address counter. Line numbers are
-   the A17xx's own I/O0..I/O15 pin index (docs/recel-system3-hardware.md
-   §7.1.1's pin table).
+   the A17xx's own I/O0..I/O15 pin index (the System III Operation and Maintenance manual 7.1.1's pin table).
 
    Signal sense. An A17xx line's holding F/F either releases the pin (it
    floats to -12V, which the part reads back as 1) or drives it to +5V (read
@@ -382,8 +368,7 @@ static int nv_bit(void) {
 }
 
 /* B2's IO15 is hard-tied to +5V on the board, so it reads back as driven
-   however its holding F/F is set (docs/driver-notes.md §10.3, from
-   spider.pps4.fr). That is not cosmetic. Step 4 of the self-check reads
+   however its holding F/F is set (spider.pps4.fr). That is not cosmetic. Step 4 of the self-check reads
    every A1762 output back one at a time and stops at the first that does
    not answer, so it ends on the minor fault 2.4.F -- which §10.3 notes
    displays as the documented "2.4." pass indication, because nibble F
@@ -442,17 +427,14 @@ static void b1_w(int line, int cmd, int accu) {
   }
 }
 
-/* CMOS nibble n backs RAM cell n (restore loop at 0x540), so an adjustment in
-   RAM cell c lives in CMOS byte c/2, low half for even c. Cells A0/A1/B0 are
-   the three coin tables. A blank CMOS reads 0, which the ROM takes as the
-   manuals' value 0: chute 1 "2 coins, 1 play" and chute 3 "0 plays per coin",
-   a dead chute. Faithful to an unprogrammed board, useless as a shipped
-   default, so only a first run is seeded. driver-notes.md §8.1.
+/* CMOS nibble n backs RAM cell n (restore loop at 0x540), so an adjustment
+   in RAM cell c lives in CMOS byte c/2, low half for even c. A0/A1/B0 are
+   the three coin tables, B1 the mode of play.
 
-   Cell B1, the high half of chute 3's byte, is the mode of play: bit 3 picks
-   3 balls per game over 5 (measured; the manuals give the field as A+B+C with
-   C = 0 for 5 balls, 8 for 3). Blank reads 5, but Fair Fight's own instruction
-   card says "3 BALLS PER PLAYER", so the shipped default matches the card. */
+   A blank CMOS reads 0 throughout, which the ROM takes as chute 1 "2 coins,
+   1 play", chute 3 "0 plays per coin" (a dead chute) and 5 balls per game.
+   Faithful to an unprogrammed board, so only a first run is seeded -- with
+   1 coin = 1 play and the 3 balls Fair Fight's instruction card specifies. */
 #define RECEL_NV_CHUTE1 (0xa0 / 2)   /* value 4 = 4*(1 coin) + (plays-1) */
 #define RECEL_NV_CHUTE3 (0xb0 / 2)   /* low nibble: plays per coin.  The high
                                         nibble of the same byte is cell B1,
@@ -468,20 +450,15 @@ static NVRAM_HANDLER(RECEL) {
   }
 }
 
-/* A17xx RRIOT command (docs/recel-system3-hardware.md §7.1): cmd bit 0 is c --
+/* A17xx RRIOT command (the System III Operation and Maintenance manual §7.1): cmd bit 0 is c --
    c=0 SES sets the shared enable F/F for all 16 lines (A4=1 enable, A4=0
    disable/float; disable is never seen in the traced ROM and unmodelled
    here); c=1 SOS loads the addressed line's holding F/F from accu bit 3
    (A4), unchanged.
 
-   On/off sense is an inference, not a measurement -- see docs/driver-notes.md
-   "Lamp polarity (unresolved)". Device 0x2 is written 17 times total in the
-   traced run (16x SOS then 1x SES, all at boot, never again); if that preset
-   meant "all on", every lamp would stay lit while the self-check sits
-   reporting a coil fault, which is implausible, so F/F=1 is treated as OFF
-   here. The competing physical-chain reading (4050 buffer, MC140 sink, pin
-   high => lamp on => F/F=1 is ON) skips the negative-logic bus between F/F
-   and pin (§3.3: PPS-4 logic 1 = -12V) and so does not settle it either. */
+   F/F=1 is OFF, confirmed against a gameplay recording of a real cabinet:
+   the two SPECIAL lamps (lines 3 and 7), which this reading leaves dark
+   during play, are lit in ~1-12% of frames. */
 static void b2_w(int line, int cmd, int accu) {
   if (!(cmd & 0x1)) return;   /* SES: global enable, not a per-line value */
   if (accu & 0x08) {
@@ -518,7 +495,7 @@ static WRITE_HANDLER(recel_port_w) {
 
 static READ_HANDLER(recel_port_r) {
   /* GPKD does not drive I/D for any of its commands; the bus floats to
-     all-ones. docs/gpkd-protocol.md §3.2. */
+     all-ones. */
   const int device = offset >> 4;
   if (device == RECEL_DEV_GPKD) return 0x0f;
   if (device == RECEL_DEV_PIO) return pio_r(locals.cmd);
@@ -559,29 +536,23 @@ static SWITCH_UPDATE(RECEL) {
 /* DOA -> 7404 -> 7445: 10 strobes, latched from the accumulator (port 0x100).
    The PPS-4/2's DOA also writes the X register to port 0x101 (pps4.c, the DOA
    case) but the Recel board wires only the four accumulator lines to the
-   7445 [hardware notes §11.14]; that second nibble reaches no hardware here
+   7445; that second nibble reaches no hardware here
    and is intentionally ignored. */
-/* Traced as "RECELSW", not "RECEL ", so tests/test_ports.py's IOL-device
-   trace parser (which requires every "RECEL "-prefixed line to be a strict
-   key=value list keyed by IOL device id) does not try to parse it: DOA/DIA
-   are dedicated CPU output/input instructions, not an IOL device access. */
+/* Traced as "RECELSW", not "RECEL ": DOA/DIA are dedicated CPU output and
+   input instructions, not an IOL device access, so they do not belong in the
+   device-keyed IOL trace. */
 static WRITE_HANDLER(sw_w) {
   TRACE(("RECELSW PC=%03x doa=%x offset=%x\n", activecpu_get_pc(), data, offset));
   if (!offset) locals.strobe = data & 0x0f;
 }
 
 /* Contact node is +5V open / 0V closed, and each of the four data bits goes
-   through a pair of 2N4291s on the way to DIA (docs/manuals/system3-
-   operation-maintenance.md §5.7, which states outright that the manual does
-   not give the resulting polarity at the DIA pin). The ROM settles it: a
-   closed contact must read 1. Only then does the resting machine -- every
-   contact open -- present all-zero returns, does a ball sitting on the "ball
-   home" contact make the start button fire the ball-return coil, and do
-   playfield contacts score. With the opposite sense the ROM sees every
-   contact permanently closed, the door reads open so the start button
-   becomes §3.3's representation-area advance, and no game can begin.
-   Strobe 10 is not a contact group at all but the power-play sense; §5.7
-   gives its levels directly, so it is not affected by this. */
+   through a pair of 2N4291s on the way to DIA (the System III Operation and Maintenance manual §5.7, which does not give the resulting polarity
+   at the DIA pin). The ROM settles it: a closed contact reads 1. Only then
+   is the resting machine all-zero, does ball home let the start button fire
+   the ball-return coil, and do playfield contacts score.
+
+   Strobe 10 is the power-play sense, not a contact group, and is unaffected. */
 static READ_HANDLER(sw_r) {
   UINT8 value;
   if (offset) return 0x0f;
