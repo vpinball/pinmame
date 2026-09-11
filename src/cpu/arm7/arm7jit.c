@@ -1018,8 +1018,8 @@ static void spsr_to_cpsr(void)
 	// this operation isn't allowed in user mode, nor in system mode (no SPSR there either)
 	if (GET_MODE != eARM7_MODE_USER && GET_MODE != eARM7_MODE_SYS)
 	{
-		// load CPSR from SPSR
-		SET_CPSR(GET_REGISTER(SPSR));
+		// load CPSR from SPSR (rejecting a reserved mode encoding - see sanitize_cpsr_mode)
+		SET_CPSR(sanitize_cpsr_mode(GET_REGISTER(SPSR)));
 		// do the mode switch
 		SwitchMode(GET_MODE);
 	}
@@ -1704,9 +1704,17 @@ static int LDM_STM(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br
 	else
 		user_bank_xfer = S;
 	
+	// LDM ^ (user bank transfer) with the base register in the list: whether the load
+	// actually clobbers the base depends on whether the base is banked in the CURRENT
+	// mode, which is a run-time property (see ldm_loads_base() in arm7core.c) and so is
+	// not decidable here. Leave that case to the interpreter.
+	if (ld && user_bank_xfer && ((insn >> rb) & 1))
+		return 0;
+
 	// Don't bother with the write-back for LDM if the base register is in the load list.
 	// Per the ARM documentation, the load happens after the write-back in the pipeline,
 	// so the index update is lost.  We can just skip generating any code for it.
+	// (Not a user bank transfer here - that case returned above.)
 	if (ld && ((insn >> rb) & 1))
 		wrt = 0;
 
