@@ -432,21 +432,26 @@ static void b1_w(int line, int cmd, int accu) {
    the three coin tables, B1 the mode of play.
 
    A blank CMOS reads 0 throughout, which the ROM takes as chute 1 "2 coins,
-   1 play", chute 3 "0 plays per coin" (a dead chute) and 5 balls per game.
-   Faithful to an unprogrammed board, so only a first run is seeded -- with
-   1 coin = 1 play and the 3 balls Fair Fight's instruction card specifies. */
+   1 play", chute 3 "0 plays per coin" (a dead chute), no free play and 5
+   balls per game. Faithful to an unprogrammed board, so only a first run is
+   seeded -- with 1 coin = 1 play, free play enabled and the 3 balls Fair
+   Fight's instruction card specifies. */
 #define RECEL_NV_CHUTE1 (0xa0 / 2)   /* value 4 = 4*(1 coin) + (plays-1) */
 #define RECEL_NV_CHUTE3 (0xb0 / 2)   /* low nibble: plays per coin.  The high
                                         nibble of the same byte is cell B1,
                                         the mode of play. */
-#define RECEL_NV_3BALLS 0x80         /* B1 bit 3, in that high nibble */
+#define RECEL_NV_MODE   0xc0         /* B1 = 4 free play + 8 three balls.
+                                        With the 4 clear the game program
+                                        awards nothing at any score, measured;
+                                        only the Mr. Doom service manual
+                                        documents the field that way. */
 
 static NVRAM_HANDLER(RECEL) {
   const int firstRun = !read_or_write && !file;
   core_nvram(file, read_or_write, locals.nvData, sizeof locals.nvData, 0x00);
   if (firstRun) {
     locals.nvData[RECEL_NV_CHUTE1] = 0x04;
-    locals.nvData[RECEL_NV_CHUTE3] = 0x01 | RECEL_NV_3BALLS;
+    locals.nvData[RECEL_NV_CHUTE3] = 0x01 | RECEL_NV_MODE;
   }
 }
 
