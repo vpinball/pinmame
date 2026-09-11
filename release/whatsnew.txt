@@ -17,6 +17,8 @@ Cleanup PinMAME32 UI a bit (historic/leftover MAME options like vector display, 
 
 Add -skip_gamewarnings option, for headless runs of not-yet-working/imperfect games
 
+New driver for Recel System III (Rockwell PPS-4/2): Fair Fight is playable
+
 Fixed debugger lockup when tabbing backwards
 
 Fixed broken fast frames UI/registry option (VPinMAME, to enable faster boot/startup) and nothrottle (PinMAME(32), e.g. for benchmarking)
