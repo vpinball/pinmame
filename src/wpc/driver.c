@@ -1014,6 +1014,8 @@ DRIVERNV(metalman)      //Metal Man (1992)
 // ----------------
 DRIVERNV(recel)         //System III (not a game)
 DRIVERNV(r_fairfght)    //Fair Fight (1978)
+DRIVERNV(r_mrevil)      //Mr. Evil (1978)
+DRIVERNV(r_mrdoom)      //Mr. Doom (1979)
                         //Hot & Cold (1978)
                         //Screech (1978)
 
