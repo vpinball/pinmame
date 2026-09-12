@@ -2567,7 +2567,7 @@ static void SetupMsgApiSegDisplays()
    {
       msgLocals.segDisplayProvider = std::make_unique<PinballPlugin::Controller::CtrlItemProvider<SegSrcId>>(msgLocals.msgApi, msgLocals.endpointId, CTLPI_SEG_GET_SRC_MSG, CTLPI_SEG_ON_SRC_CHG_MSG);
       std::vector<SegSrcId> segSrcIds;
-      for (unsigned int i = 0; i < msgLocals.nSegDisplays; i++)
+      for (int i = 0; i < msgLocals.nSegDisplays; i++)
          segSrcIds.push_back(msgLocals.segDisplays[i].srcId);
       msgLocals.segDisplayProvider->AddItems(segSrcIds);
    }
@@ -2665,7 +2665,7 @@ static void SetupMsgApiVideoDisplays()
    {
       msgLocals.displayProvider = std::make_unique<PinballPlugin::Controller::CtrlItemProvider<DisplaySrcId>>(msgLocals.msgApi, msgLocals.endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
       std::vector<DisplaySrcId> displaySrcIds;
-      for (unsigned int i = 0; i < msgLocals.nDisplays; i++)
+      for (int i = 0; i < msgLocals.nDisplays; i++)
          displaySrcIds.push_back(msgLocals.displays[i].srcId);
       msgLocals.displayProvider->AddItems(displaySrcIds);
    }
@@ -2753,7 +2753,7 @@ static void ReleaseMsgApi()
    {
       for (const auto& group : msgLocals.stateProvider->GetItems())
       {
-         for (int i = 0; i < group.nStates; i++)
+         for (unsigned int i = 0; i < group.nStates; i++)
          {
             if (const char* name = group.stateDefs[i].name; name)
             {
