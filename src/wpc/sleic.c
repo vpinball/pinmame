@@ -573,6 +573,9 @@ static INTERRUPT_GEN(sleic1_irq_i8039) {
 static void iomoon_submit_dmd_frame(void) {
   const UINT8 * const stage = memory_region(SLEIC_MEMREG_CPU) + IOMOON_DMD_STAGE;
   sleic_build_dmd_frame(locals.rawDMD, stage, stage + 0x200, 0x10);
+#ifdef DEBUG_SLEIC
+  sleic_dmd_dump(locals.rawDMD);
+#endif
   core_dmd_submit_frame(core_gameData->lcdLayout->importedLayout ? core_gameData->lcdLayout->importedLayout : core_gameData->lcdLayout, locals.rawDMD, 1);
 }
 
