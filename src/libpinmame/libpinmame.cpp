@@ -2644,7 +2644,7 @@ static void SetupMsgApiVideoDisplays()
          else
             def.srcId.hardware = CTLPI_DISPLAY_HARDWARE_NEON_PLASMA;
          
-         def.srcId.callContext = &def.layout;
+         def.srcId.callContext = const_cast<core_tLCDLayout*>(def.layout);
          def.srcId.frameFormat = ((layout->type & CORE_SEGMASK) != CORE_VIDEO) ? CTLPI_DISPLAY_FORMAT_LUM32F
             : IsPacked565Display(layout->type) ? CTLPI_DISPLAY_FORMAT_SRGB565
             : CTLPI_DISPLAY_FORMAT_SRGB888;
