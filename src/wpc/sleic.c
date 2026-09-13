@@ -1849,15 +1849,22 @@ static WRITE_HANDLER(iomoon_z80_write) {
                 * singles (F7).  Each pair is one dual-wound flipper driven a winding at a
                 * time: sub_1292 / sub_12D8 choose on that flipper's EOS contact (C0DB bit
                 * 6 / bit 7) - one winding while travelling, the other to hold - and
-                * sub_064D / sub_06C2 release both.  WHICH coil sits on each bit is in
-                * neither ROM, so the mapping is the plain driver bit b -> solenoid b+1 and
-                * no coil is named, unlike Sleic Pin-Ball whose manual numbering is verified */
+                * sub_064D / sub_06C2 release both.  Driver bit b is the manual's coil b+1
+                * (F17): 0/1 left flipper power/hold, 2/3 right, 4/5 upper, 6 Bumper 1, 7
+                * Tragabolas 1.  The pairs are the dual-wound flippers, and the manual's
+                * power/medium circuit split lands on the even/odd bits, which is the third
+                * source that agrees */
       locals.solenoids = (locals.solenoids & ~(UINT32)0x00ff) | (UINT32)(data ^ 0xff);
       break;
     case 0x06: /* port 0x86: driver latch B -> solenoids 9-16.  Same active-low convention
                 * (boot_port_init 042C also writes 0xFF), but all eight bits are independent:
                 * fired at 0706-07D1, released at 081B-0892, plus the timed auto-release path
-                * at 0ADA-0C51 inside the Z80's IRQ handler (F7) */
+                * at 0ADA-0C51 inside the Z80's IRQ handler (F7).  Bit b is coil b+9 (F17):
+                * 0-3 Bumpers 2-5, 4 Taca, 5/6 Expulsor 1/2, 7 Sueltabolas de Jupiter.  The
+                * manual's coils 17-21 and its three flashes are the expansion board's
+                * channels and NO Z80 port drives them -- every bit of 0x80-0x87 is
+                * accounted for (F17).  Two of them matter to the simulator and are derived
+                * from the firmware's own commands instead; see iomoon_getSol */
       locals.solenoids = (locals.solenoids & ~(UINT32)0xff00) | ((UINT32)(data ^ 0xff) << 8);
       break;
     case 0x07: /* port 0x87: NOT a driver output.  Low nibble = direct_input_scan's 16-way
