@@ -753,12 +753,14 @@ static MACHINE_INIT(cc) {
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 11, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
   else if (strncasecmp(gn, "pmv", 3) == 0) { // Pinball Magic
-    core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 11, CORE_MODOUT_BULB_89_20V_DC_WPC);
+    core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 12, CORE_MODOUT_BULB_89_20V_DC_WPC);
   }
-  // Defaults to 2 state legacy integrator for better backward compatibility
+  // Defaults to 2 state legacy integrator for better backward compatibility, but keep the
+  // per-game #89 flasher bulbs on the bulb integrator so they don't strobe
   if ((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) == 0)
      for (int i = 0; i < coreGlobals.nSolenoids; i++)
-        if (coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].type != CORE_MODOUT_SOL_2_STATE)
+        if (coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].type != CORE_MODOUT_SOL_2_STATE
+              && coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].type != CORE_MODOUT_BULB_89_20V_DC_WPC)
            core_set_pwm_output_type(CORE_MODOUT_SOL0 + i, 1, CORE_MODOUT_LEGACY_SOL_2_STATE);
   if ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS) == 0)
      core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80 /*coreGlobals.nLamps*/, CORE_MODOUT_LEGACY_SOL_2_STATE);
