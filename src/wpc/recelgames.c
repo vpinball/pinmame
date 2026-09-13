@@ -75,3 +75,62 @@ INIT_RECEL(r_mrdoom, recel_disp, 1)
 RECEL_ROMSTART(r_mrdoom, "md.c5", 0x0100, CRC(ca679a69) SHA1(f08f0cfe646f08882473dcd5d23889fffe4a03c8))
 RECEL_ROMEND
 CORE_CLONEDEFNV(r_mrdoom,recel,"Mr. Doom",1979,"Recel",gl_mRECEL,0)
+
+/*-------------------------------------------------------------------
+/ Screech (1978) - INDER model 2004, unit 52-000. INDER's board set is
+/ the Petaco one renumbered.
+/-------------------------------------------------------------------*/
+INIT_RECEL(r_screech, recel_disp, 1)
+RECEL_ROMSTART(r_screech, "sc_1_1702.bin", 0x0100, CRC(c9185ef3) SHA1(3ace6cccc96375c5eab3d43f86f52bf52124334e))
+RECEL_ROMEND
+CORE_CLONEDEFNV(r_screech,recel,"Screech",1978,"Inder",gl_mRECEL,0)
+
+/*-------------------------------------------------------------------
+/ Poker Plus (1978) - model 1.051-E. The widely distributed po.c5 dump is
+/ bad -- it never renders a score -- so this is the collector dump recorded
+/ as good by the garzol/RECEL collection.
+/-------------------------------------------------------------------*/
+INIT_RECEL(r_pokrplus, recel_disp, 1)
+RECEL_ROMSTART(r_pokrplus, "ba65.c5", 0x0100, CRC(571ee27b) SHA1(482a3ba18eff05bce4cab073b1f13fc2f145bb2b))
+RECEL_ROMEND
+CORE_CLONEDEFNV(r_pokrplus,recel,"Poker Plus",1978,"Recel",gl_mRECEL,0)
+
+/*-------------------------------------------------------------------
+/ Alaska (1978) - Recreativos Franco, sold abroad as Interflip
+/-------------------------------------------------------------------*/
+INIT_RECEL(r_alaska, recel_disp, 1)
+RECEL_ROMSTART(r_alaska, "al.c5", 0x0100, CRC(905ef624) SHA1(ab0bb2e7262650b670524ce9f88bd1f14ffd749a))
+RECEL_ROMEND
+CORE_CLONEDEFNV(r_alaska,recel,"Alaska",1978,"Interflip",gl_mRECEL,0)
+
+/*-------------------------------------------------------------------
+/ Hot & Cold (1978) - Inder
+/-------------------------------------------------------------------*/
+INIT_RECEL(r_hotcold, recel_disp, 1)
+RECEL_ROMSTART(r_hotcold, "hc.c5", 0x0100, CRC(f58d0c05) SHA1(54ecf9f67ce3a5264bfd9c063353705f9202d524))
+RECEL_ROMEND
+CORE_CLONEDEFNV(r_hotcold,recel,"Hot & Cold",1978,"Inder",gl_mRECEL,0)
+
+/*-------------------------------------------------------------------
+/ SwashBuckler (1979) - model 1.061-E, doc 035-639
+/-------------------------------------------------------------------*/
+INIT_RECEL(r_swash, recel_disp, 1)
+RECEL_ROMSTART(r_swash, "sw.c5", 0x0100, CRC(69326f5f) SHA1(f0bb4251f579ccf97c1cabb63254ba466ccd141e))
+RECEL_ROMEND
+CORE_CLONEDEFNV(r_swash,recel,"SwashBuckler",1979,"Recel",gl_mRECEL,0)
+
+/*-------------------------------------------------------------------
+/ Cavalier (1979) - model 1.062
+/-------------------------------------------------------------------*/
+INIT_RECEL(r_cavalier, recel_disp, 1)
+RECEL_ROMSTART(r_cavalier, "ca.c5", 0x0100, CRC(dc2e865f) SHA1(3f15f90dafa9d5e42381605044b6c9b529afd3af))
+RECEL_ROMEND
+CORE_CLONEDEFNV(r_cavalier,recel,"Cavalier",1979,"Recel",gl_mRECEL,0)
+
+/*-------------------------------------------------------------------
+/ Don Quijote (1979) - model 1.063
+/-------------------------------------------------------------------*/
+INIT_RECEL(r_quijote, recel_disp, 1)
+RECEL_ROMSTART(r_quijote, "qu.c5", 0x0100, CRC(1fd535d0) SHA1(a9c9a72881d195a0de751f10fa54fb181523a33f))
+RECEL_ROMEND
+CORE_CLONEDEFNV(r_quijote,recel,"Don Quijote",1979,"Recel",gl_mRECEL,0)
