@@ -254,8 +254,8 @@
     SLEIC_COMPORTS
 
 /* Io Moon.  <balls> is SIM_PORTS' "Balls" default and, for this machine only, it doubles
- * as the on/off switch for the driver's internal ball-trough model: sleicgames.c passes
- * 0 for every Io Moon set, so the trough contacts are plain frontend-driven switches
+ * as the on/off switch for the driver's internal ball-trough model: sims/sleic/iomoon.c
+ * passes 0 for every Io Moon set, so the trough contacts are plain frontend-driven switches
  * unless the operator sets "Balls" to 3.  See SLEIC2_CABPORT above and the trough
  * comment in sleic.c */
 #define SLEIC2_INPUT_PORTS_START(name,balls) \
@@ -263,6 +263,16 @@
     CORE_PORTS \
     SIM_PORTS(balls) \
     SLEIC2_COMPORTS
+
+/* Io Moon only: same cabinet block, but the real SW40 DIP block instead of S1..S8,
+   because it is the one machine here whose Z80 ROM was traced for it (sleic.h).
+   Lives here, not in sleicgames.c, because its only user is sims/sleic/iomoon.c */
+#define INITGAME2(name, disptype, balls) \
+	SLEIC2_INPUT_PORTS_START(name, balls) SLEIC_INPUT_PORTS_END \
+	static core_tGameData name##GameData = {GEN_SLEIC,disptype,{FLIP_SW(FLIP_L)}}; \
+	static void init_##name(void) { \
+		core_gameData = &name##GameData; \
+	}
 
 #define SLEIC_INPUT_PORTS_END INPUT_PORTS_END
 
@@ -284,6 +294,9 @@
 #define SLEIC_MAIN_CPU       0
 #define SLEIC_IO_CPU         1
 #define SLEIC_DISPLAY_CPU    2
+
+/*-- standard display layout --*/
+extern core_tLCDLayout sleic_dispDMD[];
 
 #define SLEIC_ROMSTART4(name, n1, chk1, n2, chk2, n3, chk3, n4, chk4) \
 ROM_START(name) \
