@@ -103,6 +103,14 @@ static struct {
 
   /* Coin mechanism pulse train, see the block comment above iomoon_coin_reset */
   struct { int pending, phase; UINT16 lastKeys; } iomCoin;
+
+  /* Derived solenoid pulses, in VBLANKs.  The manual's coils 17 (Salida de
+   * Bolas) and 18 (Bancada de Dianas) are on the expansion board and no Z80 port
+   * drives them (F17), so they are reported from the firmware's own commands:
+   * 0xE9 is the serve, 0xF3 arms the ball-over monitor immediately after it
+   * (sub_DC74B at DC779) and is therefore ball start, which is the only time the
+   * real machine raises the drop bank */
+  struct { int serve, bankReset; } iomDerivedSol;
 } locals;
 
 #ifdef DEBUG_SLEIC
@@ -584,6 +592,8 @@ static INTERRUPT_GEN(SLEIC_interface_update) {
 
   /*-- solenoids --*/
   coreGlobals.solenoids = locals.solenoids;
+  if (locals.iomDerivedSol.serve)     locals.iomDerivedSol.serve--;
+  if (locals.iomDerivedSol.bankReset) locals.iomDerivedSol.bankReset--;
 
   core_updateSw(TRUE);
 }
@@ -2176,6 +2186,18 @@ static void iomoon_ball_command(UINT8 cmd) {
   if (cmd == 0xe9 && locals.iomBalls.seeded && !locals.iomBalls.atExit && !locals.iomBalls.kick
       && locals.iomBalls.inTrough > 0)
     locals.iomBalls.kick = IOMOON_KICK_FRAMES;
+
+  if (cmd == 0xe9) locals.iomDerivedSol.serve     = 4;
+  if (cmd == 0xf3) locals.iomDerivedSol.bankReset = 4;
+}
+
+/* Custom solenoids 51 and 52, reported through core_gameData->hw.getSol.  Both are
+ * DERIVED, not read from a pin: the coils they stand for are on the driver
+ * expansion board and no Z80 output reaches it (F17) */
+int iomoon_getSol(int solNo) {
+  if (solNo == CORE_CUSTSOLNO(1)) return locals.iomDerivedSol.serve     > 0;
+  if (solNo == CORE_CUSTSOLNO(2)) return locals.iomDerivedSol.bankReset > 0;
+  return 0;
 }
 
 /* Called once a frame from SWITCH_UPDATE(SLEIC2) AFTER the playfield key loop, and it ORs

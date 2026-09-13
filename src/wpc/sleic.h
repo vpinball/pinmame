@@ -269,7 +269,8 @@
    Lives here, not in sleicgames.c, because its only user is sims/sleic/iomoon.c */
 #define INITGAME2(name, disptype, balls) \
 	SLEIC2_INPUT_PORTS_START(name, balls) SLEIC_INPUT_PORTS_END \
-	static core_tGameData name##GameData = {GEN_SLEIC,disptype,{FLIP_SW(FLIP_L)}}; \
+	static core_tGameData name##GameData = {GEN_SLEIC,disptype,{FLIP_SW(FLIP_L),0,0,2, \
+		0,0,0,0, iomoon_getSol}}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}
@@ -354,6 +355,10 @@ ROM_START(name) \
 extern MACHINE_DRIVER_EXTERN(SLEIC1);
 extern MACHINE_DRIVER_EXTERN(SLEIC2);
 extern MACHINE_DRIVER_EXTERN(SLEIC3);
+
+/* Custom solenoids 51/52 (ball serve, drop-bank reset), derived rather than read
+ * from a pin -- see the comment on the definition in sleic.c */
+extern int iomoon_getSol(int solNo);
 
 #define gl_mSLEIC1      SLEIC1
 #define gl_mSLEIC2      SLEIC2
