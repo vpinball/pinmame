@@ -2020,8 +2020,11 @@ static const struct { int key; UINT8 col; UINT8 bit; } iomoon_pf_keys[] = {
 /  "FALTA 1 BOLA" until something closes its trough contacts, which is exactly right.
 /
 /  So the four contacts below are ORDINARY SWITCHES unless the operator asks for the
-/  model.  The knob is the standard simulator port's "Balls" setting, which every PinMAME
-/  driver already carries (sim.h, and SLEIC2_INPUT_PORTS_START in sleic.h):
+/  model, and the model itself now applies only when no simulator is registered -- with
+/  one present it stands down (iomoon_ball_update) and "Balls" is the simulator's own ball
+/  complement instead.  Otherwise the knob is the standard simulator port's "Balls"
+/  setting, which every PinMAME driver already carries (sim.h, and
+/  SLEIC2_INPUT_PORTS_START in sleic.h):
 /
 /    Balls = 0   DEFAULT.  The model is off.  swMatrix[1] bits 0-3 are driven only by the
 /                matrix inputs -- the Q/W/E/R test keys, or a VPinMAME table script.  No
@@ -2184,6 +2187,10 @@ static void iomoon_ball_command(UINT8 cmd) {
  * play", balls = its "Balls" setting.  balls = 0 is the DEFAULT and means model off */
 static void iomoon_ball_update(int balls, int shoot, int drain) {
   UINT8 bits;
+  /* A simulator owns the balls.  With one registered, "Balls" is its ball
+   * complement -- which is what it means in every other PinMAME game -- and the
+   * trough contacts are its to drive, so this model must not also drive them */
+  if (coreGlobals.simAvail) { iomoon_ball_reset(); return; }
   /* MODEL OFF -- the default, and the only behaviour a frontend ever sees.  Return before
    * anything is seeded, before the kicker is stepped and before "shoot" or "drain" is
    * looked at, so those two inputs are inert rather than half-live, and swMatrix[1] bits
