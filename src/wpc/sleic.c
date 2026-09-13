@@ -2034,9 +2034,9 @@ static const struct { int key; UINT8 col; UINT8 bit; } iomoon_pf_keys[] = {
 /  one present it stands down (iomoon_ball_update) and "Balls" is the simulator's own ball
 /  complement instead.  Otherwise the knob is the standard simulator port's "Balls"
 /  setting, which every PinMAME driver already carries (sim.h, and
-/  SLEIC2_INPUT_PORTS_START in sleic.h):
+/  SLEIC2_SIM_INPUT_PORTS_START in sleic.h):
 /
-/    Balls = 0   DEFAULT.  The model is off.  swMatrix[1] bits 0-3 are driven only by the
+/    Balls = 0   The model is off.  swMatrix[1] bits 0-3 are driven only by the
 /                matrix inputs -- the Q/W/E/R test keys, or a VPinMAME table script.  No
 /                seeding, no kicker, and the "Drain ball in play" and "Shoot Ball" inputs
 /                do nothing at all (iomoon_ball_update returns before it reads them).
@@ -2374,9 +2374,9 @@ static SWITCH_UPDATE(SLEIC2) {
     const UINT16 in = inports[CORE_COREINPORT];
     /* The ball trough's three inputs, acted on after the key loop below.  "Balls" and
      * "Shoot Ball" are the standard simulator port the game already carries (sim.h,
-     * SLEIC2_INPUT_PORTS_START); "Drain ball in play" is Io Moon's own cabinet bit
+     * SLEIC2_SIM_INPUT_PORTS_START); "Drain ball in play" is Io Moon's own cabinet bit
      * 0x1000 (sleic.h), which is how a run gets through a whole ball.  "Balls" is the
-     * opt-in: 0 (the DEFAULT) leaves the trough contacts to the frontend and makes the other two inert */
+     * opt-in: 0 leaves the trough contacts to the frontend and makes the other two inert */
     balls = SIM_BALLS(inports[CORE_SIMINPORT]);
     shoot = (inports[CORE_SIMINPORT] & SIM_SHOOTERKEY) ? 1 : 0;
     drain = (in & 0x1000) ? 1 : 0;

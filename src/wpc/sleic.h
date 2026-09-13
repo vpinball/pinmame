@@ -107,8 +107,10 @@
       COREPORT_DIPSET(0x0080, "1" )
 
 /*-- Io Moon adds one cabinet input the other machines have no use for: the ball drain.
- * It belongs to the driver's OPTIONAL internal trough model (SWITCH_UPDATE(SLEIC2)), and
- * that model is OFF BY DEFAULT -- so by default this key does nothing at all.
+ * It belongs to the driver's OPTIONAL internal trough model (SWITCH_UPDATE(SLEIC2)), which
+ * stands down whenever a simulator is registered -- and every Io Moon set now registers
+ * one, whose own drain key is Q.  So this key is inert here, and stays only for a frontend
+ * that runs the driver with no simulator of its own.
  *
  * Why the model exists: the firmware BLOCKS on the trough contacts -- 80188 commands
  * 0xE9/0xEF and the Z80 handlers 2B03/2BC7 wait on the column-0 contacts, and with no
@@ -118,9 +120,9 @@
  * keys) drives.  A driver that seeds balls invents state the frontend then fights.
  *
  * The opt-in knob is the standard simulator port's "Balls" setting, in SIM_PORTS below:
- * 0 (the default) = model off, frontend-driven; 3 = the internal three-ball model, for
- * standalone desktop play.  With it at 0 this input and "Shoot Ball" are both INERT --
- * iomoon_ball_update returns before it reads either -- so nothing is half-live.
+ * 0 = model off, frontend-driven; 3 = the internal three-ball model.  With it at 0 this
+ * input and "Shoot Ball" are both INERT -- iomoon_ball_update returns before it reads
+ * either -- so nothing is half-live.
  *
  * The bit is 0x1000, appended after the shared block's 0x0800, so every existing binding
  * keeps the bit it already had.  Backspace because the MAME UI does not claim it and it
@@ -253,24 +255,27 @@
     SIM_PORTS(balls) \
     SLEIC_COMPORTS
 
-/* Io Moon.  <balls> is SIM_PORTS' "Balls" default and, for this machine only, it doubles
- * as the on/off switch for the driver's internal ball-trough model: sims/sleic/iomoon.c
- * passes 0 for every Io Moon set, so the trough contacts are plain frontend-driven switches
- * unless the operator sets "Balls" to 3.  See SLEIC2_CABPORT above and the trough
- * comment in sleic.c */
-#define SLEIC2_INPUT_PORTS_START(name,balls) \
+/* Io Moon.  Opens the port block and LEAVES IT OPEN: the game file appends the simulator's
+ * own two game ports and the closing INPUT_PORTS_END (IOMOON_SIM_PORTS in
+ * sims/sleic/iomoon.c), because sim_run expects them as the last two inports.  <balls> is
+ * SIM_PORTS' "Balls" default, which with a simulator registered is the simulator's ball
+ * complement -- the driver's own trough model stands down; see the trough comment in
+ * sleic.c and SLEIC2_CABPORT above */
+#define SLEIC2_SIM_INPUT_PORTS_START(name,balls) \
   INPUT_PORTS_START(name) \
     CORE_PORTS \
     SIM_PORTS(balls) \
     SLEIC2_COMPORTS
 
-/* Io Moon only: same cabinet block, but the real SW40 DIP block instead of S1..S8,
-   because it is the one machine here whose Z80 ROM was traced for it (sleic.h).
-   Lives here, not in sleicgames.c, because its only user is sims/sleic/iomoon.c */
-#define INITGAME2(name, disptype, balls) \
-	SLEIC2_INPUT_PORTS_START(name, balls) SLEIC_INPUT_PORTS_END \
+/* Io Moon only: the game data.  The ports are the game file's, so it can put the
+   simulator's own two inports last (IOMOON_SIM_PORTS in sims/sleic/iomoon.c).
+   Lives here, not in sleicgames.c, because its only user is sims/sleic/iomoon.c.
+   iomoon_handleMech raises the drop-target bank; it and <simdata> are that file's.
+   <balls> names the set's ball complement beside its simdata; SIM_PORTS gets it
+   from the ports macro, not from here */
+#define INITGAME2(name, disptype, balls, simdata) \
 	static core_tGameData name##GameData = {GEN_SLEIC,disptype,{FLIP_SW(FLIP_L),0,0,2, \
-		0,0,0,0, iomoon_getSol}}; \
+		0,0,0,0, iomoon_getSol, iomoon_handleMech}, simdata}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}
@@ -359,6 +364,9 @@ extern MACHINE_DRIVER_EXTERN(SLEIC3);
 /* Custom solenoids 51/52 (ball serve, drop-bank reset), derived rather than read
  * from a pin -- see the comment on the definition in sleic.c */
 extern int iomoon_getSol(int solNo);
+
+/* Raises the drop-target bank on the derived bank reset; defined in sims/sleic/iomoon.c */
+extern void iomoon_handleMech(int mech);
 
 #define gl_mSLEIC1      SLEIC1
 #define gl_mSLEIC2      SLEIC2
