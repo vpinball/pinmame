@@ -2394,11 +2394,18 @@ static SWITCH_UPDATE(SLEIC2) {
     if (iomoon_coin_update(in)) coreGlobals.swMatrix[9] |=  0x20;
     else                        coreGlobals.swMatrix[9] &= ~0x20;
   }
-  for (i = 0; i < sizeof(iomoon_pf_keys)/sizeof(iomoon_pf_keys[0]); i++) {
-    if (keyboard_pressed(iomoon_pf_keys[i].key))
-      coreGlobals.swMatrix[iomoon_pf_keys[i].col] |=  iomoon_pf_keys[i].bit;
-    else
-      coreGlobals.swMatrix[iomoon_pf_keys[i].col] &= ~iomoon_pf_keys[i].bit;
+  /* One key per matrix position, so the service menu's CONTACTOS test can exercise
+   * all 48.  Live only when the simulator keys are switched OFF, which is the same
+   * condition core.c uses for its own row+column manual switch keys (Del toggles
+   * it, SIM_SWITCHKEY).  Without the gate these keys and the simulator's shot keys
+   * fight over the same letters */
+  if (!coreGlobals.simAvail || !inports || (inports[CORE_SIMINPORT] & SIM_SWITCHKEY)) {
+    for (i = 0; i < sizeof(iomoon_pf_keys)/sizeof(iomoon_pf_keys[0]); i++) {
+      if (keyboard_pressed(iomoon_pf_keys[i].key))
+        coreGlobals.swMatrix[iomoon_pf_keys[i].col] |=  iomoon_pf_keys[i].bit;
+      else
+        coreGlobals.swMatrix[iomoon_pf_keys[i].col] &= ~iomoon_pf_keys[i].bit;
+    }
   }
   /* After the key loop, because it ORs its four contacts in on top: a key held on one of
    * them is a contact stuck closed and the model must not override it */
