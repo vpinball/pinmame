@@ -134,3 +134,36 @@ INIT_RECEL(r_quijote, recel_disp, 1)
 RECEL_ROMSTART(r_quijote, "qu.c5", 0x0100, CRC(1fd535d0) SHA1(a9c9a72881d195a0de751f10fa54fb181523a33f))
 RECEL_ROMEND
 CORE_CLONEDEFNV(r_quijote,recel,"Don Quijote",1979,"Recel",gl_mRECEL,0)
+
+/*-------------------------------------------------------------------
+/ Crazy Race (1978) - model 1.054-E. Hardware version 2: the 2 KB EPROM
+/ carries a 1 KB game area plus a patched replacement for the A1762 ROM.
+/-------------------------------------------------------------------*/
+INIT_RECEL(r_crzyrace, recel_disp, 2)
+RECEL_ROMSTART(r_crzyrace, "cr.c5", 0x0800, CRC(60088804) SHA1(a73a7f8a0583a79588f9823a5e65ed28edad96a3))
+RECEL_ROMEND
+CORE_CLONEDEFNV(r_crzyrace,recel,"Crazy Race",1978,"Recel",gl_mRECEL,0)
+
+/*-------------------------------------------------------------------
+/ The Flipper Game (1980)
+/-------------------------------------------------------------------*/
+INIT_RECEL(r_flipper, recel_disp, 2)
+RECEL_ROMSTART(r_flipper, "fl.c5", 0x0800, CRC(76ee0370) SHA1(f2a835a0b76f7258d5e65390c239f5456e30e87a))
+RECEL_ROMEND
+CORE_CLONEDEFNV(r_flipper,recel,"The Flipper Game",1980,"Recel",gl_mRECEL,0)
+
+/*-------------------------------------------------------------------
+/ Black Magic (1980) - model 1.065, doc December 1979. One player.
+/-------------------------------------------------------------------*/
+INIT_RECEL(r_blackmag, recel_disp, 2)
+RECEL_ROMSTART(r_blackmag, "bm_1065_1.bin", 0x0800, CRC(a917718c) SHA1(0b4fdf270560df902e95b34c25cca20e91f1071c))
+RECEL_ROMEND
+CORE_CLONEDEFNV(r_blackmag,recel,"Black Magic",1980,"Recel",gl_mRECEL,0)
+
+/*-------------------------------------------------------------------
+/ Black Magic 4 (1980) - model 1.066. Four players.
+/-------------------------------------------------------------------*/
+INIT_RECEL(r_blackm4, recel_disp, 2)
+RECEL_ROMSTART(r_blackm4, "b4.c5", 0x0800, CRC(cd383f5b) SHA1(c38acaae46e5fd2660efbd0e2d35e295892e60a5))
+RECEL_ROMEND
+CORE_CLONEDEFNV(r_blackm4,recel,"Black Magic 4",1980,"Recel",gl_mRECEL,0)

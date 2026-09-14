@@ -108,7 +108,7 @@ and listen to/record the pinball game sounds with the pure PinMAME package itsel
 - *LTD* - Atlantis, Black Hole, Zephy, Cowboy Eight Ball, Mr. & Mrs. Pec-Men, Al Capone (1980-1983)
 - *Interflip* - Alaska (1978)
 - *Peyper* - Odisea Paris-Dakar (1987)
-- *Recel* - Poker Plus, Fair Fight, Mr. Evil (all 1978), Mr. Doom, Cavalier, SwashBuckler, Don Quijote (all 1979)
+- *Recel* - Crazy Race, Poker Plus, Fair Fight, Mr. Evil (all 1978), Mr. Doom, Cavalier, SwashBuckler, Don Quijote (all 1979), The Flipper Game, Black Magic, Black Magic 4 (all 1980)
 - *Recreativos Franco* - Super Star (1986)
 - *Sonic* - Odin DeLuxe (1985), Pole Position (1987), Star Wars (1987)
 - *Allied Leisure* - All games from Super Picker (1977) to Star Shooter (1979)
