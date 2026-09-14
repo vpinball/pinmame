@@ -1749,7 +1749,12 @@ MEMORY_END
  *     to 0xFF, not mapping a switch, since bit 5 = 1 is what puts the 0xED handler on its
  *     real "wait for the balls" path.
  *   - anything mapped into swMatrix[10] bit 7 pulls that bit low and hangs
- *     selftest_wait_reset.  Nothing writes row 10 today; keep it that way */
+ *     selftest_wait_reset.  Nothing writes row 10 today; keep it that way
+ *
+ * Consequence of bit 0 = 1: the boot-time country-DIP round trip (F11) folds this same
+ * bit into [413C:00D9] and latches it there for the rest of the run, which makes the
+ * SOLENOID FAIL / CUT OR / SEPARATE-BROKEN fault family permanently unreachable -- not a
+ * driver bug, since the input this bit stands in for is one of F5's open gaps */
 #define IOMOON_PORT04_IDLE 0xff
 
 /* Bits 1-3 of port 0x04 are the SW40 country switches SW2-SW4 - not idle bits: the

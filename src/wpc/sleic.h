@@ -273,7 +273,7 @@
    iomoon_handleMech raises the drop-target bank; it and <simdata> are that file's.
    <balls> names the set's ball complement beside its simdata; SIM_PORTS gets it
    from the ports macro, not from here */
-#define INITGAME2(name, disptype, balls, simdata) \
+#define INITGAME2(name, disptype, balls, simdata) /* balls: unused here, see comment above */ \
 	static core_tGameData name##GameData = {GEN_SLEIC,disptype,{FLIP_SW(FLIP_L),0,0,2, \
 		0,0,0,0, iomoon_getSol, iomoon_handleMech}, simdata}; \
 	static void init_##name(void) { \
