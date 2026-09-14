@@ -84,3 +84,30 @@ Cirqus Voltaire (CV)
 On startup, CV will test the ringmaster and it will not go into attract mode
 if the test fails. One way to bypass it, is to disable the ringmaster
 (adjustment A2 30).
+
+Io Moon (iomoon)
+----------------
+Sleic's 1996 machine.  Three balls.  The simulator keys are:
+
+  +-    Left/Right Shooter (the manual's Expulsor 1/2, i.e. the slingshots)
+  +R    Ramp 1 / Ramp 2
+  +H    Hole 1 / Hole 2 (Tragabolas 1/2)
+  +B    Bull Eye 1 / Bull Eye 2 (Diana 1/2)
+  WEDFG Bumpers 1-5
+  J     Jupiter entrance
+  I     Inner Bank (Fondo Bancada)
+  O     Lane 10, the orbit shot
+  K     Lane 11 (Autodrop)
+  ZXCVN Drop targets Bank A-E
+  YUAS  Lanes 1-4
+  MLDot Lanes 5-7   (M, L, comma)
+  ./    Lanes 8-9   (period, slash)
+  Q     Drain
+
+Del switches between these keys and the per-contact matrix test keys, which is
+how the service menu's CONTACTOS test is driven; the matrix keys are listed in
+sleic.c.
+
+The drop targets only rise on ball start, as on the real machine: the bank reset
+coil is on the driver expansion board and the firmware never resets it mid-ball,
+so a mode that needs the bank cannot be completed if targets were already down.

@@ -4431,6 +4431,7 @@
 						Name="sleic"
 						>
 						<File
+							RelativePath=".\..\src\wpc\sims\sleic\iomoon.c"
 							>
 						</File>
 					</Filter>
