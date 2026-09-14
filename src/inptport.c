@@ -2961,6 +2961,7 @@ void seq_set_string(InputSeq* a, const char *buf)
 	char *lbuf;
 	char *arg;
 	int j;
+	int dropped;
 	struct ik *pik;
 
 	// create a locale buffer to be parsed by strtok
@@ -2974,6 +2975,7 @@ void seq_set_string(InputSeq* a, const char *buf)
 
 	arg = strtok(lbuf, " \t\r\n");
 	j = 0;
+	dropped = 0;
 	while( arg != NULL )
 	{
 		int found = 0;
@@ -2987,8 +2989,8 @@ void seq_set_string(InputSeq* a, const char *buf)
 				// this entry is only valid if it is a KEYCODE
 				if (pik->type == IKT_STD)
 				{
-					(*a)[j] = pik->val;
-					j++;
+					if (j < SEQ_MAX) { (*a)[j] = pik->val; j++; }
+					else if (!dropped) { logerror("seq_set_string: sequence longer than %d tokens, rest dropped\n", SEQ_MAX); dropped = 1; }
 					found = 1;
 				}
 			}
@@ -3006,27 +3008,27 @@ void seq_set_string(InputSeq* a, const char *buf)
 					switch (pik->type)
 					{
 						case IKT_STD:
-							(*a)[j] = pik->val;
-							j++;
+							if (j < SEQ_MAX) { (*a)[j] = pik->val; j++; }
+							else if (!dropped) { logerror("seq_set_string: sequence longer than %d tokens, rest dropped\n", SEQ_MAX); dropped = 1; }
 							found = 1;
 						break;
 
 						case IKT_OSD_KEY:
-							(*a)[j] = keyoscode_to_code(pik->val);
-							j++;
+							if (j < SEQ_MAX) { (*a)[j] = keyoscode_to_code(pik->val); j++; }
+							else if (!dropped) { logerror("seq_set_string: sequence longer than %d tokens, rest dropped\n", SEQ_MAX); dropped = 1; }
 							found = 1;
 						break;
 
 						case IKT_OSD_JOY:
-							(*a)[j] = joyoscode_to_code(pik->val);
-							j++;
+							if (j < SEQ_MAX) { (*a)[j] = joyoscode_to_code(pik->val); j++; }
+							else if (!dropped) { logerror("seq_set_string: sequence longer than %d tokens, rest dropped\n", SEQ_MAX); dropped = 1; }
 							found = 1;
 						break;
 
 #if defined(PINMAME) && defined(PROC_SUPPORT)
 						case IKT_OSD_PROC:
-							(*a)[j] = procoscode_to_code(pik->val);
-							j++;
+							if (j < SEQ_MAX) { (*a)[j] = procoscode_to_code(pik->val); j++; }
+							else if (!dropped) { logerror("seq_set_string: sequence longer than %d tokens, rest dropped\n", SEQ_MAX); dropped = 1; }
 							found = 1;
 						break;
 #endif /* PINMAME && PROC_SUPPORT */
