@@ -88,6 +88,7 @@ struct rc_option pinmame_opts[] = {
 	{ "dmd_only",	NULL, rc_bool,&pmoptions.dmd_only,    "0",  0, 0,   NULL, "Show only DMD" },
 	{ "dmd_compact",NULL, rc_bool,&pmoptions.dmd_compact, "0",  0, 0,   NULL, "Show compact display" },
 	{ "dmd_antialias",NULL, rc_int,&pmoptions.dmd_antialias,  "50", 0, 100, NULL, "DMD antialias intensity [%]" },
+	{ "key_script", NULL, rc_string, &pmoptions.key_script, NULL, 0, 0, NULL, "File of scripted keyboard events" },
 	{ "dmd_dump_dir", NULL, rc_string, &pmoptions.dmd_dump_dir, NULL, 0, 0, NULL, "Directory to write the DMD frame dump to" },
 #ifdef PROC_SUPPORT
 	{ "alpha_on_dmd",NULL, rc_bool,&pmoptions.alpha_on_dmd, "0",  0, 0, NULL, "Emulate alphanumeric display on DMD" },

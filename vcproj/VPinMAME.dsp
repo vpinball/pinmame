@@ -1434,6 +1434,14 @@ SOURCE=.\src\input.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\keyscript.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\keyscript.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\legacy.h
 # End Source File
 # Begin Source File
@@ -2152,6 +2160,13 @@ SOURCE=.\src\wpc\sims\se\prelim\harley.c
 SOURCE=.\src\wpc\sims\se\prelim\monopoly.c
 # End Source File
 # End Group
+# End Group
+# Begin Group "sleic"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+# End Source File
 # End Group
 # End Group
 # Begin Source File

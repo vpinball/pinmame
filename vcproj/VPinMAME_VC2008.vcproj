@@ -577,6 +577,14 @@
 					>
 				</File>
 				<File
+					RelativePath=".\..\src\keyscript.c"
+					>
+				</File>
+				<File
+					RelativePath=".\..\src\keyscript.h"
+					>
+				</File>
+				<File
 					RelativePath=".\..\src\legacy.h"
 					>
 				</File>
@@ -4418,6 +4426,13 @@
 								>
 							</File>
 						</Filter>
+					</Filter>
+					<Filter
+						Name="sleic"
+						>
+						<File
+							>
+						</File>
 					</Filter>
 				</Filter>
 			</Filter>

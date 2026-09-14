@@ -323,6 +323,8 @@ add_executable(sdl3pinmame
    src/inptport.h
    src/input.c
    src/input.h
+   src/keyscript.c
+   src/keyscript.h
    src/machine/4094.c
    src/machine/4094.h
    src/machine/6522via.c
