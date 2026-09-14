@@ -7,6 +7,7 @@
 ******************************************************************************/
 
 #include "driver.h"
+#include "keyscript.h"
 
 #include <time.h>
 #include <assert.h>
@@ -269,6 +270,9 @@ INLINE const struct PROCInfo* internal_code_find_proc(InputCode code)
 static int internal_code_pressed(InputCode code)
 {
 	assert( code < code_mac );
+
+	if (keyscript_pressed(code))
+		return 1;
 
 	if (code < __code_max)
 	{

@@ -122,6 +122,8 @@
     <Filter Include="Source Files\PinMAME\sims\se\prelim_se">
       <UniqueIdentifier>{20f038d0-4a56-4a1a-bb10-c1ab3f83a833}</UniqueIdentifier>
     </Filter>
+      <UniqueIdentifier>{47cc0c75-0108-44cb-bfe3-5062c4cb2670}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files\VC">
       <UniqueIdentifier>{0db8e67d-2716-47de-ba70-f6e606da53da}</UniqueIdentifier>
     </Filter>
@@ -201,6 +203,9 @@
       <Filter>Source Files\MAME</Filter>
     </ClCompile>
     <ClCompile Include="..\src\input.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\keyscript.c">
       <Filter>Source Files\MAME</Filter>
     </ClCompile>
     <ClCompile Include="..\src\mame.c">
@@ -1205,6 +1210,7 @@
     <ClCompile Include="..\src\wpc\sims\se\prelim\monopoly.c">
       <Filter>Source Files\PinMAME\sims\se\prelim_se</Filter>
     </ClCompile>
+    </ClCompile>
     <ClCompile Include="..\src\vc\dirent.c">
       <Filter>Source Files\VC</Filter>
     </ClCompile>
@@ -1448,6 +1454,9 @@
       <Filter>Source Files\MAME</Filter>
     </ClInclude>
     <ClInclude Include="..\src\input.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\keyscript.h">
       <Filter>Source Files\MAME</Filter>
     </ClInclude>
     <ClInclude Include="..\src\legacy.h">

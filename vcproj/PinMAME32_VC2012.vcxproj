@@ -578,6 +578,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile Include="..\src\info.c" />
     <ClCompile Include="..\src\inptport.c" />
     <ClCompile Include="..\src\input.c" />
+    <ClCompile Include="..\src\keyscript.c" />
     <ClCompile Include="..\src\mame.c" />
     <ClCompile Include="..\src\mamedbg.c" />
     <ClCompile Include="..\src\md5.c" />
@@ -1304,6 +1305,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClInclude Include="..\src\info.h" />
     <ClInclude Include="..\src\inptport.h" />
     <ClInclude Include="..\src\input.h" />
+    <ClInclude Include="..\src\keyscript.h" />
     <ClInclude Include="..\src\legacy.h" />
     <ClInclude Include="..\src\mame.h" />
     <ClInclude Include="..\src\mamedbg.h" />

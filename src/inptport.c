@@ -13,6 +13,7 @@ TODO:	remove the 1 analog device per port limitation
 #include <math.h>
 #include "driver.h"
 #include "config.h"
+#include "keyscript.h"
 
 #ifdef MESS
 #include "inputx.h"
@@ -2408,6 +2409,7 @@ void update_input_ports(void)
 	int player;
 #endif /* MAME_NET */
 
+	keyscript_tick();
 
 profiler_mark(PROFILER_INPUT);
 
