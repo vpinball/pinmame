@@ -1016,8 +1016,13 @@ DRIVERNV(recel)         //System III (not a game)
 DRIVERNV(r_fairfght)    //Fair Fight (1978)
 DRIVERNV(r_mrevil)      //Mr. Evil (1978)
 DRIVERNV(r_mrdoom)      //Mr. Doom (1979)
-                        //Hot & Cold (1978)
-                        //Screech (1978)
+DRIVERNV(r_screech)     //Screech (1978)
+DRIVERNV(r_pokrplus)    //Poker Plus (1978)
+DRIVERNV(r_alaska)      //Alaska (1978)
+DRIVERNV(r_hotcold)     //Hot & Cold (1978)
+DRIVERNV(r_swash)       //Swash Buckler (1979)
+DRIVERNV(r_cavalier)    //Cavalier (1979)
+DRIVERNV(r_quijote)     //Don Quijote (1979)
 
 // ----------------
 // JAC VAN HAM
