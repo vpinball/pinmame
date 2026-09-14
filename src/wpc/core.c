@@ -1174,13 +1174,41 @@ void core_dmd_send_dmddevice(const int width, const int height, const float* con
 // - setting g_fDumpFrames (not supported as it is only available through keyboard input which VPinMame doesn't have)
 // - setting g_fShowPinDMD (enable dmddevice.dll) and g_fShowWinDMD (enable VPinMAME rendering) simultaneously
 // TODO this is not yet implemented for Strikes N' Spares which has 2 DMDs
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(PINMAME) || defined(LIBPINMAME)
+#if defined(VPINMAME)
+#define DMD_DUMP_PATH_MAX MAX_PATH /* Windows: leave the Win32 constant itself alone */
+#else
+#include <limits.h>
+#ifndef PATH_MAX
+#define PATH_MAX 4096 /* POSIX doesn't guarantee limits.h defines this */
+#endif
+#define DMD_DUMP_PATH_MAX PATH_MAX
+#endif
 static void core_dmd_capture_frame(const int width, const int height, const UINT8* const dmdDotRaw, const int rawFrameCount, const UINT8* const rawFrame) {
   const int isStrikeNSpares = strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0;
-  if (!isStrikeNSpares && (g_fDumpFrames || (g_fShowPinDMD && g_fShowWinDMD))) {
+  char DumpFilename[DMD_DUMP_PATH_MAX];
+  UINT32 tick;
+  int len;
+
+  if (isStrikeNSpares)
+    return;
+
+  if (pmoptions.dmd_dump_dir && pmoptions.dmd_dump_dir[0]) {
+    static int warned = 0;
+    len = snprintf(DumpFilename, sizeof(DumpFilename), "%s/%s",
+             pmoptions.dmd_dump_dir, Machine->gamedrv->name);
+    if (len < 0 || len >= (int)sizeof(DumpFilename)) {
+      if (!warned) {
+        logerror("core_dmd_capture_frame: dmd_dump_dir path too long, dump skipped\n");
+        warned = 1;
+      }
+      return;
+    }
+  }
+#ifdef VPINMAME
+  else if (g_fDumpFrames || (g_fShowPinDMD && g_fShowWinDMD)) {
+    /* unchanged: next to the DLL, in DmdDump/ */
     char *ptr;
-    char DumpFilename[MAX_PATH];
-    const DWORD tick = GetTickCount();
     #ifndef _WIN64
       const HINSTANCE hInst = GetModuleHandle("VPinMAME.dll");
     #else
@@ -1190,56 +1218,70 @@ static void core_dmd_capture_frame(const int width, const int height, const UINT
     ptr = strrchr(DumpFilename, '\\');
     strcpy_s(ptr + 1, 11, "DmdDump\\");
     strcat_s(DumpFilename, MAX_PATH, Machine->gamedrv->name);
+  }
+#endif
+  else
+    return;
 
-    // Additional single bitplane raw frames for GTS3, WPC and Alvin G.
-    if (rawFrameCount != 0) {
-      FILE* fr;
-      char RawFilename[MAX_PATH];
-      strcpy_s(RawFilename, MAX_PATH, DumpFilename);
-      strcat_s(RawFilename, MAX_PATH, ".raw");
-      fr = fopen(RawFilename, "rb");
+  /* milliseconds since emulation start */
+  tick = (UINT32)(timer_get_time() * 1000.0);
+
+  // Additional single bitplane raw frames for GTS3, WPC and Alvin G.
+  if (rawFrameCount != 0) {
+    static int rawWarned = 0;
+    FILE* fr;
+    char RawFilename[DMD_DUMP_PATH_MAX];
+    strncpy(RawFilename, DumpFilename, DMD_DUMP_PATH_MAX);
+    strncat(RawFilename, ".raw", DMD_DUMP_PATH_MAX - strlen(RawFilename) - 1);
+    fr = fopen(RawFilename, "rb");
+    if (fr) {
+      fclose(fr);
+      fr = fopen(RawFilename, "ab");
+    }
+    else {
+      fr = fopen(RawFilename, "ab");
       if (fr) {
-        fclose(fr);
-        fr = fopen(RawFilename, "ab");
-      }
-      else {
-        fr = fopen(RawFilename, "ab");
-        if (fr) {
-          fputc(0x52, fr);
-          fputc(0x41, fr);
-          fputc(0x57, fr);
-          fputc(0x00, fr);
-          fputc(0x01, fr);
-          fputc(width, fr);
-          fputc(height, fr);
-          fputc(rawFrameCount, fr);
-        }
-      }
-      if (fr) {
-        fwrite(&tick, 1, 4, fr);
-        fwrite(rawFrame, 1, (width * height / 8 * rawFrameCount), fr);
-        fclose(fr);
+        fputc(0x52, fr);
+        fputc(0x41, fr);
+        fputc(0x57, fr);
+        fputc(0x00, fr);
+        fputc(0x01, fr);
+        fputc(width, fr);
+        fputc(height, fr);
+        fputc(rawFrameCount, fr);
       }
     }
+    if (fr) {
+      fwrite(&tick, 1, 4, fr);
+      fwrite(rawFrame, 1, (width * height / 8 * rawFrameCount), fr);
+      fclose(fr);
+    } else if (!rawWarned) {
+      logerror("core_dmd_capture_frame: cannot open %s, raw dump skipped\n", RawFilename);
+      rawWarned = 1;
+    }
+  }
 
-    // Bitplane frame combined from PWM pattern of raw frames
-    static UINT8 lastCapture[DMD_MAXX * DMD_MAXY] = { 0 };
-    if (memcmp(lastCapture, dmdDotRaw, width * height) != 0)
-    {
-       FILE *f;
-       memcpy(lastCapture, dmdDotRaw, width * height);
-       strcat_s(DumpFilename, MAX_PATH, ".txt");
-       f = fopen(DumpFilename, "a");
-       if (f) {
-          fprintf(f, "0x%08x\n", tick);
-          for (int jj = 0; jj < height; jj++) {
-             for (int ii = 0; ii < width; ii++)
-                fprintf(f, "%01x", dmdDotRaw[jj * width + ii]);
-             fprintf(f, "\n");
-          }
-          fprintf(f, "\n");
-          fclose(f);
-       }
+  // Bitplane frame combined from PWM pattern of raw frames
+  static UINT8 lastCapture[DMD_MAXX * DMD_MAXY] = { 0 };
+  if (memcmp(lastCapture, dmdDotRaw, width * height) != 0)
+  {
+    static int txtWarned = 0;
+    FILE *f;
+    memcpy(lastCapture, dmdDotRaw, width * height);
+    strncat(DumpFilename, ".txt", DMD_DUMP_PATH_MAX - strlen(DumpFilename) - 1);
+    f = fopen(DumpFilename, "a");
+    if (f) {
+      fprintf(f, "0x%08x\n", tick);
+      for (int jj = 0; jj < height; jj++) {
+        for (int ii = 0; ii < width; ii++)
+          fprintf(f, "%01x", dmdDotRaw[jj * width + ii]);
+        fprintf(f, "\n");
+      }
+      fprintf(f, "\n");
+      fclose(f);
+    } else if (!txtWarned) {
+      logerror("core_dmd_capture_frame: cannot open %s, dump skipped\n", DumpFilename);
+      txtWarned = 1;
     }
   }
 }
@@ -1254,7 +1296,13 @@ static void core_dmd_video_update(struct mame_bitmap *bitmap, const struct recta
       const float* lumFrame = g_fDmdMode == 0 ? lumFrame = core_dmd_update_pwm(layout, &lumFrameId) : NULL;
       core_dmd_send_libpinmame(layout, lumFrame, rawFrame);
     }
-	
+    if (pmoptions.dmd_dump_dir && pmoptions.dmd_dump_dir[0] && layout->length >= 128) {
+      unsigned int rawFrameId;
+      const UINT8* rawFrame = core_dmd_update_identify(layout, &rawFrameId);
+      (void)rawFrameId; /* only rawFrame is needed here */
+      core_dmd_capture_frame(layout->length, layout->start, rawFrame, 0, NULL);
+    }
+
   #elif defined(VPINMAME)
     if (layout->length >= 128) { // Up to 2 main DMDs (1 for all games, except Strikes N' Spares which has 2 but VPM is buggy in this situation)
       // For GTS3, WPC and Alvin G. 2 also store raw single bitplane frame for backward compatibility with colorization plugins
@@ -1289,6 +1337,12 @@ static void core_dmd_video_update(struct mame_bitmap *bitmap, const struct recta
     unsigned int lumFrameId;
     const float* lumFrame = core_dmd_update_pwm(layout, &lumFrameId);
     core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, lumFrame);
+    if (pmoptions.dmd_dump_dir && pmoptions.dmd_dump_dir[0] && layout->length >= 128) {
+      unsigned int rawFrameId;
+      const UINT8* rawFrame = core_dmd_update_identify(layout, &rawFrameId);
+      (void)rawFrameId; /* only rawFrame is needed here */
+      core_dmd_capture_frame(layout->length, layout->start, rawFrame, 0, NULL);
+    }
 
   #endif
 }
