@@ -83,6 +83,7 @@ struct rc_option pinmame_opts[] = {
         { "dmd_green0", NULL, rc_int, &pmoptions.dmd_green0, "0", 0, 255, NULL, "Colorized DMD: 0%: Green" },
         { "dmd_blue0", NULL, rc_int, &pmoptions.dmd_blue0, "0", 0, 255, NULL, "Colorized DMD: 0%: Blue" },
         { "dmd_opacity", NULL, rc_int, &pmoptions.dmd_opacity, "100", 0, 100, NULL, "DMD opacity" },
+        { "dmd_dump_dir", NULL, rc_string, &pmoptions.dmd_dump_dir, NULL, 0, 0, NULL, "Directory to write the DMD frame dump to" },
         { "resampling_quality", NULL, rc_int, &pmoptions.resampling_quality, "0", 0, 1, NULL, "Quality of the resampling implementation (0=Fast,1=Normal)" },
 #if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
         { "sound_mode", NULL, rc_int, &pmoptions.sound_mode, "0", 0, 3, NULL, "Sound processing mode (PinMAME, Alternative, PinSound, PinSound + Recordings)" },
