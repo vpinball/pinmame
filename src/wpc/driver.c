@@ -1023,6 +1023,10 @@ DRIVERNV(r_hotcold)     //Hot & Cold (1978)
 DRIVERNV(r_swash)       //Swash Buckler (1979)
 DRIVERNV(r_cavalier)    //Cavalier (1979)
 DRIVERNV(r_quijote)     //Don Quijote (1979)
+DRIVERNV(r_crzyrace)    //Crazy Race (1978)
+DRIVERNV(r_flipper)     //The Flipper Game (1980)
+DRIVERNV(r_blackmag)    //Black Magic (1980)
+DRIVERNV(r_blackm4)     //Black Magic 4 (1980)
 
 // ----------------
 // JAC VAN HAM
