@@ -89,7 +89,7 @@ Io Moon (iomoon)
 ----------------
 Sleic's 1996 machine.  Three balls.  The simulator keys are:
 
-  +-    Left/Right Shooter (the manual's Expulsor 1/2, i.e. the slingshots)
+  +-    Left/Right Shooter (the manual's Expulsor 1/2)
   +R    Ramp 1 / Ramp 2
   +H    Hole 1 / Hole 2 (Tragabolas 1/2)
   +B    Bull Eye 1 / Bull Eye 2 (Diana 1/2)
@@ -112,10 +112,11 @@ how the service menu's CONTACTOS test is driven; the matrix keys are listed in
 sleic.c.  Those keys assign the whole matrix, so a Del round-trip also clears the
 drop targets.
 
-The drop targets otherwise only rise on ball start, as on the real machine: the
-bank reset coil is on the driver expansion board and the firmware never resets it
-mid-ball, so a mode that needs the bank cannot be completed if targets were
-already down.
+The drop targets otherwise only rise on ball start: the sim models the manual's
+rule that the bank resets at ball start and not again mid-ball, since the reset
+coil is on the driver expansion board, which no Z80 port is seen driving --
+the real drive path is open (F17). So a mode that needs the bank cannot be
+completed if targets were already down.
 
 Hole 2 and Jupiter's two ball locks free the ball themselves after five seconds.
 Hole 2 has no kicker at all -- the manual's coil list names one for Tragabolas 1

@@ -181,8 +181,8 @@ static sim_tState iomoon_stateDef[] = {
 
   /* Drop targets: SIM_STSWKEEP, so a hit target stays down after the ball has gone.
      Nothing raises one but iomoon_handleMech below, on the derived bank reset --
-     so a mode needing the bank cannot be completed if targets were already down,
-     which is the machine's own behaviour */
+     modelled from the manual's rules, not from either ROM (F17) -- so a mode
+     needing the bank cannot be completed if targets were already down */
   {"Bank A",           1,swBankA,      0,           stFree,      3,0,0, SIM_STSWKEEP},
   {"Bank B",           1,swBankB,      0,           stFree,      3,0,0, SIM_STSWKEEP},
   {"Bank C",           1,swBankC,      0,           stFree,      3,0,0, SIM_STSWKEEP},
@@ -298,11 +298,12 @@ static sim_tInportData iomoon_inportData[] = {
 /*----------------------
 /  Playfield mechanics
 /-----------------------*/
-/* The drop bank has one reset coil, it is on the expansion board, and the firmware
-   pulses it at ball start and nowhere else -- so this is the ONLY thing that raises
-   a target, and the bank cannot be rebuilt mid-ball.  sim.c never clears a
-   SIM_STSWKEEP switch itself, which is why the raise lives here rather than in the
-   state table */
+/* The drop bank has one reset coil, on the expansion board, which no Z80 port is
+   seen driving -- the real drive path is open (F17).  The sim models the manual's
+   rule that it pulses at ball start and nowhere else, so this is the ONLY thing
+   that raises a target, and the bank cannot be rebuilt mid-ball.  sim.c never
+   clears a SIM_STSWKEEP switch itself, which is why the raise lives here rather
+   than in the state table */
 void iomoon_handleMech(int mech) {
   if (core_getSol(sBankReset)) {
     core_setSw(swBankA, FALSE); core_setSw(swBankB, FALSE); core_setSw(swBankC, FALSE);

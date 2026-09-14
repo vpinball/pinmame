@@ -108,8 +108,8 @@ static struct {
    * Bolas) and 18 (Bancada de Dianas) are on the expansion board and no Z80 port
    * drives them (F17), so they are reported from the firmware's own commands:
    * 0xE9 is the serve, 0xF3 arms the ball-over monitor immediately after it
-   * (sub_DC74B at DC779) and is therefore ball start, which is the only time the
-   * real machine raises the drop bank */
+   * (sub_DC74B at DC779) and is therefore ball start, which the sim reports as
+   * the drop-bank reset per the manual's rules -- the real drive path is open (F17) */
   struct { int serve, bankReset; } iomDerivedSol;
 } locals;
 
