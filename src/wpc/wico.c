@@ -28,9 +28,10 @@
 static struct {
   UINT8  dispBlank; // bool
   int    vblankCount;
-  int    firqtimer;
+  int    gentimerCnt; // U2 LS393 divider state, see WICO_gentimer()
   UINT32 solenoids, solenoids2;
-  UINT8  gtIRQEnable;
+  UINT8  diagSegs;    // segments last latched by MUXEN, shown only while DLED1 is on
+  UINT8  diagLedOn;   // bool
   UINT8  diagnosticLed;
 } locals;
 
@@ -40,15 +41,22 @@ static INTERRUPT_GEN(WICO_irq_housekeeping) {
   cpu_set_irq_line(HOUSEKEEPING, M6809_IRQ_LINE, HOLD_LINE);
 }
 
-static void WICO_firq_housekeeping(int data) {
-  if (!locals.gtIRQEnable)
-    cpu_set_irq_line(HOUSEKEEPING, M6809_FIRQ_LINE, PULSE_LINE);
+/* RFSHINT, the housekeeping CPU's FIRQ, comes off the display refresh chain (U49 LS175 /
+   U44 LS74, clocked by the display scan), not off the U1 timer.  That chain is not
+   modelled, so the rate stays at the one the driver has always used */
+static void WICO_rfshint(int data) {
+  cpu_set_irq_line(HOUSEKEEPING, M6809_FIRQ_LINE, PULSE_LINE);
+}
 
-  // Gen. timer irq of command CPU kicks in every 4 interrupts of this timer
-  locals.firqtimer++;
-  if (locals.firqtimer > 3) { //!! was 4 before, but that does not match the comment above
-    cpu_set_irq_line(COMMAND, M6809_IRQ_LINE, PULSE_LINE);
-    locals.firqtimer = 0;
+/* U1 timer -> U2 LS393 QB (divide by 4) -> U44 LS74 -> the command CPU's IRQ */
+static void WICO_gentimer(int data) {
+  locals.gentimerCnt++;
+  if (locals.gentimerCnt > 3) {
+    /* The LS74 holds the line until the handler reads GENTMRCL ($1fea), so assert rather
+       than pulse: the 6809 core samples the line, and a pulse that lands while the CPU
+       still has I set is dropped */
+    cpu_set_irq_line(COMMAND, M6809_IRQ_LINE, ASSERT_LINE);
+    locals.gentimerCnt = 0;
   }
 }
 
@@ -79,8 +87,12 @@ static SWITCH_UPDATE(WICO) {
 static READ_HANDLER(io_r) {
   UINT8 swCol, dispCol, i, ret = 0;
   switch (offset) {
+    // GENTMRCL: the command CPU's handler reads this to clear its timer irq.  Both CPUs
+    // decode the same $1fe0-$1fef window here, so in theory a housekeeping read would
+    // clear it too; no housekeeping ROM path touches $1fea, and the zero crossing reset in
+    // io_w has always been equally caller-agnostic
     case 0x0a:
-//      locals.gtIRQEnable = 1;
+      cpu_set_irq_line(COMMAND, M6809_IRQ_LINE, CLEAR_LINE);
       ret = 0xff;
       break;
     case 0x0b: // LAMPST, reads display digits from RAM
@@ -94,8 +106,13 @@ static READ_HANDLER(io_r) {
       }
       ret = 0xff;
       break;
-    case 0x0e:
-      locals.gtIRQEnable = 0;
+    /* SOLST1/SOLST0 gate U37/U38 (LS244) onto the bus with the solenoid driver status
+       lines, which idle high through their pull-ups while a driver is off; U22 (LS133)
+       watches the same lines to raise SOLTRIP.  The drivers are not modelled, so report
+       the healthy state - all off, nothing tripped - which is what the ROMs test for
+       ($1fee == $ff, $1fed & 3 == 3 in the housekeeping power-fail handler) */
+    case 0x0d: // SOLST1
+    case 0x0e: // SOLST0  (it is NOT a timer enable, as this used to assume)
       ret = 0xff;
       break;
     case 0x0f:
@@ -116,15 +133,22 @@ static READ_HANDLER(io_r) {
 
 static WRITE_HANDLER(io_w) {
   switch (offset) {
-    case 0: // fire NMI? marked MUXLD, enables write to 0x1fe1 on cpu #1
-      cpu_set_nmi_line(COMMAND, PULSE_LINE);
+    case 0: // MUXLD: resets the digit/scan counter.  It does NOT fire an NMI on the command
+            // CPU, as this used to do: that ran the $f18b handler, whose 2048 iteration delay
+            // loop burns ~13ms with I and F masked, so at ~47 MUXLD writes/s it ate 62% of the
+            // CPU and halved the general timer rate - MAYBE also the cause of the previously too slow music/note tempo
       break;
     case 1: // STORE, enables NVRAM
       break;
-    case 2: // diagnostic 7-seg digit, display blanking
-      locals.diagnosticLed = (UINT8)core_bcd2seg7[data >> 4];
+    case 2: { // MUXEN: latches the diagnostic digit (MC14495) and the display enable
+      // own table: core_bcd2seg7 only carries A-F in a MAME_DEBUG build
+      static const UINT8 mc14495[16] = { 0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,
+                                         0x7f,0x6f,0x77,0x7c,0x39,0x5e,0x79,0x71 };
+      locals.diagSegs = mc14495[data >> 4];
+      locals.diagnosticLed = locals.diagLedOn ? locals.diagSegs : 0;
       locals.dispBlank = !(data & 1);
       break;
+    }
     case 3: // continuous solenoids
       locals.solenoids = (locals.solenoids & 0xffffff00) | data;
       break;
@@ -165,9 +189,13 @@ static WRITE_HANDLER(io_w) {
       cpu_set_irq_line(HOUSEKEEPING, M6809_IRQ_LINE, CLEAR_LINE);
       logerror("io_w: ZC INT RESET offset %x, data %02x\n", offset, data);
       break;
-    case 9: // enable/disable general timing interrupt
-      locals.gtIRQEnable = data;
-      logerror("io_w: INFO GT IRQ   offset %x, data %02x\n", offset, data);
+    case 8: // DLED0: diagnostic LED off
+      locals.diagLedOn = 0;
+      locals.diagnosticLed = 0;
+      break;
+    case 9: // DLED1: diagnostic LED on
+      locals.diagLedOn = 1;
+      locals.diagnosticLed = locals.diagSegs;
       break;
   }
   if (offset != 6) logerror("io_w: CPU %d PC=%04X offset %x, data %02x\n", cpu_getactivecpu(), activecpu_get_previouspc(), offset, data);
@@ -233,7 +261,7 @@ static MACHINE_RESET(WICO) {
 
 struct SN76494interface WICO_sn76494Int = {
   1, /* total number of chips in the machine */
-  { WICO_CLOCK_FREQ/64 }, /* base clock */ // seems to be okay, see https://www.youtube.com/watch?v=rwkggZ02r4E, but overall speed of notes is 'too slow'
+  { WICO_CLOCK_FREQ/64 }, /* base clock */ // pitch is okay, see https://www.youtube.com/watch?v=rwkggZ02r4E
   { 75 } /* volume */
 };
 
@@ -247,9 +275,15 @@ MACHINE_DRIVER_START(aftor)
 
   // housekeeping cpu: displays, switches
   MDRV_CPU_ADD_TAG("mcpu housekeeping", M6809, WICO_CLOCK_FREQ/8.)
-  MDRV_CPU_MEMORY(WICO_0_readmem, WICO_0_writemem)  
+  MDRV_CPU_MEMORY(WICO_0_readmem, WICO_0_writemem)
   MDRV_CPU_PERIODIC_INT(WICO_irq_housekeeping, 120) // zero crossing
-  MDRV_TIMER_ADD(WICO_firq_housekeeping, 750) // time generator
+  /* U1 astable: R4 56K to +5V, C5 0.01uF to ground, DISCHARGE/THRESHOLD/TRIGGER commoned,
+     so f = 1/(0.693*R*C) = ~2577Hz, and the divide by 4 in WICO_gentimer() puts the command
+     CPU's IRQ at ~644Hz.  PinMAME and MAME both used to feed 750Hz in here and divide that,
+     i.e. 187.5Hz, which ran the music/note tempo to slow.  ~2577Hz is calculated, not
+     measured - a scope on the real board must settle it */
+  MDRV_TIMER_ADD(WICO_gentimer, 2577) // note tempo also sounds fine with this now
+  MDRV_TIMER_ADD(WICO_rfshint, 750)   // rate unknown, see WICO_rfshint()
 
   // command cpu: sound, solenoids
   MDRV_CPU_ADD_TAG("scpu command", M6809, WICO_CLOCK_FREQ/8.)
