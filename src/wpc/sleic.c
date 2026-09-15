@@ -265,11 +265,11 @@ static INTERRUPT_GEN(sleic1_irq_gen) {
 
 /* YM3812 (IC60) master clock phi-M.  No ROM mentions it; the board (011-029A inventory,
  * IC60 row, sheet 011-029-06/07) feeds it from YACLK off the IC20 74LS393 in the 8 MHz
- * domain - the same chain whose /8192 tap is the ~977 Hz Z80 IRQ - so the taps are 4, 2, 1
- * or 0.5 MHz.  4 MHz is the YM3812's rated ceiling, the only tap near its 3.58 MHz
- * nominal, and the usual OPL2 clock in pinball (Alvin G.; PinMAME's own SLEIC interface
- * already used it).  A WIRING INFERENCE - only a scope on IC60 pin 24 or the IC7 PAL dump
- * confirms the strap.  Music an octave low means /4, and this line is the whole fix.
+ * domain, so the taps are 4, 2, 1 or 0.5 MHz.  4 MHz is the YM3812's rated ceiling, the
+ * only tap near its 3.58 MHz nominal, and the usual OPL2 clock in pinball (Alvin G.;
+ * PinMAME's own SLEIC interface already used it).  A WIRING INFERENCE - only a scope on
+ * IC60 pin 24 confirms the strap; IC7's dump does not carry YACLK.  Music an octave low
+ * means /4, and this line is the whole fix.
  *
  * Pitch and envelope scale with this; TEMPO does not.  Tempo is the sequencer tick, which
  * F8 puts on the INT0 handler's odd branch: IOMOON_INT0_HZ / 2 = 36.25 Hz, the half being
@@ -2312,18 +2312,15 @@ static void iomoon_ball_update(int balls, int shoot, int drain) {
 /
 /  The BURST TIMING is the Z80's, not a guess.  sub_0D15 debounces the contact for 0x32
 /  ticks of the C046 counter before it sends the code, and that counter is stepped from the
-/  Z80's own periodic interrupt (SLEIC2 runs it at 8000000/8192 = 977 Hz), so a pulse must
-/  hold the contact for 50/977 = 51 ms = about 3.1 frames.  Measured on this driver: a
-/  3-frame hold sends NOTHING and a 4-frame hold sends every pulse, so 5 frames closed is
-/  the shortest hold with real margin.  The contact must then open again before the next
-/  pulse, because sub_33FA latches the input into the C0F8 mask on the way out and
-/  input_port03_read only clears it once the contact physically opens (F5: one press, one
-/  code, no auto-repeat); 3 frames open is comfortably enough.  8 frames per pulse is also
-/  about what the mechanism itself does -- a validator of this class pulses at roughly
-/  100 ms -- so the coin sound and the credit ticking up land at a plausible rate */
+/  Z80's own periodic interrupt (SLEIC2 runs it at 2000000/4096 = 488.28 Hz), so a pulse
+/  must hold the contact for at least 50/488.28 = 102 ms, and 10 frames is the shortest
+/  hold with a frame of margin over the measured threshold.  The contact must then open
+/  again before the next pulse, because sub_33FA latches the input into the C0F8 mask on
+/  the way out and input_port03_read only clears it once the contact physically opens
+/  (F5: one press, one code, no auto-repeat); 3 frames open is comfortably enough */
 #define IOMOON_COIN_VALUES 0x4146d /* 413C:00AD, the three coin values in PULSES (00AF is
                                     * the largest; country 5 has a fourth at 00B0)  */
-#define IOMOON_COIN_HOLD   5       /* frames the contact is closed, per pulse       */
+#define IOMOON_COIN_HOLD   10      /* frames the contact is closed, per pulse       */
 #define IOMOON_COIN_GAP    3       /* frames it is open again before the next pulse */
 #define IOMOON_CAB_COIN    0x0200  /* the COIN bit of the cabinet inport (sleic.h)  */
 
@@ -2684,11 +2681,8 @@ MACHINE_DRIVER_START(SLEIC2)
   // this map does not reference
   MDRV_NVRAM_HANDLER(SLEIC2)
 
-  // I/O Z80 periodic IRQ, ~977 Hz - not derived from the Z80's own clock but from the 8 MHz
-  // board crystal divided by 8192 in the IC20/IC21 (74LS393) + IC22 (74LS27) chain on the
-  // 16-bit board, delivered over J3, so it is written as 8000000/8192 to keep that visible.
-  // Both ROMs are silent on it, the source being external to each, so this is the board
-  // inventory's reading.  Replaces the inherited 2500000/2048 Bike Race figure.
+  // I/O Z80 periodic IRQ: ZCLK (2 MHz) clocks the free-running CD4040 at IC12, whose twelve
+  // outputs feed the IC13 13-input NAND, setting the IC14A/B /INT latch (sheet 011-030-02)
   //
   // The Z80 also gets its own port map: the J1 byte-port link to the 80188 (port 0x80 data
   // plus the port-0x81 strobes in, port 0x00 and the PCS1/PCS4 pair out) and the switch
@@ -2696,12 +2690,10 @@ MACHINE_DRIVER_START(SLEIC2)
   // on in selftest_wait_reset, and 0 for port 0x01, whose bit 1 every J1 send waits for -
   // either alone hangs the I/O board before it can announce itself.
   //
-  // REPLACE rather than MODIFY purely so the clock is stated: REPLACE sets type and clock and
-  // nothing else (driver.h), so map, ports and IRQ are unaffected - but MODIFY left the Z80
-  // silently on the base block's 2.5 MHz Bike Race figure, three lines under a comment about
-  // an 8 MHz crystal.  The value is unchanged; IOMOON_Z80_CLOCK is where it now lives
+  // REPLACE rather than MODIFY so the clock is stated: REPLACE sets type and clock and
+  // nothing else (driver.h), so map, ports and IRQ are unaffected
   MDRV_CPU_REPLACE("icpu", Z80, IOMOON_Z80_CLOCK)
-  MDRV_CPU_PERIODIC_INT(SLEIC_irq_z80, 8000000/8192.)
+  MDRV_CPU_PERIODIC_INT(SLEIC_irq_z80, 2000000/4096.)
   MDRV_CPU_PORTS(SLEIC2_Z80_readport, SLEIC2_Z80_writeport)
 
   // Sound: two chips, both driven by the 80188 through the PACS block, and NO third device.
