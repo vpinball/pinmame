@@ -121,6 +121,7 @@
     <Filter Include="Source Files\PinMAME\sims\se\prelim_se">
       <UniqueIdentifier>{d18ab3e2-385b-4cd6-ba14-39d8dae264cb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\PinMAME\sims\sleic">
       <UniqueIdentifier>{9bb9e8b5-f978-4f71-b513-3096395d89aa}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\VC">
@@ -1199,6 +1200,8 @@
     <ClCompile Include="..\src\wpc\sims\se\prelim\monopoly.c">
       <Filter>Source Files\PinMAME\sims\se\prelim_se</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\wpc\sims\sleic\iomoon.c">
+      <Filter>Source Files\PinMAME\sims\sleic</Filter>
     </ClCompile>
     <ClCompile Include="..\src\vc\dirent.c">
       <Filter>Source Files\VC</Filter>

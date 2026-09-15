@@ -1248,6 +1248,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile Include="..\src\wpc\sims\se\prelim\elvis.c" />
     <ClCompile Include="..\src\wpc\sims\se\prelim\harley.c" />
     <ClCompile Include="..\src\wpc\sims\se\prelim\monopoly.c" />
+    <ClCompile Include="..\src\wpc\sims\sleic\iomoon.c" />
     <ClCompile Include="..\src\vc\dirent.c" />
     <ClCompile Include="..\src\ui\audit32.c" />
     <ClCompile Include="..\src\ui\bitmask.c" />

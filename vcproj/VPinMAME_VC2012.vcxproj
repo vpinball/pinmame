@@ -1360,6 +1360,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="..\src\wpc\sims\se\prelim\elvis.c" />
     <ClCompile Include="..\src\wpc\sims\se\prelim\harley.c" />
     <ClCompile Include="..\src\wpc\sims\se\prelim\monopoly.c" />
+    <ClCompile Include="..\src\wpc\sims\sleic\iomoon.c" />
     <ClCompile Include="..\src\vc\dirent.c" />
     <ClCompile Include="..\src\win32com\Alias.cpp" />
     <ClCompile Include="..\src\win32com\Controller.cpp" />

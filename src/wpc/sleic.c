@@ -103,6 +103,14 @@ static struct {
 
   /* Coin mechanism pulse train, see the block comment above iomoon_coin_reset */
   struct { int pending, phase; UINT16 lastKeys; } iomCoin;
+
+  /* Derived solenoid pulses, in VBLANKs.  The manual's coils 17 (Salida de
+   * Bolas) and 18 (Bancada de Dianas) are on the expansion board and no Z80 port
+   * drives them (F17), so they are reported from the firmware's own commands:
+   * 0xE9 is the serve, 0xF3 arms the ball-over monitor immediately after it
+   * (sub_DC74B at DC779) and is therefore ball start, which the sim reports as
+   * the drop-bank reset per the manual's rules -- the real drive path is open (F17) */
+  struct { int serve, bankReset; } iomDerivedSol;
 } locals;
 
 #ifdef DEBUG_SLEIC
@@ -565,6 +573,9 @@ static INTERRUPT_GEN(sleic1_irq_i8039) {
 static void iomoon_submit_dmd_frame(void) {
   const UINT8 * const stage = memory_region(SLEIC_MEMREG_CPU) + IOMOON_DMD_STAGE;
   sleic_build_dmd_frame(locals.rawDMD, stage, stage + 0x200, 0x10);
+#ifdef DEBUG_SLEIC
+  sleic_dmd_dump(locals.rawDMD);
+#endif
   core_dmd_submit_frame(core_gameData->lcdLayout->importedLayout ? core_gameData->lcdLayout->importedLayout : core_gameData->lcdLayout, locals.rawDMD, 1);
 }
 
@@ -584,6 +595,8 @@ static INTERRUPT_GEN(SLEIC_interface_update) {
 
   /*-- solenoids --*/
   coreGlobals.solenoids = locals.solenoids;
+  if (locals.iomDerivedSol.serve)     locals.iomDerivedSol.serve--;
+  if (locals.iomDerivedSol.bankReset) locals.iomDerivedSol.bankReset--;
 
   core_updateSw(TRUE);
 }
@@ -1736,7 +1749,12 @@ MEMORY_END
  *     to 0xFF, not mapping a switch, since bit 5 = 1 is what puts the 0xED handler on its
  *     real "wait for the balls" path.
  *   - anything mapped into swMatrix[10] bit 7 pulls that bit low and hangs
- *     selftest_wait_reset.  Nothing writes row 10 today; keep it that way */
+ *     selftest_wait_reset.  Nothing writes row 10 today; keep it that way
+ *
+ * Consequence of bit 0 = 1: the boot-time country-DIP round trip (F11) folds this same
+ * bit into [413C:00D9] and latches it there for the rest of the run, which makes the
+ * SOLENOID FAIL / CUT OR / SEPARATE-BROKEN fault family permanently unreachable -- not a
+ * driver bug, since the input this bit stands in for is one of F5's open gaps */
 #define IOMOON_PORT04_IDLE 0xff
 
 /* Bits 1-3 of port 0x04 are the SW40 country switches SW2-SW4 - not idle bits: the
@@ -1849,15 +1867,22 @@ static WRITE_HANDLER(iomoon_z80_write) {
                 * singles (F7).  Each pair is one dual-wound flipper driven a winding at a
                 * time: sub_1292 / sub_12D8 choose on that flipper's EOS contact (C0DB bit
                 * 6 / bit 7) - one winding while travelling, the other to hold - and
-                * sub_064D / sub_06C2 release both.  WHICH coil sits on each bit is in
-                * neither ROM, so the mapping is the plain driver bit b -> solenoid b+1 and
-                * no coil is named, unlike Sleic Pin-Ball whose manual numbering is verified */
+                * sub_064D / sub_06C2 release both.  Driver bit b is the manual's coil b+1
+                * (F17): 0/1 left flipper power/hold, 2/3 right, 4/5 upper, 6 Bumper 1, 7
+                * Tragabolas 1.  The pairs are the dual-wound flippers, and the manual's
+                * power/medium circuit split lands on the even/odd bits, which is the third
+                * source that agrees */
       locals.solenoids = (locals.solenoids & ~(UINT32)0x00ff) | (UINT32)(data ^ 0xff);
       break;
     case 0x06: /* port 0x86: driver latch B -> solenoids 9-16.  Same active-low convention
                 * (boot_port_init 042C also writes 0xFF), but all eight bits are independent:
                 * fired at 0706-07D1, released at 081B-0892, plus the timed auto-release path
-                * at 0ADA-0C51 inside the Z80's IRQ handler (F7) */
+                * at 0ADA-0C51 inside the Z80's IRQ handler (F7).  Bit b is coil b+9 (F17):
+                * 0-3 Bumpers 2-5, 4 Taca, 5/6 Expulsor 1/2, 7 Sueltabolas de Jupiter.  The
+                * manual's coils 17-21 and its three flashes are the expansion board's
+                * channels and NO Z80 port drives them -- every bit of 0x80-0x87 is
+                * accounted for (F17).  Two of them matter to the simulator and are derived
+                * from the firmware's own commands instead; see iomoon_getSol */
       locals.solenoids = (locals.solenoids & ~(UINT32)0xff00) | ((UINT32)(data ^ 0xff) << 8);
       break;
     case 0x07: /* port 0x87: NOT a driver output.  Low nibble = direct_input_scan's 16-way
@@ -2013,10 +2038,13 @@ static const struct { int key; UINT8 col; UINT8 bit; } iomoon_pf_keys[] = {
 /  "FALTA 1 BOLA" until something closes its trough contacts, which is exactly right.
 /
 /  So the four contacts below are ORDINARY SWITCHES unless the operator asks for the
-/  model.  The knob is the standard simulator port's "Balls" setting, which every PinMAME
-/  driver already carries (sim.h, and SLEIC2_INPUT_PORTS_START in sleic.h):
+/  model, and the model itself now applies only when no simulator is registered -- with
+/  one present it stands down (iomoon_ball_update) and "Balls" is the simulator's own ball
+/  complement instead.  Otherwise the knob is the standard simulator port's "Balls"
+/  setting, which every PinMAME driver already carries (sim.h, and
+/  SLEIC2_SIM_INPUT_PORTS_START in sleic.h):
 /
-/    Balls = 0   DEFAULT.  The model is off.  swMatrix[1] bits 0-3 are driven only by the
+/    Balls = 0   The model is off.  swMatrix[1] bits 0-3 are driven only by the
 /                matrix inputs -- the Q/W/E/R test keys, or a VPinMAME table script.  No
 /                seeding, no kicker, and the "Drain ball in play" and "Shoot Ball" inputs
 /                do nothing at all (iomoon_ball_update returns before it reads them).
@@ -2166,6 +2194,18 @@ static void iomoon_ball_command(UINT8 cmd) {
   if (cmd == 0xe9 && locals.iomBalls.seeded && !locals.iomBalls.atExit && !locals.iomBalls.kick
       && locals.iomBalls.inTrough > 0)
     locals.iomBalls.kick = IOMOON_KICK_FRAMES;
+
+  if (cmd == 0xe9) locals.iomDerivedSol.serve     = 4;
+  if (cmd == 0xf3) locals.iomDerivedSol.bankReset = 4;
+}
+
+/* Custom solenoids 51 and 52, reported through core_gameData->hw.getSol.  Both are
+ * DERIVED, not read from a pin: the coils they stand for are on the driver
+ * expansion board and no Z80 output reaches it (F17) */
+int iomoon_getSol(int solNo) {
+  if (solNo == CORE_CUSTSOLNO(1)) return locals.iomDerivedSol.serve     > 0;
+  if (solNo == CORE_CUSTSOLNO(2)) return locals.iomDerivedSol.bankReset > 0;
+  return 0;
 }
 
 /* Called once a frame from SWITCH_UPDATE(SLEIC2) AFTER the playfield key loop, and it ORs
@@ -2177,6 +2217,10 @@ static void iomoon_ball_command(UINT8 cmd) {
  * play", balls = its "Balls" setting.  balls = 0 is the DEFAULT and means model off */
 static void iomoon_ball_update(int balls, int shoot, int drain) {
   UINT8 bits;
+  /* A simulator owns the balls.  With one registered, "Balls" is its ball
+   * complement -- which is what it means in every other PinMAME game -- and the
+   * trough contacts are its to drive, so this model must not also drive them */
+  if (coreGlobals.simAvail) { iomoon_ball_reset(); return; }
   /* MODEL OFF -- the default, and the only behaviour a frontend ever sees.  Return before
    * anything is seeded, before the kicker is stepped and before "shoot" or "drain" is
    * looked at, so those two inputs are inert rather than half-live, and swMatrix[1] bits
@@ -2338,9 +2382,9 @@ static SWITCH_UPDATE(SLEIC2) {
     const UINT16 in = inports[CORE_COREINPORT];
     /* The ball trough's three inputs, acted on after the key loop below.  "Balls" and
      * "Shoot Ball" are the standard simulator port the game already carries (sim.h,
-     * SLEIC2_INPUT_PORTS_START); "Drain ball in play" is Io Moon's own cabinet bit
+     * SLEIC2_SIM_INPUT_PORTS_START); "Drain ball in play" is Io Moon's own cabinet bit
      * 0x1000 (sleic.h), which is how a run gets through a whole ball.  "Balls" is the
-     * opt-in: 0 (the DEFAULT) leaves the trough contacts to the frontend and makes the other two inert */
+     * opt-in: 0 leaves the trough contacts to the frontend and makes the other two inert */
     balls = SIM_BALLS(inports[CORE_SIMINPORT]);
     shoot = (inports[CORE_SIMINPORT] & SIM_SHOOTERKEY) ? 1 : 0;
     drain = (in & 0x1000) ? 1 : 0;
@@ -2387,11 +2431,18 @@ static SWITCH_UPDATE(SLEIC2) {
     if (iomoon_coin_update(in)) coreGlobals.swMatrix[9] |=  0x20;
     else                        coreGlobals.swMatrix[9] &= ~0x20;
   }
-  for (i = 0; i < sizeof(iomoon_pf_keys)/sizeof(iomoon_pf_keys[0]); i++) {
-    if (keyboard_pressed(iomoon_pf_keys[i].key))
-      coreGlobals.swMatrix[iomoon_pf_keys[i].col] |=  iomoon_pf_keys[i].bit;
-    else
-      coreGlobals.swMatrix[iomoon_pf_keys[i].col] &= ~iomoon_pf_keys[i].bit;
+  /* One key per matrix position, so the service menu's CONTACTOS test can exercise
+   * all 48.  Live only when the simulator keys are switched OFF, which is the same
+   * condition core.c uses for its own row+column manual switch keys (Del toggles
+   * it, SIM_SWITCHKEY).  Without the gate these keys and the simulator's shot keys
+   * fight over the same letters */
+  if (!coreGlobals.simAvail || !inports || (inports[CORE_SIMINPORT] & SIM_SWITCHKEY)) {
+    for (i = 0; i < sizeof(iomoon_pf_keys)/sizeof(iomoon_pf_keys[0]); i++) {
+      if (keyboard_pressed(iomoon_pf_keys[i].key))
+        coreGlobals.swMatrix[iomoon_pf_keys[i].col] |=  iomoon_pf_keys[i].bit;
+      else
+        coreGlobals.swMatrix[iomoon_pf_keys[i].col] &= ~iomoon_pf_keys[i].bit;
+    }
   }
   /* After the key loop, because it ORs its four contacts in on top: a key held on one of
    * them is a contact stuck closed and the model must not override it */

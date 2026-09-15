@@ -2193,6 +2193,7 @@ SOURCE=.\src\wpc\sims\se\prelim\monopoly.c
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\src\wpc\sims\sleic\iomoon.c
 # End Source File
 # End Group
 # End Group

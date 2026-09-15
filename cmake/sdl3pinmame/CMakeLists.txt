@@ -651,6 +651,7 @@ add_executable(sdl3pinmame
    src/wpc/sims/s11/prelim/eatpm.c
    src/wpc/sims/s7/full/bk.c
    src/wpc/sims/s7/full/tmfnt.c
+   src/wpc/sims/sleic/iomoon.c
    src/wpc/slalom.c
    src/wpc/sleic.c
    src/wpc/sleic.h
