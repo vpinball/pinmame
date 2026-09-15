@@ -130,6 +130,7 @@ static osd_file openfile[MAX_OPEN_FILES];
 
 void setPath(int type, const char* path)
 {
+	free((void *)pathlist[type].rawpath);
 	pathlist[type].rawpath = path;
 }
 
