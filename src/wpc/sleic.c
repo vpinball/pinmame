@@ -243,21 +243,8 @@ static INTERRUPT_GEN(sleic1_irq_gen) {
  * FM tempo and the outbound queue all scale with this, hence one named constant */
 #define IOMOON_INT0_HZ 72.5
 
-/* I/O Z80 clock.  The INHERITED Bike Race / Sleic Pin-Ball figure, not an Io Moon reading,
- * named here only so it stops being invisible: the SLEIC2 block used to reach the Z80
- * through MDRV_CPU_MODIFY, which leaves the base MDRV_CPU_ADD_TAG's 2.5 MHz standing while
- * the comment beside it talks about an 8 MHz crystal.
- *
- * The likely correction is 4 MHz: IC1 on the I/O board is a Goldstar Z8400A, a Z80A, whose
- * speed GRADE is 4 MHz, so the inventory's "8 MHz" cannot be the CPU clock - it is X10, the
- * board crystal, and halving it is the ordinary arrangement (the same crystal over 8192
- * gives the ~977 Hz Z80 IRQ already stated here).  Neither ROM mentions either figure.
- *
- * Deliberately NOT changed yet: everything measured for the J1 link - switch scan cadence,
- * handshake spins, byte rates - was measured at 2.5 MHz, and a 1.6x change re-times all of
- * it at once.  Revisit against the real machine or a scope on X10 as its own step, with
- * switch-delivery testing re-run either side */
-#define IOMOON_Z80_CLOCK 2500000
+/* I/O Z80 clock: X10's 8 MHz halved by IC11A into GCLK, the net on IC1 pin 6 (011-030-02) */
+#define IOMOON_Z80_CLOCK 4000000
 
 /* One periodic generator drives both sources, and it has to tick a good deal faster than
  * their sum: a request that comes due while the firmware is inside an ISR can only be
