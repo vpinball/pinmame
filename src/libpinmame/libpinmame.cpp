@@ -1119,6 +1119,9 @@ PINMAMEAPI void PinmameSetPath(const PINMAME_FILE_TYPE fileType, const char* con
 		case PINMAME_FILE_TYPE_HIGHSCORE:
 			setPath(FILETYPE_HIGHSCORE, newPath);
 			break;
+		default:
+			free(newPath);
+			break;
 	}
 }
 

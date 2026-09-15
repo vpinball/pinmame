@@ -159,6 +159,7 @@ void state_save_reset(void)
 			}
 		}
 		free(m->name);
+		free(m);
 		m = mn;
 	}
 	ss_registry = 0;
