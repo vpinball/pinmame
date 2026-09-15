@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.25)
 # Usage:
 #    cp cmake/sdl3pinmame/CMakeLists.txt CMakeLists.txt
 #    cmake -DPLATFORM=linux -DARCH=x64 -DCMAKE_BUILD_TYPE=Release -B build
-#    cmake --build build
+#    cmake --build build -j$(getconf _NPROCESSORS_ONLN)
 
 set(PLATFORM "linux" CACHE STRING "Platform: linux or macos")
 set(ARCH "x64" CACHE STRING "Arch: x64 or arm64")
