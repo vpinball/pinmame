@@ -1233,6 +1233,9 @@ static void iomoon_oki_strobe(void) {
   const UINT8 phrase = locals.iomOkiLatch & 0x7f;
   /* CH2 -> the core's voice bit: bit 4 = voice 0, bit 5 = voice 1 (adpcm.c, data >> 4) */
   const UINT8 voice  = (locals.iomOkiLatch & 0x80) ? 1 : 0;
+#ifdef DEBUG_SLEIC
+  if (getenv("SLEIC_TRACE_SND")) fprintf(stderr, "[oki] phrase %02x ch%d\n", phrase, voice + 1);
+#endif
 
   /* The test is on the PHRASE, not on the whole latch, and the two are the same test here:
    * the only latch value with phrase 0 that sub_D0CB8 can leave is 0x00 itself, because the
@@ -1303,12 +1306,18 @@ static WRITE_HANDLER(sleic2_periph_w) {
                  * carried on PCS0 bit 1 (locals.ymA0).  Three machines, three conventions;
                  * this one is the only one the Io Moon ROM supports, and F8 confirms these
                  * are the only two accesses to either address in the whole ROM */
+#ifdef DEBUG_SLEIC
+      if (getenv("SLEIC_TRACE_SND")) fprintf(stderr, "[ym] reg  %02x\n", data);
+#endif
       YM3812_control_port_0_w(0, data);
       return;
     case 0x281: /* PCS5 with A0 = 1: the YM3812's data port (F8).  The firmware's settling
                  * delay between the two writes (ym3812_settle_delay D0DA9, 10 iterations)
                  * is a real-chip timing requirement with no emulated equivalent -- the core
                  * accepts the pair back to back -- so nothing here waits */
+#ifdef DEBUG_SLEIC
+      if (getenv("SLEIC_TRACE_SND")) fprintf(stderr, "[ym] data %02x\n", data);
+#endif
       YM3812_write_port_0_w(0, data);
       return;
     case 0x300: /* PCS6: the OKI MSM6376's data/CH2 latch (F9).  Latching alone starts
@@ -1819,6 +1828,9 @@ static WRITE_HANDLER(iomoon_z80_write) {
                      locals.iomJ1.to188, locals.iomJ1.latch);
           locals.iomJ1.latch = locals.iomJ1.to188;
           locals.iomJ1.latchFull = 1;
+#ifdef DEBUG_SLEIC
+          if (getenv("SLEIC_TRACE_SW")) fprintf(stderr, "[SW->188] code=%02x\n", locals.iomJ1.latch);
+#endif
           cpu_set_irq_line(SLEIC_MAIN_CPU, IRQ_LINE_NMI, PULSE_LINE); /* handler D000:016D */
         }
       }
@@ -1833,7 +1845,13 @@ static WRITE_HANDLER(iomoon_z80_write) {
                 * matrix is refreshed every 8 Z80 interrupts) writes the row byte to 0x84
                 * FIRST and pulses the column here second, so the pair commits on this
                 * strobe with the row latched by the preceding 0x84 */
-      if (data) coreGlobals.tmpLampMatrix[core_BitColToNum(data & -data)] = sleic_io.lampRow;
+      if (data) {
+#ifdef DEBUG_SLEIC
+        if (getenv("SLEIC_TRACE_LAMP") && sleic_io.lampRow)
+          fprintf(stderr, "[lamp] col=%d row=%02x\n", core_BitColToNum(data & -data), sleic_io.lampRow);
+#endif
+        coreGlobals.tmpLampMatrix[core_BitColToNum(data & -data)] = sleic_io.lampRow;
+      }
       break;
     case 0x04: /* port 0x84: lamp-matrix ROW data, ACTIVE HIGH -- no inversion.  The byte is
                 * one of C10F..C116, which sub_353A fills either verbatim from the "lit" bank
@@ -2431,6 +2449,10 @@ static SWITCH_UPDATE(SLEIC2) {
   /* After the key loop, because it ORs its four contacts in on top: a key held on one of
    * them is a contact stuck closed and the model must not override it */
   iomoon_ball_update(balls, shoot, drain);
+#ifdef DEBUG_SLEIC
+  /* Last, so the injections survive the COIN bit's else-branch clear above */
+  sleic_debug_switches(IOMOON_TROUGH_COL, IOMOON_TROUGH_BITS);
+#endif
 }
 
 /* Bike Race (SLEIC3) playfield-matrix test keys. The 40 matrix positions (Z80 codes
