@@ -205,10 +205,16 @@ static sim_tState iomoon_stateDef[] = {
      or to lock 2 if lock 1 is already closed.  Locks 1 and 2 leave through
      iomoon_handleBallState for the reason Hole 2 does, hence nextState 0 and
      SIM_STIGNORESOL */
-  {"Jupiter Entrance", 1,swJupEnt,     0,           stJup1,      3, swJup1, stJup2, SIM_STSWON},
-  {"Jupiter 1",        1,swJup1,       sJupRelease, 0,           0,0,0, SIM_STIGNORESOL},
+  /* Balls stack AWAY from the entry, so C46 is the contact the FIRST one rests on and
+     the last to empty -- the same shape as the trough, and for the same reason: C46 is the
+     contact the Z80 reports, as remapped code 0x44 rather than its own 0x2C, and 0x44 is
+     what the 80188's lock handler sub_D9D04 counts in [4134:0030].  C44 and C45 report no
+     code at all, so a model that fills from C44 is invisible to the firmware and can never
+     reach Multiball */
+  {"Jupiter Entrance", 1,swJupEnt,     0,           stJup1,      3, swJup3, stJup2, SIM_STSWON},
+  {"Jupiter 1",        1,swJup3,       sJupRelease, 0,           0,0,0, SIM_STIGNORESOL},
   {"Jupiter 2",        1,swJup2,       sJupRelease, 0,           0,0,0, SIM_STIGNORESOL},
-  {"Jupiter 3",        1,swJup3,       sJupRelease, stFree,      0},
+  {"Jupiter 3",        1,swJup1,       sJupRelease, stFree,      0},
 
   {0}
 };
