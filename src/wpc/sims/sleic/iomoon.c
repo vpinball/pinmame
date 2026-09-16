@@ -135,7 +135,7 @@ enum {
   stBankA, stBankB, stBankC, stBankD, stBankE, stInnerBank,
   stHole1, stHole2,
   stRamp1Ent, stRamp1Mid, stRamp2Ent, stRamp2Exit,
-  stJupEnt, stJup1, stJup2, stJup3
+  stJupEnt, stJupPass, stJupC44, stJupC45
 };
 
 static sim_tState iomoon_stateDef[] = {
@@ -203,20 +203,16 @@ static sim_tState iomoon_stateDef[] = {
   {"Ramp 2 Entrance",  1,swRamp2Ent,   0,           stRamp2Exit, 4},
   {"Ramp 2 Exit",      1,swRamp2Exit,  0,           stFree,      3},
 
-  /* Jupiter holds up to two balls (manual 3.3.7).  A ball entering goes to lock 1,
-     or to lock 2 if lock 1 is already closed.  Locks 1 and 2 leave through
-     iomoon_handleBallState for the reason Hole 2 does, hence nextState 0 and
-     SIM_STIGNORESOL */
-  /* Balls stack AWAY from the entry, so C46 is the contact the FIRST one rests on and
-     the last to empty -- the same shape as the trough, and for the same reason: C46 is the
-     contact the Z80 reports, as remapped code 0x44 rather than its own 0x2C, and 0x44 is
-     what the 80188's lock handler sub_D9D04 counts in [4134:0030].  C44 and C45 report no
-     code at all, so a model that fills from C44 is invisible to the firmware and can never
-     reach Multiball */
-  {"Jupiter Entrance", 1,swJupEnt,     0,           stJup1,      3, swJup3, stJup2, SIM_STSWON},
-  {"Jupiter 1",        1,swJup3,       sJupRelease, 0,           0,0,0, SIM_STIGNORESOL},
-  {"Jupiter 2",        1,swJup2,       sJupRelease, 0,           0,0,0, SIM_STIGNORESOL},
-  {"Jupiter 3",        1,swJup1,       sJupRelease, stFree,      0},
+  /* Jupiter holds up to two balls (manual 3.3.7), and the two CPUs use different
+     contacts for it: a ball ROLLS OVER C46, the only one the Z80 reports (remapped code
+     0x44, which the 80188 counts in [4134:0030]), and comes to REST at the far end on
+     C44, which is the contact the Z80's own release keys on -- command 0xEE, sub_2B86,
+     returns without firing coil 16 unless C44 reads closed.  The second ball rests on
+     C45 and rolls down when C44 empties */
+  {"Jupiter Entrance", 1,swJupEnt,     0,           stJupPass,   3},
+  {"Jupiter (C46)",    1,swJup3,       0,           0,           3},
+  {"Jupiter 1 (C44)",  1,swJup1,       sJupRelease, 0,           0,0,0, SIM_STIGNORESOL},
+  {"Jupiter 2 (C45)",  1,swJup2,       0,           0,           0},
 
   {0}
 };
@@ -286,12 +282,19 @@ static int iomoon_handleBallState(sim_tBallStatus *ball, int *inports) {
     case stRamp1Ent:
       return iomoon_diverterFires() ? setState(stFree, 4) : setState(stRamp1Mid, 3);
 
-    /* Without the ORBITS lights the ball rolls over the contact and leaves (3.3.7); a
-       real lock is the game's until it fires coil 16 */
-    case stJup1:
-    case stJup2:
+    /* Without the ORBITS lights the ball rolls over C46 and leaves (3.3.7); with them
+       it settles at the far end, on the contact the Z80's release keys on */
+    case stJupPass:
       if (!iomoon_orbitsLit()) return setState(stFree, 3);
+      return core_getSw(swJup1) ? setState(stJupC45, 3) : setState(stJupC44, 3);
+
+    case stJupC44:
       return iomoon_releaseHeld(ball, sJupRelease);
+
+    /* The second ball rolls down as soon as C44 is free */
+    case stJupC45:
+      ball->custom = 0;
+      return core_getSw(swJup1) ? 0 : setState(stJupC44, 3);
   }
   return 0;
 }
