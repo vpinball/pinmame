@@ -127,11 +127,11 @@ static int p2k_pwmwatch(void)  { static int on = -1; return p2k_watch("P2K_PWMWA
 
 /* Diff a bit array against the last call's copy and print what changed, by name. Bit b of byte i
    is device number base + i * stride + b, which is the only thing that differs between the three:
-   lamps run 0,8,16.. (base 0, stride 8), solenoids 1,9,17.. (base 1, stride 8), and switches are
-   PinMAME's column*10 + row (base 1, stride 10). All three are the inverse of what the core does
-   with the number - core_getSw() reads (n/10)*8 + (n%10-1) as a flat bit index, and lamp n is
-   physicOutputState[CORE_MODOUT_LAMP0 + n] - so a name that does not match the machine's own test
-   menu means the table is wrong, not the arithmetic. Devices with no table entry print as
+   lamps and solenoids both run 1,9,17.. (base 1, stride 8) and switches are PinMAME's
+   column*10 + row (base 1, stride 10). All three are the inverse of what the core does with the
+   number - core_getSw() reads (n/10)*8 + (n%10-1) as a flat bit index, and lamp n is matrix
+   position n - 1, i.e. physicOutputState[CORE_MODOUT_LAMP0 + n - 1] - so a name that does not
+   match the machine's own test menu means the table is wrong, not the arithmetic. Devices with no table entry print as
    "(unnamed)" rather than being skipped: an unnamed one firing is itself worth seeing */
 static void p2k_watch_bits(const char *tag, const UINT8 *bits, int nbytes, UINT8 *prev, const p2k_name_t *names, int base, int stride) {
   int i, any = 0;
@@ -344,7 +344,7 @@ static void p2k_sync_io(void) {
        has the arithmetic and how it was measured */
     if (p2k_lampwatch()) {
       static UINT8 prev[16];
-      p2k_watch_bits("lamp", (const UINT8 *)coreGlobals.lampMatrix, 16, prev, p2k_lamp_names(game), 0, 8);
+      p2k_watch_bits("lamp", (const UINT8 *)coreGlobals.lampMatrix, 16, prev, p2k_lamp_names(game), 1, 8);
     }
 
     /* What the integrator makes of the coils, as a fraction rather than a bit. A flasher driven in
@@ -368,24 +368,25 @@ static void p2k_sync_io(void) {
       }
     }
 
-    /* And the same for the lamps, indexed by matrix position - byte * 8 + bit, which is what
-       p2k_lampPwm() writes and how the lamp names are numbered. A lit lamp settles near 0.4 here,
-       not 1.0, for the reason given at p2k_lampPwm(); one the game strobes on alternate passes
-       settles proportionally lower, and that difference is the whole point of this over the on/off matrix above */
+    /* And the same for the lamps. Lamp numbers run from 1, the way PinMAME hands them to a
+       table, so the matrix position that indexes physicOutputState[] is one below - see the
+       numbering note in p2k_names.h. A lit lamp settles near 0.4 rather than 1.0, for the reason
+       given at p2k_lampPwm(); one the game strobes on alternate passes settles proportionally
+       lower, and that difference is the whole point of this over the on/off matrix above */
     if (p2k_pwmwatch() && P2K_PWM_LAMP) {
       static float prevl[128];
       const p2k_name_t * const lamps = p2k_lamp_names(game);
       int k;
       for (k = 0; lamps[k].name; k++) {
-        const int n = lamps[k].num;
-        if (n < 0 || n >= (int)(sizeof(prevl) / sizeof(prevl[0]))) continue;
+        const int pos = lamps[k].num - 1;
+        if (pos < 0 || pos >= (int)(sizeof(prevl) / sizeof(prevl[0]))) continue;
         {
-          const float v = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + n].value;
-          const float d = v > prevl[n] ? v - prevl[n] : prevl[n] - v;
+          const float v = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + pos].value;
+          const float d = v > prevl[pos] ? v - prevl[pos] : prevl[pos] - v;
           if (d > 0.05f) {
-            printf("[p2k lampv] frame %d: %3d %-30s %.3f\n", p2k_bringupFrame, n, lamps[k].name, (double)v);
+            printf("[p2k lampv] frame %d: %3d %-30s %.3f\n", p2k_bringupFrame, lamps[k].num, lamps[k].name, (double)v);
             fflush(stdout);
-            prevl[n] = v;
+            prevl[pos] = v;
           }
         }
       }
@@ -637,12 +638,12 @@ static void p2k_dumpNames(void) {
     printf("[p2k names] switches (PinMAME number = column*10 + row):\n");
     for (t = p2k_switch_names(game), i = 0; t[i].name; i++)
       printf("   sw %3d  %s\n", t[i].num, t[i].name);
-    printf("[p2k names] coils (driver number, solenoid bit = driver - 1):\n");
+    printf("[p2k names] coils (driver number; PinMAME solenoid is 1-32, then 45-48, then 51-62):\n");
     for (t = p2k_coil_names(game), i = 0; t[i].name; i++)
       printf("   coil %2d  %s\n", t[i].num, t[i].name);
-    printf("[p2k names] lamps:\n");
+    printf("[p2k names] lamps (PinMAME number, matrix position = lamp - 1):\n");
     for (t = p2k_lamp_names(game), i = 0; t[i].name; i++)
-      printf("   lamp %2d  %s\n", t[i].num, t[i].name);
+      printf("   lamp %3d  %s\n", t[i].num, t[i].name);
     fflush(stdout);
   }
 }

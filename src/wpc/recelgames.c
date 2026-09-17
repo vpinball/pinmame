@@ -23,7 +23,7 @@
 /* One counter: the five GPKD-multiplexed digits, MSD first, then the x1
    digit. base = the x10 digit's GPKD position. The x1 is not multiplexed --
    the 095-105 unit's sixth 7448 position is wired to a permanent 0 -- so it
-   comes from RECEL_SEG_UNITS. */
+   comes from RECEL_SEG_UNITS */
 #define RECEL_COUNTER(row, col, base) \
   RECEL_D(row, col,    (base)+4) RECEL_D(row, (col)+2,  (base)+3) \
   RECEL_D(row, (col)+4,(base)+2) RECEL_D(row, (col)+6,  (base)+1) \
@@ -69,7 +69,7 @@ CORE_CLONEDEFNV(r_mrevil,recel,"Mr. Evil",1978,"Recel",gl_mRECEL,0)
 
 /*-------------------------------------------------------------------
 / Mr. Doom (1979) - model 1.060, doc 035-635. Mr. Evil re-themed: same
-/ switch matrix and driver table, different ROM and rules.
+/ switch matrix and driver table, different ROM and rules
 /-------------------------------------------------------------------*/
 INIT_RECEL(r_mrdoom, recel_disp, 1)
 RECEL_ROMSTART(r_mrdoom, "md.c5", 0x0100, CRC(ca679a69) SHA1(f08f0cfe646f08882473dcd5d23889fffe4a03c8))
@@ -78,7 +78,7 @@ CORE_CLONEDEFNV(r_mrdoom,recel,"Mr. Doom",1979,"Recel",gl_mRECEL,0)
 
 /*-------------------------------------------------------------------
 / Screech (1978) - INDER model 2004, unit 52-000. INDER's board set is
-/ the Petaco one renumbered.
+/ the Petaco one renumbered
 /-------------------------------------------------------------------*/
 INIT_RECEL(r_screech, recel_disp, 1)
 RECEL_ROMSTART(r_screech, "sc_1_1702.bin", 0x0100, CRC(c9185ef3) SHA1(3ace6cccc96375c5eab3d43f86f52bf52124334e))
@@ -88,7 +88,7 @@ CORE_CLONEDEFNV(r_screech,recel,"Screech",1978,"Inder",gl_mRECEL,0)
 /*-------------------------------------------------------------------
 / Poker Plus (1978) - model 1.051-E. The widely distributed po.c5 dump is
 / bad -- it never renders a score -- so this is the collector dump recorded
-/ as good by the garzol/RECEL collection.
+/ as good by the garzol/RECEL collection
 /-------------------------------------------------------------------*/
 INIT_RECEL(r_pokrplus, recel_disp, 1)
 RECEL_ROMSTART(r_pokrplus, "ba65.c5", 0x0100, CRC(571ee27b) SHA1(482a3ba18eff05bce4cab073b1f13fc2f145bb2b))
@@ -137,7 +137,7 @@ CORE_CLONEDEFNV(r_quijote,recel,"Don Quijote",1979,"Recel",gl_mRECEL,0)
 
 /*-------------------------------------------------------------------
 / Crazy Race (1978) - model 1.054-E. Hardware version 2: the 2 KB EPROM
-/ carries a 1 KB game area plus a patched replacement for the A1762 ROM.
+/ carries a 1 KB game area plus a patched replacement for the A1762 ROM
 /-------------------------------------------------------------------*/
 INIT_RECEL(r_crzyrace, recel_disp, 2)
 RECEL_ROMSTART(r_crzyrace, "cr.c5", 0x0800, CRC(60088804) SHA1(a73a7f8a0583a79588f9823a5e65ed28edad96a3))
@@ -153,7 +153,7 @@ RECEL_ROMEND
 CORE_CLONEDEFNV(r_flipper,recel,"The Flipper Game",1980,"Recel",gl_mRECEL,0)
 
 /*-------------------------------------------------------------------
-/ Black Magic (1980) - model 1.065, doc December 1979. One player.
+/ Black Magic (1980) - model 1.065, doc December 1979. One player
 /-------------------------------------------------------------------*/
 INIT_RECEL(r_blackmag, recel_disp, 2)
 RECEL_ROMSTART(r_blackmag, "bm_1065_1.bin", 0x0800, CRC(a917718c) SHA1(0b4fdf270560df902e95b34c25cca20e91f1071c))
@@ -161,7 +161,7 @@ RECEL_ROMEND
 CORE_CLONEDEFNV(r_blackmag,recel,"Black Magic",1980,"Recel",gl_mRECEL,0)
 
 /*-------------------------------------------------------------------
-/ Black Magic 4 (1980) - model 1.066. Four players.
+/ Black Magic 4 (1980) - model 1.066. Four players
 /-------------------------------------------------------------------*/
 INIT_RECEL(r_blackm4, recel_disp, 2)
 RECEL_ROMSTART(r_blackm4, "b4.c5", 0x0800, CRC(cd383f5b) SHA1(c38acaae46e5fd2660efbd0e2d35e295892e60a5))

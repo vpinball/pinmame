@@ -1,6 +1,6 @@
 // license:BSD-3-Clause
-#ifndef KEYSCRIPT_H
-#define KEYSCRIPT_H
+
+#pragma once
 
 #include "input.h"
 
@@ -27,8 +27,6 @@
    load_input_port_settings), which runs ahead of the emulated frame count --
    so ks.frame is always one frame ahead of core_gameData's own frame number.
    Deterministic and self-consistent with every committed script; do not
-   "fix" the offset without re-cutting every script's frame numbers. */
+   "fix" the offset without re-cutting every script's frame numbers */
 void keyscript_tick(void);              /* once per frame, from update_input_ports */
 int  keyscript_pressed(InputCode code); /* is this code held by the script? */
-
-#endif /* KEYSCRIPT_H */

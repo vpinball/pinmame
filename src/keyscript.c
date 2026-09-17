@@ -1,4 +1,5 @@
 // license:BSD-3-Clause
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,13 +15,13 @@ enum { KS_DOWN, KS_UP, KS_TAP, KS_MARK, KS_QUIT };
 typedef struct {
   int       frame;
   int       action;
-  int       hold;                        /* KS_TAP only */
-  InputCode code[KEYSCRIPT_MAXHELD];     /* CODE_NONE terminated */
-  char      text[64];                    /* KS_MARK only */
+  int       hold;                    /* KS_TAP only */
+  InputCode code[KEYSCRIPT_MAXHELD]; /* CODE_NONE terminated */
+  char      text[64];                /* KS_MARK only */
 } keyscript_tEvent;
 
 static struct {
-  int              loaded;      /* 0 = not tried, 1 = active, -1 = off */
+  int              loaded; /* 0 = not tried, 1 = active, -1 = off */
   int              frame;
   keyscript_tEvent *ev;
   int              nEv, nextEv;
@@ -34,10 +35,9 @@ static struct {
    so a single call for the whole line would silently cap out there. This way
    the per-line cap below is the only cap. Commas are turned into spaces and
    the words split by hand, since seq_set_string already uses strtok() on its
-   own copy of its argument and nesting a second strtok() around it would
-   corrupt both scans. */
+   own copy of its argument and nesting a second strtok() around it would corrupt both scans */
 static void keyscript_parseKeys(const char *s, InputCode *out) {
-  char buf[400];                          /* matches the callers' rest/keys buffers */
+  char buf[400]; /* matches the callers' rest/keys buffers */
   int i = 0, n = 0;
   strncpy(buf, s, sizeof(buf) - 1);
   buf[sizeof(buf) - 1] = 0;
@@ -198,8 +198,7 @@ void keyscript_tick(void) {
                       keyscript_hold(*c, ks.frame + (e->hold > 0 ? e->hold : 1) - 1);
                     break;
       case KS_MARK: { FILE *m = fopen(ks.marksName, "a");
-                      if (m) { fprintf(m, "%d %u %s\n", ks.frame,
-                                       (unsigned)(timer_get_time() * 1000.0), e->text);
+                      if (m) { fprintf(m, "%d %u %s\n", ks.frame, (unsigned)(timer_get_time() * 1000.0), e->text);
                                fclose(m); } }
                     break;
       case KS_QUIT: keyscript_hold(KEYCODE_ESC, -1); break;
