@@ -301,6 +301,7 @@ typedef struct {
     mem_write_handler porthandler;	/* port write function handler */
 
     unsigned short vgm_idx;
+    uint8_t vgm_lastreg;			/* last address byte written, to pair with the next data byte */
 #endif
 } opm_t;
 

@@ -31,7 +31,7 @@
  and the next ball's serve, which is where the bank reset raises the targets
  again -- plus Hole 1 leaving on its own coil, Jupiter passing a ball through with
  the ORBITS lights out and holding two with them lit to reach Multiball, and Ramp 1
- reaching MIDDLE only with Lagrange Orbit lit.  Nothing is tested on a machine.
+ reaching MIDDLE only with Lagrange Orbit lit.  Nothing is tested on a machine
  ******************************************************************************/
 
 #include "driver.h"
@@ -48,9 +48,9 @@ static int  iomoon_handleBallState(sim_tBallStatus *ball, int *inports);
 /*-------------------
 / Switch definitions
 /--------------------
-/  Names and C-numbers are the firmware's own (F16).  PinMAME switch numbers come
-/  from SLEIC_sw2m: swMatrix[m] bit b is switch (m+4)*10 + b, and the driver puts
-/  Z80 column c in swMatrix[1+c], so column 0 is 50-57 and column 5 is 100-103.  */
+/  PinMAME switch numbers come from SLEIC_sw2m: swMatrix[m] bit b is switch
+/  (m+4)*10 + b, and the driver puts Z80 column c in swMatrix[1+c], so column 0 is
+/  50-57 and column 5 is 100-103.  Names and C-numbers are the firmware's own */
 #define swOutholeC0     50  /* code 0x0A  C6  OUTHOLE 1 -- trough entry, ball-over */
 #define swOutholeC1     51  /* code 0x0B  C7  OUTHOLE 2 */
 #define swOutholeC2     52  /* code 0x0C  C8  OUTHOLE 3 -- the served end */

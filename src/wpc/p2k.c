@@ -725,10 +725,12 @@ MACHINE_DRIVER_END
    coin door's diagnostic buttons - so they are carried in PinMAME's dedicated columns 10, 11 and a
    twelfth column for the diagnostics, and p2k_switch_update() below fills them.
 
-   Bit assignments are MAME's (src/mame/drivers/pinball2k.cpp, its keyboard handler); keys follow
-   PinMAME's WPC convention instead of MAME's, so 7/8/9/0 are Enter/Up/Down/Escape and END toggles
-   the coin door. The board's own coin door bit reads "closed" when set - the machine reports COIN
-   DOOR IS OPEN with the bit clear, which is the state it powers up */
+   Bit assignments are MAME's (src/mame/drivers/pinball2k.cpp, its keyboard handler). Keys are
+   7/8/9/0 = Enter/Down/Up/Escape, with END toggling the coin door. Note that the bit-to-function
+   mapping is NOT the one wpc.h's labels suggest: wpc.h calls 0x20/0x40 Up/Down, but the switches
+   those bits reach on WPC are Down/Up (WPC.vbs swDown = 6, swUp = 7), and Down/Up is what P2K
+   expects from 8/9. p2k.vbs is kept in step with this. The board's own coin door bit reads "closed" when set -
+    the machine reports COINDOOR IS OPEN with the bit clear, which is the state it powers up */
 INPUT_PORTS_START(rfm)
 	CORE_PORTS
 	/* SIM_PORTS(1) - PinMAME's built-in ball simulator, commented out rather than removed so it is
@@ -746,8 +748,8 @@ INPUT_PORTS_START(rfm)
 		COREPORT_BITDEF(  0x0004, IPT_COIN3,        KEYCODE_3)
 		COREPORT_BITDEF(  0x0008, IPT_COIN4,        KEYCODE_4)
 		COREPORT_BIT(     0x0010, "Enter",          KEYCODE_7)
-		COREPORT_BIT(     0x0020, "Up",             KEYCODE_8)
-		COREPORT_BIT(     0x0040, "Down",           KEYCODE_9)
+		COREPORT_BIT(     0x0020, "Down",           KEYCODE_8)
+		COREPORT_BIT(     0x0040, "Up",             KEYCODE_9)
 		COREPORT_BIT(     0x0080, "Escape",         KEYCODE_0)
 		COREPORT_BITTOG(  0x0100, "Coin Door",      KEYCODE_END)
 		COREPORT_BITDEF(  0x0200, IPT_START1,       IP_KEY_DEFAULT)
@@ -901,10 +903,11 @@ static SWITCH_UPDATE(p2k) {
 			((in   & 0x2000) ? P2K_CAB_RACTION   : 0) |
 			((in   & 0x1000) ? P2K_CAB_LACTION   : 0);
 
+		/* Keys 7/8/9/0 are Enter/Down/Up/Escape, matching p2k.vbs - see the note above the port */
 		coreGlobals.swMatrix[10] =
 			((in   & 0x0080) ? P2K_DIAG_ESCAPE   : 0) |
-			((in   & 0x0020) ? P2K_DIAG_UP       : 0) |
-			((in   & 0x0040) ? P2K_DIAG_DOWN     : 0) |
+			((in   & 0x0040) ? P2K_DIAG_UP       : 0) |
+			((in   & 0x0020) ? P2K_DIAG_DOWN     : 0) |
 			((in   & 0x0010) ? P2K_DIAG_ENTER    : 0);
 
 		core_setSw(swStartButton, in & 0x0200);

@@ -283,46 +283,43 @@ static INTERRUPT_GEN(sleic1_irq_gen) {
 /* Io Moon OKI MSM6376 (IC51) playback rate, handed to the core as the voice stream's
  * sample rate, so it sets speech pitch and duration.
  *
- * MEASURED from the firmware and the sample ROMs, so no crystal need be traced.  The
- * firmware pairs each phrase with a playing time - oki_trigger_a/b (F9) load the duration
- * table at CS:0C1F+2*(n-1) and the timer-0 ISR counts it down at IOMOON_TIMER0_HZ - and
- * the ROMs state the same length in ADPCM nibbles (table entry n*4, see the region note in
- * sleic.h).  One over the other across all 28 phrases lands inside 31 526 - 32 176 Hz,
- * aggregate 31 747; the long phrases, where +-0.5 tick rounding is negligible, cluster at
- * 31 700 - 31 770.  That is 0.8% under 32 kHz and 1.6% over 31.25 kHz, the two rates a
- * 6376 is normally strapped for, and the residual is inside the error IOMOON_TIMER0_HZ
- * carries from IOMOON_CPU_CLOCK - a 10.08 MHz part fits 32 000 exactly.  32 kHz is also
- * what scripts/extract-oki-msm6376.py defaults to.
+ * MEASURED from the firmware and the sample ROMs, so no crystal need be traced: the firmware
+ * pairs each phrase with a playing time (oki_trigger_a/b, F9, load the duration table at
+ * CS:0C1F+2*(n-1), counted down by the timer-0 ISR at IOMOON_TIMER0_HZ) and the ROMs state
+ * the same length in ADPCM nibbles (table entry n*4, see the region note in sleic.h).  One
+ * over the other across all 28 phrases lands inside 31 526 - 32 176 Hz, aggregate 31 747,
+ * the long phrases - where +-0.5 tick rounding is negligible - clustering at 31 700 - 31 770.
+ * That is 0.8% under 32 kHz and 1.6% over 31.25 kHz, the two rates a 6376 is normally
+ * strapped for, and the residual is inside the error IOMOON_TIMER0_HZ carries from
+ * IOMOON_CPU_CLOCK - a 10.08 MHz part fits 32 000 exactly, which is also what
+ * scripts/extract-oki-msm6376.py defaults to.
  *
  * The other error branch is a factor of two, not a trim: being measured in timer-0 ticks,
- * this inherits IOMOON_T0_MAXCOUNT's open ALT-mode assumption.  If the part interrupts
- * only on max count B, IOMOON_TIMER0_HZ halves, every duration doubles and the rate lands
- * near 16 000 - itself a standard 6376 strapping.  By ear:
+ * this inherits IOMOON_T0_MAXCOUNT's open ALT-mode assumption.  If the part interrupts only
+ * on max count B, IOMOON_TIMER0_HZ halves, every duration doubles and the rate lands near
+ * 16 000 - itself a standard 6376 strapping.  By ear:
  *     slightly sharp            -> clock branch; trim 32000 -> 31250
- *     an octave high, half long -> ALT-mode branch; ~16000 here AND revisit
- *                                  IOMOON_TIMER0_HZ, wrong by the same factor everywhere
- *                                  else.  That would be a finding about the timer.
+ *     an octave high, half long -> ALT-mode branch; ~16000 here AND revisit IOMOON_TIMER0_HZ,
+ *                                  which would then be wrong by the same factor everywhere
  *
  * Not shared with SLEIC_okim6376_intf2: its 4000000/132 is the OKIM6295 pin-7 divisor,
  * belongs to Bike Race, is 4.7% slow here, and sharing would retune Bike Race with it */
 #define IOMOON_OKI_SAMPLE_RATE 32000
 
-/* Fractional tick accumulators, and one held request per source.  The hold is needed
- * because of how this i86 core delivers interrupts: cpu_set_irq_line_and_vector does not
- * touch the CPU, it appends to a per-CPU event queue and schedules a TIME_NOW timer, and
- * cpu_empty_event_queue (src/cpuint.c) asserts the line - still before the CPU executes
- * another instruction, which is why testing IF here is a valid proxy for IF at delivery.
- * i86_set_irq_line then takes the interrupt if IF is set and otherwise does nothing at all:
- * the execute loop never re-examines irq_state, so HOLD_LINE holds nothing and a request
- * raised during an ISR would vanish.
+/* Fractional tick accumulators, and one held request per source.  The hold is needed because
+ * of how this i86 core delivers interrupts: cpu_set_irq_line_and_vector only appends to a
+ * per-CPU event queue and schedules a TIME_NOW timer, and cpu_empty_event_queue (cpuint.c)
+ * asserts the line - still before the CPU executes another instruction, which is why testing
+ * IF here is a valid proxy for IF at delivery.  i86_set_irq_line then takes the interrupt if
+ * IF is set and otherwise does nothing at all: the execute loop never re-examines irq_state,
+ * so HOLD_LINE holds nothing and a request raised during an ISR would vanish.
  *
- * The 80188's controller latches instead, and serves on re-enable.  Measured on Io Moon the
- * difference is not cosmetic: the INT0 handler's DMD work is long enough that raising both
- * sources blind loses about two thirds of the timer-0 ticks, stretching every firmware
- * timeout by the same factor.  So integrate time every tick, latch at most one request per
- * source (as the hardware does - a second before the first is served is lost, not queued),
- * and hand it over on the first tick where IF is set -> locals.iomInt0Acc / iomT0Acc and
- * locals.iomInt0Pend / iomT0Pend */
+ * The 80188's controller latches instead, and serves on re-enable.  On Io Moon the difference
+ * is not cosmetic: the INT0 handler's DMD work is long enough that raising both sources blind
+ * loses about two thirds of the timer-0 ticks, stretching every firmware timeout to match.
+ * So integrate time every tick, latch at most one request per source (as the hardware does -
+ * a second before the first is served is lost, not queued), and hand it over on the first
+ * tick where IF is set -> locals.iomInt0Acc / iomT0Acc and iomInt0Pend / iomT0Pend */
 
 /* The panel raster rides on the same tick (F13): IC23 free-runs and sends the 80188 no
  * frame signal at all, so the DMD is sampled on a clock of its own rather than on
@@ -377,8 +374,9 @@ static INTERRUPT_GEN(sleic3_irq_gen) {
  * P1.0-P1.5 = frame-RAM row and field address VA4-VA9 (VA9 shares RAM A9 with the 80188's
  * A11 on an HC157, so raster field 2 reads +0x800), P1.6 = CLRLIN, P1.7 = VSYNC,
  * P2.4 = RDATA, P2.5 = DE (active high through a 7407 to J2), P2.6 = RCLK,
- * P2.7 = COLLATCH, T1 = VGT1.  DE is the light gate, driven differently per field by the
- * two display ROMs (S = the 128-dot shift time):
+ * P2.7 = COLLATCH, T1 = VGT1.
+ *
+ * DE is the light gate, and the two display ROMs drive it differently (S = 128-dot shift):
  *   sp01-1_1.rom (Pin-Ball): field 1 DE high before the shift ($015) and through a
  *     48-iteration dwell ($028); field 2 clears it before its shift ($052, ANL P2,#$D0)
  *     and raises it only for a 46-iteration dwell ($065).  S+108 against 104.
@@ -387,30 +385,25 @@ static INTERRUPT_GEN(sleic3_irq_gen) {
  * Not P1.7: its 48/46 dwells look like "equal fields" if mistaken for the gate, but it is
  * VSYNC, raised once per frame after the 33rd row clock - as a gate it would show nothing.
  *
- * Whether the panel emits during the COLLATCH-low shift window is open and decides the
- * weighting: if it does, Pin-Ball's planes sit near 0.70/0.30 at the sheet's 625 kHz dot
- * clock (PCLK = OCLK/32; OCLK unprinted, 20 MHz on the sister board); if not, 108 against
- * 104, i.e. equal.  Video favours equal: the same 1-dot text ("CREDITOS: 1" over the
- * attract watermark) is +0x000-only in its upper rows and both planes in its lower, the
- * lower measuring about twice the upper (clipped, so a lower bound) where a shift-lit
- * panel cannot exceed 1.43; and the +0x800-only watermark matches +0x000-only text within
- * ten percent.  So both single-plane levels are about half a both-plane pixel and the
+ * Whether the panel emits during the COLLATCH-low shift window is open, and it decides the
+ * weighting: if it does, Pin-Ball's planes sit near 0.70/0.30; if not, 108 against 104, i.e.
+ * equal.  Video favours equal - both single-plane levels measure about half a both-plane
+ * pixel, and the +0x800-only watermark matches +0x000-only text within ten percent - so the
  * fields are modelled EQUAL: sleic1_irq_i8039 hands each plane over as a 1-bit field, the
  * WPC_PH two-tap integrator averages them (0, 1/2, 1/2, 1), and COMBINER_SUM_2_1 keeps the
- * raw frame at (p0 << 1) | p1 for the colorizers.  The readings differ mainly in the
+ * raw frame at (p0 << 1) | p1 for the colorizers.  The two readings differ mainly in the
  * +0x800-only level (0.30 against 0.5), so if fills, shadows and the watermark look too
  * bright, that is the number to revisit; a scope on DE and COLLATCH with a photodiode, or
- * an unclipped photo of a static screen, would pin it.
+ * an unclipped photo of a static screen, would settle it.
  *
- * Do NOT emulate the brightness ramp the same video shows - text clipping white while
- * drawn or blinked and settling dim once static, over ten-frame ramps a two-level display
- * cannot produce.  That is the phone's processing: nothing on 011-026 can light a fresh
- * pixel longer than a static one (the I8039 waits only on VGT1, and blinking text is
- * written to +0x000 alone).
+ * Do NOT emulate the brightness ramp the same video shows - text clipping white while drawn
+ * and settling dim once static, over ten-frame ramps a two-level display cannot produce.
+ * That is the phone's processing: nothing on 011-026 can light a fresh pixel longer than a
+ * static one (the I8039 waits only on VGT1, and blinking text goes to +0x000 alone).
  *
- * Bike Race keeps the pre-integrated (p0 << 1) | p1 frame through LINEAR_4, its fields
- * being asymmetric under either reading.  Io Moon's PIC holds plane 0 for 200 counts
- * against 30 - see MACHINE_INIT(SLEIC2) */
+ * Bike Race keeps the pre-integrated (p0 << 1) | p1 frame through LINEAR_4, its fields being
+ * asymmetric under either reading.  Io Moon's PIC holds plane 0 for 200 counts against 30 -
+ * see MACHINE_INIT(SLEIC2) */
 
 /* Decode one 128x32 two-bitplane frame -- 32 rows x 16 bytes per plane, MSB = leftmost
  * pixel, 1 = lit -- into the brightness grid core_dmd_submit_frame takes.  The two planes
@@ -734,29 +727,26 @@ static WRITE_HANDLER(pic_w) {
  * 6376 as TWO concurrent channels.  (Io Moon has its own iomoon_oki_strobe, where the
  * channel really is latch bit 7.)
  *
- * The channel is not a bit of the phrase byte here - Bike Race masks every 0xA0300 write
+ * The channel is NOT a bit of the phrase byte here - Bike Race masks every 0xA0300 write
  * with AND AL,07F (E0CCE / E0CF9), Pin-Ball never sets bit 7 (its 63 phrase stubs are
  * 0x01-0x3F), and bit 7 of the IC45 phrase latch is unconnected on the board.  It is PCS0
  * bit 3, IC32 4Q = 2CH (sheet 3, OKI pin 63 on sheet 4), sampled at the /ST rising edge
  * (bit 4, IC32 5Q):
- *   Bike Race -- channel-1 trigger sub_E0CBF leaves 2CH high; channel-2 sub_E0CEA clears
- *                it (E0D0C-E0D14) around the /ST pulse and restores it after
- *                (E0D1B-E0D23).
- *   Pin-Ball  -- one trigger (sp03 E000:1B26-1B6A) alternates on a toggle at [0x27c]:
- *                even calls strobe with 2CH high, odd clear it (0x1B4F/0x1B55), strobe
- *                (0x1B6B), restore (0x1B60/0x1B66).
+ *   Bike Race -- channel-1 trigger sub_E0CBF leaves 2CH high; channel-2 sub_E0CEA clears it
+ *                (E0D0C-E0D14) around the /ST pulse and restores it after (E0D1B-E0D23).
+ *   Pin-Ball  -- one trigger (sp03 E000:1B26-1B6A) alternates on a toggle at [0x27c]: even
+ *                calls strobe with 2CH high, odd clear it (0x1B4F/0x1B55), strobe (0x1B6B),
+ *                restore (0x1B60/0x1B66).
  * Both reach the core's two 6376 voices (adpcm.c: bit 4 = voice 0, bit 5 = voice 1 on
- * data >> 4).  Collapsing them onto one voice, as the old model did, made adpcm.c refuse
- * the second of every overlapping pair (OKIM6376_data_w drops a start on a busy voice):
+ * data >> 4).  Collapsing them onto one voice, as the old model did, made adpcm.c refuse the
+ * second of every overlapping pair, since OKIM6376_data_w drops a start on a busy voice:
  * Bike Race's START issues phrase 19, the 4.7 s motor sample in BK03, on channel 2 while
- * phrase 1 still runs on channel 1; Pin-Ball's START issues 0x16 then 0x2f, its tilt 0x21,
- * 0x37, 0x2b.
+ * phrase 1 still runs on channel 1, and Pin-Ball's START issues 0x16 then 0x2f.
  *
- * Abort-before-start as in iomoon_oki_strobe.  Bike Race's only busy model is a software
- * counter per channel ([01BE] / [01C1]) that can expire slightly before the emulated
- * sample ends; Pin-Ball has none at all - no BUSY read, no counters, no drop rule - so its
- * n-th phrase goes to channel n mod 2 regardless.  Either way a re-issue must restart, not
- * be refused.
+ * Abort-before-start as in iomoon_oki_strobe: Bike Race's only busy model is a software
+ * counter per channel ([01BE] / [01C1]) that can expire slightly before the emulated sample
+ * ends, and Pin-Ball has none at all - no BUSY read, no counters, no drop rule - so a
+ * re-issue must restart rather than be refused.
  *
  * Phrase 0 is a stop-all: Bike Race's sub_E0D2D (latch 0, /ST held low, released two timer
  * ticks later by sub_E0D7E), and Pin-Ball's E000:1AEF, which strobes phrase 0 once per
@@ -1353,12 +1343,12 @@ static READ_HANDLER(sleic2_periph_r) {
                  * index port (A0 = 0) exactly as on any OPL2.
                  *
                  * The Io Moon firmware never reads it -- F8 finds only the two writes in
-                 * ym3812_write, and busy is handled by the software settling delay instead
-                 * of by polling bit 7 -- so this line changes no behaviour today.  It is
-                 * here because the hardware answers here: leaving the address to the
-                 * function's default 0 would quietly invent a chip that reports "no timer
-                 * overflow, not busy" for ever, and a patched or later ROM that does poll
-                 * would then hang against a lie rather than run against the core */
+                 * ym3812_write, and busy is handled by a software settling delay rather
+                 * than by polling bit 7 -- so this line changes no behaviour for the ROMs
+                 * we have.  It is here because the hardware answers here: leaving the
+                 * address to the function's default 0 would invent a chip that reports "no
+                 * timer overflow, not busy" for ever, and a patched or later ROM that does
+                 * poll would hang against that lie rather than run against the core */
       return YM3812_status_port_0_r(0);
   }
   return 0;
@@ -2391,36 +2381,32 @@ static SWITCH_UPDATE(SLEIC2) {
     shoot = (inports[CORE_SIMINPORT] & SIM_SHOOTERKEY) ? 1 : 0;
     drain = (in & 0x1000) ? 1 : 0;
     /* Cabinet inputs -> swMatrix[9] = Z80 port 0x03, one bit per input.  The bit -> CODE map
-     * is exact (F5/F14, see iomoon_z80_read); the bit -> BUTTON map is fixed for four of the
-     * six by what the 80188 firmware does with each code - and for COIN and TILT that is the
-     * OPPOSITE of what this driver assumed until now.  Traced from the consuming code:
+     * is exact (F5/F14, see iomoon_z80_read); the bit -> BUTTON map is derived from what the
+     * 80188 firmware does with each code, and for COIN and TILT it comes out the OPPOSITE way
+     * round from the obvious reading - do not "correct" it back.  Traced from the consumers:
      *
      *   bit 5 -> COIN.  Code 0x32 is the one code the NMI does not queue: D000:0190 tests for
-     *            it and counts it in [4000:1144].  sub_D800A folds that into the pulse
-     *            accumulator 413C:00D5 and hands it to the per-country pricing routine
-     *            (sub_DCD9E / sub_DD03D, chosen on country byte [4000:1001]), which divides by
-     *            the coin values at 413C:00AD/00AE/00AF, multiplies by the credit values at
-     *            413C:00A9/00AA/00AB and banks the result via sub_DCFAB / sub_DD1C1.  A coin
-     *            validator emitting a pulse train per coin, and the only path in the ROM that
-     *            adds credits from a switch.  The award is nvstore_write_triple_83 (F10), the
-     *            running total cached in 413C:00D4, sub_D0B70(0x0A) the coin sound.  So the
-     *            bit is not driven from the key directly: one press is one COIN, and
-     *            iomoon_coin_update turns it into that coin's pulse train.
+     *            it and counts it in [4000:1144], sub_D800A folds that into the pulse
+     *            accumulator 413C:00D5, and the per-country pricing routine (sub_DCD9E /
+     *            sub_DD03D, chosen on country byte [4000:1001]) divides by the coin values at
+     *            413C:00AD-00AF, multiplies by the credit values at 413C:00A9-00AB and banks
+     *            the result via sub_DCFAB / sub_DD1C1 - the only path in the ROM that adds
+     *            credits from a switch.  So the bit is not driven from the key directly: one
+     *            press is one COIN, and iomoon_coin_update turns it into that coin's pulse
+     *            train (award nvstore_write_triple_83 / F10, coin sound sub_D0B70(0x0A)).
      *   bit 0 -> TILT ("falta").  Code 0x3E dispatches through the in-game table at CS:0527
-     *            (entry 48) to sub_D9EBB, which counts down [4134:0033] - loaded each ball
-     *            start from NVRAM byte 0x42 minus one (DBE17, DBF7F), the FALTA adjustment -
-     *            and on the last stops the music (fm_song_select(0)), clears both planes,
-     *            plays sound 0x0E and pushes driver-disable 0xF2.  The Z80's 3000-tick lockout
-     *            in sub_125B is the tilt debounce, not a coin lockout.  Bike Race puts tilt on
-     *            the same port-0x03 bit 0.
+     *            (entry 48) to sub_D9EBB, which counts down [4134:0033] - the FALTA adjustment,
+     *            reloaded each ball from NVRAM byte 0x42 minus one (DBE17, DBF7F) - and on the
+     *            last stops the music, clears both planes, plays sound 0x0E and pushes
+     *            driver-disable 0xF2.  The Z80's 3000-tick lockout in sub_125B is the tilt
+     *            debounce, not a coin lockout.  Bike Race uses the same port-0x03 bit 0.
      *   bit 1 -> TEST: code 0x3F opens the service menu (F14).
      *   bit 4 -> START: code 0x40 reaches sub_D8066, which refuses in attract, at 4 players
-     *            and on zero credits, then decrements the NVRAM credit triple and, on the
-     *            first player, calls sub_D8154 -> mode 3 -> the in-game song.
+     *            and on zero credits, then decrements the NVRAM credit triple.
      *   bits 3/2 -> left/right flipper: sub_1292 / sub_12D8 fire the port-0x85 coil pairs
      *            directly (sub_05C7 / sub_05ED), and Pin-Ball's verified map puts the left
      *            flipper on the first pair.  WHICH is left remains inferred; that they are the
-     *            flipper buttons is not.  Codes 0x41/0x42 are also the service menu's scroll
+     *            flipper buttons is not.  Codes 0x41/0x42 double as the service menu's scroll
      *            and select (sub_DD480 dispatch at DD501) */
     CORE_SETKEYSW(in >> 10, 0x01, 9); /* TILT   0x0400 -> bit0 (code 0x3E) */
     CORE_SETKEYSW(in >> 10, 0x02, 9); /* TEST   0x0800 -> bit1 (code 0x3F) */
