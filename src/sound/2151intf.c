@@ -17,7 +17,13 @@
  #include "ym2151_opm.h"
  #include "ym2151_opm.c"
  static opm_t chip[MAX_2151];
- static mame_timer * update_timer;
+#endif
+#if (HAS_YM2151_NUKED || HAS_YM2151_LLE)
+ static mame_timer * update_timer; // shared by both nukeykt low level cores, see below
+#endif
+#if (HAS_YM2151_LLE)
+ #include "ym2151_lle.h"
+ #include "ym2151_lle.c" // which #includes fmopm.c, like the Nuked core above
 #endif
 #if (HAS_YM2151_YMFM)
  #include "../ext/vgm/vgmwrite.h"
@@ -39,11 +45,13 @@
 
  static void* chip[MAX_2151];
  static unsigned short vgm_idx[MAX_2151];
- static unsigned char lastreg[MAX_2151];
 #endif
 
 /* for stream system */
 static int stream[MAX_2151];
+
+/* last value written to the address port, shared by every core: the register/data port handlers latch it here and the data write pairs with it */
+static unsigned char lastreg[MAX_2151];
 
 static const struct YM2151interface *intf;
 
@@ -52,6 +60,7 @@ static int FMMode;
 #define CHIP_YM2151_ALT 5	/* use Jarek's YM2151.C */
 #define CHIP_YM2151_NUKED 6	/* use Nuked-OPM */
 #define CHIP_YM2151_YMFM 7	/* use Aarons unified FM */
+#define CHIP_YM2151_LLE  8	/* use nukeykt's YM2151-LLE */
 
 #define YM2151_NUMBUF 2
 
@@ -100,12 +109,92 @@ static void YM2151UpdateNuked(int num, INT16 **buffers, int length)
 	OPM_GenerateStream(&chip[num], (float**)buffers, length);
 }
 
+#endif
+#if (HAS_YM2151_NUKED || HAS_YM2151_LLE)
 // to keep up with the CPU emulation (i.e. IRQ and port callbacks), trigger the sound updates on a regular basis
 static void update_timer_func(int timer_num)
 {
 	int i;
 	for (i = 0; i < intf->num; i++)
 		YM2151UpdateRequest(i);
+}
+
+/* The update timer above exists only so that the IRQ and port callbacks of the two low level
+   cores, Nuked and LLE, reach the rest of the emulation on time: both only advance, and so
+   only raise those callbacks, while they are being clocked inside the stream callback.
+
+   The chip itself is cycle exact whatever rate we poll it at, so
+   polling slower delays when the host *notices* an interrupt, it does not shift the chip's
+   own timing. Running it at the output sample rate (~55.9kHz) is therefore far more than is
+   ever needed, so track what the ROM actually programmed and poll just fast enough:
+
+     timer A period = 64*(1024-NA)/clk  =      (1024-NA) output samples
+     timer B period = 1024*(256-NB)/clk = 16 * (256-NB)  output samples
+
+   and when neither timer interrupt is enabled, stop the timer altogether. The port callback
+   (CT1/CT2) only ever fires as a result of a write, which already pumps the stream, so it
+   just needs a floor low enough that the change is not sat on for long */
+#define YM2151_PINLEVEL_OVERSAMPLE 2.    /* polls per timer period, to keep the jitter under half of one */
+#define YM2151_PINLEVEL_PORT_HZ    1000. /* floor while a port write handler is connected */
+
+static UINT16 pinlevel_timerA[MAX_2151]; /* NA, 10 bits, regs 0x10/0x11 */
+static UINT8  pinlevel_timerB[MAX_2151]; /* NB,  8 bits, reg  0x12 */
+static UINT8  pinlevel_irqEn[MAX_2151];  /* reg 0x14, bit 2 = timer A, bit 3 = timer B */
+static UINT8  pinlevel_hasPort;
+static double pinlevel_rate;             /* baseclock/64, the chip's own output sample rate */
+static double pinlevel_timerHz;          /* what we last programmed, to avoid pointless re-arming */
+
+static void ym2151_pinlevel_retime(void)
+{
+	double need = pinlevel_hasPort ? YM2151_PINLEVEL_PORT_HZ : 0.;
+	int i;
+
+	if (!update_timer)
+		return;
+
+	for (i = 0; i < intf->num; i++)
+	{
+		if (pinlevel_irqEn[i] & 0x04)
+		{
+			const double f = YM2151_PINLEVEL_OVERSAMPLE * pinlevel_rate / (double)(1024u - pinlevel_timerA[i]);
+			if (f > need) need = f;
+		}
+		if (pinlevel_irqEn[i] & 0x08)
+		{
+			const double f = YM2151_PINLEVEL_OVERSAMPLE * pinlevel_rate / (16. * (double)(256u - pinlevel_timerB[i]));
+			if (f > need) need = f;
+		}
+	}
+	if (need > pinlevel_rate) need = pinlevel_rate; /* never more than one poll per output sample */
+
+	if (need == pinlevel_timerHz)
+		return;
+	pinlevel_timerHz = need;
+
+	if (need > 0.)
+		timer_adjust(update_timer, TIME_IN_HZ(need), 0, TIME_IN_HZ(need));
+	else
+		timer_enable(update_timer, 0);
+}
+
+/* called for every register write that reaches either low level core, so the shadow above tracks whatever the ROM programmed */
+INLINE void ym2151_pinlevel_reg_w(int num, UINT8 reg, UINT8 data)
+{
+	switch (reg)
+	{
+	case 0x10: pinlevel_timerA[num] = (UINT16)((pinlevel_timerA[num] & 0x003) | (data << 2));   break;
+	case 0x11: pinlevel_timerA[num] = (UINT16)((pinlevel_timerA[num] & 0x3fc) | (data & 0x03)); break;
+	case 0x12: pinlevel_timerB[num] = data;        break;
+	case 0x14: pinlevel_irqEn[num]  = data & 0x0c; break;
+	default: return; /* nothing else changes the rate we need */
+	}
+	ym2151_pinlevel_retime();
+}
+#endif
+#if (HAS_YM2151_LLE)
+static void YM2151UpdateLLE(int num, INT16 **buffers, int length)
+{
+	ym2151lle_generate(num, buffers, length);
 }
 #endif
 #if (HAS_YM2151_YMFM)
@@ -135,6 +224,7 @@ static int my_YM2151_sh_start(const struct MachineSound *msound,const int mode)
 	if ( mode == 1 ) FMMode = CHIP_YM2151_ALT;
 	else if ( mode == 2 ) FMMode = CHIP_YM2151_NUKED;
 	else if ( mode == 3 ) FMMode = CHIP_YM2151_YMFM;
+	else if ( mode == 4 ) FMMode = CHIP_YM2151_LLE;
 	else FMMode = CHIP_YM2151_DAC;
 
 	switch(FMMode)
@@ -232,8 +322,59 @@ static int my_YM2151_sh_start(const struct MachineSound *msound,const int mode)
 		// to keep up with the CPU emulation (i.e. IRQ and port callbacks), trigger the sound updates on a regular basis
 		if (has_handler) // only stress the emulation with this timer if any external handler needed
 		{
+			int k;
+			for (k = 0; k < MAX_2151; k++)
+				{ pinlevel_timerA[k] = 0; pinlevel_timerB[k] = 0; pinlevel_irqEn[k] = 0; }
+			pinlevel_hasPort = 0;
+			for (k = 0; k < intf->num; k++)
+				if (intf->portwritehandler[k]) pinlevel_hasPort = 1;
+			pinlevel_rate = rate;
+			pinlevel_timerHz = -1.; // force the first retime to program the timer
+
 			update_timer = timer_alloc(update_timer_func);
-			timer_adjust(update_timer, TIME_IN_HZ(rate), 0, TIME_IN_HZ(rate));
+			ym2151_pinlevel_retime(); // rate follows what the ROM programs, see above
+		}
+		else
+			update_timer = NULL;
+
+		return 0;
+	}
+#endif
+#if (HAS_YM2151_LLE)
+	case CHIP_YM2151_LLE:
+	{
+		UINT8 has_handler = 0;
+		for (i = 0;i < intf->num;i++)
+		{
+			mixed_vol = intf->volume[i];
+			for (j = 0 ; j < YM2151_NUMBUF ; j++)
+			{
+				name[j]=buf[j];
+				vol[j] = mixed_vol & 0xffff;
+				mixed_vol>>=16;
+				sprintf(buf[j],"%s #%d Ch%d",sound_name(msound),i,j+1);
+			}
+			stream[i] = stream_init_multi(YM2151_NUMBUF,name,vol,rate,i,YM2151UpdateLLE);
+
+			ym2151lle_init(i, 0); /* 0 = YM2151; no PinMAME game uses the YM2164 */
+			ym2151lle_set_handlers(i, intf->irqhandler[i], intf->portwritehandler[i]);
+			has_handler |= (intf->irqhandler[i] != 0) | (intf->portwritehandler[i] != 0);
+		}
+
+		/* this core delivers IRQ and CT only while it is being clocked, exactly like
+		   Nuked, so it needs the same update timer - see ym2151_pinlevel_retime() */
+		if (has_handler)
+		{
+			int k;
+			for (k = 0; k < MAX_2151; k++)
+				{ pinlevel_timerA[k] = 0; pinlevel_timerB[k] = 0; pinlevel_irqEn[k] = 0; }
+			pinlevel_hasPort = 0;
+			for (k = 0; k < intf->num; k++)
+				if (intf->portwritehandler[k]) pinlevel_hasPort = 1;
+			pinlevel_rate = rate;
+			pinlevel_timerHz = -1.;
+			update_timer = timer_alloc(update_timer_func);
+			ym2151_pinlevel_retime();
 		}
 		else
 			update_timer = NULL;
@@ -305,6 +446,12 @@ int YM2151_sh_start(const struct MachineSound* msound)
 	return my_YM2151_sh_start(msound,3);
 }
 #endif
+#if (HAS_YM2151_LLE)
+int YM2151_sh_start(const struct MachineSound* msound)
+{
+	return my_YM2151_sh_start(msound,4);
+}
+#endif
 
 void YM2151_sh_stop(void)
 {
@@ -320,8 +467,9 @@ void YM2151_sh_stop(void)
 		YM2151Shutdown();
 		break;
 #endif
-#if (HAS_YM2151_NUKED)
+#if (HAS_YM2151_NUKED || HAS_YM2151_LLE)
 	case CHIP_YM2151_NUKED:
+	case CHIP_YM2151_LLE:
 		if(update_timer)
 		{
 			timer_remove(update_timer);
@@ -362,6 +510,16 @@ void YM2151_sh_reset(void)
 		YM2151UpdateRequest(i);
 		OPM_FlushBuffer(&chip[i]);
 		OPM_Reset(&chip[i], opm_flags_none, 0);
+		pinlevel_timerA[i] = 0; pinlevel_timerB[i] = 0; pinlevel_irqEn[i] = 0;
+		ym2151_pinlevel_retime();
+		break;
+#endif
+#if (HAS_YM2151_LLE)
+	case CHIP_YM2151_LLE:
+		YM2151UpdateRequest(i);
+		ym2151lle_reset(i);
+		pinlevel_timerA[i] = 0; pinlevel_timerB[i] = 0; pinlevel_irqEn[i] = 0;
+		ym2151_pinlevel_retime();
 		break;
 #endif
 #if (HAS_YM2151_YMFM)
@@ -391,6 +549,11 @@ READ_HANDLER( YM2151_status_port_0_r )
 		YM2151UpdateRequest(0);
 		return OPM_Read(&chip[0],1);
 #endif
+#if (HAS_YM2151_LLE)
+	case CHIP_YM2151_LLE:
+		YM2151UpdateRequest(0);
+		return ym2151lle_read_status(0);
+#endif
 #if (HAS_YM2151_YMFM)
 	case CHIP_YM2151_YMFM:
 		YM2151UpdateRequest(0);
@@ -416,6 +579,11 @@ READ_HANDLER( YM2151_status_port_1_r )
 	case CHIP_YM2151_NUKED:
 		YM2151UpdateRequest(1);
 		return OPM_Read(&chip[1],1);
+#endif
+#if (HAS_YM2151_LLE)
+	case CHIP_YM2151_LLE:
+		YM2151UpdateRequest(1);
+		return ym2151lle_read_status(1);
 #endif
 #if (HAS_YM2151_YMFM)
 	case CHIP_YM2151_YMFM:
@@ -443,6 +611,11 @@ READ_HANDLER( YM2151_status_port_2_r )
 		YM2151UpdateRequest(2);
 		return OPM_Read(&chip[2],1);
 #endif
+#if (HAS_YM2151_LLE)
+	case CHIP_YM2151_LLE:
+		YM2151UpdateRequest(2);
+		return ym2151lle_read_status(2);
+#endif
 #if (HAS_YM2151_YMFM)
 	case CHIP_YM2151_YMFM:
 		YM2151UpdateRequest(2);
@@ -452,9 +625,7 @@ READ_HANDLER( YM2151_status_port_2_r )
 	return 0;
 }
 
-#if (HAS_YM2151_ALT)
-static int lastreg[MAX_2151];
-
+/* These are compiled for every core, not just ALT: they are declared unconditionally in 2151intf.h */
 WRITE_HANDLER( YM2151_register_port_0_w )
 {
 	lastreg[0] = data;
@@ -487,7 +658,18 @@ WRITE_HANDLER( YM2151_data_port_0_w )
 #if (HAS_YM2151_NUKED)
 	case CHIP_YM2151_NUKED:
 		YM2151UpdateRequest(0);
-		OPM_Write/*Buffered*/(&chip[0], lastreg[0], data);
+		/* two calls: Nuked's port is 0 = address / 1 = data, not the register number */
+		OPM_Write/*Buffered*/(&chip[0], 0, lastreg[0]);
+		OPM_Write/*Buffered*/(&chip[0], 1, data);
+		ym2151_pinlevel_reg_w(0, lastreg[0], data);
+		break;
+#endif
+#if (HAS_YM2151_LLE)
+	case CHIP_YM2151_LLE:
+		YM2151UpdateRequest(0);
+		ym2151lle_write(0, 0, lastreg[0]);
+		ym2151lle_write(0, 1, data);
+		ym2151_pinlevel_reg_w(0, lastreg[0], data);
 		break;
 #endif
 #if (HAS_YM2151_YMFM)
@@ -519,7 +701,18 @@ WRITE_HANDLER( YM2151_data_port_1_w )
 #if (HAS_YM2151_NUKED)
 	case CHIP_YM2151_NUKED:
 		YM2151UpdateRequest(1);
-		OPM_Write/*Buffered*/(&chip[1], lastreg[1], data);
+		/* two calls: Nuked's port is 0 = address / 1 = data, not the register number */
+		OPM_Write/*Buffered*/(&chip[1], 0, lastreg[1]);
+		OPM_Write/*Buffered*/(&chip[1], 1, data);
+		ym2151_pinlevel_reg_w(1, lastreg[1], data);
+		break;
+#endif
+#if (HAS_YM2151_LLE)
+	case CHIP_YM2151_LLE:
+		YM2151UpdateRequest(1);
+		ym2151lle_write(1, 0, lastreg[1]);
+		ym2151lle_write(1, 1, data);
+		ym2151_pinlevel_reg_w(1, lastreg[1], data);
 		break;
 #endif
 #if (HAS_YM2151_YMFM)
@@ -551,7 +744,18 @@ WRITE_HANDLER( YM2151_data_port_2_w )
 #if (HAS_YM2151_NUKED)
 	case CHIP_YM2151_NUKED:
 		YM2151UpdateRequest(2);
-		OPM_Write/*Buffered*/(&chip[2], lastreg[2], data);
+		/* two calls: Nuked's port is 0 = address / 1 = data, not the register number */
+		OPM_Write/*Buffered*/(&chip[2], 0, lastreg[2]);
+		OPM_Write/*Buffered*/(&chip[2], 1, data);
+		ym2151_pinlevel_reg_w(2, lastreg[2], data);
+		break;
+#endif
+#if (HAS_YM2151_LLE)
+	case CHIP_YM2151_LLE:
+		YM2151UpdateRequest(2);
+		ym2151lle_write(2, 0, lastreg[2]);
+		ym2151lle_write(2, 1, data);
+		ym2151_pinlevel_reg_w(2, lastreg[2], data);
 		break;
 #endif
 #if (HAS_YM2151_YMFM)
@@ -563,7 +767,6 @@ WRITE_HANDLER( YM2151_data_port_2_w )
 #endif
 	}
 }
-#endif
 
 WRITE_HANDLER( YM2151_word_0_w )
 {
@@ -572,7 +775,21 @@ WRITE_HANDLER( YM2151_word_0_w )
 #if (HAS_YM2151_NUKED)
 	case CHIP_YM2151_NUKED:
 		YM2151UpdateRequest(0);
+		if (offset & 0x01)
+			ym2151_pinlevel_reg_w(0, lastreg[0], data);
+		else
+			lastreg[0] = data;
 		OPM_WriteBuffered(&chip[0], offset, data);
+		break;
+#endif
+#if (HAS_YM2151_LLE)
+	case CHIP_YM2151_LLE:
+		YM2151UpdateRequest(0);
+		if (offset & 0x01)
+			ym2151_pinlevel_reg_w(0, lastreg[0], data);
+		else
+			lastreg[0] = data;
+		ym2151lle_write(0, offset, data);
 		break;
 #endif
 #if (HAS_YM2151_YMFM)
@@ -603,7 +820,21 @@ WRITE_HANDLER( YM2151_word_1_w )
 #if (HAS_YM2151_NUKED)
 	case CHIP_YM2151_NUKED:
 		YM2151UpdateRequest(1);
+		if (offset & 0x01)
+			ym2151_pinlevel_reg_w(1, lastreg[1], data);
+		else
+			lastreg[1] = data;
 		OPM_WriteBuffered(&chip[1], offset, data);
+		break;
+#endif
+#if (HAS_YM2151_LLE)
+	case CHIP_YM2151_LLE:
+		YM2151UpdateRequest(1);
+		if (offset & 0x01)
+			ym2151_pinlevel_reg_w(1, lastreg[1], data);
+		else
+			lastreg[1] = data;
+		ym2151lle_write(1, offset, data);
 		break;
 #endif
 #if (HAS_YM2151_YMFM)

@@ -1513,6 +1513,14 @@ else
 SOUNDDEFS += -DHAS_SAA1099=0
 endif
 
+SOUND=$(strip $(findstring SAA1099_VB@,$(SOUNDS)))
+ifneq ($(SOUND),)
+SOUNDDEFS += -DHAS_SAA1099_VB=1
+SOUNDOBJS += $(OBJ)/sound/saa1099.o
+else
+SOUNDDEFS += -DHAS_SAA1099_VB=0
+endif
+
 SOUND=$(strip $(findstring IREMGA20@,$(SOUNDS)))
 ifneq ($(SOUND),)
 SOUNDDEFS += -DHAS_IREMGA20=1

@@ -75,6 +75,8 @@
 #define HAS_YM2151_YMFM 1
 #endif // mingw
 //#define HAS_YM2151_NUKED 1
+// nukeykt's YM2151-LLE. NOTE: that core is GPLv2
+//#define HAS_YM2151_LLE 1
 #define HAS_HC55516    1
 #define HAS_MC3417     1
 #define HAS_SAMPLES    1
@@ -114,7 +116,11 @@
 #define HAS_YMF262_YMFM 1
 #endif // mingw
 #define HAS_MEA8000    1
+// two SAA1099 cores, pick exactly one: the MAME derived one (MAME timing, libVGM's
+// bipolar mixer), or Valley Bell's, which was written against NewRisingSun's recordings
+// from real hardware. Affects ebalchmb, cobrapb and comeback
 #define HAS_SAA1099    1
+//#define HAS_SAA1099_VB 1
 #define HAS_QSOUND     1
 #endif /* _MSC_VER */
 
