@@ -76,7 +76,22 @@
 
 #include "../ext/vgm/vgmwrite.h"
 
+#if (HAS_SAA1099_VB)
+ #include "saa1099_vb.h"
+ #include "saa1099_vb.c"
+#endif
+
+#if (HAS_SAA1099 && HAS_SAA1099_VB)
+ #error Only pick one SAA1099 core (HAS_SAA1099 or HAS_SAA1099_VB)
+#endif
+
+/* The MAME derived core steps at clock/256, Valley Bell/libvgm's at clock/128 - running the
+   latter at its own rate makes its step counter exactly 1:1 with the output samples */
+#if (HAS_SAA1099_VB)
+static const int clock_divider = 128;
+#else
 static const int clock_divider = 256;
+#endif
 
 #define LEFT	0x00
 #define RIGHT	0x01
@@ -131,6 +146,8 @@ struct SAA1099
 
 /* saa1099 chips */
 static struct SAA1099 saa1099[MAX_SAA1099];
+
+#if (HAS_SAA1099) /*-- the MAME derived core: tables, envelope and mixer --*/
 
 static const UINT16 amplitude_lookup[16] = {
 	 0*32768u/16,  1*32768u/16,  2*32768u/16,  3*32768u/16,
@@ -305,6 +322,8 @@ static void saa1099_update(int chip, INT16 **buffer, int length)
 	}
 }
 
+#endif /* HAS_SAA1099 */
+
 
 
 int saa1099_sh_start(const struct MachineSound *msound)
@@ -334,7 +353,12 @@ int saa1099_sh_start(const struct MachineSound *msound)
 			name[j] = buf[j];
 			vol[j] = MIXER(intf->volume[i][j], j ? MIXER_PAN_RIGHT : MIXER_PAN_LEFT);
 		}
+#if (HAS_SAA1099_VB)
+		saa1099vb_init(i, saa->master_clock, sample_rate);
+		saa->stream = stream_init_multi(2, name, vol, sample_rate, i, saa1099vb_update);
+#else
 		saa->stream = stream_init_multi(2, name, vol, sample_rate, i, saa1099_update);
+#endif
 
 		saa->vgm_idx = vgm_open(VGMC_SAA1099, saa->master_clock);
 	}
@@ -357,6 +381,12 @@ static void saa1099_control_port_w( int chip, int reg, int data )
 	}
 
 	saa->selected_reg = data & 0x1f;
+#if (HAS_SAA1099_VB)
+	/* the VB/libvgm core tracks the selected register itself, and clocks the envelope
+	   generators off this write when they are set to external clocking */
+	stream_update(saa->stream, 0);
+	saa1099vb_write_addr(chip, (UINT8)(data & 0xff));
+#else
 	if (saa->selected_reg == 0x18 || saa->selected_reg == 0x19)
 	{
 		/* clock the envelope channels */
@@ -365,6 +395,7 @@ static void saa1099_control_port_w( int chip, int reg, int data )
 		if (saa->env_clock[1])
 			saa1099_envelope(chip,1);
 	}
+#endif
 }
 
 
@@ -372,13 +403,18 @@ static void saa1099_write_port_w( int chip, int offset, int data )
 {
 	struct SAA1099 * const saa = &saa1099[chip];
 	const int reg = saa->selected_reg;
+#if (HAS_SAA1099)
 	int ch;
+#endif
 
 	/* first update the stream to this point in time */
 	stream_update(saa->stream, 0);
 
 	vgm_write(saa->vgm_idx, 0x00, reg & 0x7F, data);
 
+#if (HAS_SAA1099_VB)
+	saa1099vb_write_data(chip, (UINT8)(data & 0xff));
+#else
 	switch (reg)
 	{
 	/* channel i amplitude */
@@ -450,9 +486,12 @@ static void saa1099_write_port_w( int chip, int offset, int data )
 		}
 		break;
 	default:    /* Error! */
-		logerror("%04x: (SAA1099 #%d) Unknown operation (reg:%02x, data:%02x)\n",activecpu_get_pc(), chip, reg, data);
+		/* zero writes are not errors, MAME stopped logging them in 3e090f75 */
+		if (data != 0)
+			logerror("%04x: (SAA1099 #%d) Unknown operation (reg:%02x, data:%02x)\n",activecpu_get_pc(), chip, reg, data);
 		break;
 	}
+#endif /* HAS_SAA1099_VB */
 }
 
 
