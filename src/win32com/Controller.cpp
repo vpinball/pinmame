@@ -21,6 +21,12 @@
 #include "VPinMAMEAboutDlg.h"
 #include "VPinMAMEConfig.h"
 
+#include <chrono>
+#include <condition_variable>
+#include <memory>
+#include <mutex>
+#include <vector>
+
 #include "Controller.h"
 #include "ControllerDisclaimerDlg.h"
 #include "ControllerGames.h"
@@ -56,6 +62,87 @@ extern UINT8 g_VPM_ignore_pwm_segments_update;
 #endif
 }
 #include "Alias.h"
+
+namespace {
+
+struct PendingMainCPUByteRead
+{
+        UINT32 address;
+        int value;
+        bool done;
+};
+
+std::mutex g_memoryReadMutex;
+std::condition_variable g_memoryReadCv;
+std::vector<std::shared_ptr<PendingMainCPUByteRead>> g_memoryReadQueue;
+
+static int SubmitMainCPUByteRead(UINT32 address)
+{
+        auto request = std::make_shared<PendingMainCPUByteRead>();
+
+        request->address = address;
+        request->value = -1;
+        request->done = false;
+
+        std::unique_lock<std::mutex> lock(g_memoryReadMutex);
+        g_memoryReadQueue.push_back(request);
+
+        if (!g_memoryReadCv.wait_for(lock, std::chrono::milliseconds(250),
+                [&request] { return request->done; }))
+        {
+                for (auto it = g_memoryReadQueue.begin(); it != g_memoryReadQueue.end(); ++it)
+                {
+                        if (*it == request)
+                        {
+                                g_memoryReadQueue.erase(it);
+                                break;
+                        }
+                }
+
+                return -1;
+        }
+
+        return request->value;
+}
+
+} // anonymous namespace
+
+extern "C" void vpinmame_drain_pending_memory_reads(void)
+{
+        std::vector<std::shared_ptr<PendingMainCPUByteRead>> reads;
+
+        {
+                std::lock_guard<std::mutex> lock(g_memoryReadMutex);
+
+                if (g_memoryReadQueue.empty())
+                        return;
+
+                reads.swap(g_memoryReadQueue);
+        }
+
+        cpuintrf_push_context(0);
+
+        const UINT64 addressSpace = ((UINT64)1) << cpunum_address_bits(0);
+
+        for (const auto& request : reads)
+        {
+                if (request->address < addressSpace)
+                        request->value = cpunum_read_byte(0, request->address);
+                else
+                        request->value = -1;
+        }
+
+        cpuintrf_pop_context();
+
+        {
+                std::lock_guard<std::mutex> lock(g_memoryReadMutex);
+
+                for (const auto& request : reads)
+                        request->done = true;
+        }
+
+        g_memoryReadCv.notify_all();
+}
 
 extern int fAllowWriteAccess;
 extern int deprecated_synclevel;
@@ -682,6 +769,23 @@ STDMETHODIMP CController::get_ChangedNVRAM(VARIANT *pVal)
 	pVal->parray = psa;
 
 	return S_OK;
+}
+
+STDMETHODIMP CController::ReadMainCPUByte(long address, int *pVal)
+{
+        if (!pVal)
+                return S_FALSE;
+
+        *pVal = -1;
+
+        if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
+                return S_OK;
+
+        if (address < 0)
+                return S_OK;
+
+        *pVal = SubmitMainCPUByteRead((UINT32)address);
+        return S_OK;
 }
 
 /************************************************************************************************
