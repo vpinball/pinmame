@@ -76,6 +76,24 @@ std::mutex g_memoryReadMutex;
 std::condition_variable g_memoryReadCv;
 std::vector<std::shared_ptr<PendingMainCPUByteRead>> g_memoryReadQueue;
 
+// Main CPU memory must be read on the emulation thread because PinMAME
+// switches the active memory context as it moves between CPUs. Queueing the
+// request ensures CPU 0's context is installed and the read is dispatched
+// through the memory map via cpunum_read_byte().
+static int ReadMainCPUByteOnEmulationThread(UINT32 address)
+{
+        const UINT64 addressSpace = ((UINT64)1) << cpunum_address_bits(0);
+
+        if (address >= addressSpace)
+                return -1;
+
+        cpuintrf_push_context(0);
+        const int value = cpunum_read_byte(0, address);
+        cpuintrf_pop_context();
+
+        return value;
+}
+
 static int SubmitMainCPUByteRead(UINT32 address)
 {
         auto request = std::make_shared<PendingMainCPUByteRead>();
@@ -120,19 +138,8 @@ extern "C" void vpinmame_drain_pending_memory_reads(void)
                 reads.swap(g_memoryReadQueue);
         }
 
-        cpuintrf_push_context(0);
-
-        const UINT64 addressSpace = ((UINT64)1) << cpunum_address_bits(0);
-
         for (const auto& request : reads)
-        {
-                if (request->address < addressSpace)
-                        request->value = cpunum_read_byte(0, request->address);
-                else
-                        request->value = -1;
-        }
-
-        cpuintrf_pop_context();
+                request->value = ReadMainCPUByteOnEmulationThread(request->address);
 
         {
                 std::lock_guard<std::mutex> lock(g_memoryReadMutex);
@@ -787,19 +794,11 @@ STDMETHODIMP CController::ReadMainCPUByte(long address, int *pVal)
         if (address < 0)
                 return S_OK;
 
-	if (m_dwThreadRun != 0 && GetCurrentThreadId() == m_dwThreadRun)
-	{
-		const UINT64 addressSpace = ((UINT64)1) << cpunum_address_bits(0);
-
-		if ((UINT32)address < addressSpace)
-		{
-			cpuintrf_push_context(0);
-			*pVal = cpunum_read_byte(0, (UINT32)address);
-			cpuintrf_pop_context();
-		}
-
-		return S_OK;
-	}
+        if (m_dwThreadRun != 0 && GetCurrentThreadId() == m_dwThreadRun)
+        {
+                *pVal = ReadMainCPUByteOnEmulationThread((UINT32)address);
+                return S_OK;
+        }
 
         *pVal = SubmitMainCPUByteRead((UINT32)address);
         return S_OK;
