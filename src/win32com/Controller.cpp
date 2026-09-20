@@ -246,6 +246,7 @@ CController::CController() {
 	lstrcpy(m_szSplashInfoLine, "");
 
 	m_hThreadRun    = INVALID_HANDLE_VALUE;
+	m_dwThreadRun   = 0;
 	m_hEmuIsRunning = CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hEventWnd = 0;
 
@@ -324,6 +325,7 @@ STDMETHODIMP CController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,defaultvalue(1
 		else {
 			CloseHandle(m_hThreadRun);
 			m_hThreadRun = INVALID_HANDLE_VALUE;
+			m_dwThreadRun = 0;
 		}
 	}
 
@@ -426,14 +428,13 @@ STDMETHODIMP CController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,defaultvalue(1
 
 	CreateEventWindow(this);
 
-	DWORD dwThreadID;
 	m_hThreadRun = /*_beginthreadex*/CreateThread(NULL,
 								0,
 								(LPTHREAD_START_ROUTINE) RunController,
 								(LPVOID) this,
-								0, &dwThreadID);
+								0, &m_dwThreadRun);
 
-	if ( !dwThreadID ) {
+	if ( !m_dwThreadRun ) {
 		DestroyEventWindow(this);
 		return Error(TEXT("Unable to start thread!"));
 	}
@@ -451,6 +452,7 @@ STDMETHODIMP CController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,defaultvalue(1
 
 	CloseHandle(m_hThreadRun);
 	m_hThreadRun = INVALID_HANDLE_VALUE;
+	m_dwThreadRun = 0;
 
 	DestroyEventWindow(this);
 
@@ -473,7 +475,8 @@ STDMETHODIMP CController::Stop()
 	WaitForSingleObject(m_hThreadRun,INFINITE);
 	
 	CloseHandle(m_hThreadRun);
-	m_hThreadRun = INVALID_HANDLE_VALUE; 
+	m_hThreadRun = INVALID_HANDLE_VALUE;
+	m_dwThreadRun = 0;
 
 	DestroyEventWindow(this);
 
@@ -783,6 +786,20 @@ STDMETHODIMP CController::ReadMainCPUByte(long address, int *pVal)
 
         if (address < 0)
                 return S_OK;
+
+	if (m_dwThreadRun != 0 && GetCurrentThreadId() == m_dwThreadRun)
+	{
+		const UINT64 addressSpace = ((UINT64)1) << cpunum_address_bits(0);
+
+		if ((UINT32)address < addressSpace)
+		{
+			cpuintrf_push_context(0);
+			*pVal = cpunum_read_byte(0, (UINT32)address);
+			cpuintrf_pop_context();
+		}
+
+		return S_OK;
+	}
 
         *pVal = SubmitMainCPUByteRead((UINT32)address);
         return S_OK;

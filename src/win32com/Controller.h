@@ -33,6 +33,7 @@ class CController :
 {
 public:
 	HANDLE				m_hThreadRun;				// Handle to the running thread!
+	DWORD				m_dwThreadRun;				// ID of the running emulation thread
 	HANDLE				m_hEmuIsRunning;			// Event handle for running emulation
 
 	// options not stored in the registry
