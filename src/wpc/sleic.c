@@ -1759,20 +1759,19 @@ MEMORY_END
  * SW2/SW4 is the low bit is settled by the presets, not by the UK and Spain rows (both
  * palindromes, which survive a reversal); sleic.h carries the eight-row comparison.
  *
- * Bit 5 is SW40-5, the manual's "servicio: no se dispensan bolas".  The 0xED handler 2BEB
- * reads it (IN ($04) / BIT 5 / JP Z,2C17) and with the bit LOW answers 0x45 without
- * looking at a contact - "do not dispense balls", the SERVICE position.  Normal play is
- * the bit HIGH, where 2BEB strobes column 0, tests the trough (sub_2C1F) and answers 0x45
- * through sub_2851 when the balls are home, or 0x46 and the eject sequence when not.  That
- * branch used to hang, which is why the bit was held low; with the trough modelled it does
- * not.  Measured both ways: bit high answers 0x45 in one frame at boot and the whole
- * coin/credit/START/serve chain runs identically to bit low */
+ * Bit 5 is SW40-6, the manual's "servicio: no se dispensan bolas" - the manual names that
+ * function SW5, but the block is wired switch n -> bit n-1, so the bit the firmware reads
+ * is switch 6.  The 0xED handler 2BEB reads it (IN ($04) / BIT 5 / JP Z,2C17) and with the
+ * bit LOW answers 0x45 without looking at a contact - "do not dispense balls", the SERVICE
+ * position.  Normal play is the bit HIGH, where 2BEB strobes column 0, tests the trough
+ * (sub_2C1F) and answers 0x45 through sub_2851 when the balls are home, or 0x46 and the
+ * eject sequence when not */
 static UINT8 iomoon_port04(void) {
-  /* DIP 0x10 is SW40-5 and its two settings are named for the switch, not for the bit:
-   * "On" (DIP 0) = the service position = port-04 bit 5 LOW, "Off" (DIP 0x10) = normal
-   * play = bit 5 HIGH.  Default is Off */
-  return (UINT8)((IOMOON_PORT04_IDLE & ~0x2e) | (core_getDip(0) & 0x0e)
-                 | ((core_getDip(0) & 0x10) ? 0x20 : 0x00));
+  /* The DIP word is the switch block: switch n is bit n-1, so SW2-SW4 are 0x0e and SW40-6
+   * is 0x20 and both pass straight through.  SW40-6's settings are named for the switch,
+   * not the bit: "On" (DIP 0) = the service position = bit 5 LOW, "Off" (DIP 0x20) =
+   * normal play = bit 5 HIGH */
+  return (UINT8)((IOMOON_PORT04_IDLE & ~0x2e) | (core_getDip(0) & 0x2e));
 }
 
 static READ_HANDLER(iomoon_z80_read) {

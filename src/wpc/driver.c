@@ -1410,6 +1410,7 @@ DRIVERNV(sleicpin)      // 1993 - Sleic Pin-Ball
 DRIVERNV(iomoon)        // 1994 - Io Moon
 DRIVERNV(iomoona)       // 1994 - Io Moon (earlier ROM revision)
 DRIVERNV(iomoont)       // 1994 - Io Moon (PRESS START tournament MOD)
+DRIVERNV(iomoontf)      // 1994 - Io Moon (tournament MOD, free play)
                         // 1996 - Dona Elvira 2
 
 // ----------------
