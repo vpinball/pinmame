@@ -29,11 +29,10 @@
 /* A1762 line -> factory lamp code, index = line. */
 #define RECEL_LAMP_CODES { 51,52,54,58,41,42,44,48, 31,32,34,38,21,22,24,28 }
 
-/* GPKD columns 2, 8 and A are latched in a 7475, not 7448-decoded, so they
-   are lamps rather than digits: one custom column each, carrying the raw
-   nibble (DA1 = bit 0 .. DA4 = bit 3) except for column 8, which
-   gpkd_refresh() decodes. Custom columns start at CORE_CUSTLAMPCOL because
-   the A1762 uses columns 0-1. */
+/* GPKD columns 2, 8 and A are latched in a 7475, so they also drive a lamp
+   column each, carrying the raw nibble (DA1 = bit 0 .. DA4 = bit 3) except
+   for column 8, which gpkd_refresh() decodes. Custom columns start at
+   CORE_CUSTLAMPCOL because the A1762 uses columns 0-1. */
 #define RECEL_LAMPCOL_P1STATUS  (CORE_CUSTLAMPCOL+0)  /* group A col 2 */
 #define RECEL_LAMPCOL_GAMESTATE (CORE_CUSTLAMPCOL+1)  /* group A col 8: ball/tilt/game over */
 #define RECEL_LAMPCOL_P2STATUS  (CORE_CUSTLAMPCOL+2)  /* group A col A */
@@ -47,12 +46,19 @@
 #define RECEL_IND_TILT     0x40
 
 /* Each counter's x1 digit: the 095-105 unit's sixth 7448 position, wired to
-   a permanent 0. A segment slot the GPKD never writes, held at 0 by
+   a permanent 0. A segment slot outside the GPKD's 32, held at 0 by
    RECEL_vblank. */
 #define RECEL_SEG_UNITS 32
 /* hw.lampCol. core.c draws and counts CORE_CUSTLAMPCOL + lampCol columns;
    without this the custom columns above are never rendered. */
 #define RECEL_LAMPCOLS 5
+
+/* B1's I/O expander lines as inputs: switch 111..118 = IO8..IO15. A closed
+   contact pulls the line to +5V, which the A17xx reads back as 0. A custom
+   column, because column 11 is CORE_FLIPPERSWCOL and core.c rewrites it every
+   frame. Nothing is wired here by default; only Antar reads these lines. */
+#define RECEL_SWCOL_EXPANDER CORE_CUSTSWCOL
+#define RECEL_SWCOLS 1
 
 /* Inport for the cabinet switches (strobes 8-9), read by SWITCH_UPDATE(RECEL).
    Bit layout matches the MAIN SWITCH CODE table (platform-level, same on every
@@ -64,16 +70,26 @@
    Maintenance manual §3.5). The player's button is the REPLAYS one: measured, it is the only one
    of the three that serves a ball, and it refuses to with no credit up. So
    that is what carries KEYCODE_1 and the name "Start", and the two door
-   buttons move out of the way to 8 and 9. */
+   buttons move out of the way to 8 and 9.
+
+   Bit 4 is one contact doing two jobs -- "Door and tilt are the same contact"
+   (§4.4, p.32) -- and the door is maintained: with it open the start button
+   steps through the sixteen RAM representation areas instead of serving a
+   ball. KEYCODE_7 toggles it, KEYCODE_DEL stays momentary for the tilt, and
+   Fault moves to KEYCODE_HOME. The toggle must be the later of the two
+   entries on bit 4: inptport.c builds a port's default value by letting each
+   entry overwrite its own mask in order, so a plain entry after it would undo
+   the latch. */
 #define RECEL_COMINPORT CORE_COREINPORT
 
 #define RECEL_COMPORTS \
   PORT_START /* 2 */ \
-    COREPORT_BIT(   0x0001, "Fault",       KEYCODE_7) \
+    COREPORT_BIT(   0x0001, "Fault",       KEYCODE_HOME) \
     COREPORT_BIT(   0x0002, "Coin 3",      KEYCODE_5) \
     COREPORT_BIT(   0x0004, "Coin 1",      KEYCODE_3) \
     COREPORT_BIT(   0x0008, "Coin 2",      KEYCODE_4) \
-    COREPORT_BIT(   0x0010, "Tilt/Door",   KEYCODE_DEL) \
+    COREPORT_BIT(   0x0010, "Tilt",        KEYCODE_DEL) \
+    COREPORT_BITTOG(0x0010, "Coin Door / Test", KEYCODE_7) \
     COREPORT_BIT(   0x0020, "Start",       KEYCODE_1) \
     COREPORT_BIT(   0x0040, "Select 2",    KEYCODE_9) \
     COREPORT_BIT(   0x0080, "Select 1",    KEYCODE_8)

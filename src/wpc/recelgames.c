@@ -3,22 +3,26 @@
 #include "sndbrd.h"
 #include "recel.h"
 
-/* Lite box layout. System III Operation and Maintenance manual §7.4.
+/* Lite box layout. System III Operation and Maintenance manual §7.4, and the
+   094-631 Lite Box Comparator manual (doc 035-637), whose INDICATORS figure
+   names all 32 positions.
 
    coreGlobals.segments keeps the 10788's scan-time index: group A at 0-15,
-   group B at 16-31. The display runs the other way -- the write pointer
-   starts at time 15 and walks down -- so the higher scan time is a field's
-   leftmost digit, and each field is spelled out descending because PinMAME
-   layouts only run left to right.
+   group B at 16-31. The write pointer starts at time 15 and walks down, so
+   the higher scan time is a field's leftmost digit, and each field is spelled
+   out descending because PinMAME layouts only run left to right.
 
      row 1   player 1  A7..A3   free play A0, extra ball A1 (two 1-digit units)
      row 2   player 2  AF..AB   match number A9
-     row 3   player 3  BF..BB   --
+     row 3   player 3  BF..BB   counter advances B9, last figure affected B8
      row 4   player 4  B7..B3   credit: tens B0, units B1 (one 2-digit unit)
 
-   Columns 2 and A (player status LEDs) and A8 (ball/tilt/game over) are
-   latched lamps rather than digits and are not laid out here; see
-   gpkd_kind() in recel.c. B8/B9 drive no indicator on a real machine. */
+   Free play left of extra ball, and credit tens left of units, is the
+   cabinet's arrangement -- the reverse of the comparator strip's order.
+
+   Columns 2 and A (player status LEDs: SELECTED, IN PLAY, ONE MILLION POINTS,
+   HANDICAP) and A8 (ball in play / tilt / game over) are latched lamps, not
+   digits, and are not laid out here; see gpkd_kind() in recel.c. */
 #define RECEL_D(row, col, pos) {row, col, pos, 1, CORE_SEG7},
 /* One counter: the five GPKD-multiplexed digits, MSD first, then the x1
    digit. base = the x10 digit's GPKD position. The x1 is not multiplexed --
@@ -29,18 +33,35 @@
   RECEL_D(row, (col)+4,(base)+2) RECEL_D(row, (col)+6,  (base)+1) \
   RECEL_D(row, (col)+8,(base))   RECEL_D(row, (col)+10, RECEL_SEG_UNITS)
 
+/* One data group as the 094-631 comparator prints it: all sixteen map columns
+   in one line, F on the left down to 0 on the right, the order a multi-column
+   RAM value reads in. The comparator is the bench unit Recel shipped to
+   replace the lite box, and it shows every position as a seven-segment digit,
+   LEDs and lamps included. That is what makes the RAM representation areas
+   legible: the cabinet rows above scatter an area's nibbles across the score
+   counters and the one-digit windows, both views being the same 32 nibbles.
+
+   CORE_SEGREV walks the segment index down, so one layout entry per group
+   covers all sixteen. CORE_SEG7S because at 198 kHz the PPS-4 runs ~3300
+   instructions a frame and per-frame character drawing dominates: on an idle
+   machine 32 full-size digits cost 13% of emulator throughput against 4% for
+   the small ones, timed over a fixed span of ROM. */
+#define RECEL_STRIP(row, base) {row, 0, base, 16, CORE_SEG7S | CORE_SEGREV},
+
 static core_tLCDLayout recel_disp[] = {
   RECEL_COUNTER(0, 0,  3) RECEL_D(0, 14, 0) RECEL_D(0, 18, 1)
   RECEL_COUNTER(2, 0, 11) RECEL_D(2, 14, 9)
-  RECEL_COUNTER(4, 0, 27)
+  RECEL_COUNTER(4, 0, 27) RECEL_D(4, 14, 25) RECEL_D(4, 16, 24)
   RECEL_COUNTER(6, 0, 19) RECEL_D(6, 14, 16) RECEL_D(6, 16, 17)
+  RECEL_STRIP(9,   0)
+  RECEL_STRIP(11, 16)
   {0}
 };
 
 #define INIT_RECEL(name, dsp, hwver) \
 RECEL_INPUT_PORTS_START(name, 1) RECEL_INPUT_PORTS_END \
 static core_tGameData name##GameData = { \
-  GEN_RECEL, dsp, {FLIP_SW(FLIP_L),0,RECEL_LAMPCOLS,0,SNDBRD_NONE,0,hwver}}; \
+  GEN_RECEL, dsp, {FLIP_SW(FLIP_L),RECEL_SWCOLS,RECEL_LAMPCOLS,0,SNDBRD_NONE,0,hwver}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
 /*-------------------------------------------------------------------
@@ -134,6 +155,39 @@ INIT_RECEL(r_quijote, recel_disp, 1)
 RECEL_ROMSTART(r_quijote, "qu.c5", 0x0100, CRC(1fd535d0) SHA1(a9c9a72881d195a0de751f10fa54fb181523a33f))
 RECEL_ROMEND
 CORE_CLONEDEFNV(r_quijote,recel,"Don Quijote",1979,"Recel",gl_mRECEL,0)
+
+/*-------------------------------------------------------------------
+/ Torneo (1978) - model 1.056. One 8-digit counter (2 credit + 6 score)
+/ instead of four player counters, and a fixed free play in place of the
+/ adjustable handicap; the cabinet differs, not the program, so it drives
+/ the same GPKD positions as the others.
+/
+/ The circulating dump plays one ball. PROM offset 0xF6 decodes to 0x8B at
+/ 0x809, `t $80B`, whose target is the second byte of the `tl $2D0` at
+/ 0x80A: landing there executes that 0xD0 as `tm ($0D0)`, a call to the
+/ ball-counter increment at BIOS 0x117, and the return lands on 0x80C, another
+/ `tm ($0D0)`. Two increments per pass through the 0x800 hook, which runs at
+/ game start and on every drain, so the counter passes the limit tested at
+/ 0x3EA on the first drain. Mr. Evil carries the same test at 0x803 and jumps
+/ clear of its own `tl $2D0` onto a real instruction. r_torneoa is that byte
+/ repaired. Both hashes are BAD_DUMP: the circulating image is demonstrably
+/ wrong, and the repair is a reconstruction, not a read of a physical PROM.
+/-------------------------------------------------------------------*/
+INIT_RECEL(r_torneo, recel_disp, 1)
+RECEL_ROMSTART(r_torneo, "to.c5", 0x0100, CRC(06518bca) SHA1(6e8d4dba3cc5713208794aafc40cad6aca558aa6) BAD_DUMP)
+RECEL_ROMEND
+CORE_CLONEDEFNV(r_torneo,recel,"Torneo",1978,"Recel",gl_mRECEL,0)
+
+/*-------------------------------------------------------------------
+/ Torneo (1978) - the one-byte repair of the set above: PROM 0xF6 0x74 -> 0x72,
+/ which is 0x8B -> 0x8D at 0x809, `t $80D`, landing past both `tm ($0D0)`
+/ bytes on the `lb ($0C5)` that forces the mode of play. The ball counter then
+/ walks 0 -> 1 -> 2 -> 7 for three balls, as every sibling game does.
+/-------------------------------------------------------------------*/
+INIT_RECEL(r_torneoa, recel_disp, 1)
+RECEL_ROMSTART(r_torneoa, "to_fixed.c5", 0x0100, CRC(0b4ffb8d) SHA1(e97271797a3e259f5db55bec28fc3b571bd81840) BAD_DUMP)
+RECEL_ROMEND
+CORE_CLONEDEFNV(r_torneoa,recel,"Torneo (corrected dump, 3 balls)",1978,"Recel",gl_mRECEL,0)
 
 /*-------------------------------------------------------------------
 / Crazy Race (1978) - model 1.054-E. Hardware version 2: the 2 KB EPROM
