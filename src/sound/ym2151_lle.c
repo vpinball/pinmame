@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /***************************************************************************
 
 	YM2151-LLE glue
@@ -28,8 +30,7 @@
 
 	Measured against Nuked on the same machine, one chip, 200k samples, x64 /O2:
 	Nuked 0.39s (9.1x realtime, ~11% of a core), this 0.82s (4.4x realtime, ~23%).
-	So roughly twice the cost of Nuked, not the order of magnitude the "low level"
-	label suggests
+	So roughly twice the cost of Nuked, not the order of magnitude the "low level" label suggests
 
 ***************************************************************************/
 
@@ -142,12 +143,20 @@ void ym2151lle_write(int num, UINT8 a0, UINT8 data)
 /* The status register is read through the pins too, but driving a /RD cycle costs as many
    clocks as a write and the CPU polls this hard while waiting for BUSY. So read the same
    flip-flops the chip's own read path uses - see the read_bus assembly in fmopm.c, which
-   takes the [0] stage of each, not [1]. Bits 2..6 only carry anything in test mode */
+   takes the [0] stage of each, not [1]. Bits 2..6 only carry anything in test mode.
+
+   BUSY also has to cover a write that is still queued.  The chip is busy from the moment a
+   write hits the bus, but ours does not reach the pins until the generate loop drives it,
+   so busy_cnt_en is still clear when the CPU polls - and the ROM's wait-while-busy loop
+   would fall through on every register write, running DE/WPC music fast */
 UINT8 ym2151lle_read_status(int num)
 {
 	const fmopm_t * const c = &lle[num].chip;
+	const int busy = c->busy_cnt_en[0]
+	              || lle[num].write_hold
+	              || lle[num].wbuf_rd != lle[num].wbuf_wr;
 
-	return (UINT8)((c->busy_cnt_en[0]    << 7)
+	return (UINT8)((busy                 << 7)
 	             | (c->timer_b_status[0] << 1)
 	             |  c->timer_a_status[0]);
 }

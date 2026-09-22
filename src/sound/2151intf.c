@@ -104,6 +104,24 @@ static void YM2151UpdateRequest(int chip_num)
 }
 
 #if (HAS_YM2151_NUKED)
+/* Two things the Nuked core needs that the other cores do not:
+
+  Its port argument is 0 = address / 1 = data, not a register number, and the address is
+  only latched when OPM_Clock runs.  Two immediate OPM_Write calls would therefore set
+  write_a and write_d together and the address register would take the data byte, so the
+  register writes below go through OPM_WriteBuffered instead, which timestamps them and
+  lets the generate loop replay them a clock apart, as the bus would.
+
+  That same buffering means the write the CPU just made has usually not reached the chip
+  yet, so busy_cnt_en is still clear while the hardware would already be busy.  Without
+  nuked_write_pending() the ROM's wait-while-busy loop falls straight through on every
+  register write and DE/WPC music runs fast.  A queued entry is marked with bit 1 of .port,
+  cleared when OPM_GenerateOne applies it */
+INLINE int nuked_write_pending(const opm_t *c)
+{
+	return (c->writebuf[c->writebuf_cur].port & 0x02) != 0;
+}
+
 static void YM2151UpdateNuked(int num, INT16 **buffers, int length)
 {
 	OPM_GenerateStream(&chip[num], (float**)buffers, length);
@@ -547,7 +565,7 @@ READ_HANDLER( YM2151_status_port_0_r )
 #if (HAS_YM2151_NUKED)
 	case CHIP_YM2151_NUKED:
 		YM2151UpdateRequest(0);
-		return OPM_Read(&chip[0],1);
+		return OPM_Read(&chip[0],1) | (nuked_write_pending(&chip[0]) ? 0x80 : 0);
 #endif
 #if (HAS_YM2151_LLE)
 	case CHIP_YM2151_LLE:
@@ -578,7 +596,7 @@ READ_HANDLER( YM2151_status_port_1_r )
 #if (HAS_YM2151_NUKED)
 	case CHIP_YM2151_NUKED:
 		YM2151UpdateRequest(1);
-		return OPM_Read(&chip[1],1);
+		return OPM_Read(&chip[1],1) | (nuked_write_pending(&chip[1]) ? 0x80 : 0);
 #endif
 #if (HAS_YM2151_LLE)
 	case CHIP_YM2151_LLE:
@@ -609,7 +627,7 @@ READ_HANDLER( YM2151_status_port_2_r )
 #if (HAS_YM2151_NUKED)
 	case CHIP_YM2151_NUKED:
 		YM2151UpdateRequest(2);
-		return OPM_Read(&chip[2],1);
+		return OPM_Read(&chip[2],1) | (nuked_write_pending(&chip[2]) ? 0x80 : 0);
 #endif
 #if (HAS_YM2151_LLE)
 	case CHIP_YM2151_LLE:
@@ -658,9 +676,9 @@ WRITE_HANDLER( YM2151_data_port_0_w )
 #if (HAS_YM2151_NUKED)
 	case CHIP_YM2151_NUKED:
 		YM2151UpdateRequest(0);
-		/* two calls: Nuked's port is 0 = address / 1 = data, not the register number */
-		OPM_Write/*Buffered*/(&chip[0], 0, lastreg[0]);
-		OPM_Write/*Buffered*/(&chip[0], 1, data);
+		/* address then data, buffered - see nuked_write_pending() above */
+		OPM_WriteBuffered(&chip[0], 0, lastreg[0]);
+		OPM_WriteBuffered(&chip[0], 1, data);
 		ym2151_pinlevel_reg_w(0, lastreg[0], data);
 		break;
 #endif
@@ -701,9 +719,9 @@ WRITE_HANDLER( YM2151_data_port_1_w )
 #if (HAS_YM2151_NUKED)
 	case CHIP_YM2151_NUKED:
 		YM2151UpdateRequest(1);
-		/* two calls: Nuked's port is 0 = address / 1 = data, not the register number */
-		OPM_Write/*Buffered*/(&chip[1], 0, lastreg[1]);
-		OPM_Write/*Buffered*/(&chip[1], 1, data);
+		/* address then data, buffered - see nuked_write_pending() above */
+		OPM_WriteBuffered(&chip[1], 0, lastreg[1]);
+		OPM_WriteBuffered(&chip[1], 1, data);
 		ym2151_pinlevel_reg_w(1, lastreg[1], data);
 		break;
 #endif
@@ -744,9 +762,9 @@ WRITE_HANDLER( YM2151_data_port_2_w )
 #if (HAS_YM2151_NUKED)
 	case CHIP_YM2151_NUKED:
 		YM2151UpdateRequest(2);
-		/* two calls: Nuked's port is 0 = address / 1 = data, not the register number */
-		OPM_Write/*Buffered*/(&chip[2], 0, lastreg[2]);
-		OPM_Write/*Buffered*/(&chip[2], 1, data);
+		/* address then data, buffered - see nuked_write_pending() above */
+		OPM_WriteBuffered(&chip[2], 0, lastreg[2]);
+		OPM_WriteBuffered(&chip[2], 1, data);
 		ym2151_pinlevel_reg_w(2, lastreg[2], data);
 		break;
 #endif

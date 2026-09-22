@@ -74,9 +74,9 @@
 #else
 #define HAS_YM2151_YMFM 1
 #endif // mingw
-//#define HAS_YM2151_NUKED 1
+//#define HAS_YM2151_NUKED 1 // has speed issues (at least) with DE and WPC, too 'fast'
 // nukeykt's YM2151-LLE. NOTE: that core is GPLv2
-//#define HAS_YM2151_LLE 1
+//#define HAS_YM2151_LLE 1   // WPC sounds mostly great, DE keeps resetting
 #define HAS_HC55516    1
 #define HAS_MC3417     1
 #define HAS_SAMPLES    1
