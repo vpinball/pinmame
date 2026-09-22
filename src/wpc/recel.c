@@ -59,6 +59,17 @@ static struct {
   int nvClk, nvEnab, nvRset, nvDin, nvWr;
 } locals;
 
+/* The 7448s on the display units, all sixteen codes (the factory's hex table,
+   recel-german.pdf p.6); F blanks. core_bcd2seg7a[] carries A-E only under
+   MAME_DEBUG, so it cannot serve the representation areas, which put raw RAM
+   nibbles on the displays. */
+static const UINT8 recel_seg7[16] = {
+/* 0     1     2     3     4     5     6     7     8     9  */
+  0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7c, 0x07, 0x7f, 0x67,
+/* A     B     C     D     E     F  */
+  0x58, 0x4c, 0x62, 0x69, 0x78, 0x00
+};
+
 /* The game PROM is read through the BICs, which invert both the address and the
    data bus because the PPS-4 uses negative logic and the EPROM's TTL side does
    not. Undo both to get executable code. */
@@ -87,7 +98,7 @@ static INTERRUPT_GEN(RECEL_vblank) {
   /*-- solenoids (PIO outputs 0-23, see locals.pio) --*/
   coreGlobals.solenoids = locals.solenoids;
   /*-- the counters' hardwired x1 digit (recel.h, RECEL_SEG_UNITS) --*/
-  coreGlobals.segments[RECEL_SEG_UNITS].w = core_bcd2seg7a[0];
+  coreGlobals.segments[RECEL_SEG_UNITS].w = recel_seg7[0];
   core_updateSw(TRUE);
 }
 
@@ -127,13 +138,16 @@ static MEMORY_WRITE_START(RECEL_writemem)
   {0x1000,0x10ff, MWA_RAM},
 MEMORY_END
 
-/* Which of a group's 16 columns are digits. Columns 2, 8, 9 and A are
-   latched in a 7475 rather than clocked with the digit scan, but latched is
-   not undecoded: 2/A are a player's status LEDs and 8 the ball/tilt/game-over
-   block, both lamps, while 9 is the match number, a decoded digit on the
-   095-108 unit. Group B's 8/9 drive no indicator on a real machine. Returns
-   GPKD_LAMP with the custom column in *lampcol, else GPKD_DIGIT/UNUSED. */
-enum { GPKD_DIGIT, GPKD_LAMP, GPKD_UNUSED };
+/* Which of a group's 16 columns are lamps rather than digits. Columns 2, 8, 9
+   and A are latched in a 7475 rather than clocked with the digit scan: 2/A
+   are a player's status LEDs and A8 the ball/tilt/game-over block, all lamps,
+   while A9 is the match number, a decoded digit on the 095-108 unit. Group
+   B's 8 and 9 are digits too: the 094-631 Lite Box Comparator manual names
+   them "No of advances on counters and the last figure affected", a technical
+   indication with no cabinet equivalent.
+
+   Returns GPKD_LAMP with the custom column in *lampcol, else GPKD_DIGIT. */
+enum { GPKD_DIGIT, GPKD_LAMP };
 static int gpkd_kind(int group, int col, int *lampcol) {
   switch (col) {
     case 2:
@@ -143,11 +157,9 @@ static int gpkd_kind(int group, int col, int *lampcol) {
       *lampcol = group ? RECEL_LAMPCOL_P3STATUS : RECEL_LAMPCOL_P2STATUS;
       return GPKD_LAMP;
     case 8:
-      if (group) return GPKD_UNUSED;
+      if (group) return GPKD_DIGIT;
       *lampcol = RECEL_LAMPCOL_GAMESTATE;
       return GPKD_LAMP;
-    case 9:
-      return group ? GPKD_UNUSED : GPKD_DIGIT;
     default:
       return GPKD_DIGIT;
   }
@@ -164,32 +176,25 @@ static UINT8 gamestate_lamps(UINT8 nibble) {
 }
 
 /* 10788 GPKD, device 0xF. Push one group's 16 scan-time nibbles into
-   coreGlobals.segments for genuine digit columns, or coreGlobals.tmpLampMatrix
-   for latched columns; canonical position = 16*group + scan time, group A at
-   base 0, group B at base 16. core_bcd2seg7a[]
-   already reads 0 for nibble 0xF, so per-digit blanking (7448, §7) falls out
-   without a special case. Latched columns get no such treatment: a 7475 has
-   no blanking input, so they always show the last nibble written regardless
-   of blankA/blankB. */
+   coreGlobals.segments, and the latched columns additionally into
+   coreGlobals.tmpLampMatrix; position = 16*group + scan time. recel_seg7[]
+   reads 0 for nibble 0xF, so per-digit blanking needs no special case, and a
+   7475 has no blanking input, so latched columns ignore blankA/blankB. All 32
+   positions get a segment word, for the comparator strip in recel_disp; the
+   lite-box rows there do not lay the latched five out. */
 static void gpkd_refresh(int group) {
   const UINT8 *disp  = group ? locals.dispB : locals.dispA;
   const int    blank = group ? locals.blankB : locals.blankA;
   const int    base  = group ? 16 : 0;
   int i, lampcol;
   for (i = 0; i < 16; i++) {
-    switch (gpkd_kind(group, i, &lampcol)) {
-      case GPKD_LAMP:
-        coreGlobals.tmpLampMatrix[lampcol] =
-          (lampcol == RECEL_LAMPCOL_GAMESTATE) ? gamestate_lamps(disp[i])
-                                               : disp[i];
-        coreGlobals.segments[base + i].w = 0;
-        break;
-      case GPKD_UNUSED:
-        coreGlobals.segments[base + i].w = 0;
-        break;
-      default: /* GPKD_DIGIT */
-        coreGlobals.segments[base + i].w = blank ? 0 : core_bcd2seg7a[disp[i]];
-        break;
+    if (gpkd_kind(group, i, &lampcol) == GPKD_LAMP) {
+      coreGlobals.tmpLampMatrix[lampcol] =
+        (lampcol == RECEL_LAMPCOL_GAMESTATE) ? gamestate_lamps(disp[i])
+                                             : disp[i];
+      coreGlobals.segments[base + i].w = recel_seg7[disp[i]];
+    } else {
+      coreGlobals.segments[base + i].w = blank ? 0 : recel_seg7[disp[i]];
     }
   }
 }
@@ -351,9 +356,13 @@ static int pio_r(int cmd) {
      IO4 CLCK  clocks the CD4040 one address forward per pulse.
      IO5 RSET  holds the CD4040 at 0 while released.
    IO6/IO7 (STPR/RDPR, mini-printer) are touched by the NVRAM routines but
-   drive nothing here, and IO8-IO15 are playfield outputs; all of them still
-   need their released/driven state tracked, because step 4 of the self-check
-   reads every line back. */
+   drive nothing here. IO8-IO15 are the I/O expander -- IO8 X-2 REJECTOR
+   CONTROL, IO9 X-1 EXPANDER MX-DR, IO10-IO15 to connectors MA/MC (§7.1.1) --
+   not lamp registers; all sixteen of those are on B2 (§7.1.2). Of the fifteen
+   game PROMs only Antar uses them: it drives IO14, and releases IO8, IO11 and
+   IO12 once per frame to read them, which a17_pin() serves from
+   RECEL_SWCOL_EXPANDER. Every line's released/driven state is tracked
+   regardless: step 4 of the self-check reads all sixteen back. */
 #define RECEL_NV_RDAT 0
 #define RECEL_NV_WTOU 1
 #define RECEL_NV_ENAB 2
@@ -390,6 +399,9 @@ static int a17_pin(int device, int line) {
   if (!(locals.a17Rel[A17IDX(device)] & (1 << line))) return 0x00;
   if (device == RECEL_DEV_B1 && line == RECEL_NV_RDAT && locals.nvEnab)
     return nv_bit() ? 0x0f : 0x00;
+  if (device == RECEL_DEV_B1 && line >= 8 &&
+      (coreGlobals.swMatrix[RECEL_SWCOL_EXPANDER] & (1 << (line - 8))))
+    return 0x00;
   if (device == RECEL_DEV_B2 && (RECEL_B2_TIEDHIGH & (1 << line))) return 0x00;
   return 0x0f;
 }
