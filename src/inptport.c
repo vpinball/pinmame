@@ -2382,7 +2382,7 @@ ScanJoysticks( struct InputPort *in )
 				 *
 				 * For now, just resolve randomly.
 				 */
-				if( rand()&1 )
+				if((rand() >> 14) & 1)
 				{
 					mJoy4Way[i] &= 0x3; /* eliminate horizontal component */
 				}

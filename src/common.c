@@ -1072,7 +1072,7 @@ static int count_roms(const struct RomModule *romp)
 static void fill_random(UINT8 *base, UINT32 length)
 {
 	while (length--)
-		*base++ = rand();
+		*base++ = (rand() >> 7) & 0xff;
 }
 
 

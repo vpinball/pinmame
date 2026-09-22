@@ -62,6 +62,7 @@ Fixed trolls in Medieval Madness
 Improved sound for Metal Man, and a bit for Jolly Park and Verne's World (in general, slightly more authentic MSM5205 sound)
 Fixed Wico's Af-Tor music/note tempo (and some minor details)
 Slightly improved YM262 sound for Sir Lancelot
+Slightly improved Astrocade sound for Rotation VIII
 Improved AY8910 sound emulation (more accurate noise, measured DAC curve, 16-step envelope)
 Improved TMS52X0 sound emulation (more accurate, many previously needed hacks disabled)
 Improved (slightly) the SN76496/SN76489(A)/SN76494 sound emulation (more accurate noise and fix lowest note)
