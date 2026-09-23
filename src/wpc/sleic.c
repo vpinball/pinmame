@@ -2643,9 +2643,39 @@ static void sleic1_ball_update(int balls, int out) {
     coreGlobals.swMatrix[SLEIC1_TROUGH_COL] |= SLEIC1_TROUGH_BIT;
 }
 
+#ifdef DEBUG_SLEIC
+/* Dump the 8 KB of 80188 work RAM (physical 0, MRA_RAM) at each frame named in
+ * SLEIC_RAMAT, as <SLEIC_RAMDUMP>.<frame>.bin.  Diffing two dumps taken either side
+ * of an event locates the variables it changed */
+static void sleic1_ramdump(void) {
+  const char *pfx = getenv("SLEIC_RAMDUMP"), *at = getenv("SLEIC_RAMAT");
+  static int frame = 0;
+  char fn[512];
+  FILE *fp;
+  const char *p;
+  frame++;
+  if (!pfx || !at) return;
+  for (p = at; *p; ) {
+    const int f = strtol(p, (char **)&p, 10);
+    if (f == frame) {
+      snprintf(fn, sizeof fn, "%s.%06d.bin", pfx, frame);
+      if ((fp = fopen(fn, "wb"))) {
+        fwrite(memory_region(REGION_CPU1), 1, 0x2000, fp);
+        fclose(fp);
+      }
+    }
+    while (*p && *p != ',') p++;
+    if (*p == ',') p++;
+  }
+}
+#endif
+
 static SWITCH_UPDATE(SLEIC1) {
   unsigned i;
   int balls = 0, out = 0;
+#ifdef DEBUG_SLEIC
+  sleic1_ramdump();
+#endif
   if (inports) {
     balls = SIM_BALLS(inports[CORE_SIMINPORT]);
     out   = (inports[CORE_COREINPORT] & 0x1000) ? 1 : 0;
