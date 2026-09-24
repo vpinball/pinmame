@@ -1089,7 +1089,7 @@ static void core_dmd_send_vpm(const int width, const int height, const float* co
     }
   }
   else {
-    #define LERP(p, a, b) (UINT8)((a) + (p) * ((b) - (a)))
+    #define LERP(p, a, b) (UINT8)((a) + (p) * ((b) - (a)) + 0.5f) // rounded
     if (pmoptions.dmd_colorize) {
       const UINT32 cols[4] = {
          (pmoptions.dmd_red0) | (pmoptions.dmd_green0 << 8) | (pmoptions.dmd_blue0 << 16),
@@ -1634,8 +1634,12 @@ static void core_seg_render_dmd() {
    #ifdef VPINMAME
       g_raw_dmdx = 128;
       g_raw_dmdy = 32;
+      // Shade 3 is the only one the segment renderer draws (for now), so this is really just 0 or 100.
+      // An unlit dot stays at 0 here, unlike the DMD path which gives it dmd_perc0 (20): most
+      // of this frame is the gap between characters, which has no dot to glow. Making the
+      // unlit segments themselves "glow" would need a third shade out of usbalphanumeric.h
       for (unsigned int i = 0; i < g_raw_dmdx * g_raw_dmdy; ++i)
-         g_raw_dmdbuffer[i] = (UINT8)((int)AlphaNumericFrameBuffer[i] * 100 / 3);
+         g_raw_dmdbuffer[i] = (UINT8)(((int)AlphaNumericFrameBuffer[i] * 100 + 1) / 3);
       if (memcmp(old_g_raw_dmdbuffer, g_raw_dmdbuffer, g_raw_dmdx * g_raw_dmdy) != 0) {
          memcpy(old_g_raw_dmdbuffer, g_raw_dmdbuffer, g_raw_dmdx * g_raw_dmdy);
          core_dmd_capture_frame(g_raw_dmdx, g_raw_dmdy, AlphaNumericFrameBuffer, 0, NULL);
