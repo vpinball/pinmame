@@ -21,6 +21,12 @@
 #include "VPinMAMEAboutDlg.h"
 #include "VPinMAMEConfig.h"
 
+#include <chrono>
+#include <condition_variable>
+#include <memory>
+#include <mutex>
+#include <vector>
+
 #include "Controller.h"
 #include "ControllerDisclaimerDlg.h"
 #include "ControllerGames.h"
@@ -56,6 +62,94 @@ extern UINT8 g_VPM_ignore_pwm_segments_update;
 #endif
 }
 #include "Alias.h"
+
+namespace {
+
+struct PendingMainCPUByteRead
+{
+        UINT32 address;
+        int value;
+        bool done;
+};
+
+std::mutex g_memoryReadMutex;
+std::condition_variable g_memoryReadCv;
+std::vector<std::shared_ptr<PendingMainCPUByteRead>> g_memoryReadQueue;
+
+// Main CPU memory must be read on the emulation thread because PinMAME
+// switches the active memory context as it moves between CPUs. Queueing the
+// request ensures CPU 0's context is installed and the read is dispatched
+// through the memory map via cpunum_read_byte().
+static int ReadMainCPUByteOnEmulationThread(UINT32 address)
+{
+        const UINT64 addressSpace = ((UINT64)1) << cpunum_address_bits(0);
+
+        if (address >= addressSpace)
+                return -1;
+
+        cpuintrf_push_context(0);
+        const int value = cpunum_read_byte(0, address);
+        cpuintrf_pop_context();
+
+        return value;
+}
+
+static int SubmitMainCPUByteRead(UINT32 address)
+{
+        auto request = std::make_shared<PendingMainCPUByteRead>();
+
+        request->address = address;
+        request->value = -1;
+        request->done = false;
+
+        std::unique_lock<std::mutex> lock(g_memoryReadMutex);
+        g_memoryReadQueue.push_back(request);
+
+        if (!g_memoryReadCv.wait_for(lock, std::chrono::milliseconds(250),
+                [&request] { return request->done; }))
+        {
+                for (auto it = g_memoryReadQueue.begin(); it != g_memoryReadQueue.end(); ++it)
+                {
+                        if (*it == request)
+                        {
+                                g_memoryReadQueue.erase(it);
+                                break;
+                        }
+                }
+
+                return -1;
+        }
+
+        return request->value;
+}
+
+} // anonymous namespace
+
+extern "C" void vpinmame_drain_pending_memory_reads(void)
+{
+        std::vector<std::shared_ptr<PendingMainCPUByteRead>> reads;
+
+        {
+                std::lock_guard<std::mutex> lock(g_memoryReadMutex);
+
+                if (g_memoryReadQueue.empty())
+                        return;
+
+                reads.swap(g_memoryReadQueue);
+        }
+
+        for (const auto& request : reads)
+                request->value = ReadMainCPUByteOnEmulationThread(request->address);
+
+        {
+                std::lock_guard<std::mutex> lock(g_memoryReadMutex);
+
+                for (const auto& request : reads)
+                        request->done = true;
+        }
+
+        g_memoryReadCv.notify_all();
+}
 
 extern int fAllowWriteAccess;
 extern int deprecated_synclevel;
@@ -159,6 +253,7 @@ CController::CController() {
 	lstrcpy(m_szSplashInfoLine, "");
 
 	m_hThreadRun    = INVALID_HANDLE_VALUE;
+	m_dwThreadRun   = 0;
 	m_hEmuIsRunning = CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hEventWnd = 0;
 
@@ -237,6 +332,7 @@ STDMETHODIMP CController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,defaultvalue(1
 		else {
 			CloseHandle(m_hThreadRun);
 			m_hThreadRun = INVALID_HANDLE_VALUE;
+			m_dwThreadRun = 0;
 		}
 	}
 
@@ -339,14 +435,13 @@ STDMETHODIMP CController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,defaultvalue(1
 
 	CreateEventWindow(this);
 
-	DWORD dwThreadID;
 	m_hThreadRun = /*_beginthreadex*/CreateThread(NULL,
 								0,
 								(LPTHREAD_START_ROUTINE) RunController,
 								(LPVOID) this,
-								0, &dwThreadID);
+								0, &m_dwThreadRun);
 
-	if ( !dwThreadID ) {
+	if ( !m_dwThreadRun ) {
 		DestroyEventWindow(this);
 		return Error(TEXT("Unable to start thread!"));
 	}
@@ -364,6 +459,7 @@ STDMETHODIMP CController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,defaultvalue(1
 
 	CloseHandle(m_hThreadRun);
 	m_hThreadRun = INVALID_HANDLE_VALUE;
+	m_dwThreadRun = 0;
 
 	DestroyEventWindow(this);
 
@@ -386,7 +482,8 @@ STDMETHODIMP CController::Stop()
 	WaitForSingleObject(m_hThreadRun,INFINITE);
 	
 	CloseHandle(m_hThreadRun);
-	m_hThreadRun = INVALID_HANDLE_VALUE; 
+	m_hThreadRun = INVALID_HANDLE_VALUE;
+	m_dwThreadRun = 0;
 
 	DestroyEventWindow(this);
 
@@ -682,6 +779,29 @@ STDMETHODIMP CController::get_ChangedNVRAM(VARIANT *pVal)
 	pVal->parray = psa;
 
 	return S_OK;
+}
+
+STDMETHODIMP CController::ReadMainCPUByte(long address, int *pVal)
+{
+        if (!pVal)
+                return S_FALSE;
+
+        *pVal = -1;
+
+        if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
+                return S_OK;
+
+        if (address < 0)
+                return S_OK;
+
+        if (m_dwThreadRun != 0 && GetCurrentThreadId() == m_dwThreadRun)
+        {
+                *pVal = ReadMainCPUByteOnEmulationThread((UINT32)address);
+                return S_OK;
+        }
+
+        *pVal = SubmitMainCPUByteRead((UINT32)address);
+        return S_OK;
 }
 
 /************************************************************************************************
