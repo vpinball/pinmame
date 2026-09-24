@@ -1408,9 +1408,9 @@ DRIVER  (harl,l13)      //           10/99 Harley-Davidson (Sega, 1.03 Spanish)
 DRIVERNV(bikerace)      // 1992 - Bike Race
 DRIVERNV(bikerac2)      // 1992 - Bike Race (2-ball play)
 DRIVERNV(bikerac3)      // 1992 - Bike Race (V4.1)
-DRIVERNV(bikerc3f)      // 1992 - Bike Race (V4.1, free play + press start)
+DRIVERNV(bikerc3f)      // 1992 - Bike Race (V4.1, press start MOD, free play)
 DRIVERNV(sleicpin)      // 1993 - Sleic Pin-Ball
-DRIVERNV(sleicpnf)      // 1993 - Sleic Pin-Ball (free play + end-of-game scores)
+DRIVERNV(sleicpnf)      // 1993 - Sleic Pin-Ball (end-of-game scores MOD, free play)
 DRIVERNV(iomoon)        // 1994 - Io Moon
 DRIVERNV(iomoona)       // 1994 - Io Moon (earlier ROM revision)
 DRIVERNV(iomoont)       // 1994 - Io Moon (PRESS START tournament MOD)

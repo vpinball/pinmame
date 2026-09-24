@@ -124,7 +124,7 @@ SLEIC_ROMSTART7(bikerc3f,"bkdsp01.bin", CRC(9b220fcb) SHA1(54e82705d8ce8a26d9e1b
 						 "bkcpu06.bin", CRC(9db436d4) SHA1(3869524c0490e0a019d2f8ab46546ff42727665e),
 						 "bk07.bin",    CRC(200ff3fc) SHA1(96fc8561b078c5306b15e260436e3d3ba562c51d))
 SLEIC_ROMEND
-CORE_CLONEDEFNV(bikerc3f,bikerace,"Bike Race (V4.1, free play + press start)",1992,"Sleic (Spain)",gl_mSLEIC3,0)
+CORE_CLONEDEFNV(bikerc3f,bikerace,"Bike Race (V4.1, press start MOD, free play)",1992,"Sleic (Spain)",gl_mSLEIC3,0)
 
 /*-------------------------------------------------------------------
 / Sleic Pin-Ball (1993)
@@ -183,4 +183,4 @@ SLEIC_ROMSTART4(sleicpnf,"sp01-1_1.rom", CRC(240015bb) SHA1(0e647718173ad59dafbf
 						 "sp03-1_1.rom", CRC(a6501c6b) SHA1(feae88ef522f7436fa31083cea71ed171bc5cc77),
 						 "sp04-1_1.rom", CRC(84514cfa) SHA1(6aa87b86892afa534cf963821f08286c126b4245))
 SLEIC_ROMEND
-CORE_CLONEDEFNV(sleicpnf,sleicpin,"Sleic Pin-Ball (free play + end-of-game scores)",1993,"Sleic (Spain)",gl_mSLEIC1,0)
+CORE_CLONEDEFNV(sleicpnf,sleicpin,"Sleic Pin-Ball (end-of-game scores MOD, free play)",1993,"Sleic (Spain)",gl_mSLEIC1,0)

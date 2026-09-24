@@ -525,7 +525,7 @@ static int run_machine(void)
 
 						/* invalidate contents to avoid subtle bugs */
 						for (i = 0; i < memory_region_length(region); i++)
-							memory_region(region)[i] = rand();
+							memory_region(region)[i] = (rand() >> 7) & 0xff;
 						free(Machine->memory_region[region].base);
 						Machine->memory_region[region].base = 0;
 					}

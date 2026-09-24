@@ -2299,8 +2299,7 @@ static void iomoon_ball_update(int balls, int shoot, int drain) {
 /    sub_DD03D   divides the accumulated pulses by each coin value in turn, LARGEST FIRST
 /                (413C:00AF, then 00AE, then 00AD; the country-5 routine starts one higher
 /                at 00B0), multiplies each whole coin it finds by that coin's credit value
-/                (00AB / 00AA / 00A9, and 00AC), banks it through sub_DD1C1 and keeps the
-/                remainder.
+/                (00AB / 00AA / 00A9, and 00AC), banks it through sub_DD1C1 and keeps the remainder.
 /
 /  Cross-check the pulse counts against the manual's coin table and the unit is obvious:
 /
@@ -2537,7 +2536,7 @@ static SWITCH_UPDATE(SLEIC3) {
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 10, 0x01, 9); /* TILT(T) 0x400 -> bit0 (C17 tilt, code 0x32) */
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 10, 0x02, 9); /* TEST(7) 0x800 -> bit1 (C4 Test, code 0x33 = menu ENTER) */
     CORE_SETKEYSW(inports[CORE_COREINPORT] << 1,  0x04, 9); /* R-Shift 0x002 -> bit2 (C5 right flipper) */
-    CORE_SETKEYSW(inports[CORE_COREINPORT] << 3,  0x08, 9); /* L-Shift 0x001 -> bit3 (C1 left flipper)  */
+    CORE_SETKEYSW(inports[CORE_COREINPORT] << 3,  0x08, 9); /* L-Shift 0x001 -> bit3 (C1 left flipper) */
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 4,  0x10, 9); /* START   0x100 -> bit4 (C2) */
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 4,  0x20, 9); /* COIN    0x200 -> bit5 (C3) */
   }
@@ -2575,14 +2574,12 @@ static const struct { int key; UINT8 col; UINT8 bit; } sleic1_pf_keys[] = {
 /  Active when "Balls" is non-zero and no simulator is registered; sleicpin ships
 /  "Balls" at 1, so it is active in a standalone build.  Under a frontend a table
 /  script owns the contacts, and the simAvail test below stands the model down;
-/  setting "Balls" to 0 also disables it, leaving C29 driven only by its matrix
-/  test key.
+/  setting "Balls" to 0 also disables it, leaving C29 driven only by its matrix test key.
 /
 /  The trough here is a single contact --
 /  C29 Salida Bolas, comun 0 retorno 2, swMatrix[1] bit 2 -- and a single coil, bobina
-/  11 Bobina Salida Bolas on port 0x86 bit 6, fire routine sp04:0x032a, which
-/  sleic1_z80_write maps to locals.solenoids bit 10.  So the sequence the firmware runs
-/  can be followed exactly:
+/  11 Bobina Salida Bolas on port 0x86 bit 6, fire routine sp04:0x032a, which sleic1_z80_write
+/  maps to locals.solenoids bit 10.  So the sequence the firmware runs can be followed exactly:
 /
 /    ball at the exit  ->  C29 closed
 /    coil 11 energised ->  kick countdown starts
@@ -2593,21 +2590,20 @@ static const struct { int key; UINT8 col; UINT8 bit; } sleic1_pf_keys[] = {
 /  the exit or in play.  The drain is the cabinet port's "Ball out of trough" key, which on
 /  this machine RETURNS the ball rather than taking one away -- the opposite polarity to
 /  Bike Race, where the same key lifts a ball off the ball-present optos.  The shared
-/  SLEIC_CABPORT label is worded for that machine; this comment is the one that applies
-/  here.
+/  SLEIC_CABPORT label is worded for that machine; this comment is the one that applies here.
 /
 /  The model does not distinguish a coil fire during play from one in the service
 /  menu's BOBINAS coil test: either serves the ball.  atExit clears, nothing but a
 /  BACKSPACE press returns it, and a CONTACTOS run afterwards shows C29 open --
-/  which is what the same coil test does on the machine.
+/  which is what the same coil test does on the machine
 /-----------------------------------------------------------------------------------*/
-#define SLEIC1_TROUGH_COL  1     /* swMatrix index of Z80 comun 0                       */
-#define SLEIC1_TROUGH_BIT  0x04  /* retorno 2 = C29 Salida Bolas                        */
-#define SLEIC1_SERVE_SOL   0x400 /* locals.solenoids bit 10 = bobina 11, port 0x86 bit 6 */
+#define SLEIC1_TROUGH_COL  1     /* swMatrix index of Z80 comun 0                                */
+#define SLEIC1_TROUGH_BIT  0x04  /* retorno 2 = C29 Salida Bolas                                 */
+#define SLEIC1_SERVE_SOL   0x400 /* locals.solenoids bit 10 = bobina 11, port 0x86 bit 6         */
 #define SLEIC1_KICK_FRAMES 8     /* coil fires -> the ball has left the contact (~0.13 s);
-                                   * decremented on the arming frame too, so 8 means seven frames */
+                                  * decremented on the arming frame too, so 8 means seven frames */
 
-/* Called from MACHINE_INIT.  Also the whole of the model-off path, same as Io Moon's */
+/* Called from MACHINE_INIT. Also the whole of the model-off path, same as Io Moon's */
 static void sleic1_ball_reset(void) {
   memset(&locals.spBall, 0, sizeof locals.spBall);
 }
@@ -2617,12 +2613,12 @@ static void sleic1_ball_reset(void) {
  * which is what the CONTACTOS self-test wants to see.
  *
  * balls = the simulator port's "Balls" setting; 0 disables the model.
- * out   = the cabinet port's "Ball out of trough", which here RETURNS the ball. */
+ * out   = the cabinet port's "Ball out of trough", which here RETURNS the ball */
 static void sleic1_ball_update(int balls, int out) {
   if (balls <= 0) { sleic1_ball_reset(); return; }
   if (coreGlobals.simAvail) { sleic1_ball_reset(); return; }
 
-  if (!locals.spBall.seeded) {   /* the model comes up with the ball at the exit */
+  if (!locals.spBall.seeded) { /* the model comes up with the ball at the exit */
     locals.spBall.seeded = 1;
     locals.spBall.atExit = 1;
   }
@@ -2682,16 +2678,13 @@ static SWITCH_UPDATE(SLEIC1) {
     /* Cabinet/direct buttons on Z80 port 0x03 (swMatrix[9]).  port-0x03 bit -> code ->
      * contact CONFIRMED against the sp04 cabinet dispatcher (sub_0978/sub_09fe..0a70)
      * and the sp03 code handlers:
-     *   bit0 -> code 0x01 = C35 Pendulo de Falta (tilt): handler acts only in-game
-     *           ([0x103]!=0) with a warning counter.
-     *   bit1 -> code 0x02 = C36 Pulsador de Test: handler enters the service menu
-     *           (F000:567F sets the [0x4d1] menu-active flag).
+     *   bit0 -> code 0x01 = C35 Pendulo de Falta (tilt): handler acts only in-game ([0x103]!=0) with a warning counter.
+     *   bit1 -> code 0x02 = C36 Pulsador de Test: handler enters the service menu (F000:567F sets the [0x4d1] menu-active flag).
      *   bit2 -> code 0x03 = C32 Flipper Derecho: fires coil 03 (Flipper Der Fuerza).
      *   bit3 -> code 0x04 = C31 Flipper Izquierdo: fires coil 01 (Flipper Izq Fuerza).
      *   bit4 -> code 0x05 = C33 Pulsador Start (start key '1').
      *   bit5 -> code 0x06 = C34 Monedero / coin (coin key '5').
-     * (Flippers also fire their coils in real time; codes 0x03/0x04 are only sent in
-     * menu mode for navigation) */
+     * (Flippers also fire their coils in real time; codes 0x03/0x04 are only sent in menu mode for navigation) */
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 10, 0x01, 9); /* TILT  -> bit0 (C35 Falta)       */
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 10, 0x02, 9); /* TEST  -> bit1 (C36 Test)        */
     CORE_SETKEYSW(inports[CORE_COREINPORT] << 1,  0x04, 9); /* R-flip-> bit2 (C32 Flipper Der) */
@@ -2705,7 +2698,7 @@ static SWITCH_UPDATE(SLEIC1) {
     else
       coreGlobals.swMatrix[sleic1_pf_keys[i].col] &= ~sleic1_pf_keys[i].bit;
   }
-  sleic1_ball_update(balls, out);   /* after the key loop: it ORs its bit in on top */
+  sleic1_ball_update(balls, out);/* after the key loop: it ORs its bit in on top */
 #ifdef DEBUG_SLEIC
   sleic_debug_switches(1, 0x04); /* comun0 bit2 = C29 Salida Bolas (ball trough) */
 #endif
