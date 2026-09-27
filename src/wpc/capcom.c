@@ -735,7 +735,7 @@ static MACHINE_INIT(cc) {
   // For flashers, Capcom uses #89 bulb wired through a STP20N10L Mosfet, 0.02 ohms resistor to a 20V DC source
   // which is very similar to what Williams uses on WPC hardware, so just uses CORE_MODOUT_BULB_89_20V_DC_WPC
   if (strncasecmp(gn, "abv", 3) == 0) { // Airborne
-    core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
+    core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 9, CORE_MODOUT_BULB_89_20V_DC_WPC);
   } 
   else if (strncasecmp(gn, "bbb", 3) == 0) { // Big Bang Bar
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 6, CORE_MODOUT_BULB_89_20V_DC_WPC);
