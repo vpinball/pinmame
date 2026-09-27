@@ -1588,10 +1588,14 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
 	}
-	// Defaults to 2 state legacy integrator for better backward compatibility
+	// Defaults to 2 state legacy integrator for better backward compatibility, but keep the
+	// per-game flasher bulbs/LEDs on their integrator so they don't strobe
 	if ((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) == 0)
 		for (int i = 0; i < coreGlobals.nSolenoids; i++)
-			if (coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].type != CORE_MODOUT_SOL_2_STATE)
+			if (coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].type != CORE_MODOUT_SOL_2_STATE
+				&& coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].type != CORE_MODOUT_BULB_89_20V_DC_WPC
+				&& coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].type != CORE_MODOUT_LED
+				&& coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].type != CORE_MODOUT_LED_STROBE_1_10MS)
 				core_set_pwm_output_type(CORE_MODOUT_SOL0 + i, 1, CORE_MODOUT_LEGACY_SOL_2_STATE);
 }
 
