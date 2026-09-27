@@ -1452,7 +1452,7 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, 8, CORE_MODOUT_LED); // LEDs on opto board
 	}
 	else if (strncasecmp(gn, "fg_", 3) == 0) { // Family Guy [TODO crash in AT91 jit]
-		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 18 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 8, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_led_vfd(CORE_MODOUT_LAMP0 + 80, 3 * 2 * 8, 0, 16.f / 8.f); // Mini playfield LEDs (8ms pulse over 16ms period)
 	}
