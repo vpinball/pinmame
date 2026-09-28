@@ -8,6 +8,8 @@
 ***************************************************************************/
 #pragma once
 
+#include <time.h>
+
 #include "osd_cpu.h"
 
 #ifdef __cplusplus
@@ -71,6 +73,15 @@ double timer_firetime(mame_timer *which);
 double timer_expire(mame_timer *which);
 int timer_param(mame_timer *which);
 int timer_enabled(mame_timer *which);
+
+/* -rtc "YYYY-MM-DD HH:MM[:SS]": run the emulated real-time clock from a fixed
+   start instead of the host's. It still advances, one second per emulated
+   second, so a capture is reproducible without the clock standing still.
+   Without -rtc every one of these behaves exactly as the host clock did. */
+int rtc_set_start(const char *spec);
+int rtc_is_fixed(void);
+time_t rtc_now(void);
+void rtc_now_tm(struct tm *out);
 #endif
 
 #ifdef __cplusplus

@@ -55,6 +55,11 @@ extern struct rc_option video_opts[];
 
 #ifdef PINMAME
 struct rc_option core_opts[];
+static int config_handle_rtc(struct rc_option *option, const char *arg, int priority)
+{
+	return rtc_set_start(arg);
+}
+
 static int config_handle_dip(struct rc_option *option, const char *arg, int priority)
 {
 	return dip_override_add(arg);
@@ -91,6 +96,7 @@ struct rc_option pinmame_opts[] = {
         { "key_script", NULL, rc_string, &pmoptions.key_script, NULL, 0, 0, NULL, "File of scripted keyboard events" },
         { "dmd_dump_dir", NULL, rc_string, &pmoptions.dmd_dump_dir, NULL, 0, 0, NULL, "Directory to write the DMD frame dump to" },
         { "dip", NULL, rc_string, &pmoptions.dip, NULL, 0, 0, config_handle_dip, "Set a DIP switch: \"<name>=<setting>\", repeatable" },
+        { "rtc", NULL, rc_string, &pmoptions.rtc, NULL, 0, 0, config_handle_rtc, "Fix the emulated real-time clock: \"YYYY-MM-DD HH:MM[:SS]\"" },
         { "resampling_quality", NULL, rc_int, &pmoptions.resampling_quality, "0", 0, 1, NULL, "Quality of the resampling implementation (0=Fast,1=Normal)" },
 #if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
         { "sound_mode", NULL, rc_int, &pmoptions.sound_mode, "0", 0, 3, NULL, "Sound processing mode (PinMAME, Alternative, PinSound, PinSound + Recordings)" },

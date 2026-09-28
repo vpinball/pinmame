@@ -30,6 +30,8 @@
 
 ***************************************************************************/
 
+#include <ctype.h>
+
 #include "cpuintrf.h"
 #include "driver.h"
 #include "timer.h"
@@ -592,3 +594,147 @@ int timer_enabled(mame_timer *which)
 	return which->enabled;
 }
 #endif
+
+#ifdef PINMAME
+/***************************************************************************
+
+	-rtc: a fixed emulated real-time clock
+
+	Starts at the given civil time and advances one second per emulated
+	second, so the clock a game sees depends only on the emulation.
+
+	Broken down here rather than through mktime()/localtime(), which would
+	put the host's time zone and its DST rules back into the answer.
+
+***************************************************************************/
+
+static int rtc_fixed;
+static INT64 rtc_base_days;    /* days since 1970-01-01 of the given date */
+static INT64 rtc_base_secs;    /* seconds into that day */
+
+/* days from 1970-01-01, proleptic Gregorian (Howard Hinnant's) */
+static INT64 rtc_days_from_civil(INT64 y, int m, int d)
+{
+	INT64 era, yoe, doy, doe;
+
+	y -= (m <= 2);
+	era = (y >= 0 ? y : y - 399) / 400;
+	yoe = y - era * 400;
+	doy = (153 * (m + (m > 2 ? -3 : 9)) + 2) / 5 + d - 1;
+	doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+	return era * 146097 + doe - 719468;
+}
+
+static void rtc_civil_from_days(INT64 z, int *y, int *m, int *d)
+{
+	INT64 era, doe, yoe, doy, mp;
+
+	z += 719468;
+	era = (z >= 0 ? z : z - 146096) / 146097;
+	doe = z - era * 146097;
+	yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
+	doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+	mp  = (5 * doy + 2) / 153;
+	*d  = (int)(doy - (153 * mp + 2) / 5 + 1);
+	*m  = (int)(mp + (mp < 10 ? 3 : -9));
+	*y  = (int)(yoe + era * 400 + (*m <= 2));
+}
+
+static int rtc_days_in_month(int y, int m)
+{
+	static const int len[12] = { 31,28,31,30,31,30,31,31,30,31,30,31 };
+	if (m == 2 && ((y % 4 == 0 && y % 100 != 0) || y % 400 == 0)) return 29;
+	return len[m-1];
+}
+
+static int rtc_bad(const char *spec, const char *why)
+{
+	fprintf(stderr, "error: -rtc \"%s\": %s\n", spec ? spec : "", why);
+	fprintf(stderr, "       expected \"YYYY-MM-DD HH:MM:SS\" or \"YYYY-MM-DD HH:MM\"\n");
+	return -1;
+}
+
+int rtc_set_start(const char *spec)
+{
+	char buf[64];
+	int y, mo, da, h, mi, se, used;
+	size_t i;
+
+	if (!spec || !*spec) return rtc_bad(spec, "no time given");
+	if (strlen(spec) >= sizeof buf) return rtc_bad(spec, "too long to be a date and time");
+	strcpy(buf, spec);
+	for (i = 0; buf[i]; i++)
+		if (buf[i] == 'T' || buf[i] == 't') buf[i] = ' ';
+
+	se = used = 0;
+	if (sscanf(buf, "%d-%d-%d %d:%d:%d%n", &y, &mo, &da, &h, &mi, &se, &used) != 6 || !used)
+	{
+		se = used = 0;
+		if (sscanf(buf, "%d-%d-%d %d:%d%n", &y, &mo, &da, &h, &mi, &used) != 5 || !used)
+			return rtc_bad(spec, "not a date and time");
+	}
+	while (isspace((UINT8)buf[used])) used++;
+	if (buf[used]) return rtc_bad(spec, "trailing characters");
+
+	if (y < 1900 || y > 2099)   return rtc_bad(spec, "year outside 1900-2099");
+	if (mo < 1 || mo > 12)      return rtc_bad(spec, "month outside 1-12");
+	if (da < 1 || da > rtc_days_in_month(y, mo)) return rtc_bad(spec, "day outside that month");
+	if (h < 0 || h > 23)        return rtc_bad(spec, "hour outside 0-23");
+	if (mi < 0 || mi > 59)      return rtc_bad(spec, "minute outside 0-59");
+	if (se < 0 || se > 59)      return rtc_bad(spec, "second outside 0-59");
+
+	rtc_base_days = rtc_days_from_civil(y, mo, da);
+	rtc_base_secs = (INT64)h * 3600 + mi * 60 + se;
+	rtc_fixed = 1;
+	fprintf(stderr, "rtc: %04d-%02d-%02d %02d:%02d:%02d, advancing with emulated time\n",
+			y, mo, da, h, mi, se);
+	return 0;
+}
+
+int rtc_is_fixed(void)
+{
+	return rtc_fixed;
+}
+
+/* seconds since the fixed start, from the emulated clock */
+static INT64 rtc_elapsed(void)
+{
+	const double t = timer_get_time();
+	return (t > 0.0) ? (INT64)t : 0;
+}
+
+time_t rtc_now(void)
+{
+	if (!rtc_fixed) return time(NULL);
+	return (time_t)(rtc_base_days * 86400 + rtc_base_secs + rtc_elapsed());
+}
+
+void rtc_now_tm(struct tm *out)
+{
+	INT64 secs, days;
+	int y, mo, da, rem;
+
+	if (!rtc_fixed)
+	{
+		const time_t now = time(NULL);
+		*out = *localtime(&now);
+		return;
+	}
+
+	secs = rtc_base_secs + rtc_elapsed();
+	days = rtc_base_days + secs / 86400;
+	rem  = (int)(secs % 86400);
+	rtc_civil_from_days(days, &y, &mo, &da);
+
+	memset(out, 0, sizeof *out);
+	out->tm_year  = y - 1900;
+	out->tm_mon   = mo - 1;
+	out->tm_mday  = da;
+	out->tm_hour  = rem / 3600;
+	out->tm_min   = rem / 60 % 60;
+	out->tm_sec   = rem % 60;
+	out->tm_wday  = (int)((days >= -4) ? (days + 4) % 7 : (days + 5) % 7 + 6);
+	out->tm_yday  = (int)(days - rtc_days_from_civil(y, 1, 1));
+	out->tm_isdst = 0;
+}
+#endif /* PINMAME */

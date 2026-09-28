@@ -12,6 +12,7 @@
 // MAME sources use this to detect that the emu core has been included
 #define __EMU_H__
 
+#include "../p2k_weak.h"
 #include "emucore.h"
 #include "eminline.h"
 #include "xtal.h"
@@ -1440,9 +1441,11 @@ enum { STATE_GENPC = -1, STATE_GENPCBASE = -2, STATE_GENSP = -3, STATE_GENFLAGS 
 // ---------------------------------------------------------------- out-of-line
 inline void running_machine::base_datetime(system_time &systime)
 {
-	time_t t = ::time(nullptr);
+	time_t t = P2K_RTC_FIXED() ? rtc_now() : ::time(nullptr);
+	struct tm lt, ut;
+	if (P2K_RTC_FIXED()) { rtc_now_tm(&lt); ut = lt; }
+	else { lt = *localtime(&t); ut = *gmtime(&t); }
 	systime.time = s64(t);
-	struct tm lt = *localtime(&t), ut = *gmtime(&t);
 	auto fill = [](system_time::full_time &ft, const struct tm &src)
 	{
 		ft.second = u8(src.tm_sec); ft.minute = u8(src.tm_min); ft.hour = u8(src.tm_hour);
