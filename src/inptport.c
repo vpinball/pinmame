@@ -11,6 +11,7 @@ TODO:	remove the 1 analog device per port limitation
 ***************************************************************************/
 
 #include <math.h>
+#include <ctype.h>
 #include "driver.h"
 #include "config.h"
 #include "keyscript.h"
@@ -1614,6 +1615,171 @@ static void save_default_keys(void)
 
 	memcpy(inputport_defaults,inputport_defaults_backup,sizeof(inputport_defaults_backup));
 }
+
+
+#ifdef PINMAME
+/***************************************************************************
+
+	Command-line DIP switch overrides: -dip "<DIP switch name>=<setting>"
+
+***************************************************************************/
+
+#define MAX_DIP_OVERRIDES 16
+
+static char *dip_overrides[MAX_DIP_OVERRIDES];
+static int dip_override_count;
+
+/* case-insensitive compare of a driver string against arg[0..len),
+   leading and trailing whitespace ignored on both sides */
+static int dip_name_matches(const char *name, const char *arg, size_t len)
+{
+	size_t i;
+
+	if (!name) return 0;
+	while (len && isspace((UINT8)*arg)) { arg++; len--; }
+	while (len && isspace((UINT8)arg[len-1])) len--;
+	while (isspace((UINT8)*name)) name++;
+	for (i = 0; i < len; i++)
+		if (!name[i] || tolower((UINT8)name[i]) != tolower((UINT8)arg[i]))
+			return 0;
+	while (isspace((UINT8)name[i])) i++;
+	return name[i] == 0;
+}
+
+/* the setting after in, which is either a DIPSWITCH_NAME or one of its
+   settings; PORT_SERVICE puts an IPT_EXTENSION between the two */
+static const struct InputPort *dip_next_setting(const struct InputPort *in)
+{
+	in++;
+	while ((in->type & ~IPF_MASK) == IPT_EXTENSION) in++;
+	return ((in->type & ~IPF_MASK) == IPT_DIPSWITCH_SETTING) ? in : NULL;
+}
+
+static void dip_list_names(void)
+{
+	const struct InputPort *in;
+
+	fprintf(stderr, "       %s has these DIP switches:\n", Machine->gamedrv->name);
+	for (in = Machine->input_ports; in->type != IPT_END; in++)
+		if ((in->type & ~IPF_MASK) == IPT_DIPSWITCH_NAME && input_port_name(in))
+			fprintf(stderr, "         %s\n", input_port_name(in));
+}
+
+static void dip_list_settings(const struct InputPort *dip)
+{
+	const struct InputPort *in;
+
+	fprintf(stderr, "       \"%s\" has these settings:\n", input_port_name(dip));
+	for (in = dip_next_setting(dip); in; in = dip_next_setting(in))
+		fprintf(stderr, "         %-24s 0x%04x\n",
+				input_port_name(in) ? input_port_name(in) : "(unnamed)",
+				in->default_value & dip->mask);
+}
+
+static int dip_override_one(const char *spec)
+{
+	const char *eq = strchr(spec, '=');
+	const char *value;
+	struct InputPort *in, *dip = NULL;
+	const struct InputPort *set;
+	char *end;
+	long numeric;
+
+	if (!eq)
+	{
+		fprintf(stderr, "error: -dip \"%s\": expected <DIP switch name>=<setting>\n", spec);
+		return -1;
+	}
+	value = eq + 1;
+
+	for (in = Machine->input_ports; in->type != IPT_END; in++)
+		if ((in->type & ~IPF_MASK) == IPT_DIPSWITCH_NAME &&
+			dip_name_matches(input_port_name(in), spec, eq - spec))
+		{
+			dip = in;
+			break;
+		}
+
+	if (!dip)
+	{
+		fprintf(stderr, "error: -dip \"%s\": no DIP switch called \"%.*s\"\n",
+				spec, (int)(eq - spec), spec);
+		dip_list_names();
+		return -1;
+	}
+
+	for (set = dip_next_setting(dip); set; set = dip_next_setting(set))
+		if (dip_name_matches(input_port_name(set), value, strlen(value)))
+		{
+			dip->default_value = set->default_value & dip->mask;
+			fprintf(stderr, "dip: %s = %s (0x%04x)\n",
+					input_port_name(dip), input_port_name(set), dip->default_value);
+			return 0;
+		}
+
+	numeric = strtol(value, &end, 0);
+	while (isspace((UINT8)*end)) end++;
+	if (end != value && *end == 0)
+	{
+		dip->default_value = (UINT16)numeric & dip->mask;
+		fprintf(stderr, "dip: %s = 0x%04x\n", input_port_name(dip), dip->default_value);
+		return 0;
+	}
+
+	fprintf(stderr, "error: -dip \"%s\": \"%s\" is not a setting of \"%s\"\n",
+			spec, value, input_port_name(dip));
+	dip_list_settings(dip);
+	return -1;
+}
+
+int dip_override_add(const char *spec)
+{
+	char *copy;
+
+	if (!spec || strchr(spec, '=') == NULL || strchr(spec, '=') == spec)
+	{
+		fprintf(stderr, "error: -dip \"%s\": expected <DIP switch name>=<setting>\n",
+				spec ? spec : "");
+		return -1;
+	}
+	if (dip_override_count >= MAX_DIP_OVERRIDES)
+	{
+		fprintf(stderr, "error: -dip \"%s\": more than %d given\n", spec, MAX_DIP_OVERRIDES);
+		return -1;
+	}
+	copy = malloc(strlen(spec) + 1);
+	if (!copy)
+	{
+		fprintf(stderr, "error: -dip \"%s\": out of memory\n", spec);
+		return -1;
+	}
+	strcpy(copy, spec);
+	dip_overrides[dip_override_count++] = copy;
+	return 0;
+}
+
+int dip_override_apply(void)
+{
+	int i, err = 0;
+	const int noports = (Machine->input_ports == NULL);
+
+	if (dip_override_count && noports)
+	{
+		fprintf(stderr, "error: -dip: %s has no input ports\n", Machine->gamedrv->name);
+		err = -1;
+	}
+
+	for (i = 0; i < dip_override_count; i++)
+	{
+		if (!noports && dip_override_one(dip_overrides[i]))
+			err = -1;
+		free(dip_overrides[i]);
+		dip_overrides[i] = NULL;
+	}
+	dip_override_count = 0;
+	return err;
+}
+#endif /* PINMAME */
 
 
 int load_input_port_settings(void)

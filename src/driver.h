@@ -83,6 +83,7 @@ typedef struct {
   int dmd_opacity;
   char *key_script;            /* scripted keyboard input, NULL = off */
   char *dmd_dump_dir;          /* directory for the DMD frame dump, NULL = off */
+  char *dip;                   /* last -dip given; the overrides themselves live in inptport.c */
   int resampling_quality;      // 0 = fast, 1 = normal (for SRC setting)
 #if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND) || defined(LIBPINMAME)
   int sound_mode; // 0 = pinmame/emulation, 1 = altsound, 2 = pinsound, 3 = pinsound + recordings
