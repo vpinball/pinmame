@@ -378,15 +378,16 @@ static const p2k_name_t p2k_rfm_coil_names[] = {
   {  26, "Left Martian Flasher", P2K_DEV_BULB_89 }, /* #89 */
   {  27, "Right Martian Flasher", P2K_DEV_BULB_89 }, /* #89 */
   {  28, "Attack Mars Flasher", P2K_DEV_BULB_906 }, /* #906 */
-  {  33, "Right Flipper Power" },              /* FL1-11629 */
-  {  34, "Right Flipper Hold" },               /* FL1-11629 */
-  {  35, "Left Flipper Power" },               /* FL1-11629 */
-  {  36, "Left Flipper Hold" },                /* FL1-11629 */
-  {  37, "Lock Diverter Power" },              /* FL1-22241 */
-  {  38, "Lock Diverter Hold" },               /* FL1-22241 */
-  {  39, "Up/Down Ramp Power" },               /* FL1-11753 */
-  {  40, "Up/Down Ramp Hold" },                /* FL1-11753 */
-  {  48, "Ticket Dispenser" },
+// special mapping in PinMAME, see comment: sol XX
+  {  33, "Right Flipper Power" },              /* FL1-11629; sol 45 */
+  {  34, "Right Flipper Hold" },               /* FL1-11629; sol 46 */
+  {  35, "Left Flipper Power" },               /* FL1-11629; sol 47 */
+  {  36, "Left Flipper Hold" },                /* FL1-11629; sol 48 */
+  {  37, "Lock Diverter Power" },              /* FL1-22241; sol 51 */
+  {  38, "Lock Diverter Hold" },               /* FL1-22241; sol 52 */
+  {  39, "Up/Down Ramp Power" },               /* FL1-11753; sol 53 */
+  {  40, "Up/Down Ramp Hold" },                /* FL1-11753; sol 54 */
+  {  48, "Ticket Dispenser" },                 /*            sol 62 */
   { 0, NULL }
 };
 
@@ -419,19 +420,20 @@ static const p2k_name_t p2k_swep1_coil_names[] = {
   {  26, "Back Panel left/upper fl.", P2K_DEV_BULB_906 }, /* #906 */
   {  27, "Back Panel left/middle fl.", P2K_DEV_BULB_906 }, /* #906 */
   {  28, "Back Panel left/lower fl.", P2K_DEV_BULB_906 }, /* #906 */
-  {  33, "Right Flipper Power" },              /* FL1-11722 */
-  {  34, "Right Flipper Hold" },               /* FL1-11722 */
-  {  35, "Left Flipper Power" },               /* FL1-11722 */
-  {  36, "Left Flipper Hold" },                /* FL1-11722 */
-  {  37, "Shield Power" },                     /* FL1-15411 */
-  {  38, "Shield Hold" },                      /* FL1-15411 */
-  {  39, "Left Laser Flasher", P2K_DEV_BULB_89 }, /* #89 */
-  {  40, "Right Laser Flasher", P2K_DEV_BULB_89 }, /* #89 */
-  {  41, "Neon" },                             /* A-23157 */
-  {  42, "Knocker (Optional)" },               /* AE-26-1200, kit */
-  {  43, "Shaker Motor (Optional)" },          /* motor, kit */
-  {  44, "Topper (Optional)" },                /* kit */
-  {  48, "Ticket Dispenser" },
+// special mapping in PinMAME, see comment: sol XX
+  {  33, "Right Flipper Power" },              /* FL1-11722; sol 45 */
+  {  34, "Right Flipper Hold" },               /* FL1-11722; sol 46 */
+  {  35, "Left Flipper Power" },               /* FL1-11722; sol 47 */
+  {  36, "Left Flipper Hold" },                /* FL1-11722; sol 48 */
+  {  37, "Shield Power" },                     /* FL1-15411; sol 51 */
+  {  38, "Shield Hold" },                      /* FL1-15411; sol 52 */
+  {  39, "Left Laser Flasher", P2K_DEV_BULB_89 }, /* #89;    sol 53 */
+  {  40, "Right Laser Flasher", P2K_DEV_BULB_89 },/* #89;    sol 54 */
+  {  41, "Neon" },                             /* A-23157;   sol 55 */
+  {  42, "Knocker (Optional)" },               /* AE-26-1200, kit; sol 56 */
+  {  43, "Shaker Motor (Optional)" },          /* motor, kit; sol 57 */
+  {  44, "Topper (Optional)" },                /* kit;       sol 58 */
+  {  48, "Ticket Dispenser" },                 /*            sol 62 */
   { 0, NULL }
 };
 
