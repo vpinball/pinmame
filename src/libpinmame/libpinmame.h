@@ -482,6 +482,16 @@ PINMAMEAPI int PinmameGetMaxSoundCommands();
 PINMAMEAPI int PinmameGetNewSoundCommands(PinmameSoundCommand* const p_newCommands);
 PINMAMEAPI int PinmameGetDIP(const int dipBank);
 PINMAMEAPI void PinmameSetDIP(const int dipBank, const int value);
+
+/* MAME mixer channels: what the "~" on-screen menu adjusts on Windows (e.g. "YM2151 #0 Ch1 (Lt)").
+   Channels are allocated by the sound drivers at machine start, so these only answer while the
+   machine is running. Levels are 0..100, the mixer's own scale. The setter is safe from any
+   thread: the change is queued and applied on the emulation thread at the next audio frame. */
+PINMAMEAPI int PinmameGetMixerChannelCount();
+PINMAMEAPI const char* PinmameGetMixerChannelName(const int channel);
+PINMAMEAPI int PinmameGetMixerChannelLevel(const int channel);
+PINMAMEAPI int PinmameGetMixerChannelDefaultLevel(const int channel);
+PINMAMEAPI void PinmameSetMixerChannelLevel(const int channel, const int level);
 PINMAMEAPI int PinmameGetMaxNVRAM();
 PINMAMEAPI int PinmameGetNVRAM(PinmameNVRAMState* const p_nvramStates);
 PINMAMEAPI int PinmameGetChangedNVRAM(PinmameNVRAMState* const p_nvramStates);
