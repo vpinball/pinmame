@@ -385,14 +385,13 @@ MACHINE_DRIVER_END
 //-----------------------------------------------
 // Load/Save static ram
 //-----------------------------------------------
-// Rewrite the saved sound command nibbles to the value that decodes to command 0 after the
-// DIP bank 1 XOR: taitos_data_w raises no strobe for 0, so it is silent on every sound board.
-// Needed because the firmware re-asserts the saved command after boot; Shock closed during
-// its match sequence came back playing the match tune. Lamp nibbles are left alone.
-static void taito_silenceSavedSndCmd(UINT8 *cmd) {
-  const int dip = core_getDip(1);
-  cmd[2] = (cmd[2] & 0x0f) | ((dip & 0x0f) << 4);
-  cmd[3] = (cmd[3] & 0x0f) | (dip & 0xf0);
+// Reset the saved sound command (offset 2, upper nibble) to the firmware's own idle, because the
+// firmware re-asserts it after boot: Shock closed during its match sequence came back playing the
+// match tune. The idle differs by generation (measured in attract): 0 on the 1980-85 boards, 8 on
+// the 1979 board, where bit 7 is an enable the firmware ORs commands into. Offset 3 and the lamp
+// nibbles are left alone.
+static void taito_silenceSavedSndCmd(UINT8 *cmd, UINT8 idle) {
+  cmd[2] = (cmd[2] & 0x0f) | idle;
 }
 
 // The whole CMOS window is saved and the firmware deliberately resumes a game in progress from
@@ -413,7 +412,7 @@ static NVRAM_HANDLER(taito) {
     nv[0x9f] |= 0x01;  // game over
     nv[0x8c]  = 0x00;  // ball in play
     nv[0xb8] &= ~0x01; // payout in progress -> would cold-clear credits and audits at reset
-    taito_silenceSavedSndCmd(nv + 0x90);
+    taito_silenceSavedSndCmd(nv + 0x90, 0x00);
   }
 }
 
@@ -425,7 +424,7 @@ static NVRAM_HANDLER(taito_old) {
   if (!read_or_write && file) {
     nv[0x1f] |= 0x01; // game over
     nv[0x0c]  = 0x00; // ball in play
-    taito_silenceSavedSndCmd(nv + 0x10);
+    taito_silenceSavedSndCmd(nv + 0x10, 0x80);
   }
 }
 
