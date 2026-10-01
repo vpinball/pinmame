@@ -86,11 +86,20 @@ static INTERRUPT_GEN(taito_irq) {
 
 static void timer_irq(int data) { taito_irq(); }
 
+// Prime the sound latch with the command the loaded DMA bytes already encode (same expression
+// as dma_commands), so the firmware's reset re-latch of the command area sends nothing.
+static void taito_primeSndCmd(void) {
+	const UINT8 *cmd = TAITOlocals.pCommandsDMA;
+	TAITOlocals.sndCmd = (((cmd[2]>>4) ^ core_getDip(1)) & 0x0f) | ((cmd[3] ^ core_getDip(1)) & 0xf0);
+	TAITOlocals.oldsndCmd = TAITOlocals.sndCmd;
+}
+
 static MACHINE_INIT(taito) {
 	memset(&TAITOlocals, 0, sizeof(TAITOlocals));
 
 	TAITOlocals.pDisplayRAM  = memory_region(TAITO_MEMREG_CPU) + 0x4080;
 	TAITOlocals.pCommandsDMA = memory_region(TAITO_MEMREG_CPU) + 0x4090;
+	taito_primeSndCmd();
 
 	TAITOlocals.timer_irq = timer_alloc(timer_irq);
 	timer_adjust(TAITOlocals.timer_irq, TIME_IN_HZ(TAITO_IRQFREQ), 0, TIME_IN_HZ(TAITO_IRQFREQ));
@@ -105,6 +114,7 @@ static MACHINE_INIT(taito_old) {
 
 	TAITOlocals.pDisplayRAM  = memory_region(TAITO_MEMREG_CPU) + 0x1000;
 	TAITOlocals.pCommandsDMA = memory_region(TAITO_MEMREG_CPU) + 0x1010;
+	taito_primeSndCmd();
 
 	TAITOlocals.timer_irq = timer_alloc(timer_irq);
 	timer_adjust(TAITOlocals.timer_irq, TIME_IN_HZ(5.293/4.0), 0, TIME_IN_HZ(5.293/4.0));
@@ -375,12 +385,48 @@ MACHINE_DRIVER_END
 //-----------------------------------------------
 // Load/Save static ram
 //-----------------------------------------------
-static NVRAM_HANDLER(taito) {
-  core_nvram(file, read_or_write, memory_region(TAITO_MEMREG_CPU)+0x4000, 0x100, 0x00);
+// Rewrite the saved sound command nibbles to the value that decodes to command 0 after the
+// DIP bank 1 XOR: taitos_data_w raises no strobe for 0, so it is silent on every sound board.
+// Needed because the firmware re-asserts the saved command after boot; Shock closed during
+// its match sequence came back playing the match tune. Lamp nibbles are left alone.
+static void taito_silenceSavedSndCmd(UINT8 *cmd) {
+  const int dip = core_getDip(1);
+  cmd[2] = (cmd[2] & 0x0f) | ((dip & 0x0f) << 4);
+  cmd[3] = (cmd[3] & 0x0f) | (dip & 0xf0);
 }
 
+// The whole CMOS window is saved and the firmware deliberately resumes a game in progress from
+// it at reset (power-loss recovery), so a table closed at ball 3 came back at ball 3. On load:
+//  - set the game-over bit, the byte the firmware's own reset path writes when it declines to
+//    resume (0x010E on the 1981-82 ROMs, 0x0FBE on the 1980 ones). The resume check itself
+//    differs by generation (Drakor clamps a bad ball count and resumes), the flag does not;
+//  - clear ball-in-play, which a live attract reads as 0;
+//  - clear 0x40B8 bit 0, set during the post-game credit award and tested first thing at reset:
+//    left set, the firmware cold-clears 0x407F-0x40FF (credits, audits) as an anti-cheat
+//    against cutting power mid-payout. This is the "NVram reset" the Pmax65 VBScript patch
+//    spins its lamp timer to avoid (#577); clearing it forfeits the pending award, as that did.
+// Settings, high score, credits and audits are otherwise loaded exactly as saved.
+static NVRAM_HANDLER(taito) {
+  UINT8 *nv = memory_region(TAITO_MEMREG_CPU)+0x4000;
+  core_nvram(file, read_or_write, nv, 0x100, 0x00);
+  if (!read_or_write && file) {
+    nv[0x9f] |= 0x01;  // game over
+    nv[0x8c]  = 0x00;  // ball in play
+    nv[0xb8] &= ~0x01; // payout in progress -> would cold-clear credits and audits at reset
+    taito_silenceSavedSndCmd(nv + 0x90);
+  }
+}
+
+// 1979 hardware: same layout one page lower (display 0x1000, flags 0x101F). Its cold-start
+// path clears only the display area, so there is no payout guard to defuse.
 static NVRAM_HANDLER(taito_old) {
-  core_nvram(file, read_or_write, memory_region(TAITO_MEMREG_CPU)+0x1000, 0x100, 0x00);
+  UINT8 *nv = memory_region(TAITO_MEMREG_CPU)+0x1000;
+  core_nvram(file, read_or_write, nv, 0x100, 0x00);
+  if (!read_or_write && file) {
+    nv[0x1f] |= 0x01; // game over
+    nv[0x0c]  = 0x00; // ball in play
+    taito_silenceSavedSndCmd(nv + 0x10);
+  }
 }
 
 
