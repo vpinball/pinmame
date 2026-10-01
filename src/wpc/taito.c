@@ -400,10 +400,10 @@ static void taito_silenceSavedSndCmd(UINT8 *cmd, UINT8 idle) {
 //    resume (0x010E on the 1981-82 ROMs, 0x0FBE on the 1980 ones). The resume check itself
 //    differs by generation (Drakor clamps a bad ball count and resumes), the flag does not;
 //  - clear ball-in-play, which a live attract reads as 0;
-//  - clear 0x40B8 bit 0, set during the post-game credit award and tested first thing at reset:
-//    left set, the firmware cold-clears 0x407F-0x40FF (credits, audits) as an anti-cheat
-//    against cutting power mid-payout. This is the "NVram reset" the Pmax65 VBScript patch
-//    spins its lamp timer to avoid (#577); clearing it forfeits the pending award, as that did.
+//  - clear 0x40B8 bit 0, set while the firmware has the display borrowed (the end-of-game
+//    sequence, the statistics display) and tested first thing at reset: left set, the firmware
+//    clears 0x407F-0x40FF (credits, audits). This is the "NVram reset" the Pmax65 VBScript
+//    patch spins its lamp timer to avoid (#577).
 // Settings, high score, credits and audits are otherwise loaded exactly as saved.
 static NVRAM_HANDLER(taito) {
   UINT8 *nv = memory_region(TAITO_MEMREG_CPU)+0x4000;
@@ -411,7 +411,7 @@ static NVRAM_HANDLER(taito) {
   if (!read_or_write && file) {
     nv[0x9f] |= 0x01;  // game over
     nv[0x8c]  = 0x00;  // ball in play
-    nv[0xb8] &= ~0x01; // payout in progress -> would cold-clear credits and audits at reset
+    nv[0xb8] &= ~0x01; // display borrowed -> the firmware would clear credits and audits at reset
     taito_silenceSavedSndCmd(nv + 0x90, 0x00);
   }
 }
