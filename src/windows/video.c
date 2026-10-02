@@ -46,6 +46,11 @@ extern void win_pause_input(int pause);
 extern UINT8 win_trying_to_quit;
 extern int verbose;
 
+#ifdef VPINMAME
+// from Controller.cpp
+extern void vpinmame_drain_pending_memory_reads(void);
+#endif
+
 // from wind3dfx.c
 extern struct rc_option win_d3d_opts[];
 
@@ -1037,6 +1042,10 @@ void osd_update_video_and_audio(struct mame_display *display)
 {
 	struct rectangle updatebounds = display->game_bitmap_update;
 	cycles_t cps = osd_cycles_per_second();
+
+#ifdef VPINMAME
+	vpinmame_drain_pending_memory_reads();
+#endif
 
 	// if this is the first time through, initialize the previous time value
 	if (warming_up)
