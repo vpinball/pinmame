@@ -1068,6 +1068,36 @@ static void handle_api_input_port(const http_request_t *req, http_response_t *re
 		respond_error(resp, 400, "port out of range");
 }
 
+/* List the cabinet/operator buttons the running driver defines. */
+static void handle_api_input_buttons(const http_request_t *req, http_response_t *resp)
+{
+	char *body = NULL;
+	int len = 0;
+	(void)req;
+	remote_debug_get_buttons(&body, &len);
+	respond_owned(resp, body, len, "application/json");
+}
+
+/* Press or release one cabinet/operator button, addressed by its bit mask
+ * from /api/input/buttons. Unlike /api/input/port this changes only the
+ * given bits and can time the press. */
+static void handle_api_input_button(const http_request_t *req, http_response_t *resp)
+{
+	char mask_buf[32], val_buf[32], pulse_buf[32];
+	get_query_param(req->query, "mask", mask_buf, (int)sizeof(mask_buf));
+	get_query_param(req->query, "val", val_buf, (int)sizeof(val_buf));
+	get_query_param(req->query, "pulse", pulse_buf, (int)sizeof(pulse_buf));
+	if (!mask_buf[0] || !val_buf[0]) {
+		respond_error(resp, 400, "missing parameters: mask, val");
+		return;
+	}
+	if (remote_debug_set_button((int)parse_hex(mask_buf), parse_int(val_buf),
+	                            pulse_buf[0] ? parse_int(pulse_buf) : 0) == 0)
+		respond_ok(resp);
+	else
+		respond_error(resp, 400, "machine not running, or mask out of range");
+}
+
 /* Write a switch-matrix column directly, bypassing core_setSw/sw2m, so a
  * dedicated switch column outside the scanned matrix (e.g. col 0, the
  * cabinet row) can be set from the API. */
@@ -1542,6 +1572,10 @@ static const api_route_t api_routes[] = {
 	 "?sw=N&val=0|1[&pulse=MS] - set a switch, optionally as a timed pulse"},
 	{"/api/input/port", handle_api_input_port,
 	 "?port=N&val=HEX - force bits high/low in a raw input port (reaches dedicated buttons like ADVANCE)"},
+	{"/api/input/buttons", handle_api_input_buttons,
+	 "cabinet/operator buttons of the running driver (coins, start, service buttons) with bit mask, name, state"},
+	{"/api/input/button", handle_api_input_button,
+	 "?mask=HEX&val=0|1[&pulse=MS] - press/release a cabinet/operator button, optionally as a timed press"},
 	{"/api/input/matrix", handle_api_input_matrix,
 	 "?col=N&val=HEX - write a switch-matrix column directly, bypassing core_setSw/sw2m"},
 	{"/ui", handle_ui, "the web UI"},

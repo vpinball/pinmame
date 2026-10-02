@@ -174,6 +174,17 @@ int remote_debug_set_switch(int sw, int val, int pulse_ms);
  * range. */
 int remote_debug_set_input_port_force(int port, int val);
 
+/* List the cabinet/operator buttons of the running driver: the named bits
+ * of input port CORE_COREINPORT, as JSON. Works for every generation, as
+ * the names and bits come from the driver's own port definition. */
+void remote_debug_get_buttons(char **buffer, int *len);
+
+/* Press (val != 0) or release one of those buttons, `mask` being its port
+ * bit(s); with pulse_ms > 0 a press is released again after that many
+ * milliseconds (wall clock). Goes through the same path as the keyboard.
+ * Returns 0 on success, -1 if the machine is not ready or mask is invalid. */
+int remote_debug_set_button(int mask, int val, int pulse_ms);
+
 /* Write switch-matrix column `col` directly, bypassing core_setSw's sw2m
  * mapping (see /api/input/matrix) -- the only way to reach a dedicated
  * switch column (e.g. col 0) that sw2m places outside the scanned matrix.

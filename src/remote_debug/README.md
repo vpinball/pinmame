@@ -385,6 +385,15 @@ capacity ~512 frames) and download them for playback/analysis.
 - `GET /api/input?sw=N&val=[0|1][&pulse=MS]`: set a cabinet/matrix switch;
   with `pulse=MS` it holds the value for MS milliseconds then restores the
   opposite (works for coin switches too, re-asserted each frame).
+- `GET /api/input/buttons`: the cabinet/operator buttons of the running
+  driver as `{mask, name, toggle, active}` - coins, start, tilt and the
+  service buttons (WPC: Escape/Down/Up/Enter, System 11: Advance, Up/Down,
+  CPU/Sound Diagnostic, ...). They are the named bits of the driver's core
+  input port, so this works for every generation.
+- `GET /api/input/button?mask=HEX&val=[0|1][&pulse=MS]`: press or release
+  such a button by its `mask`; with `pulse=MS` the press is released after
+  MS milliseconds. Takes the same path as the keyboard. `toggle` buttons
+  (coin door, Up/Down) are two-position switches: set the level, no pulse.
 - `GET /api/debugger/command?cmd=STRING`: classic MAME-style commands
   (URL-encoded): `BP [bank:]addr`, `BC`, `WP [bank:]addr[,len[,type]]`, `WC`,
   `G`, `S`, `F addr,len,val`, `QUIT`, `HELP` — all values hex.
@@ -403,8 +412,8 @@ capacity ~512 frames) and download them for playback/analysis.
   "Next", NVRAM view preset and NVRAM dump download.
 - Watches panel (persisted in the browser) and memory trace panel.
 - Conditional breakpoints with hit counters in the points list.
-- Cabinet/service buttons built from the named switches, with a
-  configurable pulse duration.
+- Cabinet/service buttons built from `/api/input/buttons`, i.e. whatever
+  the running driver defines, with a configurable pulse duration.
 - Switch matrix tooltips show the switch name; Shift+click a switch to
   assign a custom label (stored in the browser).
 - Code instrumentation, value scan and object monitor / action log panels.

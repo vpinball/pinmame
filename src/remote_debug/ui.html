@@ -64,10 +64,12 @@
     .btn-danger { background: #a1260d; }
     .btn-success { background: #388a34; }
     .btn-cabinet {
-        background: #444; border: 1px solid #666; width: 60px; height: 30px;
-        margin: 2px; font-weight: bold; font-size: 0.7rem;
+        background: #444; border: 1px solid #666; width: 60px; min-height: 30px;
+        margin: 2px; padding: 3px 4px; font-weight: bold; font-size: 0.7rem;
+        line-height: 1.15; overflow-wrap: anywhere;
     }
     .btn-cabinet:active { background: #00ff00; color: #000; }
+    .btn-cabinet.latched { background: #388a34; }
     input, select {
         background: #3c3c3c; border: 1px solid #3d3d3d; color: #fff; padding: 4px 8px;
         border-radius: 2px; outline: none; font-family: 'Consolas', monospace;
@@ -505,7 +507,8 @@ const Toast = {
 const Api = {
     failures: 0,
 
-    async get(path) {
+    /* quiet: an error answer is an expected outcome, do not raise a toast */
+    async get(path, quiet) {
         try {
             const r = await fetch(path);
             let data = null;
@@ -520,7 +523,7 @@ const Api = {
         } catch (e) {
             if (e instanceof TypeError) { /* network error */
                 this.setOnline(false);
-            } else {
+            } else if (!quiet) {
                 Toast.show(e.message);
             }
             throw e;
@@ -666,6 +669,18 @@ const Dbg = {
         const ms = parseInt(document.getElementById('pulse-ms').value, 10) || 0;
         if (ms === 0) { await Api.get(`/api/input?sw=${sw}&val=0`); Status.refresh(); }
     },
+    /* cabinet/operator button (bit mask of the driver's input port): same
+       press/release semantics as the switch variant above */
+    async pressButton(mask) {
+        const ms = parseInt(document.getElementById('pulse-ms').value, 10) || 0;
+        const m = mask.toString(16);
+        if (ms > 0) await Api.get(`/api/input/button?mask=${m}&val=1&pulse=${ms}`);
+        else await Api.get(`/api/input/button?mask=${m}&val=1`);
+    },
+    async releaseButton(mask) {
+        const ms = parseInt(document.getElementById('pulse-ms').value, 10) || 0;
+        if (ms === 0) await Api.get(`/api/input/button?mask=${mask.toString(16)}&val=0`);
+    },
     async nvramClear() {
         if (!confirm('Wipe NVRAM and reset the machine?')) return;
         await Api.get('/api/debugger/nvram?cmd=clear');
@@ -746,8 +761,41 @@ const Names = {
 /* ================= cabinet / service buttons ================= */
 
 const Cabinet = {
+    /* Build the buttons from what the running driver declares as its
+       cabinet/operator inputs, so every generation gets its own set (WPC:
+       Escape/Down/Up/Enter, System 11: Advance, Up/Down, ...). Falls back
+       to the named switches if the emulator does not offer that list. */
+    async build() {
+        let data = null;
+        try { data = await Api.get('/api/input/buttons', true); } catch (e) { /* older emulator / offline */ }
+        if (!data || !data.buttons || !data.buttons.length) { this.buildFromSwitches(); return; }
+        const box = document.getElementById('cabinet-buttons');
+        box.innerHTML = '';
+        data.buttons.forEach((btn) => {
+            const b = document.createElement('button');
+            b.className = 'btn btn-cabinet';
+            b.style.width = 'auto';
+            /* MAME's default name "1 Player Start" is long for a button */
+            b.textContent = btn.name.replace(/^1 Player Start$/, 'Start').replace(/^(\d) Players? Start$/, 'Start $1');
+            if (btn.toggle) {
+                /* two-position switch (coin door, up/down): click flips it */
+                b.title = btn.name + ' - toggle (port bit 0x' + btn.mask.toString(16) + ')';
+                b.classList.toggle('latched', !!btn.active);
+                b.onclick = async () => {
+                    await Api.get(`/api/input/button?mask=${btn.mask.toString(16)}&val=${btn.active ? 0 : 1}`);
+                    this.build();
+                };
+            } else {
+                b.title = btn.name + ' (port bit 0x' + btn.mask.toString(16) + ')';
+                b.onmousedown = () => Dbg.pressButton(btn.mask);
+                b.onmouseup = () => Dbg.releaseButton(btn.mask);
+            }
+            box.appendChild(b);
+        });
+    },
+
     /* build service buttons from switches that carry a standard name */
-    build() {
+    buildFromSwitches() {
         const wanted = ['Coin 1', 'Coin 2', 'Start', 'Enter', 'Up', 'Down', 'Escape', 'Coin Door', 'Tilt', 'Slam Tilt'];
         const byName = {};
         Object.keys(Names.sw).forEach((k) => { byName[Names.sw[k]] = parseInt(k.substring(1), 10); });

@@ -127,6 +127,21 @@ typedef struct {
 static pulse_t pulses[PULSE_MAX];
 static int pulse_count = 0;
 
+/* Timed presses of cabinet/operator buttons (see remote_debug_set_button). */
+typedef struct {
+	UINT16 mask;   /* bit(s) of input port CORE_COREINPORT held by the pulse */
+	UINT32 expiry; /* monotonic_ms() deadline */
+} button_pulse_t;
+
+static button_pulse_t button_pulses[PULSE_MAX];
+static int button_pulse_count = 0;
+
+/* Shadow of the forced-value overlay in inptport.c, which can only be
+ * written as a whole: lets -holdport, /api/input/port and the per-button
+ * presses of /api/input/button change their own bits without clobbering
+ * each other's. */
+static unsigned short port_force[MAX_INPUT_PORTS];
+
 /* ------------------------------------------------------------------ */
 /* Object monitoring / action log                                     */
 /* ------------------------------------------------------------------ */
@@ -481,6 +496,7 @@ void remote_debug_init(void)
 	trace_addr_count = 0;
 	callstack_ptr = 0;
 	pulse_count = 0;
+	button_pulse_count = 0;
 	monitor_count = 0;
 	action_head = action_count = 0;
 	instrument_count = 0;
@@ -1650,13 +1666,24 @@ static void pulse_tick(int reassert)
 			i++;
 		}
 	}
+	/* release cabinet/operator buttons whose press time is over */
+	for (i = 0; i < button_pulse_count; ) {
+		if ((INT32)(now - button_pulses[i].expiry) >= 0) {
+			port_force[CORE_COREINPORT] &= ~button_pulses[i].mask;
+			input_port_set_force(CORE_COREINPORT, port_force[CORE_COREINPORT]);
+			button_pulses[i] = button_pulses[button_pulse_count - 1];
+			button_pulse_count--;
+		}
+		else
+			i++;
+	}
 }
 
 /* Expire pulses from the HTTP thread so they end even while paused (when
  * no frames are produced and the emulator-side re-assert does not run). */
 static void service_pulses(void)
 {
-	if (pulse_count == 0)
+	if (pulse_count == 0 && button_pulse_count == 0)
 		return;
 	remote_debug_lock();
 	pulse_tick(0);
@@ -1693,7 +1720,87 @@ int remote_debug_set_input_port_force(int port, int val)
 	int result = -1;
 	remote_debug_lock();
 	if (port >= 0 && port < MAX_INPUT_PORTS) {
-		input_port_set_force(port, (unsigned short)val);
+		port_force[port] = (unsigned short)val;
+		input_port_set_force(port, port_force[port]);
+		result = 0;
+	}
+	remote_debug_unlock();
+	return result;
+}
+
+/* ================================================================== */
+/* Cabinet / operator buttons                                         */
+/* ================================================================== */
+
+/* Every PinMAME driver declares its cabinet and operator buttons (coins,
+ * start, tilt, and the service buttons - Escape/Down/Up/Enter on WPC,
+ * Advance/Up-Down/diagnostics on System 11, the black/green buttons on Data
+ * East, ...) as named bits of input port CORE_COREINPORT, and its
+ * SWITCH_UPDATE routes them to wherever that hardware wants them. Listing
+ * those bits and pressing them through the forced-value overlay of the
+ * port therefore works for all generations without any knowledge of the
+ * individual driver, and takes the same path as the keyboard. */
+
+/* Nonzero if `in` describes a button (not a port header, DIP switch, ...). */
+static int is_button_bit(const struct InputPort *in)
+{
+	UINT32 type = in->type & ~IPF_MASK;
+	return in->mask != 0 && !(in->type & IPF_UNUSED)
+	       && type != IPT_DIPSWITCH_NAME && type != IPT_DIPSWITCH_SETTING
+	       && type != IPT_EXTENSION;
+}
+
+void remote_debug_get_buttons(char **buffer, int *len)
+{
+	strbuf_t sb;
+	int first = 1;
+	sb_init(&sb, 2048);
+	remote_debug_lock();
+	sb_appendf(&sb, "{\"port\": %d, \"buttons\": [", CORE_COREINPORT);
+	if (Machine && Machine->input_ports) {
+		const struct InputPort *in = Machine->input_ports;
+		int port = -1, value = readinputport(CORE_COREINPORT);
+		for (; (in->type & ~IPF_MASK) != IPT_END; in++) {
+			const char *name;
+			char esc[64];
+			if ((in->type & ~IPF_MASK) == IPT_PORT) {
+				port++;
+				continue;
+			}
+			if (port != CORE_COREINPORT || !is_button_bit(in))
+				continue;
+			name = input_port_name(in);
+			if (!name || !name[0])
+				continue;
+			sb_appendf(&sb,
+				"%s{\"mask\": %d, \"name\": \"%s\", \"toggle\": %d, \"active\": %d}",
+				first ? "" : ",", in->mask,
+				remote_debug_json_escape(esc, (int)sizeof(esc), name),
+				(in->type & IPF_TOGGLE) ? 1 : 0, (value & in->mask) ? 1 : 0);
+			first = 0;
+		}
+	}
+	sb_appendf(&sb, "]}");
+	remote_debug_unlock();
+	*buffer = sb.buf;
+	*len = sb.len;
+}
+
+int remote_debug_set_button(int mask, int val, int pulse_ms)
+{
+	int result = -1;
+	remote_debug_lock();
+	if (Machine && mask > 0 && mask <= 0xffff) {
+		if (val)
+			port_force[CORE_COREINPORT] |= (unsigned short)mask;
+		else
+			port_force[CORE_COREINPORT] &= ~(unsigned short)mask;
+		input_port_set_force(CORE_COREINPORT, port_force[CORE_COREINPORT]);
+		if (val && pulse_ms > 0 && button_pulse_count < PULSE_MAX) {
+			button_pulses[button_pulse_count].mask = (UINT16)mask;
+			button_pulses[button_pulse_count].expiry = monotonic_ms() + (UINT32)pulse_ms;
+			button_pulse_count++;
+		}
 		result = 0;
 	}
 	remote_debug_unlock();
@@ -1738,6 +1845,8 @@ static void apply_holdport_option(void)
 		if (sep) {
 			int port = atoi(tok);
 			unsigned short mask = (unsigned short)strtoul(sep + 1, NULL, 16);
+			if (port >= 0 && port < MAX_INPUT_PORTS)
+				port_force[port] = mask;
 			input_port_set_force(port, mask);
 			printf("Remote Debugger: holding port %d bits %04X from power-on\n", port, mask);
 		}
