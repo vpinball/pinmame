@@ -54,6 +54,10 @@ int remote_debug_should_quit(void);
 /* Pause (1) or resume (0) execution. */
 void remote_debug_set_paused(int paused);
 
+/* Nonzero for the CPUs of the M6800 core (M6800/1/2/3/8, HD63701, NSC8105
+ * - the main CPU of Williams System 3-11), which share one register set. */
+int remote_debug_is_m6800_family(int cpu_type);
+
 /* Reset the machine (all CPUs and the machine driver), like the F3 key. */
 void remote_debug_reset(void);
 

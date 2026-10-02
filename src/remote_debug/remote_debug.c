@@ -12,6 +12,7 @@
 #include "cpuexec.h"
 #include "cpuintrf.h"
 #include "cpu/m6809/m6809.h"
+#include "cpu/m6800/m6800.h"
 #include "wpc/core.h"
 #include "wpc/wpc.h"
 #include "memory.h"
@@ -135,6 +136,83 @@ typedef struct {
 
 static button_pulse_t button_pulses[PULSE_MAX];
 static int button_pulse_count = 0;
+
+/* ------------------------------------------------------------------ */
+/* CPU registers                                                      */
+/* ------------------------------------------------------------------ */
+
+/* The registers the debugger records (execution trace, tracepoints,
+ * callstack) and tests (breakpoint conditions), as register ids of the CPU
+ * core in question; NO_REG where a CPU family has no such register. PC and
+ * SP are not listed, every core knows them as REG_PC and REG_SP. */
+#define NO_REG (-1000)   /* not a register id: these are > 0, REG_PC etc. small negatives */
+
+typedef struct {
+	int a, b, x, y, u, dp, cc;
+} regmap_t;
+
+static const regmap_t regmap_m6809 = {
+	M6809_A, M6809_B, M6809_X, M6809_Y, M6809_U, M6809_DP, M6809_CC
+};
+/* M6800/1/2/3/8, HD63701, NSC8105: main CPU of Williams System 3-11 */
+static const regmap_t regmap_m6800 = {
+	M6800_A, M6800_B, M6800_X, NO_REG, NO_REG, NO_REG, M6800_CC
+};
+static const regmap_t regmap_none = {
+	NO_REG, NO_REG, NO_REG, NO_REG, NO_REG, NO_REG, NO_REG
+};
+
+/* Which of the M6800 family CPUs exist depends on the build, hence the #ifs. */
+int remote_debug_is_m6800_family(int cpu_type)
+{
+	switch (cpu_type) {
+#if (HAS_M6800)
+		case CPU_M6800:
+#endif
+#if (HAS_M6801)
+		case CPU_M6801:
+#endif
+#if (HAS_M6802)
+		case CPU_M6802:
+#endif
+#if (HAS_M6803)
+		case CPU_M6803:
+#endif
+#if (HAS_M6808)
+		case CPU_M6808:
+#endif
+#if (HAS_HD63701)
+		case CPU_HD63701:
+#endif
+#if (HAS_NSC8105)
+		case CPU_NSC8105:
+#endif
+			return 1;
+		default:
+			return 0;
+	}
+}
+
+static const regmap_t *regmap_for_type(int cpu_type)
+{
+	if (cpu_type == CPU_M6809)
+		return &regmap_m6809;
+	if (remote_debug_is_m6800_family(cpu_type))
+		return &regmap_m6800;
+	return &regmap_none;
+}
+
+/* Register map of the CPU that is executing right now. */
+static const regmap_t *active_regmap(void)
+{
+	int cpu = cpu_getactivecpu();
+	if (!Machine || cpu < 0)
+		return &regmap_none;
+	return regmap_for_type(Machine->drv->cpu[cpu].cpu_type);
+}
+
+/* Value of a register of the active CPU, 0 if it has no such register. */
+#define ACTIVE_REG(map, reg)  (((map)->reg != NO_REG) ? activecpu_get_reg((map)->reg) : 0)
 
 /* Battery backed memory blocks, as reported by core_nvram(). */
 typedef struct {
@@ -690,31 +768,33 @@ int remote_debug_should_quit(void)
 /* Breakpoints                                                        */
 /* ------------------------------------------------------------------ */
 
-/* Resolve an M6809 register name for breakpoint conditions. */
-static int resolve_cond_register(const char *name, int len)
+/* Resolve a register name for breakpoint conditions to the register id of
+ * the given CPU type; NO_REG if that CPU has no register of this name. */
+static int resolve_cond_register(int cpu_type, const char *name, int len)
 {
+	const regmap_t *map = regmap_for_type(cpu_type);
 	if (len == 1) {
 		switch (name[0]) {
-			case 'A': return M6809_A;
-			case 'B': return M6809_B;
-			case 'X': return M6809_X;
-			case 'Y': return M6809_Y;
-			case 'U': return M6809_U;
-			case 'S': return M6809_S;
+			case 'A': return map->a;
+			case 'B': return map->b;
+			case 'X': return map->x;
+			case 'Y': return map->y;
+			case 'U': return map->u;
+			case 'S': return REG_SP;
 			default: break;
 		}
 	}
 	else if (len == 2) {
-		if (strncmp(name, "PC", 2) == 0) return M6809_PC;
-		if (strncmp(name, "SP", 2) == 0) return M6809_S;
-		if (strncmp(name, "CC", 2) == 0) return M6809_CC;
-		if (strncmp(name, "DP", 2) == 0) return M6809_DP;
+		if (strncmp(name, "PC", 2) == 0) return REG_PC;
+		if (strncmp(name, "SP", 2) == 0) return REG_SP;
+		if (strncmp(name, "CC", 2) == 0) return map->cc;
+		if (strncmp(name, "DP", 2) == 0) return map->dp;
 	}
-	return -1;
+	return NO_REG;
 }
 
 /* Parse "REG==HEXVAL" style conditions. Returns 0 on success. */
-static int parse_condition(const char *cond, int *op, int *reg, UINT32 *val)
+static int parse_condition(const char *cond, int cpu_type, int *op, int *reg, UINT32 *val)
 {
 	static const struct { const char *sym; int op; } ops[] = {
 		{"==", COND_EQ}, {"!=", COND_NE}, {"<=", COND_LE},
@@ -728,11 +808,11 @@ static int parse_condition(const char *cond, int *op, int *reg, UINT32 *val)
 	for (i = 0; i < sizeof(ops) / sizeof(ops[0]); i++) {
 		const char *p = strstr(cond, ops[i].sym);
 		if (p && p > cond) {
-			int r = resolve_cond_register(cond, (int)(p - cond));
+			int r = resolve_cond_register(cpu_type, cond, (int)(p - cond));
 			const char *v = p + strlen(ops[i].sym);
 			char *end = NULL;
 			UINT32 value;
-			if (r < 0 || !*v)
+			if (r == NO_REG || !*v)
 				return -1;
 			value = (UINT32)strtoul(v, &end, 16);
 			if (end == v)
@@ -778,7 +858,11 @@ static int breakpoint_add_internal(UINT32 adr, int bank, int cpu, int temp,
 		bp->enabled = 1;
 		bp->temp = temp;
 		bp->ignore_count = ignore;
-		if (parse_condition(cond, &bp->cond_op, &bp->cond_reg, &bp->cond_val) == 0) {
+		/* a condition names a register of the CPU the breakpoint is for; one
+		   for "any CPU" is taken to mean the main CPU */
+		int cond_cpu = (cpu >= 0 && cpu < cpu_gettotalcpu()) ? cpu : 0;
+		int cond_type = Machine ? Machine->drv->cpu[cond_cpu].cpu_type : CPU_M6809;
+		if (parse_condition(cond, cond_type, &bp->cond_op, &bp->cond_reg, &bp->cond_val) == 0) {
 			if (bp->cond_op != COND_NONE) {
 				strncpy(bp->cond_str, cond, sizeof(bp->cond_str) - 1);
 				bp->cond_str[sizeof(bp->cond_str) - 1] = 0;
@@ -856,6 +940,7 @@ static UINT32 coverage_index(UINT32 pc, int bank)
 
 void remote_debug_breakpoint_hook(void)
 {
+	const regmap_t *regs;
 	UINT32 pc;
 	int current_bank, current_cpu, i;
 
@@ -868,15 +953,17 @@ void remote_debug_breakpoint_hook(void)
 	   spaces overlap, so an unfiltered point on a low address counts hits from
 	   whichever core happens to be there. */
 	current_cpu = cpu_getactivecpu();
+	/* the registers recorded below, in terms of the CPU that is running */
+	regs = active_regmap();
 
 	/* execution trace: record this instruction in the ring buffer */
 	if (exec_trace_enabled) {
 		exec_trace_t *e = &exec_trace[exec_trace_head];
 		e->pc = (UINT16)pc;
 		e->bank = (INT16)current_bank;
-		e->a = (UINT8)activecpu_get_reg(M6809_A);
-		e->b = (UINT8)activecpu_get_reg(M6809_B);
-		e->x = (UINT16)activecpu_get_reg(M6809_X);
+		e->a = (UINT8)ACTIVE_REG(regs, a);
+		e->b = (UINT8)ACTIVE_REG(regs, b);
+		e->x = (UINT16)ACTIVE_REG(regs, x);
 		exec_trace_head = (exec_trace_head + 1) % EXEC_TRACE_SIZE;
 		if (exec_trace_count < EXEC_TRACE_SIZE)
 			exec_trace_count++;
@@ -903,14 +990,14 @@ void remote_debug_breakpoint_hook(void)
 			tracepoints[i].hits++;
 			t->pc = pc;
 			t->bank = current_bank;
-			t->a = (UINT8)activecpu_get_reg(M6809_A);
-			t->b = (UINT8)activecpu_get_reg(M6809_B);
-			t->x = (UINT16)activecpu_get_reg(M6809_X);
-			t->y = (UINT16)activecpu_get_reg(M6809_Y);
-			t->u = (UINT16)activecpu_get_reg(M6809_U);
+			t->a = (UINT8)ACTIVE_REG(regs, a);
+			t->b = (UINT8)ACTIVE_REG(regs, b);
+			t->x = (UINT16)ACTIVE_REG(regs, x);
+			t->y = (UINT16)ACTIVE_REG(regs, y);
+			t->u = (UINT16)ACTIVE_REG(regs, u);
 			t->s = (UINT16)activecpu_get_reg(REG_SP);
-			t->dp = (UINT8)activecpu_get_reg(M6809_DP);
-			t->cc = (UINT8)activecpu_get_reg(M6809_CC);
+			t->dp = (UINT8)ACTIVE_REG(regs, dp);
+			t->cc = (UINT8)ACTIVE_REG(regs, cc);
 			tp_head = (tp_head + 1) % TP_LOG_SIZE;
 			if (tp_count < TP_LOG_SIZE)
 				tp_count++;
@@ -1391,30 +1478,33 @@ void remote_debug_run_to(UINT32 addr, int bank)
 
 void remote_debug_push_call(UINT32 caller, UINT32 receiver)
 {
-	if (!remote_debug_ready)
+	/* One callstack: that of the main CPU. The sound CPUs run the same CPU
+	   cores and would mix their calls into it. */
+	if (!remote_debug_ready || cpu_getactivecpu() != 0)
 		return;
 	remote_debug_lock();
 	if (callstack_ptr < CALLSTACK_SIZE) {
+		const regmap_t *regs = active_regmap();
 		callstack_entry_t *e = &callstack[callstack_ptr++];
 		e->caller = caller;
 		e->receiver = receiver;
 		e->bank = wpc_get_bank();
 		e->pc = (UINT16)activecpu_get_reg(REG_PC);  /* return address */
-		e->u = (UINT16)activecpu_get_reg(M6809_U);
+		e->u = (UINT16)ACTIVE_REG(regs, u);
 		e->s = (UINT16)activecpu_get_reg(REG_SP);
-		e->x = (UINT16)activecpu_get_reg(M6809_X);
-		e->y = (UINT16)activecpu_get_reg(M6809_Y);
-		e->a = (UINT8)activecpu_get_reg(M6809_A);
-		e->b = (UINT8)activecpu_get_reg(M6809_B);
-		e->dp = (UINT8)activecpu_get_reg(M6809_DP);
-		e->cc = (UINT8)activecpu_get_reg(M6809_CC);
+		e->x = (UINT16)ACTIVE_REG(regs, x);
+		e->y = (UINT16)ACTIVE_REG(regs, y);
+		e->a = (UINT8)ACTIVE_REG(regs, a);
+		e->b = (UINT8)ACTIVE_REG(regs, b);
+		e->dp = (UINT8)ACTIVE_REG(regs, dp);
+		e->cc = (UINT8)ACTIVE_REG(regs, cc);
 	}
 	remote_debug_unlock();
 }
 
 void remote_debug_pop_call(void)
 {
-	if (!remote_debug_ready)
+	if (!remote_debug_ready || cpu_getactivecpu() != 0)
 		return;
 	remote_debug_lock();
 	if (callstack_ptr > 0)
@@ -1424,7 +1514,7 @@ void remote_debug_pop_call(void)
 
 void remote_debug_reset_callstack(void)
 {
-	if (!remote_debug_ready)
+	if (!remote_debug_ready || cpu_getactivecpu() != 0)
 		return;
 	remote_debug_lock();
 	callstack_ptr = 0;

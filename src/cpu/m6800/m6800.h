@@ -6,6 +6,18 @@
 #include "memory.h"
 #include "cpuintrf.h"
 
+/* callstack tracking for the remote debugger, as in the M6809 core */
+#ifdef REMOTE_DEBUG
+#include "remote_debug/remote_debug.h"
+#define DEBUG_PUSH_CALL(caller, receiver) remote_debug_push_call(caller, receiver)
+#define DEBUG_POP_CALL() remote_debug_pop_call()
+#define DEBUG_RESET_CALLSTACK() remote_debug_reset_callstack()
+#else
+#define DEBUG_PUSH_CALL(caller, receiver)
+#define DEBUG_POP_CALL()
+#define DEBUG_RESET_CALLSTACK()
+#endif
+
 enum {
 	M6800_PC=1, M6800_S, M6800_A, M6800_B, M6800_X, M6800_CC,
 	M6800_WAI_STATE, M6800_NMI_STATE, M6800_IRQ_STATE };

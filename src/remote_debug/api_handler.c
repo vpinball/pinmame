@@ -171,39 +171,6 @@ static void respond_owned(http_response_t *resp, char *body, int len, const char
 
 /* Resolve a register name or numeric id for /api/debugger/state/write.
  * Understands M6809 and ADSP2100 family names. Returns -1 if unknown. */
-/* Nonzero for the CPUs of the M6800 core (the main CPU of the Williams
- * System 3-11 boards is a M6800/M6802/M6808), which share one register set.
- * Which of them exist depends on the build, hence the #ifs. */
-static int is_m6800_family(int cpu_type)
-{
-	switch (cpu_type) {
-#if (HAS_M6800)
-		case CPU_M6800:
-#endif
-#if (HAS_M6801)
-		case CPU_M6801:
-#endif
-#if (HAS_M6802)
-		case CPU_M6802:
-#endif
-#if (HAS_M6803)
-		case CPU_M6803:
-#endif
-#if (HAS_M6808)
-		case CPU_M6808:
-#endif
-#if (HAS_HD63701)
-		case CPU_HD63701:
-#endif
-#if (HAS_NSC8105)
-		case CPU_NSC8105:
-#endif
-			return 1;
-		default:
-			return 0;
-	}
-}
-
 static int resolve_register_id(int cpu_idx, const char *name)
 {
 	static const struct { const char *name; int id; } m6809_regs[] = {
@@ -249,7 +216,7 @@ static int resolve_register_id(int cpu_idx, const char *name)
 				return adsp_regs[i].id;
 		}
 	}
-	else if (is_m6800_family(cpu_type)) {
+	else if (remote_debug_is_m6800_family(cpu_type)) {
 		for (i = 0; i < sizeof(m6800_regs) / sizeof(m6800_regs[0]); i++) {
 			if (strcasecmp(name, m6800_regs[i].name) == 0)
 				return m6800_regs[i].id;
@@ -993,7 +960,7 @@ static void append_cpu_registers(int i, char **p)
 			cpunum_get_reg(i, M6809_U), cpunum_get_reg(i, M6809_DP),
 			cpunum_get_reg(i, M6809_CC));
 	}
-	else if (is_m6800_family(type)) {
+	else if (remote_debug_is_m6800_family(type)) {
 		*p += sprintf(*p, ", \"a\": %u, \"b\": %u, \"x\": %u, \"cc\": %u",
 			cpunum_get_reg(i, M6800_A), cpunum_get_reg(i, M6800_B),
 			cpunum_get_reg(i, M6800_X), cpunum_get_reg(i, M6800_CC));
