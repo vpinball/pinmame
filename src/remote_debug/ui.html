@@ -123,10 +123,14 @@
     .hex-table td, .dasm-table td, .trace-table td { padding: 3px 8px; border: 1px solid #2d2d2d; }
     .trace-table th { padding: 3px 8px; color: #858585; text-align: left; font-weight: normal; border-bottom: 1px solid #3d3d3d; }
     .addr-col { color: #858585; width: 70px; background: #252526; text-align: right; padding-right: 12px !important; }
-    .hex-byte { cursor: pointer; text-align: center; width: 30px; color: #9cdcfe; }
+    /* the hex view is as wide as its content: with a stretched table the
+       spare width ends up in single columns */
+    .hex-table { width: auto; }
+    .hex-table td { padding: 2px 5px; }
+    .hex-byte { cursor: pointer; text-align: center; color: #9cdcfe; }
     .hex-byte:hover { background: #333; }
     .hex-changed { background: #5a3d10 !important; color: #ffb454; }
-    .hex-ascii { color: #6a9955; width: 120px; border-left: 2px solid #3d3d3d !important; font-size: 0.8rem; }
+    .hex-ascii { color: #6a9955; white-space: pre; border-left: 2px solid #3d3d3d !important; font-size: 0.8rem; }
     .hex-edit { width: 26px; padding: 1px 2px; text-align: center; }
     .current-pc { background: #3e3e10 !important; }
     .dasm-row { cursor: pointer; }
@@ -1302,9 +1306,11 @@ const Mem = {
             ascii += (byte >= 32 && byte <= 126) ? String.fromCharCode(byte) : '.';
         });
         if (row) {
+            /* address + 16 byte cells: pad a short last row, then add the text */
             while (row.cells.length < 17) row.insertCell();
-            row.cells[16].className = 'hex-ascii';
-            row.cells[16].textContent = ascii;
+            const c = row.insertCell();
+            c.className = 'hex-ascii';
+            c.textContent = ascii;
         }
     },
 
