@@ -515,6 +515,9 @@ without a friendly name (assign your own via the UI or ignore the `name`).
 Run from `src/remote_debug` (e.g. ROM `taf_l7` expected in `~/.pinmame`, override
 via `ROMPATH=/path`):
 - `./test_suite.sh` — full API verification suite.
+- `./test_suite_s11.sh` — the same for a Williams System 11 game (default
+  `f14_l1`): M6808 main CPU, sequential switch/lamp numbers, operator
+  buttons, NVRAM, callstack.
 - `./test_breakpoint.sh` — end-to-end breakpoint hit test.
 - `./re_demo.sh` — guided tour of the RE tooling (coverage, execution
   trace, tracepoints, value-condition watchpoint with callstack, monitor
