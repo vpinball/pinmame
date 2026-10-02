@@ -9,10 +9,11 @@
     COREPORT_BITDEF(  0x0002, IPT_COIN2,        IP_KEY_DEFAULT) \
     COREPORT_BITDEF(  0x0004, IPT_COIN3,        KEYCODE_3) \
     COREPORT_BITDEF(  0x0008, IPT_COIN4,        KEYCODE_4) \
-    COREPORT_BIT(     0x0010, "Enter",          KEYCODE_7) \
-    COREPORT_BIT(     0x0020, "Up",             KEYCODE_8) \
-    COREPORT_BIT(     0x0040, "Down",           KEYCODE_9) \
-    COREPORT_BIT(     0x0080, "Escape",         KEYCODE_0) \
+    /* Dedicated switches 5-8: Escape/Service Credit, Down, Up, Enter/Begin Test */ \
+    COREPORT_BIT(     0x0010, "Escape",         KEYCODE_7) \
+    COREPORT_BIT(     0x0020, "Down",           KEYCODE_8) \
+    COREPORT_BIT(     0x0040, "Up",             KEYCODE_9) \
+    COREPORT_BIT(     0x0080, "Enter",          KEYCODE_0) \
     /* Common switches */ \
     COREPORT_BITTOG(  0x0100, "Coin Door",      KEYCODE_END)  \
     COREPORT_BITDEF(  0x0200, IPT_START1,       IP_KEY_DEFAULT)  \
