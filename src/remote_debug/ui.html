@@ -691,7 +691,9 @@ const Dbg = {
     async nvramClear() {
         if (!confirm('Wipe NVRAM and reset the machine?')) return;
         await Api.get('/api/debugger/nvram?cmd=clear');
-        Toast.show('NVRAM cleared', true);
+        /* the game only notices its memory is gone when it starts up again */
+        await Api.get('/api/debugger/control?cmd=reset');
+        Toast.show('NVRAM cleared, machine reset', true);
     },
     async nvramDownload() {
         try {
