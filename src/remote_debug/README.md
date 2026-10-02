@@ -291,7 +291,11 @@ but ignored (reads always go through the current memory map).
   address (`bank` restricts to that ROM bank).
 - `GET /api/debugger/trace?cmd=clear` / `GET /api/debugger/trace`: clear /
   list `{watched: [{addr, bank}, ...], logs: [{cpu, pc, adr, len, write, bank}, ...]}`.
-- `GET /api/debugger/nvram/dump`: raw 8KB WPC CMOS dump.
+- `GET /api/debugger/nvram`: where the battery backed memory of the running
+  machine is, as `{blocks: [{size, cpu, addr}]}` (`cpu`/`addr` are -1 for a
+  block that is not part of a CPU's memory). Works for all generations.
+- `GET /api/debugger/nvram/dump`: raw dump of the NVRAM (all blocks, one
+  after the other).
 - `GET /api/debugger/nvram?cmd=clear`: wipe NVRAM (machine reset required to
   reinitialize).
 

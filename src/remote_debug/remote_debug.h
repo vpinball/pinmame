@@ -177,6 +177,19 @@ int remote_debug_set_switch(int sw, int val, int pulse_ms);
  * range. */
 int remote_debug_set_input_port_force(int port, int val);
 
+/* Battery backed memory (NVRAM/CMOS). core_nvram() in wpc/core.c reports
+ * every block a driver loads or saves, which is how the debugger learns
+ * where the NVRAM of the running machine is - for all generations. */
+void remote_debug_nvram_register(void *mem, size_t length);
+
+/* Describe the NVRAM blocks as JSON: size and, where a block is part of a
+ * CPU's memory, that CPU and the address (cpu/addr are -1 otherwise). */
+void remote_debug_get_nvram_info(char **buffer, int *len);
+
+/* Copy of all NVRAM blocks, one after the other. *buffer is malloc()ed and
+ * NULL if the machine has no NVRAM. */
+void remote_debug_get_nvram_dump(char **buffer, int *len);
+
 /* List the cabinet/operator buttons of the running driver: the named bits
  * of input port CORE_COREINPORT, as JSON. Works for every generation, as
  * the names and bits come from the driver's own port definition. */

@@ -136,6 +136,16 @@ typedef struct {
 static button_pulse_t button_pulses[PULSE_MAX];
 static int button_pulse_count = 0;
 
+/* Battery backed memory blocks, as reported by core_nvram(). */
+typedef struct {
+	UINT8 *mem;
+	size_t length;
+} nvram_block_t;
+
+#define NVRAM_BLOCK_MAX 8
+static nvram_block_t nvram_blocks[NVRAM_BLOCK_MAX];
+static int nvram_block_count = 0;
+
 /* Shadow of the forced-value overlay in inptport.c, which can only be
  * written as a whole: lets -holdport, /api/input/port and the per-button
  * presses of /api/input/button change their own bits without clobbering
@@ -582,6 +592,7 @@ void remote_debug_init(void)
 	callstack_ptr = 0;
 	pulse_count = 0;
 	button_pulse_count = 0;
+	nvram_block_count = 0;
 	monitor_count = 0;
 	action_head = action_count = 0;
 	instrument_count = 0;
@@ -1854,6 +1865,96 @@ int remote_debug_set_input_port_force(int port, int val)
 	}
 	remote_debug_unlock();
 	return result;
+}
+
+/* ================================================================== */
+/* NVRAM                                                              */
+/* ================================================================== */
+
+/* Called by core_nvram() on the emulator thread, when the NVRAM is loaded
+ * at start-up and again whenever it is saved or cleared - hence the check
+ * for blocks that are known already. */
+void remote_debug_nvram_register(void *mem, size_t length)
+{
+	int i;
+	/* the NVRAM is saved once more after remote_debug_exit(), when the lock
+	   is gone already */
+	if (!remote_debug_ready || !mem || length == 0)
+		return;
+	remote_debug_lock();
+	for (i = 0; i < nvram_block_count; i++) {
+		if (nvram_blocks[i].mem == (UINT8 *)mem)
+			break;
+	}
+	if (i < NVRAM_BLOCK_MAX) {
+		nvram_blocks[i].mem = (UINT8 *)mem;
+		nvram_blocks[i].length = length;
+		if (i == nvram_block_count)
+			nvram_block_count++;
+	}
+	remote_debug_unlock();
+}
+
+/* Find the CPU whose memory region contains `mem`; the offset into the
+ * region is the address then. Returns the CPU number, or -1 if the block
+ * is kept outside the CPU memory regions (a driver's own array).
+ * The caller must hold the debugger lock. */
+static int nvram_find_cpu(const UINT8 *mem, UINT32 *addr)
+{
+	int cpu;
+	for (cpu = 0; Machine && cpu < cpu_gettotalcpu(); cpu++) {
+		const UINT8 *base = memory_region(REGION_CPU1 + cpu);
+		size_t size = memory_region_length(REGION_CPU1 + cpu);
+		if (base && mem >= base && mem < base + size) {
+			*addr = (UINT32)(mem - base);
+			return cpu;
+		}
+	}
+	return -1;
+}
+
+void remote_debug_get_nvram_info(char **buffer, int *len)
+{
+	strbuf_t sb;
+	int i;
+	sb_init(&sb, 512);
+	remote_debug_lock();
+	sb_appendf(&sb, "{\"blocks\": [");
+	for (i = 0; i < nvram_block_count; i++) {
+		UINT32 addr = 0;
+		int cpu = nvram_find_cpu(nvram_blocks[i].mem, &addr);
+		sb_appendf(&sb, "%s{\"size\": %u, \"cpu\": %d, \"addr\": %d}",
+		           i ? "," : "", (unsigned)nvram_blocks[i].length, cpu,
+		           (cpu >= 0) ? (int)addr : -1);
+	}
+	sb_appendf(&sb, "]}");
+	remote_debug_unlock();
+	*buffer = sb.buf;
+	*len = sb.len;
+}
+
+void remote_debug_get_nvram_dump(char **buffer, int *len)
+{
+	size_t total = 0;
+	int i;
+	*buffer = NULL;
+	*len = 0;
+	remote_debug_lock();
+	for (i = 0; i < nvram_block_count; i++)
+		total += nvram_blocks[i].length;
+	if (Machine && total > 0) {
+		char *buf = malloc(total);
+		if (buf) {
+			size_t pos = 0;
+			for (i = 0; i < nvram_block_count; i++) {
+				memcpy(buf + pos, nvram_blocks[i].mem, nvram_blocks[i].length);
+				pos += nvram_blocks[i].length;
+			}
+			*buffer = buf;
+			*len = (int)total;
+		}
+	}
+	remote_debug_unlock();
 }
 
 /* ================================================================== */

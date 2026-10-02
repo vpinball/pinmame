@@ -295,8 +295,8 @@
                         <button class="btn" onclick="Cli.run()">Exec</button>
                     </div>
                     <button class="btn btn-danger" onclick="Dbg.nvramClear()">Wipe NVRAM &amp; Reset</button>
-                    <button class="btn" onclick="Mem.nvramView()" title="Show WPC CMOS RAM in the hex editor">NVRAM View</button>
-                    <button class="btn" onclick="Dbg.nvramDownload()" title="Download the raw 8KB NVRAM dump">NVRAM Dump &darr;</button>
+                    <button class="btn" onclick="Mem.nvramView()" title="Show the battery backed memory (NVRAM/CMOS) in the hex editor">NVRAM View</button>
+                    <button class="btn" onclick="Dbg.nvramDownload()" title="Download the raw NVRAM contents">NVRAM Dump &darr;</button>
                 </div>
             </div>
             <div id="console-log"></div>
@@ -1353,11 +1353,31 @@ const Mem = {
         this.refresh();
     },
 
-    nvramView() {
-        document.getElementById('mem-addr').value = '0000';
-        document.getElementById('mem-size').value = 512;
-        document.getElementById('mem-cpu').value = 0;
-        this.refresh();
+    /* Show the NVRAM in the hex editor. Where it is differs per generation
+       (WPC: the whole RAM from 0000, System 11: 0000-07FF, others somewhere
+       else or not in the CPU's memory at all), so ask the emulator. */
+    async nvramView() {
+        let info = null;
+        try { info = await Api.get('/api/debugger/nvram', true); } catch (e) { /* handled below */ }
+        const blocks = (info && info.blocks) ? info.blocks : [];
+        if (!blocks.length) { Toast.show('This machine has no NVRAM'); return; }
+        const blk = blocks.find((b) => b.cpu >= 0);
+        if (!blk) {
+            Toast.show('The NVRAM is not part of the CPU memory - use "NVRAM Dump" to get its contents');
+            return;
+        }
+        const sizeInput = document.getElementById('mem-size');
+        document.getElementById('mem-addr').value = Fmt.hex(blk.addr, 4);
+        sizeInput.value = Math.min(blk.size, parseInt(sizeInput.max, 10) || 2048);
+        document.getElementById('mem-cpu').value = blk.cpu;
+        document.getElementById('mem-bank').value = '';
+        /* the hex editor may be scrolled out of sight, or already show this
+           range - make it obvious where the result went */
+        await this.refresh();
+        document.getElementById('hex-container').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const end = Fmt.hex(blk.addr + blk.size - 1, 4);
+        Toast.show(`NVRAM: ${blk.size} bytes at ${Fmt.hex(blk.addr, 4)}-${end} (CPU ${blk.cpu}), shown in the hex editor` +
+                   (blocks.length > 1 ? `; ${blocks.length - 1} more block(s) in the dump` : ''), true);
     },
 
     async search(fromAddr) {

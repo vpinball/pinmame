@@ -10,6 +10,9 @@
 #include "core.h"
 #include "video.h"
 #include "bulb.h"
+#ifdef REMOTE_DEBUG
+#include "remote_debug/remote_debug.h"
+#endif
 
 #ifdef PROC_SUPPORT
  #include "p-roc/p-roc.h"
@@ -2832,6 +2835,11 @@ static UINT32 core_initDisplaySize(const core_tLCDLayout *layout) {
 }
 
 void core_nvram(void *file, int write, void *mem, size_t length, UINT8 init) {
+#ifdef REMOTE_DEBUG
+  /* all drivers pass their battery backed memory through here: tell the
+     remote debugger where it is, so it can show and dump it */
+  remote_debug_nvram_register(mem, length);
+#endif
   if (write)     mame_fwrite(file, mem, length); /* save */
   else if (file) mame_fread(file,  mem, length); /* load */
   else           memset(mem, init, length);      /* first time */

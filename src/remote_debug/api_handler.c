@@ -879,28 +879,28 @@ static void handle_api_debugger_dasm(const http_request_t *req, http_response_t 
 
 static void handle_api_debugger_nvram_dump(const http_request_t *req, http_response_t *resp)
 {
+	char *body = NULL;
+	int len = 0;
 	(void)req;
-	remote_debug_lock();
-	if (Machine && Machine->drv && Machine->drv->nvram_handler && wpc_ram) {
-		char *body = malloc(0x2000);
-		if (body) {
-			memcpy(body, wpc_ram, 0x2000);
-			remote_debug_unlock();
-			respond_owned(resp, body, 0x2000, "application/octet-stream");
-			return;
-		}
-		remote_debug_unlock();
-		respond_error(resp, 500, "out of memory");
-		return;
-	}
-	remote_debug_unlock();
-	respond_error(resp, 404, "no WPC NVRAM available");
+	remote_debug_get_nvram_dump(&body, &len);
+	if (body)
+		respond_owned(resp, body, len, "application/octet-stream");
+	else
+		respond_error(resp, 404, "no NVRAM available");
 }
 
 static void handle_api_debugger_nvram(const http_request_t *req, http_response_t *resp)
 {
 	char cmd_buf[32];
 	get_query_param(req->query, "cmd", cmd_buf, (int)sizeof(cmd_buf));
+	if (!cmd_buf[0]) {
+		/* no command: describe where the NVRAM is */
+		char *body = NULL;
+		int len = 0;
+		remote_debug_get_nvram_info(&body, &len);
+		respond_owned(resp, body, len, "application/json");
+		return;
+	}
 	if (strcmp(cmd_buf, "clear") != 0) {
 		respond_error(resp, 400, "cmd must be clear");
 		return;
@@ -1591,9 +1591,10 @@ static const api_route_t api_routes[] = {
 	 "?pattern=HEXBYTES[&addr=HEX][&size=N][&cpu=N][&bank=HEX] - search memory"},
 	{"/api/debugger/trace", handle_api_debugger_trace,
 	 "memory access trace; ?cmd=add&addr=HEX[&bank=HEX] | ?cmd=clear"},
-	{"/api/debugger/nvram", handle_api_debugger_nvram, "?cmd=clear - wipe NVRAM"},
+	{"/api/debugger/nvram", handle_api_debugger_nvram,
+	 "NVRAM blocks with size and, if mapped, CPU and address; ?cmd=clear - wipe NVRAM"},
 	{"/api/debugger/nvram/dump", handle_api_debugger_nvram_dump,
-	 "raw 8KB WPC CMOS RAM dump"},
+	 "raw dump of the NVRAM (all blocks, one after the other)"},
 	{"/api/debugger/instrument", handle_api_debugger_instrument,
 	 "PC hit counting; ?cmd=add&addr=HEX[&bank=HEX][&cpu=N] | ?cmd=clear | list"},
 	{"/api/debugger/exectrace", handle_api_debugger_exectrace,
