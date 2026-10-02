@@ -21,6 +21,7 @@
 #include "wpc/wpc.h"
 #include "cpuintrf.h"
 #include "cpu/m6809/m6809.h"
+#include "cpu/m6800/m6800.h"
 #include "cpu/adsp2100/adsp2100.h"
 #include "memory.h"
 
@@ -170,6 +171,39 @@ static void respond_owned(http_response_t *resp, char *body, int len, const char
 
 /* Resolve a register name or numeric id for /api/debugger/state/write.
  * Understands M6809 and ADSP2100 family names. Returns -1 if unknown. */
+/* Nonzero for the CPUs of the M6800 core (the main CPU of the Williams
+ * System 3-11 boards is a M6800/M6802/M6808), which share one register set.
+ * Which of them exist depends on the build, hence the #ifs. */
+static int is_m6800_family(int cpu_type)
+{
+	switch (cpu_type) {
+#if (HAS_M6800)
+		case CPU_M6800:
+#endif
+#if (HAS_M6801)
+		case CPU_M6801:
+#endif
+#if (HAS_M6802)
+		case CPU_M6802:
+#endif
+#if (HAS_M6803)
+		case CPU_M6803:
+#endif
+#if (HAS_M6808)
+		case CPU_M6808:
+#endif
+#if (HAS_HD63701)
+		case CPU_HD63701:
+#endif
+#if (HAS_NSC8105)
+		case CPU_NSC8105:
+#endif
+			return 1;
+		default:
+			return 0;
+	}
+}
+
 static int resolve_register_id(int cpu_idx, const char *name)
 {
 	static const struct { const char *name; int id; } m6809_regs[] = {
@@ -177,6 +211,11 @@ static int resolve_register_id(int cpu_idx, const char *name)
 		{"CC", M6809_CC}, {"FLAGS", M6809_CC}, {"A", M6809_A},
 		{"B", M6809_B}, {"U", M6809_U}, {"X", M6809_X},
 		{"Y", M6809_Y}, {"DP", M6809_DP}
+	};
+	static const struct { const char *name; int id; } m6800_regs[] = {
+		{"PC", M6800_PC}, {"S", M6800_S}, {"SP", M6800_S},
+		{"CC", M6800_CC}, {"FLAGS", M6800_CC}, {"A", M6800_A},
+		{"B", M6800_B}, {"X", M6800_X}
 	};
 	static const struct { const char *name; int id; } adsp_regs[] = {
 		{"PC", ADSP2100_PC}, {"AX0", ADSP2100_AX0}, {"AX1", ADSP2100_AX1},
@@ -208,6 +247,12 @@ static int resolve_register_id(int cpu_idx, const char *name)
 		for (i = 0; i < sizeof(adsp_regs) / sizeof(adsp_regs[0]); i++) {
 			if (strcasecmp(name, adsp_regs[i].name) == 0)
 				return adsp_regs[i].id;
+		}
+	}
+	else if (is_m6800_family(cpu_type)) {
+		for (i = 0; i < sizeof(m6800_regs) / sizeof(m6800_regs[0]); i++) {
+			if (strcasecmp(name, m6800_regs[i].name) == 0)
+				return m6800_regs[i].id;
 		}
 	}
 	else {
@@ -936,8 +981,10 @@ static void handle_api_debugger_state_write(const http_request_t *req, http_resp
 static void append_cpu_registers(int i, char **p)
 {
 	int type = Machine->drv->cpu[i].cpu_type;
-	*p += sprintf(*p, "\"type\": %d, \"pc\": %u, \"sp\": %u",
-	              type, cpunum_get_reg(i, REG_PC), cpunum_get_reg(i, REG_SP));
+	/* the numeric type depends on which CPU cores a build includes; the name
+	   is what a client can rely on */
+	*p += sprintf(*p, "\"type\": %d, \"name\": \"%s\", \"pc\": %u, \"sp\": %u",
+	              type, cputype_name(type), cpunum_get_reg(i, REG_PC), cpunum_get_reg(i, REG_SP));
 	if (type == CPU_M6809) {
 		*p += sprintf(*p,
 			", \"a\": %u, \"b\": %u, \"x\": %u, \"y\": %u, \"u\": %u, \"dp\": %u, \"cc\": %u",
@@ -945,6 +992,11 @@ static void append_cpu_registers(int i, char **p)
 			cpunum_get_reg(i, M6809_X), cpunum_get_reg(i, M6809_Y),
 			cpunum_get_reg(i, M6809_U), cpunum_get_reg(i, M6809_DP),
 			cpunum_get_reg(i, M6809_CC));
+	}
+	else if (is_m6800_family(type)) {
+		*p += sprintf(*p, ", \"a\": %u, \"b\": %u, \"x\": %u, \"cc\": %u",
+			cpunum_get_reg(i, M6800_A), cpunum_get_reg(i, M6800_B),
+			cpunum_get_reg(i, M6800_X), cpunum_get_reg(i, M6800_CC));
 	}
 	else if (type == CPU_ADSP2105) {
 		*p += sprintf(*p,

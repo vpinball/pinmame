@@ -1033,8 +1033,9 @@ const Cpu = {
             const panel = document.createElement('div');
             panel.className = 'panel';
             panel.style.margin = '5px 10px';
-            const isM6809 = cpu.a !== undefined;
-            let html = `<h2>CPU ${cpu.id} (${isM6809 ? 'M6809' : 'ADSP'})</h2><div class="reg-grid">`;
+            const isM6809 = cpu.y !== undefined;   /* the M6800 family has A/B/X/CC, but no Y */
+            const cpuName = cpu.name || (isM6809 ? 'M6809' : 'ADSP');
+            let html = `<h2>CPU ${cpu.id} (${cpuName})</h2><div class="reg-grid">`;
             /* show the currently paged ROM bank next to PC (WPC main CPU) */
             if (isM6809 && cpu.id === 0 && State.wpcBank !== undefined && State.wpcBank !== -1) {
                 const inWindow = cpu.pc >= 0x4000 && cpu.pc < 0x8000;
@@ -1045,7 +1046,7 @@ const Cpu = {
                         `${Fmt.hex(State.wpcBank, 2)}</span></div></div>`;
             }
             for (const [reg, val] of Object.entries(cpu)) {
-                if (reg === 'id' || reg === 'type') continue;
+                if (reg === 'id' || reg === 'type' || reg === 'name') continue;
                 html += `<div class="reg-item"><span class="reg-label">${reg.toUpperCase()}</span>` +
                         `<div><span class="reg-val" title="click to edit" ` +
                         `onclick="Cpu.editReg(${cpu.id},'${reg}',${val})">${Fmt.hex(val, 2)}</span>` +
@@ -1053,7 +1054,9 @@ const Cpu = {
             }
             html += '</div>';
             if (cpu.cc !== undefined) {
-                const flags = ['C', 'V', 'Z', 'N', 'I', 'H', 'F', 'E'];
+                /* the M6800 condition codes are C V Z N I H; bits 6 and 7 are unused */
+                const flags = isM6809 ? ['C', 'V', 'Z', 'N', 'I', 'H', 'F', 'E']
+                                      : ['C', 'V', 'Z', 'N', 'I', 'H'];
                 html += '<div class="flags-grid">' + flags
                     .map((f, i) => `<div class="flag ${(cpu.cc & (1 << i)) ? 'active' : ''}">${f}</div>`)
                     .reverse().join('') + '</div>';
