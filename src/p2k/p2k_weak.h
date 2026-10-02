@@ -23,6 +23,8 @@
 
 #pragma once
 
+#include <ctime>
+
 #ifdef _MSC_VER
   #define P2K_WEAK
   // A strong symbol's address is never null, and MSVC warns (C4551) about testing it
@@ -31,3 +33,13 @@
   #define P2K_WEAK __attribute__((weak))
   #define P2K_HAVE_WEAK(sym) ((sym) != nullptr)
 #endif
+
+// -rtc's fixed clock lives in src/timer.c, which the standalone harnesses do not link; there these
+// resolve to null and the host clock is used.
+extern "C" {
+	int    rtc_is_fixed(void) P2K_WEAK;
+	time_t rtc_now(void) P2K_WEAK;
+	void   rtc_now_tm(struct tm *out) P2K_WEAK;
+}
+
+#define P2K_RTC_FIXED() (P2K_HAVE_WEAK(rtc_is_fixed) && rtc_is_fixed())

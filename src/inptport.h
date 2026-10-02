@@ -390,6 +390,16 @@ enum { IKT_STD, IKT_IPT, IKT_IPT_EXT, IKT_OSD_KEY, IKT_OSD_JOY
 int load_input_port_settings(void);
 void save_input_port_settings(void);
 
+#ifdef PINMAME
+/* Command-line DIP switch overrides: -dip "<DIP switch name>=<setting>",
+   repeatable, both sides matched case-insensitively against the driver's own
+   strings; a setting with no name can be given as a number (0x20 or 32).
+   Applied after load_input_port_settings(), so they override both the driver
+   default and the saved cfg. */
+int dip_override_add(const char *spec);
+int dip_override_apply(void);
+#endif /* PINMAME */
+
 const char *input_port_name(const struct InputPort *in);
 InputSeq* input_port_type_seq(int type);
 InputSeq* input_port_seq(const struct InputPort *in);

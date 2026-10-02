@@ -608,6 +608,22 @@ static INTERRUPT_GEN(wpc_interface_update) {
   core_updateSw((core_gameData->gen & GENWPC_HASFLIPTRON) ? TRUE : (wpc_data[WPC_GILAMPS] & 0x80));
 }
 
+/* The clock the game sees: the host's, or the fixed one -rtc gave */
+static const struct tm *wpc_systime(void) {
+  static struct tm fixed;
+  static struct tm *systime = NULL;
+  static time_t oldTime = 0;
+  time_t now;
+
+  if (rtc_is_fixed()) { rtc_now_tm(&fixed); return &fixed; }
+  time(&now);
+  if (now != oldTime) {
+    systime = localtime(&now);
+    oldTime = now;
+  }
+  return systime;
+}
+
 /*----------------------
 / Emulate the WPC chip
 /-----------------------*/
@@ -658,16 +674,8 @@ READ_HANDLER(wpc_r) {
       // This hack by JD puts right values into the memory locations
       UINT8 *timeMem = wpc_ram + 0x1800;
       UINT16 checksum = 0;
-      static time_t oldTime = 0;
-      time_t now;
-      static struct tm *systime;
+      const struct tm *systime = wpc_systime();
 
-      time(&now);
-      if (now != oldTime)
-      {
-          systime = localtime(&now);
-          oldTime = now;
-      }
       checksum += *timeMem++ = (systime->tm_year + 1900)>>8;
       checksum += *timeMem++ = (systime->tm_year + 1900)&0xff;
       checksum += *timeMem++ = systime->tm_mon + 1;
@@ -680,19 +688,8 @@ READ_HANDLER(wpc_r) {
       *timeMem   = checksum & 0xff;
       return systime->tm_hour;
     }
-    case WPC_RTCMIN: {
-      static time_t oldTime = 0;
-      time_t now;
-      static struct tm *systime;
-
-      time(&now);
-      if (now != oldTime)
-      {
-          systime = localtime(&now);
-          oldTime = now;
-      }
-      return systime->tm_min;
-    }
+    case WPC_RTCMIN:
+      return wpc_systime()->tm_min;
     case WPC_ZC_IRQ_ACK:
       // Bit7: zero cross state (latched value reseted on read)
       // Bit2: periodic IRQ enabled

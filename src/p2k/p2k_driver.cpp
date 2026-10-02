@@ -238,12 +238,15 @@ void p2k_state::seed_error_log()
 //
 // Hence what PinMAME saves: the 64 registers plus the host time_t they were taken at.  The emulated
 // chip stops when the machine does where the real one keeps running, so the only way to know how
-// long it was off is to ask the host twice and subtract
+// long it was off is to ask the clock twice and subtract - the fixed clock under -rtc, the host's
+// otherwise
+static time_t p2k_now() { return P2K_RTC_FIXED() ? rtc_now() : ::time(nullptr); }
+
 void p2k_state::rtc_save()
 {
 	if (!m_rtc) return;
 	memcpy(m_rtc_nv, m_rtc->p2k_data(), 0x40);
-	const u64 now = u64(::time(nullptr));
+	const u64 now = u64(p2k_now());
 	memcpy(m_rtc_nv + 0x40, &now, sizeof now);
 }
 
@@ -259,10 +262,13 @@ void p2k_state::rtc_restore()
 	// the next morning slept through one New Year, and that is the one the firmware needs to add.
 	// Skipped for a block saved by a build that did not stamp it, and for a host clock that has
 	// moved backwards since - neither has any number of years to offer
-	const time_t then_t = time_t(saved), now_t = ::time(nullptr);
+	const time_t then_t = time_t(saved), now_t = p2k_now();
 	if (saved && now_t > then_t)
 	{
-		struct tm a = *localtime(&then_t), b = *localtime(&now_t);
+		// gmtime under -rtc: rtc_now() encodes the fixed civil time as if it were UTC, so the
+		// host zone would shift both stamps and could move the year boundary between them
+		struct tm a = P2K_RTC_FIXED() ? *gmtime(&then_t) : *localtime(&then_t);
+		struct tm b = P2K_RTC_FIXED() ? *gmtime(&now_t)  : *localtime(&now_t);
 		int years = b.tm_year - a.tm_year;
 		if (years <  0) years = 0;
 		if (years > 99) years = 99; // a register, not a span to be trusted blindly
