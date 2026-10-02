@@ -31,6 +31,14 @@
  * sig_atomic_t reads/writes are atomic; no lock needed for these. */
 static volatile sig_atomic_t is_paused = 0;
 static volatile sig_atomic_t step_requested = 0;
+/* set when the one instruction of a step has been let through */
+static volatile sig_atomic_t step_done = 0;
+/* a machine reset has been requested and not been carried out yet */
+static volatile sig_atomic_t reset_pending = 0;
+/* The CPU execution halts on: it is stopped in front of its next instruction
+ * and it is the one that steps. The main CPU, unless a breakpoint or
+ * watchpoint was hit by another one. */
+static int halt_cpu = 0;
 static volatile sig_atomic_t should_quit = 0;
 
 static pthread_mutex_t mame_mutex;
@@ -554,6 +562,9 @@ static void publish_event(const char *fmt, ...)
 	remote_debug_unlock();
 }
 
+/* forward declaration; defined with the callstack hooks below */
+static void callstack_prune(UINT32 sp);
+
 /* forward declarations; defined with the pulse implementation below */
 static void service_pulses(void);
 static void pulse_tick(int reassert);
@@ -661,6 +672,9 @@ void remote_debug_init(void)
 	apply_holdport_option();
 	should_quit = 0;
 	step_requested = 0;
+	step_done = 0;
+	reset_pending = 0;
+	halt_cpu = 0;
 	breakpoint_count = 0;
 	watchpoint_count = 0;
 	msg_head = msg_count = 0;
@@ -713,18 +727,54 @@ int remote_debug_is_paused(void)
 {
 	if (should_quit)
 		return 0;
-	if (step_requested) {
-		step_requested = 0;
+	/* A pending step lets the timeslice start; the instruction hook then
+	   lets exactly one instruction of the halted CPU through. */
+	if (step_requested)
 		return 0;
-	}
 	if (is_paused)
 		usleep(10000);
 	return is_paused;
 }
 
+/* Hold the emulator thread, in front of the next instruction of the active
+ * CPU, for as long as execution is paused. This is what makes a halt exact:
+ * the timeslice loop in cpuexec.c can only pause between timeslices, i.e.
+ * many instructions later. A step lets one instruction through.
+ * Called from the instruction hook with the debugger lock held; the lock is
+ * released while waiting so that the HTTP thread can inspect the machine. */
+static void wait_while_paused(void)
+{
+	if (step_done) {
+		step_done = 0;
+		publish_event("{\"event\": \"halt\", \"reason\": \"step\", \"pc\": %u}",
+		              activecpu_get_reg(REG_PC));
+	}
+	remote_debug_unlock();
+	while (is_paused && !step_requested && !should_quit && !reset_pending)
+		usleep(5000);
+	remote_debug_lock();
+	if (should_quit || reset_pending) {
+		/* neither can happen before this timeslice is over */
+		activecpu_abort_timeslice();
+		return;
+	}
+	if (is_paused && step_requested) {
+		step_requested = 0;
+		step_done = 1;
+	}
+}
+
+/* Called by cpuexec.c when the machine (re)starts. */
+void remote_debug_reset_done(void)
+{
+	reset_pending = 0;
+}
+
 void remote_debug_set_paused(int paused)
 {
 	int was = is_paused;
+	if (paused && !was)
+		halt_cpu = 0;
 	is_paused = paused ? 1 : 0;
 	if (was != is_paused)
 		publish_event("{\"event\": \"%s\", \"reason\": \"user\"}",
@@ -745,6 +795,7 @@ void remote_debug_step(void)
 void remote_debug_reset(void)
 {
 	remote_debug_lock();
+	reset_pending = 1;
 	machine_reset();
 	callstack_ptr = 0;
 	remote_debug_unlock();
@@ -945,7 +996,7 @@ void remote_debug_breakpoint_hook(void)
 	int current_bank, current_cpu, i;
 
 	if (breakpoint_count == 0 && instrument_count == 0 && tracepoint_count == 0
-			&& !exec_trace_enabled && !coverage_enabled)
+			&& !exec_trace_enabled && !coverage_enabled && !is_paused)
 		return;
 	pc = activecpu_get_reg(REG_PC);
 	current_bank = wpc_get_bank();
@@ -1026,19 +1077,26 @@ void remote_debug_breakpoint_hook(void)
 		if (!bp->temp && bp->hit_count <= bp->ignore_count)
 			continue;
 
+		/* halt in front of this instruction, see below */
 		is_paused = 1;
-		activecpu_abort_timeslice();
+		halt_cpu = current_cpu;
+		step_done = 0;
 		{
 			char b[MSG_LEN];
 			if (current_bank != -1)
 				snprintf(b, sizeof(b), "Halt: BP at %02X:%04X", current_bank, pc);
 			else
 				snprintf(b, sizeof(b), "Halt: BP at %04X", pc);
-			if (bp->temp) {
-				int j;
-				for (j = i; j < breakpoint_count - 1; j++)
-					breakpoints[j] = breakpoints[j + 1];
-				breakpoint_count--;
+			/* Temporary breakpoints (run to, step over, step out) end with the
+			   halt, whichever point caused it: one that was not reached -
+			   the subroutine did not return - must not fire later on. */
+			{
+				int j, n = 0;
+				for (j = 0; j < breakpoint_count; j++) {
+					if (!breakpoints[j].temp)
+						breakpoints[n++] = breakpoints[j];
+				}
+				breakpoint_count = n;
 			}
 			remote_debug_add_message(b);
 			publish_event("{\"event\": \"halt\", \"reason\": \"bp\", \"pc\": %u, \"bank\": %d}",
@@ -1047,6 +1105,11 @@ void remote_debug_breakpoint_hook(void)
 		}
 		break;
 	}
+
+	/* paused (just now by a breakpoint, or before): stay here until resumed
+	   or stepped, so that this instruction has not been executed yet */
+	if (is_paused && current_cpu == halt_cpu)
+		wait_while_paused();
 }
 
 /* ------------------------------------------------------------------ */
@@ -1173,8 +1236,10 @@ void remote_debug_memref(UINT32 adr, int length, int write)
 		if (hit) {
 			UINT32 pc = activecpu_get_reg(REG_PC);
 			char b[MSG_LEN];
+			/* the access is part of an instruction that is under way: the CPU
+			   halts in front of the next one */
 			is_paused = 1;
-			activecpu_abort_timeslice();
+			halt_cpu = active_cpu;
 			snprintf(b, sizeof(b), "Halt: WP %s at %04X (PC=%04X, Bank=%02X)",
 			         write ? "write" : "read", adr, pc, current_bank);
 			remote_debug_add_message(b);
@@ -1268,6 +1333,8 @@ void remote_debug_get_callstack(char **buffer, int *len)
 	int i;
 	sb_init(&sb, 4096);
 	remote_debug_lock();
+	if (Machine && cpu_gettotalcpu() > 0)
+		callstack_prune(cpunum_get_reg(0, REG_SP));
 	sb_appendf(&sb, "{\"stack\": [");
 	for (i = 0; i < callstack_ptr; i++) {
 		const callstack_entry_t *e = &callstack[i];
@@ -1411,6 +1478,21 @@ void remote_debug_set_register(int cpu_idx, int reg, UINT32 val)
 /* Step over / step out / run to                                      */
 /* ------------------------------------------------------------------ */
 
+/* Nonzero if a disassembled instruction calls a subroutine. */
+static int is_call_mnemonic(const char *dasm)
+{
+	static const char *calls[] = { "JSR", "BSR", "LBSR", "SWI", "CALL", "RST" };
+	size_t i;
+	while (*dasm == ' ')
+		dasm++;
+	for (i = 0; i < sizeof(calls) / sizeof(calls[0]); i++) {
+		size_t n = strlen(calls[i]);
+		if (strncasecmp(dasm, calls[i], n) == 0 && (dasm[n] == ' ' || dasm[n] == 0))
+			return 1;
+	}
+	return 0;
+}
+
 void remote_debug_step_over(void)
 {
 	remote_debug_lock();
@@ -1422,13 +1504,15 @@ void remote_debug_step_over(void)
 		char dasm[64];
 		int size;
 		if (need_ctx)
-			cpuintrf_push_context(0);
+			cpuintrf_push_context(halt_cpu);
 		pc = activecpu_get_reg(REG_PC);
 		activecpu_set_op_base(pc);
 		size = (int)activecpu_dasm(dasm, pc);
 		if (need_ctx)
 			cpuintrf_pop_context();
-		if (size > 0) {
+		/* Only a subroutine call is run to the instruction behind it; anything
+		   else is a plain step - a branch or return never gets there. */
+		if (size > 0 && is_call_mnemonic(dasm)) {
 			breakpoint_add_internal(pc + (UINT32)size, -1, cpu_getactivecpu(), 1, NULL, 0);
 			is_paused = 0;
 			remote_debug_add_message("Stepping over...");
@@ -1446,7 +1530,10 @@ void remote_debug_step_out(void)
 	if (callstack_ptr > 0) {
 		const callstack_entry_t *e = &callstack[callstack_ptr - 1];
 		char b[MSG_LEN];
-		breakpoint_add_internal(e->pc, e->bank, -1, 1, NULL, 0);
+		/* the ROM bank only identifies code in the banked window; elsewhere the
+		   callee may well return with a different bank paged in */
+		int bank = (e->pc >= 0x4000 && e->pc < 0x8000) ? e->bank : -1;
+		breakpoint_add_internal(e->pc, bank, 0, 1, NULL, 0);
 		is_paused = 0;
 		snprintf(b, sizeof(b), "Stepping out to %04X...", e->pc);
 		remote_debug_add_message(b);
@@ -1476,6 +1563,19 @@ void remote_debug_run_to(UINT32 addr, int bank)
 /* Callstack hooks                                                    */
 /* ------------------------------------------------------------------ */
 
+/* Drop the frames the stack pointer has left behind. Counting calls and
+ * returns alone does not keep the callstack right: pinball operating systems
+ * drop return addresses and switch stacks, and each such frame would stay
+ * for good - until the table is full and nothing new gets in. A frame was
+ * entered with the stack pointer at e->s and is over once it is back there
+ * (the stack grows downwards).
+ * The caller must hold the debugger lock. */
+static void callstack_prune(UINT32 sp)
+{
+	while (callstack_ptr > 0 && callstack[callstack_ptr - 1].s <= sp)
+		callstack_ptr--;
+}
+
 void remote_debug_push_call(UINT32 caller, UINT32 receiver)
 {
 	/* One callstack: that of the main CPU. The sound CPUs run the same CPU
@@ -1483,6 +1583,7 @@ void remote_debug_push_call(UINT32 caller, UINT32 receiver)
 	if (!remote_debug_ready || cpu_getactivecpu() != 0)
 		return;
 	remote_debug_lock();
+	callstack_prune(activecpu_get_reg(REG_SP));
 	if (callstack_ptr < CALLSTACK_SIZE) {
 		const regmap_t *regs = active_regmap();
 		callstack_entry_t *e = &callstack[callstack_ptr++];

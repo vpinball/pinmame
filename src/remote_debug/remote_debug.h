@@ -61,6 +61,10 @@ int remote_debug_is_m6800_family(int cpu_type);
 /* Reset the machine (all CPUs and the machine driver), like the F3 key. */
 void remote_debug_reset(void);
 
+/* Called by cpuexec.c when the machine (re)starts: a reset requested by
+ * remote_debug_reset() has been carried out. */
+void remote_debug_reset_done(void);
+
 /* Execute a single instruction, then pause again. */
 void remote_debug_step(void);
 

@@ -424,6 +424,9 @@ void cpu_run(void)
 
 		/* loop until the user quits or resets */
 		time_to_reset = 0;
+#ifdef REMOTE_DEBUG
+		remote_debug_reset_done();
+#endif
 		time_fence_global_offset = -options.time_fence;
 		while (!time_to_quit && !time_to_reset)
 		{
