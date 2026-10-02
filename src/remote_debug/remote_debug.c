@@ -341,18 +341,17 @@ static UINT8  scan_snapshot[SCAN_MAX];
 static UINT8  scan_candidate[SCAN_MAX]; /* 1 = offset still matches */
 
 /* ------------------------------------------------------------------ */
-/* Lightweight game-state checkpoints (WPC RAM + main CPU registers)  */
+/* Lightweight game-state checkpoints (RAM + main CPU registers)      */
 /* ------------------------------------------------------------------ */
 
 #define SAVESTATE_SLOTS 8
-#define SAVESTATE_RAM   0x3000   /* WPC RAM size */
 
 typedef struct {
 	char   name[32];
 	int    used;
-	int    ramlen;
-	UINT8  ram[SAVESTATE_RAM];
-	UINT16 pc, s, u, x, y;
+	UINT8 *ram;           /* contents of all RAM blocks, one after the other */
+	size_t ramlen;
+	UINT32 pc, s, u, x, y;
 	UINT8  a, b, dp, cc;
 } savestate_t;
 
@@ -562,6 +561,9 @@ static void publish_event(const char *fmt, ...)
 	remote_debug_unlock();
 }
 
+/* forward declaration; defined with the checkpoints below */
+static void savestate_free_all(void);
+
 /* forward declaration; defined with the callstack hooks below */
 static void callstack_prune(UINT32 sp);
 
@@ -691,7 +693,7 @@ void remote_debug_init(void)
 	scan_size = 0;
 	dmd_recording = 0;
 	dmd_rec_head = dmd_rec_count = 0;
-	memset(savestates, 0, sizeof(savestates));
+	savestate_free_all();
 	exec_trace_enabled = 0;
 	exec_trace_head = exec_trace_count = 0;
 	coverage_enabled = 0;
@@ -716,6 +718,7 @@ void remote_debug_exit(void)
 		free(coverage_bitmap);
 		coverage_bitmap = NULL;
 	}
+	savestate_free_all();
 	pthread_mutex_destroy(&mame_mutex);
 }
 
@@ -2515,6 +2518,89 @@ void remote_debug_get_scan(char **buffer, int *len)
 /* Lightweight game-state checkpoints                                 */
 /* ================================================================== */
 
+/* What a checkpoint holds is the machine's RAM as far as the debugger can
+ * find it without knowing the driver: the plain RAM in the main CPU's
+ * memory map, plus the battery backed memory the driver reported through
+ * core_nvram() (which is how the RAM behind a write handler, like the write
+ * protected WPC RAM, or a CMOS array outside the CPU memory gets in). */
+typedef struct {
+	UINT8 *mem;
+	size_t length;
+	INT32  addr;          /* address in the main CPU's memory, -1 if not mapped */
+} ram_block_t;
+
+#define RAM_BLOCK_MAX 24
+
+/* Nonzero if [mem, mem+length) lies within one of the n blocks. */
+static int ram_block_covered(const ram_block_t *blk, int n, const UINT8 *mem, size_t length)
+{
+	int i;
+	for (i = 0; i < n; i++) {
+		if (mem >= blk[i].mem && mem + length <= blk[i].mem + blk[i].length)
+			return 1;
+	}
+	return 0;
+}
+
+/* Fill blk[] with the RAM blocks of the running machine; returns their
+ * number. The caller must hold the debugger lock. */
+static int ram_blocks_collect(ram_block_t *blk)
+{
+	int n = 0, i;
+	UINT8 *base = memory_region(REGION_CPU1);
+	size_t size = memory_region_length(REGION_CPU1);
+
+	if (base && cpunum_databus_width(0) == 8 && Machine->drv->cpu[0].memory_write) {
+		const struct Memory_WriteAddress *mwa = Machine->drv->cpu[0].memory_write;
+		for (; !IS_MEMPORT_END(mwa) && n < RAM_BLOCK_MAX; mwa++) {
+			size_t length;
+			if (IS_MEMPORT_MARKER(mwa) || mwa->handler != MWA_RAM
+					|| mwa->end < mwa->start || mwa->end >= size)
+				continue;
+			length = (size_t)(mwa->end - mwa->start) + 1;
+			if (ram_block_covered(blk, n, base + mwa->start, length))
+				continue;
+			blk[n].mem = base + mwa->start;
+			blk[n].length = length;
+			blk[n].addr = (INT32)mwa->start;
+			n++;
+		}
+	}
+	for (i = 0; i < nvram_block_count && n < RAM_BLOCK_MAX; i++) {
+		UINT32 addr = 0;
+		if (ram_block_covered(blk, n, nvram_blocks[i].mem, nvram_blocks[i].length))
+			continue;
+		blk[n].mem = nvram_blocks[i].mem;
+		blk[n].length = nvram_blocks[i].length;
+		blk[n].addr = (nvram_find_cpu(nvram_blocks[i].mem, &addr) == 0) ? (INT32)addr : -1;
+		n++;
+	}
+	return n;
+}
+
+static size_t ram_blocks_size(const ram_block_t *blk, int n)
+{
+	size_t total = 0;
+	int i;
+	for (i = 0; i < n; i++)
+		total += blk[i].length;
+	return total;
+}
+
+/* Copy all blocks into buf (save != 0) or buf back into the blocks. */
+static void ram_blocks_copy(const ram_block_t *blk, int n, UINT8 *buf, int save)
+{
+	size_t pos = 0;
+	int i;
+	for (i = 0; i < n; i++) {
+		if (save)
+			memcpy(buf + pos, blk[i].mem, blk[i].length);
+		else
+			memcpy(blk[i].mem, buf + pos, blk[i].length);
+		pos += blk[i].length;
+	}
+}
+
 /* Find an existing slot by name, or -1. Caller holds the lock. */
 static int savestate_find(const char *name)
 {
@@ -2525,82 +2611,111 @@ static int savestate_find(const char *name)
 	return -1;
 }
 
+static void savestate_free_all(void)
+{
+	int i;
+	for (i = 0; i < SAVESTATE_SLOTS; i++)
+		free(savestates[i].ram);
+	memset(savestates, 0, sizeof(savestates));
+}
+
 int remote_debug_savestate_save(const char *slot)
 {
-	int idx, i;
+	ram_block_t blk[RAM_BLOCK_MAX];
+	const regmap_t *regs;
+	int idx, i, n;
+	size_t total;
+	UINT8 *ram;
 	savestate_t *s;
 	if (!slot || !slot[0])
 		return -1;
 	remote_debug_lock();
-	if (!Machine || !wpc_ram) {
+	if (!Machine || cpu_gettotalcpu() < 1) {
 		remote_debug_unlock();
 		return -1;
 	}
+	n = ram_blocks_collect(blk);
+	total = ram_blocks_size(blk, n);
 	idx = savestate_find(slot);
 	if (idx < 0) {
 		for (i = 0; i < SAVESTATE_SLOTS; i++)
 			if (!savestates[i].used) { idx = i; break; }
 	}
-	if (idx < 0) {
+	ram = (idx >= 0 && total > 0) ? malloc(total) : NULL;
+	if (!ram) {
 		remote_debug_unlock();
-		return -1;   /* all slots occupied */
+		return -1;   /* all slots occupied, no RAM found or out of memory */
 	}
 	s = &savestates[idx];
+	free(s->ram);
 	memset(s, 0, sizeof(*s));
 	strncpy(s->name, slot, sizeof(s->name) - 1);
 	s->used = 1;
-	s->ramlen = SAVESTATE_RAM;
-	memcpy(s->ram, wpc_ram, SAVESTATE_RAM);
+	s->ram = ram;
+	s->ramlen = total;
+	ram_blocks_copy(blk, n, s->ram, 1);
 	cpuintrf_push_context(0);
-	s->pc = (UINT16)activecpu_get_reg(M6809_PC);
-	s->s  = (UINT16)activecpu_get_reg(M6809_S);
-	s->u  = (UINT16)activecpu_get_reg(M6809_U);
-	s->x  = (UINT16)activecpu_get_reg(M6809_X);
-	s->y  = (UINT16)activecpu_get_reg(M6809_Y);
-	s->a  = (UINT8)activecpu_get_reg(M6809_A);
-	s->b  = (UINT8)activecpu_get_reg(M6809_B);
-	s->dp = (UINT8)activecpu_get_reg(M6809_DP);
-	s->cc = (UINT8)activecpu_get_reg(M6809_CC);
+	regs = active_regmap();
+	s->pc = activecpu_get_reg(REG_PC);
+	s->s  = activecpu_get_reg(REG_SP);
+	s->u  = ACTIVE_REG(regs, u);
+	s->x  = ACTIVE_REG(regs, x);
+	s->y  = ACTIVE_REG(regs, y);
+	s->a  = (UINT8)ACTIVE_REG(regs, a);
+	s->b  = (UINT8)ACTIVE_REG(regs, b);
+	s->dp = (UINT8)ACTIVE_REG(regs, dp);
+	s->cc = (UINT8)ACTIVE_REG(regs, cc);
 	cpuintrf_pop_context();
 	remote_debug_unlock();
 	{
 		char b[MSG_LEN];
-		snprintf(b, sizeof(b), "State saved to slot '%s'", slot);
+		snprintf(b, sizeof(b), "State saved to slot '%s' (%u bytes of RAM)", slot, (unsigned)total);
 		remote_debug_add_message(b);
 	}
 	return 0;
 }
 
+/* Set a register of the active CPU if it has that register. */
+#define ACTIVE_REG_SET(map, reg, val) \
+	do { if ((map)->reg != NO_REG) activecpu_set_reg((map)->reg, (val)); } while (0)
+
 int remote_debug_savestate_load(const char *slot)
 {
-	int idx, i;
+	ram_block_t blk[RAM_BLOCK_MAX];
+	const regmap_t *regs;
+	int idx, n;
 	const savestate_t *s;
 	if (!slot || !slot[0])
 		return -1;
 	remote_debug_lock();
-	if (!Machine || !wpc_ram) {
+	if (!Machine || cpu_gettotalcpu() < 1) {
 		remote_debug_unlock();
 		return -1;
 	}
 	idx = savestate_find(slot);
-	if (idx < 0) {
+	n = ram_blocks_collect(blk);
+	/* the blocks are the same as when the slot was saved; the size check is
+	   only there to never write beyond what was saved */
+	if (idx < 0 || savestates[idx].ramlen != ram_blocks_size(blk, n)) {
 		remote_debug_unlock();
 		return -1;
 	}
 	s = &savestates[idx];
-	for (i = 0; i < s->ramlen; i++)
-		wpc_ram[i] = s->ram[i];
+	ram_blocks_copy(blk, n, s->ram, 0);
 	cpuintrf_push_context(0);
-	activecpu_set_reg(M6809_PC, s->pc);
-	activecpu_set_reg(M6809_S,  s->s);
-	activecpu_set_reg(M6809_U,  s->u);
-	activecpu_set_reg(M6809_X,  s->x);
-	activecpu_set_reg(M6809_Y,  s->y);
-	activecpu_set_reg(M6809_A,  s->a);
-	activecpu_set_reg(M6809_B,  s->b);
-	activecpu_set_reg(M6809_DP, s->dp);
-	activecpu_set_reg(M6809_CC, s->cc);
+	regs = active_regmap();
+	activecpu_set_reg(REG_PC, s->pc);
+	activecpu_set_reg(REG_SP, s->s);
+	ACTIVE_REG_SET(regs, u, s->u);
+	ACTIVE_REG_SET(regs, x, s->x);
+	ACTIVE_REG_SET(regs, y, s->y);
+	ACTIVE_REG_SET(regs, a, s->a);
+	ACTIVE_REG_SET(regs, b, s->b);
+	ACTIVE_REG_SET(regs, dp, s->dp);
+	ACTIVE_REG_SET(regs, cc, s->cc);
 	cpuintrf_pop_context();
+	/* the frames on the callstack belong to the execution that was left */
+	callstack_ptr = 0;
 	remote_debug_unlock();
 	{
 		char b[MSG_LEN];
@@ -2615,8 +2730,10 @@ void remote_debug_savestate_delete(const char *slot)
 	int idx;
 	remote_debug_lock();
 	idx = savestate_find(slot);
-	if (idx >= 0)
-		savestates[idx].used = 0;
+	if (idx >= 0) {
+		free(savestates[idx].ram);
+		memset(&savestates[idx], 0, sizeof(savestates[idx]));
+	}
 	remote_debug_unlock();
 }
 
@@ -2923,48 +3040,60 @@ void remote_debug_get_tracepoints(char **buffer, int *len)
 /* ================================================================== */
 
 /* Diff the RAM of two save slots (or slot 'a' against the live RAM when
- * 'b' is NULL/empty). Returns the differing offsets as JSON. */
+ * 'b' is NULL/empty). Returns the differing bytes as JSON: the address in
+ * the main CPU's memory (-1 for RAM that is not mapped there), and the RAM
+ * block with the offset into it. */
 void remote_debug_savestate_diff(char **buffer, int *len, const char *a, const char *b)
 {
 	strbuf_t sb;
-	int ia, ib, i, first = 1, count = 0;
+	ram_block_t blk[RAM_BLOCK_MAX];
+	int ia, ib, n = 0, k, first = 1, count = 0, emitted = 0;
+	size_t total = 0, i, pos;
 	const UINT8 *ba = NULL, *bb = NULL;
-	UINT8 live[SAVESTATE_RAM];
+	UINT8 *live = NULL;
 
 	sb_init(&sb, 8192);
 	remote_debug_lock();
+	if (Machine && cpu_gettotalcpu() > 0) {
+		n = ram_blocks_collect(blk);
+		total = ram_blocks_size(blk, n);
+	}
 	ia = savestate_find(a);
-	if (ia >= 0)
+	if (ia >= 0 && savestates[ia].ramlen == total)
 		ba = savestates[ia].ram;
 	if (b && b[0]) {
 		ib = savestate_find(b);
-		if (ib >= 0)
+		if (ib >= 0 && savestates[ib].ramlen == total)
 			bb = savestates[ib].ram;
 	}
-	else if (Machine && wpc_ram) {
-		memcpy(live, wpc_ram, SAVESTATE_RAM);
+	else if (total > 0 && (live = malloc(total)) != NULL) {
+		ram_blocks_copy(blk, n, live, 1);
 		bb = live;
 	}
 	if (ba && bb) {
-		for (i = 0; i < SAVESTATE_RAM; i++)
+		for (i = 0; i < total; i++)
 			if (ba[i] != bb[i])
 				count++;
 	}
 	sb_appendf(&sb, "{\"a\": \"%s\", \"b\": \"%s\", \"count\": %d, \"diffs\": [",
 	           ba ? a : "", (b && b[0]) ? b : "(live)", ba && bb ? count : -1);
 	if (ba && bb) {
-		int emitted = 0;
-		for (i = 0; i < SAVESTATE_RAM && emitted < 1024; i++) {
-			if (ba[i] != bb[i]) {
-				sb_appendf(&sb, "%s{\"addr\": %d, \"a\": %u, \"b\": %u}",
-				           first ? "" : ",", i, ba[i], bb[i]);
-				first = 0;
-				emitted++;
+		for (k = 0, pos = 0; k < n; pos += blk[k].length, k++) {
+			for (i = 0; i < blk[k].length && emitted < 1024; i++) {
+				if (ba[pos + i] != bb[pos + i]) {
+					sb_appendf(&sb, "%s{\"addr\": %d, \"a\": %u, \"b\": %u, \"block\": %d, \"offset\": %u}",
+					           first ? "" : ",",
+					           (blk[k].addr >= 0) ? (int)(blk[k].addr + (INT32)i) : -1,
+					           ba[pos + i], bb[pos + i], k, (unsigned)i);
+					first = 0;
+					emitted++;
+				}
 			}
 		}
 	}
 	sb_appendf(&sb, "]}");
 	remote_debug_unlock();
+	free(live);
 	*buffer = sb.buf;
 	*len = sb.len;
 }

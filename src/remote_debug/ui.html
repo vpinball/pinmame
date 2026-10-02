@@ -1628,7 +1628,10 @@ const SaveState = {
         box.innerHTML = `<div class="hint">${d.count} RAM bytes changed since '${slot}' (showing ${d.diffs.length}):</div>` +
             '<table class="trace-table"><tr><th>Addr</th><th>saved</th><th>&rarr; live</th></tr>' +
             d.diffs.map((x) =>
-                `<tr><td style="color:#9cdcfe;cursor:pointer" onclick="document.getElementById('mem-addr').value='${Fmt.hex(x.addr, 4)}';Mem.refresh()">${Fmt.hex(x.addr, 4)}</td>` +
+                /* RAM outside the CPU's memory has no address: show block+offset */
+                (x.addr >= 0
+                    ? `<tr><td style="color:#9cdcfe;cursor:pointer" onclick="document.getElementById('mem-addr').value='${Fmt.hex(x.addr, 4)}';Mem.refresh()">${Fmt.hex(x.addr, 4)}</td>`
+                    : `<tr><td title="not part of the CPU memory">#${x.block}+${Fmt.hex(x.offset, 4)}</td>`) +
                 `<td>${Fmt.hex(x.a, 2)}</td><td>${Fmt.hex(x.b, 2)}</td></tr>`).join('') + '</table>';
     },
     async refresh() {

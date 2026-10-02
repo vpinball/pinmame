@@ -366,19 +366,23 @@ parameter — variables live in the unbanked RAM/ASIC region `0x0000`-`0x3FFF`):
   (results capped at 256).
 
 ### Save States
-Lightweight checkpoints of the game logic state (WPC RAM + main CPU
-registers), kept in memory in up to 8 named slots. This intentionally does
-**not** use MAME's full state-save machinery, which is incomplete for
-WPC/DCS and crashes on this driver; the checkpoint captures exactly what is
-useful for reverse engineering and works reliably, including while paused.
-It does not restore sound/DMD hardware state.
+Lightweight checkpoints of the game state (RAM + main CPU registers), kept
+in memory in up to 8 named slots. The RAM is what the debugger can find
+without knowing the driver: the plain RAM in the main CPU's memory map plus
+the battery backed memory, so this works for all generations (registers
+beyond PC and SP: M6809 and M6800 family). This intentionally does **not**
+use MAME's full state-save machinery, which is incomplete for WPC/DCS and
+crashes on this driver; the checkpoint captures exactly what is useful for
+reverse engineering and works reliably, including while paused. It does not
+restore sound/DMD/other hardware state.
 - `GET /api/debugger/savestate?cmd=save&slot=NAME`
 - `GET /api/debugger/savestate?cmd=load&slot=NAME`
 - `GET /api/debugger/savestate?cmd=delete&slot=NAME`
 - `GET /api/debugger/savestate`: list slots `{slots: [{name, pc}, ...]}`.
 - `GET /api/debugger/savestate/diff?a=SLOT[&b=SLOT]`: diff slot `a`'s RAM
   against slot `b`, or against the live RAM when `b` is omitted —
-  `{a, b, count, diffs: [{addr, a, b}, ...]}` (up to 1024 entries). Handy
+  `{a, b, count, diffs: [{addr, a, b, block, offset}, ...]}` (up to 1024
+  entries; `addr` is -1 for RAM that is not part of the CPU's memory). Handy
   for "what changed between these two moments".
 
 ### DMD Recorder
