@@ -1504,7 +1504,8 @@ static const char *switch_name(int num)
 {
 	static const char *coindoor[8] = {
 		"Coin 1", "Coin 2", "Coin 3", "Coin 4",
-		"Enter", "Up", "Down", "Escape"
+		/* same order as the port bits in WPC_COMPORTS (wpc.h) */
+		"Escape", "Down", "Up", "Enter"
 	};
 	static const char *flippers[8] = {
 		"L.R Flipper EOS", "L.R Flipper", "L.L Flipper EOS", "L.L Flipper",
