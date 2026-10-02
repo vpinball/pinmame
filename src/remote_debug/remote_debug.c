@@ -1503,10 +1503,15 @@ static int object_state(int type, int id)
 	if (type == REMOTE_DEBUG_OBJ_SWITCH)
 		return core_getSw(id) ? 1 : 0;
 	if (type == REMOTE_DEBUG_OBJ_LAMP) {
-		int col = id / 10, row = id % 10 - 1;
-		if (col < 0 || col >= CORE_MAXLAMPCOL || row < 0 || row > 7)
+		/* Lamp number -> matrix position, the way vp_getLamp() in vpintf.c
+		   does it: the driver's conversion counts the first lamp column as
+		   column 1, which is lampMatrix[0]. Without a conversion the number
+		   is taken as column/row (11 = column 1, row 1). */
+		int idx = (coreData && coreData->lamp2m) ? coreData->lamp2m(id) - 8
+		                                         : (id / 10 - 1) * 8 + id % 10 - 1;
+		if (idx < 0 || idx >= CORE_MAXLAMPCOL * 8)
 			return 0;
-		return (coreGlobals.lampMatrix[col] >> row) & 1;
+		return (coreGlobals.lampMatrix[idx / 8] >> (idx % 8)) & 1;
 	}
 	if (type == REMOTE_DEBUG_OBJ_SOL)
 		return core_getSol(id) ? 1 : 0;
@@ -1608,10 +1613,14 @@ void remote_debug_get_lamps(char **buffer, int *len)
 			cols = CORE_MAXLAMPCOL;
 		for (col = 0; col < cols; col++) {
 			for (row = 0; row < 8; row++) {
-				int num = col * 10 + row + 1;
+				/* the number the driver gives this lamp: column/row style on
+				   WPC (11-88), sequential (1-64) on System 11 and others; col
+				   and row are reported 1-based, lampMatrix[0] is column 1 */
+				int num = (coreData && coreData->m2lamp) ? coreData->m2lamp(col + 1, row)
+				                                         : (col + 1) * 10 + row + 1;
 				sb_appendf(&sb,
 					"%s{\"num\": %d, \"col\": %d, \"row\": %d, \"active\": %d}",
-					first ? "" : ",", num, col, row + 1,
+					first ? "" : ",", num, col + 1, row + 1,
 					(coreGlobals.lampMatrix[col] >> row) & 1);
 				first = 0;
 			}

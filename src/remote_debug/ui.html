@@ -732,6 +732,7 @@ const Status = {
 const Names = {
     sw: {},   /* num -> standard WPC name */
     num: {},  /* matrix position (col * 8 + row) -> switch number of this driver */
+    lamp: {}, /* matrix position -> lamp number of this driver */
     custom: JSON.parse(localStorage.getItem('pinmame-labels') || '{}'),
 
     async load() {
@@ -741,6 +742,9 @@ const Names = {
                 if (s.name) this.sw['s' + s.num] = s.name;
                 this.num[s.col * 8 + s.row - 1] = s.num;
             });
+            const lamps = await Api.get('/api/lamps');
+            lamps.lamps.forEach((l) => { this.lamp[(l.col - 1) * 8 + l.row - 1] = l.num; });
+            Matrix.relabel();
         } catch (e) { /* offline; retry later */ }
         Cabinet.build();
     },
@@ -866,8 +870,11 @@ const Matrix = {
     },
 
     relabel() {
-        for (let i = 0; i < 64; i++)
+        for (let i = 0; i < 64; i++) {
             document.getElementById(`sw-${i}`).title = this.swTitle(this.swNumber(i));
+            if (Names.lamp[i] !== undefined)
+                document.getElementById(`lamp-${i}`).title = 'lamp ' + Names.lamp[i];
+        }
     },
 
     update(data) {
