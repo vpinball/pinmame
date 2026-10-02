@@ -913,7 +913,8 @@ const Dmd = {
     async refresh() {
         if (document.getElementById('dmd-container').style.display === 'none') return;
         if (!document.getElementById('auto-refresh-dmd').checked) return;
-        const info = await Api.get('/api/dmd/info').catch(() => null);
+        /* games without a DMD (alphanumeric displays) answer 404 here */
+        const info = await Api.get('/api/dmd/info', true).catch(() => null);
         if (!info || info.status === 'error') return;
         State.dmd.w = info.width;
         State.dmd.h = info.height;
