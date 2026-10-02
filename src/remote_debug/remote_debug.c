@@ -322,8 +322,86 @@ void remote_debug_unlock(void) { pthread_mutex_unlock(&mame_mutex); }
  * memory map. When a bank is given for an address in the window, the byte is
  * read directly from the ROM region without touching live banking, so it is
  * side-effect free. The caller must hold the debugger lock. */
+/* Nonzero if CPU `cpu` exists and has a memory map. Audio CPUs are left
+ * uninitialised when sound is disabled (-nosound), see cpu_pre_run() in
+ * cpuexec.c; touching their memory crashes.
+ * The caller must hold the debugger lock. */
+static int cpu_has_memory(int cpu)
+{
+	return Machine && cpu >= 0 && cpu < cpu_gettotalcpu()
+	       && (!(Machine->drv->cpu[cpu].cpu_flags & CPU_AUDIO_CPU) || Machine->sample_rate != 0);
+}
+
+/* Banked memory is not accessed through the memory system. Bank numbers
+ * are global, and so are the bank pointer and the offset of a bank's
+ * handler - but drivers give the same number to two CPUs at different
+ * addresses (the WPC main CPU maps bank 4 at 0x3000, the WPC sound CPU at
+ * 0x4000). The memory system then serves the CPU that was set up last; an
+ * access through the other one ends up far outside the bank. The game
+ * never goes there, but a memory dump does - and took the emulator down.
+ *
+ * find_bank() returns the bank an address of an 8-bit CPU is mapped to (0 if
+ * it is not banked) and the first address of that mapping; bank_owner() the
+ * CPU a bank number belongs to. */
+static int find_bank(int cpu, UINT32 addr, int write, UINT32 *start)
+{
+	if (cpunum_databus_width(cpu) != 8)
+		return 0;
+	if (write) {
+		const struct Memory_WriteAddress *mwa = Machine->drv->cpu[cpu].memory_write;
+		for (; mwa && !IS_MEMPORT_END(mwa); mwa++) {
+			FPTR bank = (FPTR)mwa->handler;
+			if (IS_MEMPORT_MARKER(mwa) || addr < mwa->start || addr > mwa->end)
+				continue;
+			*start = mwa->start;
+			return (bank >= STATIC_BANK1 && bank <= STATIC_BANKMAX) ? (int)bank : 0;
+		}
+	}
+	else {
+		const struct Memory_ReadAddress *mra = Machine->drv->cpu[cpu].memory_read;
+		for (; mra && !IS_MEMPORT_END(mra); mra++) {
+			FPTR bank = (FPTR)mra->handler;
+			if (IS_MEMPORT_MARKER(mra) || addr < mra->start || addr > mra->end)
+				continue;
+			*start = mra->start;
+			return (bank >= STATIC_BANK1 && bank <= STATIC_BANKMAX) ? (int)bank : 0;
+		}
+	}
+	return 0;
+}
+
+static int bank_owner(int bank)
+{
+	int cpu;
+	/* the memory maps are set up in CPU order, the last one wins */
+	for (cpu = cpu_gettotalcpu() - 1; cpu >= 0; cpu--) {
+		const struct Memory_ReadAddress *mra = Machine->drv->cpu[cpu].memory_read;
+		const struct Memory_WriteAddress *mwa = Machine->drv->cpu[cpu].memory_write;
+		if (cpunum_databus_width(cpu) != 8)
+			continue;
+		for (; mra && !IS_MEMPORT_END(mra); mra++)
+			if (!IS_MEMPORT_MARKER(mra) && (FPTR)mra->handler == (FPTR)bank)
+				return cpu;
+		for (; mwa && !IS_MEMPORT_END(mwa); mwa++)
+			if (!IS_MEMPORT_MARKER(mwa) && (FPTR)mwa->handler == (FPTR)bank)
+				return cpu;
+	}
+	return -1;
+}
+
+/* The byte at a banked address, or NULL if the bank is not set or belongs to
+ * another CPU - whose memory it would be that gets read or changed. */
+static UINT8 *banked_byte(int cpu, int bank, UINT32 addr, UINT32 start)
+{
+	if (!cpu_bankbase[bank] || bank_owner(bank) != cpu)
+		return NULL;
+	return cpu_bankbase[bank] + (addr - start);
+}
+
 UINT8 remote_debug_read_byte(int cpu, UINT32 addr, int bank)
 {
+	UINT32 start = 0;
+	int membank;
 	if (bank >= 0 && cpu == 0 && wpc_ram && addr >= 0x4000 && addr < 0x8000) {
 		UINT8 *rom = memory_region(WPC_ROMREGION);
 		if (rom) {
@@ -331,6 +409,13 @@ UINT8 remote_debug_read_byte(int cpu, UINT32 addr, int bank)
 			if (off < (UINT32)memory_region_length(WPC_ROMREGION))
 				return rom[off];
 		}
+	}
+	if (!cpu_has_memory(cpu))
+		return 0;
+	membank = find_bank(cpu, addr, 0, &start);
+	if (membank) {
+		const UINT8 *p = banked_byte(cpu, membank, addr, start);
+		return p ? *p : 0;
 	}
 	return cpunum_read_byte(cpu, addr);
 }
@@ -1134,10 +1219,23 @@ void remote_debug_get_trace(char **buffer, int *len)
  * discard them; everything else goes through the CPU's memory map. */
 static void debug_write_byte(int cpu_idx, UINT32 addr, UINT8 val)
 {
-	if (cpu_idx == 0 && wpc_ram && addr < 0x3000)
+	UINT32 start = 0;
+	int bank;
+	if (cpu_idx == 0 && wpc_ram && addr < 0x3000) {
 		wpc_ram[addr] = val;
-	else
-		cpunum_write_byte(cpu_idx, addr, val);
+		return;
+	}
+	if (!cpu_has_memory(cpu_idx))
+		return;
+	bank = find_bank(cpu_idx, addr, 1, &start);
+	if (bank) {
+		/* see find_bank(): never through the memory system */
+		UINT8 *p = banked_byte(cpu_idx, bank, addr, start);
+		if (p)
+			*p = val;
+		return;
+	}
+	cpunum_write_byte(cpu_idx, addr, val);
 }
 
 void remote_debug_memory_fill(int cpu_idx, UINT32 addr, int size, UINT8 val)
@@ -2057,7 +2155,7 @@ int remote_debug_scan_new(int cpu, UINT32 addr, int size)
 	scan_base = addr;
 	scan_size = size;
 	for (i = 0; i < size; i++) {
-		scan_snapshot[i] = cpunum_read_byte(cpu, addr + (UINT32)i);
+		scan_snapshot[i] = remote_debug_read_byte(cpu, addr + (UINT32)i, -1);
 		scan_candidate[i] = 1;
 	}
 	remote_debug_unlock();
@@ -2077,7 +2175,7 @@ int remote_debug_scan_filter(int op, UINT8 val)
 		int keep;
 		if (!scan_candidate[i])
 			continue;
-		cur = cpunum_read_byte(scan_cpu, scan_base + (UINT32)i);
+		cur = remote_debug_read_byte(scan_cpu, scan_base + (UINT32)i, -1);
 		old = scan_snapshot[i];
 		switch (op) {
 			case REMOTE_DEBUG_SCAN_EQ:        keep = (cur == val); break;
@@ -2112,7 +2210,7 @@ void remote_debug_get_scan(char **buffer, int *len)
 			continue;
 		sb_appendf(&sb, "%s{\"addr\": %u, \"val\": %u}",
 		           (emitted > 0) ? "," : "", scan_base + (UINT32)i,
-		           Machine ? (unsigned)cpunum_read_byte(scan_cpu, scan_base + (UINT32)i) : 0);
+		           Machine ? (unsigned)remote_debug_read_byte(scan_cpu, scan_base + (UINT32)i, -1) : 0);
 		emitted++;
 	}
 	sb_appendf(&sb, "]}");
