@@ -1184,8 +1184,17 @@ void core_dmd_send_dmddevice(const int width, const int height, const float* con
 #endif
 #define DMD_DUMP_PATH_MAX PATH_MAX
 #endif
+/* True while nothing has been written to this run's dump yet. -dmd_dump_dir
+   starts a fresh file rather than appending: a dump's timestamps count from
+   emulation start, so a second run appended to a first makes them run backwards
+   half way through the file, which no reader of the format expects. The
+   VPinMAME DmdDump path below keeps its historic append */
+static int dmd_dump_txtFresh = 1;
+static int dmd_dump_rawFresh = 1;
+
 static void core_dmd_capture_frame(const int width, const int height, const UINT8* const dmdDotRaw, const int rawFrameCount, const UINT8* const rawFrame) {
   const int isStrikeNSpares = strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0;
+  const int isOptionDump = pmoptions.dmd_dump_dir && pmoptions.dmd_dump_dir[0];
   char DumpFilename[DMD_DUMP_PATH_MAX];
   UINT32 tick;
   int len;
@@ -1193,13 +1202,14 @@ static void core_dmd_capture_frame(const int width, const int height, const UINT
   if (isStrikeNSpares)
     return;
 
-  if (pmoptions.dmd_dump_dir && pmoptions.dmd_dump_dir[0]) {
+  if (isOptionDump) {
     static int warned = 0;
     len = snprintf(DumpFilename, sizeof(DumpFilename), "%s/%s",
              pmoptions.dmd_dump_dir, Machine->gamedrv->name);
     if (len < 0 || len >= (int)sizeof(DumpFilename)) {
       if (!warned) {
-        logerror("core_dmd_capture_frame: dmd_dump_dir path too long, dump skipped\n");
+        fprintf(stderr, "core_dmd_capture_frame: dmd_dump_dir path too long, dump skipped\n");
+        fflush(stderr);
         warned = 1;
       }
       return;
@@ -1233,14 +1243,19 @@ static void core_dmd_capture_frame(const int width, const int height, const UINT
     char RawFilename[DMD_DUMP_PATH_MAX];
     strncpy(RawFilename, DumpFilename, DMD_DUMP_PATH_MAX);
     strncat(RawFilename, ".raw", DMD_DUMP_PATH_MAX - strlen(RawFilename) - 1);
-    fr = fopen(RawFilename, "rb");
-    if (fr) {
-      fclose(fr);
-      fr = fopen(RawFilename, "ab");
+    int needHeader = 0;
+    if (isOptionDump && dmd_dump_rawFresh) {
+      fr = fopen(RawFilename, "wb");
+      needHeader = 1;
     }
     else {
+      FILE* probe = fopen(RawFilename, "rb");
+      if (probe) fclose(probe); else needHeader = 1;
       fr = fopen(RawFilename, "ab");
-      if (fr) {
+    }
+    if (fr) {
+      dmd_dump_rawFresh = 0;
+      if (needHeader) {
         fputc(0x52, fr);
         fputc(0x41, fr);
         fputc(0x57, fr);
@@ -1250,13 +1265,12 @@ static void core_dmd_capture_frame(const int width, const int height, const UINT
         fputc(height, fr);
         fputc(rawFrameCount, fr);
       }
-    }
-    if (fr) {
       fwrite(&tick, 1, 4, fr);
       fwrite(rawFrame, 1, (width * height / 8 * rawFrameCount), fr);
       fclose(fr);
     } else if (!rawWarned) {
-      logerror("core_dmd_capture_frame: cannot open %s, raw dump skipped\n", RawFilename);
+      fprintf(stderr, "core_dmd_capture_frame: cannot open %s, raw dump skipped\n", RawFilename);
+      fflush(stderr);
       rawWarned = 1;
     }
   }
@@ -1269,8 +1283,9 @@ static void core_dmd_capture_frame(const int width, const int height, const UINT
     FILE *f;
     memcpy(lastCapture, dmdDotRaw, width * height);
     strncat(DumpFilename, ".txt", DMD_DUMP_PATH_MAX - strlen(DumpFilename) - 1);
-    f = fopen(DumpFilename, "a");
+    f = fopen(DumpFilename, isOptionDump && dmd_dump_txtFresh ? "w" : "a");
     if (f) {
+      dmd_dump_txtFresh = 0;
       fprintf(f, "0x%08x\n", tick);
       for (int jj = 0; jj < height; jj++) {
         for (int ii = 0; ii < width; ii++)
@@ -1280,7 +1295,9 @@ static void core_dmd_capture_frame(const int width, const int height, const UINT
       fprintf(f, "\n");
       fclose(f);
     } else if (!txtWarned) {
-      logerror("core_dmd_capture_frame: cannot open %s, dump skipped\n", DumpFilename);
+      fprintf(stderr, "core_dmd_capture_frame: cannot open %s, dump skipped"
+                      " (does the directory exist and is it writable?)\n", DumpFilename);
+      fflush(stderr);
       txtWarned = 1;
     }
   }
