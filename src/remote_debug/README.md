@@ -294,8 +294,12 @@ but ignored (reads always go through the current memory map).
   reinitialize).
 
 ### Playfield Objects
-Switches, lamps and solenoids use the WPC number `col*10 + row + 1`
-(matrix 11-88; coin-door column 1-8; flipper column 111-118).
+Lamps and solenoids use the WPC number `col*10 + row + 1`. Switches are
+reported with the number the running driver uses for that matrix position,
+which is also what `/api/input` expects: `col*10 + row + 1` on WPC (matrix
+11-88; coin-door column 1-8; flipper column 111-118), sequential on
+System 11 and other generations (matrix 1-64, the dedicated column 0 as
+-7..0).
 - `GET /api/switches`: all switches as `{num, col, row, active, name}`.
   Names are the WPC standard dedicated/cabinet names where known.
 - `GET /api/lamps`: all lamps as `{num, col, row, active}`.

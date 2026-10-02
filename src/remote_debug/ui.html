@@ -731,12 +731,16 @@ const Status = {
 
 const Names = {
     sw: {},   /* num -> standard WPC name */
+    num: {},  /* matrix position (col * 8 + row) -> switch number of this driver */
     custom: JSON.parse(localStorage.getItem('pinmame-labels') || '{}'),
 
     async load() {
         try {
             const data = await Api.get('/api/switches');
-            data.switches.forEach((s) => { if (s.name) this.sw['s' + s.num] = s.name; });
+            data.switches.forEach((s) => {
+                if (s.name) this.sw['s' + s.num] = s.name;
+                this.num[s.col * 8 + s.row - 1] = s.num;
+            });
         } catch (e) { /* offline; retry later */ }
         Cabinet.build();
     },
@@ -836,6 +840,9 @@ const Matrix = {
     },
 
     swNumber(idx) {
+        /* drivers number their switches differently (WPC 11-88, System 11
+           1-64, ...): use the number the emulator reports for this position */
+        if (Names.num[idx] !== undefined) return Names.num[idx];
         const col = Math.floor(idx / 8), row = idx % 8;
         return col === 0 ? row + 1 : col * 10 + row + 1;
     },

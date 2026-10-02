@@ -1538,7 +1538,9 @@ static const char *switch_name(int num)
 		       ? coindoor[num - 1] : "";
 	if (num >= CORE_FLIPPERSWCOL * 10 + 1 && num <= CORE_FLIPPERSWCOL * 10 + 8)
 		return flippers[num - (CORE_FLIPPERSWCOL * 10 + 1)];
-	if (core_gameData) {
+	/* comSw is WPC game data as well; other generations keep different data
+	   in that union */
+	if (core_gameData && (core_gameData->gen & GEN_ALLWPC)) {
 		if (num == core_gameData->wpc.comSw.start)    return "Start";
 		if (num == core_gameData->wpc.comSw.tilt)     return "Tilt";
 		if (num == core_gameData->wpc.comSw.sTilt)    return "Slam Tilt";
@@ -1553,11 +1555,16 @@ static int emit_switch_col(strbuf_t *sb, int col, int first)
 {
 	int row;
 	for (row = 0; row < 8; row++) {
-		int num = col * 10 + row + 1;
+		/* The switch number is whatever the driver calls this matrix position:
+		   column/row style (WPC: 11-88) or sequential (System 11 and the core
+		   default: 1-64, with the dedicated column 0 at -7..0). It is the
+		   number core_setSw() and so /api/input expect. */
+		int num = (coreData && coreData->m2sw) ? coreData->m2sw(col, row) : col * 10 + row + 1;
 		char esc[64];
 		sb_appendf(sb,
 			"%s{\"num\": %d, \"col\": %d, \"row\": %d, \"active\": %d, \"name\": \"%s\"}",
-			first ? "" : ",", num, col, row + 1, object_state(REMOTE_DEBUG_OBJ_SWITCH, num),
+			first ? "" : ",", num, col, row + 1,
+			((coreGlobals.swMatrix[col] ^ coreGlobals.invSw[col]) >> row) & 1,
 			remote_debug_json_escape(esc, (int)sizeof(esc), switch_name(num)));
 		first = 0;
 	}
