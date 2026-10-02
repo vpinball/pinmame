@@ -564,6 +564,20 @@ void remote_debug_step(void)
 	publish_event("{\"event\": \"step\"}");
 }
 
+/* Same as the reset key (F3) of the user interface: the machine driver is
+ * stopped and re-initialised and all CPUs start again at their reset
+ * vector. NVRAM contents, breakpoints and the paused state are kept, so a
+ * reset while paused halts on the first instruction after the reset. */
+void remote_debug_reset(void)
+{
+	remote_debug_lock();
+	machine_reset();
+	callstack_ptr = 0;
+	remote_debug_unlock();
+	remote_debug_add_message("Machine reset");
+	publish_event("{\"event\": \"reset\"}");
+}
+
 void remote_debug_quit(void)
 {
 	printf("Remote Debugger: quit requested\n");

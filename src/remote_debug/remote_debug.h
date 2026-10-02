@@ -54,6 +54,9 @@ int remote_debug_should_quit(void);
 /* Pause (1) or resume (0) execution. */
 void remote_debug_set_paused(int paused);
 
+/* Reset the machine (all CPUs and the machine driver), like the F3 key. */
+void remote_debug_reset(void);
+
 /* Execute a single instruction, then pause again. */
 void remote_debug_step(void);
 

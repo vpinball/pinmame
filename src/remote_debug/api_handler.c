@@ -492,10 +492,12 @@ static void handle_api_debugger_control(const http_request_t *req, http_response
 		remote_debug_step_over();
 	else if (strcmp(cmd_buf, "stepout") == 0)
 		remote_debug_step_out();
+	else if (strcmp(cmd_buf, "reset") == 0)
+		remote_debug_reset();
 	else if (strcmp(cmd_buf, "exit") == 0)
 		remote_debug_quit();
 	else {
-		respond_error(resp, 400, "cmd must be pause|resume|step|stepover|stepout|exit");
+		respond_error(resp, 400, "cmd must be pause|resume|step|stepover|stepout|reset|exit");
 		return;
 	}
 	respond_ok(resp);

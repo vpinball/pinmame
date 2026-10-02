@@ -184,6 +184,7 @@
         <button class="btn" onclick="Dbg.control('step')" title="Step into (F11)">Step</button>
         <button class="btn btn-success" onclick="Dbg.control('stepover')" title="Step over (F10)">Over</button>
         <button class="btn btn-success" onclick="Dbg.control('stepout')" title="Step out (Shift+F11)">Out</button>
+        <button class="btn btn-danger" onclick="Dbg.reset()" title="Reset the machine (like F3); NVRAM and breakpoints are kept">Reset</button>
         <button class="btn btn-danger" onclick="Dbg.exitEmulator()" title="Terminate the emulator">Exit</button>
     </div>
 </header>
@@ -599,6 +600,7 @@ const Events = {
             switch (ev.event) {
                 case 'halt':
                 case 'step':
+                case 'reset':
                     refreshAfterHalt();
                     break;
                 case 'resume':
@@ -680,6 +682,11 @@ const Dbg = {
     async releaseButton(mask) {
         const ms = parseInt(document.getElementById('pulse-ms').value, 10) || 0;
         if (ms === 0) await Api.get(`/api/input/button?mask=${mask.toString(16)}&val=0`);
+    },
+    async reset() {
+        if (!confirm('Reset the machine?')) return;
+        await Api.get('/api/debugger/control?cmd=reset');
+        Toast.show('Machine reset', true);
     },
     async nvramClear() {
         if (!confirm('Wipe NVRAM and reset the machine?')) return;

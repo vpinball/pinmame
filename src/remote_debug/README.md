@@ -240,7 +240,9 @@ but ignored (reads always go through the current memory map).
 - `GET /api/screenshot/pnm` (alias `/api/screenshot`): PPM (P6) image.
 
 ### Debugger Control
-- `GET /api/debugger/control?cmd=[pause|resume|step|stepover|stepout|exit]`
+- `GET /api/debugger/control?cmd=[pause|resume|step|stepover|stepout|reset|exit]`
+  (`reset` resets the machine like the F3 key: NVRAM, breakpoints and the
+  paused state are kept, so a reset while paused halts at the reset vector)
 - `GET /api/debugger/control/runto?addr=HEX[&bank=HEX]`
 - `GET /api/debugger/state`: registers/flags of all CPUs.
 - `GET /api/debugger/state/write?reg=[NAME|ID]&val=HEX[&cpu=N]`:
@@ -417,6 +419,7 @@ capacity ~512 frames) and download them for playback/analysis.
 - Conditional breakpoints with hit counters in the points list.
 - Cabinet/service buttons built from `/api/input/buttons`, i.e. whatever
   the running driver defines, with a configurable pulse duration.
+- Reset button (machine reset, like F3).
 - Switch matrix tooltips show the switch name; Shift+click a switch to
   assign a custom label (stored in the browser).
 - Code instrumentation, value scan and object monitor / action log panels.
