@@ -271,6 +271,35 @@ PinMAME Specific Command line switches
   -sound_mode 0-3       (Sound processing mode; 0=PinMAME, 1=Alternative, 2=PinSound,
                          3=PinSound + Recordings)
 
+Headless and scripted runs
+--------------------------
+  For unattended, reproducible runs, e.g. capturing a game's DMD output, or automated testing.
+  Also settable in an ini file; the command line wins.
+
+  -[no]headless         (Unix only: run without a display)
+  -[no]skip_gamewarnings
+                        (Skip the game warnings screen; needed to run a game
+                         marked as not working headless)
+  -frames_to_run n      (-ftr: end the run after n frames)
+  -key_script <file>    (Scripted key presses, one per line, '#' comments:
+                           <frame> down <KEY>[,<KEY>...]   hold from this frame
+                           <frame> up   <KEY>[,<KEY>...]   release
+                           <frame> tap  <n> <KEY>[,...]    hold for n frames
+                           <frame> mark <text>             log to <file>.marks
+                           <frame> quit                    end the run
+                         <KEY> is a MAME key name, e.g. KEYCODE_5. Mistakes go
+                         to stderr. Details in src/keyscript.h)
+  -dmd_dump_dir <dir>   (Write every DMD frame to <dir>/<game>.txt, plus .raw
+                         for GTS3, WPC and Alvin G.; each run starts afresh)
+  -dip "<name>=<value>" (Set a DIP switch, repeatable: -dip "Country=Germany".
+                         Case-insensitive; the value may be a number (0x20).
+                         Pick one of several same-named switches as "<name>#<n>".
+                         A wrong name or value lists the valid ones and aborts.
+                         Saved to the game's cfg, like a change in the TAB menu)
+  -rtc "YYYY-MM-DD HH:MM[:SS]"
+                        (Start the emulated real-time clock here instead of at
+                         the host's time; it advances with emulated time)
+
 VGM sound file dump
 -------------------
 
