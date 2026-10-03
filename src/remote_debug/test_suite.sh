@@ -160,6 +160,12 @@ assert_contains "$WPB" '"addr":20768,"len":2,"mode":1,"bank":32' "Banked watchpo
 curl -s "$BASE/api/debugger/watchpoints?cmd=clear" > /dev/null
 
 echo "13. Callstack API..."
+# The callstack only holds the frames that are live, so halt inside a
+# subroutine: 984E is called from the idle loop of the operating system.
+curl -s "$BASE/api/debugger/breakpoints?cmd=add&addr=984E" > /dev/null
+curl -s "$BASE/api/debugger/control?cmd=resume" > /dev/null
+sleep 3
+curl -s "$BASE/api/debugger/breakpoints?cmd=clear" > /dev/null
 STACK=$(curl -s "$BASE/api/debugger/callstack")
 assert_contains "$STACK" '"stack":' "Callstack format"
 assert_contains "$STACK" '"bank":' "Callstack banking info"
@@ -169,8 +175,8 @@ assert_contains "$STACK" '"u":' "Callstack register context (U)"
 echo "14. Switch/lamp/solenoid query with names..."
 SW=$(curl -s "$BASE/api/switches" | tr -d ' ')
 assert_contains "$SW" '"num":1,"col":0,"row":1,"active":0,"name":"Coin1"' "Coin 1 named"
-assert_contains "$SW" '"name":"Enter"' "Enter (sw5) named"
-assert_contains "$SW" '"name":"Escape"' "Escape (sw8) named"
+assert_contains "$SW" '"num":5,"col":0,"row":5,"active":0,"name":"Escape"' "Escape (sw5) named"
+assert_contains "$SW" '"num":8,"col":0,"row":8,"active":0,"name":"Enter"' "Enter (sw8) named"
 LAMPS=$(curl -s "$BASE/api/lamps" | tr -d ' ')
 assert_contains "$LAMPS" '"num":11,"col":1,"row":1' "Lamp 11 present"
 SOL=$(curl -s "$BASE/api/solenoids" | tr -d ' ')
@@ -184,16 +190,29 @@ sleep 0.5
 SW1=$(curl -s "$BASE/api/switches" | tr -d ' ')
 assert_contains "$SW1" '"num":1,"col":0,"row":1,"active":0' "Switch off after pulse"
 
+echo "15b. Cabinet/operator buttons..."
+BTN=$(curl -s "$BASE/api/input/buttons" | tr -d ' ')
+assert_contains "$BTN" '"mask":128,"name":"Enter","toggle":0,"active":0' "Enter button listed"
+assert_contains "$BTN" '"name":"CoinDoor","toggle":1' "Coin door is a toggle"
+curl -s "$BASE/api/input/button?mask=80&val=1&pulse=300" > /dev/null
+BTN=$(curl -s "$BASE/api/input/buttons" | tr -d ' ')
+assert_contains "$BTN" '"mask":128,"name":"Enter","toggle":0,"active":1' "Button down during pulse"
+sleep 0.8
+BTN=$(curl -s "$BASE/api/input/buttons" | tr -d ' ')
+assert_contains "$BTN" '"mask":128,"name":"Enter","toggle":0,"active":0' "Button up after pulse"
+assert_status "$BASE/api/input/button?mask=80" 400 "400 on missing val"
+
 echo "16. Object monitoring & action log..."
+# lamp 21 (column 2, row 1) blinks in attract mode
 curl -s "$BASE/api/monitor?cmd=clear" > /dev/null
 curl -s "$BASE/api/monitor/log?cmd=clear" > /dev/null
-MON=$(curl -s "$BASE/api/monitor?cmd=add&type=lamp&id=11" | tr -d ' ')
-assert_contains "$MON" '"type":"lamp","id":11' "Monitor registered"
+MON=$(curl -s "$BASE/api/monitor?cmd=add&type=lamp&id=21" | tr -d ' ')
+assert_contains "$MON" '"type":"lamp","id":21' "Monitor registered"
 curl -s "$BASE/api/debugger/control?cmd=resume" > /dev/null
 sleep 3
 curl -s "$BASE/api/debugger/control?cmd=pause" > /dev/null
 ALOG=$(curl -s "$BASE/api/monitor/log" | tr -d ' ')
-assert_contains "$ALOG" '"type":"lamp","id":11' "Action log captured lamp changes"
+assert_contains "$ALOG" '"type":"lamp","id":21' "Action log captured lamp changes"
 
 echo "17. Code instrumentation / PC hit counting..."
 curl -s "$BASE/api/debugger/instrument?cmd=clear" > /dev/null
@@ -305,7 +324,7 @@ fi
 echo "20f. Monitor break-on-change..."
 curl -s "$BASE/api/debugger/watchpoints?cmd=clear" > /dev/null
 curl -s "$BASE/api/monitor?cmd=clear" > /dev/null
-MB=$(curl -s "$BASE/api/monitor?cmd=add&type=lamp&id=11&break=1" | tr -d ' ')
+MB=$(curl -s "$BASE/api/monitor?cmd=add&type=lamp&id=21&break=1" | tr -d ' ')
 assert_contains "$MB" '"break":1' "Monitor break flag stored"
 curl -s "$BASE/api/debugger/control?cmd=resume" > /dev/null; sleep 3
 P=$(curl -s "$BASE/api/info" | tr -d ' ')
@@ -319,6 +338,36 @@ curl -s "$BASE/api/debugger/savestate?cmd=save&slot=dref" > /dev/null
 curl -s "$BASE/api/debugger/memory/write?addr=0700&data=AABB" > /dev/null
 DIFF=$(curl -s "$BASE/api/debugger/savestate/diff?a=dref" | tr -d ' ')
 assert_contains "$DIFF" '"addr":1792,"a":1,"b":170' "Save-state diff finds changed byte"
+
+echo "20h. NVRAM..."
+NV=$(curl -s "$BASE/api/debugger/nvram" | tr -d ' ')
+assert_contains "$NV" '"blocks":[{"size":' "NVRAM block reported"
+assert_contains "$NV" '"cpu":0,"addr":0}' "NVRAM located in main CPU memory"
+NV_SIZE=$(echo "$NV" | grep -oE '"size":[0-9]+' | head -n 1 | cut -d: -f2)
+NV_DUMP=$(curl -s "$BASE/api/debugger/nvram/dump" | wc -c)
+[ "$NV_DUMP" == "$NV_SIZE" ] && echo "  [PASS] NVRAM dump ($NV_DUMP bytes)" || fail "NVRAM dump is $NV_DUMP bytes, expected $NV_SIZE"
+
+echo "20i. Reset, exact halt and single step..."
+curl -s "$BASE/api/debugger/control?cmd=pause" > /dev/null
+curl -s "$BASE/api/debugger/control?cmd=reset" > /dev/null
+sleep 1
+ST=$(curl -s "$BASE/api/debugger/state" | tr -d ' ')
+assert_contains "$ST" '"name":"M6809"' "CPU name reported"
+RESET_PC=$(echo "$ST" | grep -oE '"pc":[0-9]+' | head -n 1 | cut -d: -f2)
+VEC=$(curl -s "$BASE/api/debugger/memory?addr=FFFE&size=2" | tr -d ' ' | grep -oE '"data":\[[0-9,]*\]' | tr -d '"data:[]')
+[ "$RESET_PC" == "$(( ${VEC%,*} * 256 + ${VEC#*,} ))" ] && echo "  [PASS] Reset while paused halts at the reset vector" || fail "PC after reset is $RESET_PC, vector bytes $VEC"
+# the addresses of the next instructions, from the disassembler
+NEXT=($(curl -s "$BASE/api/debugger/dasm?addr=$(printf %X "$RESET_PC")&lines=4" | grep -oE '"addr": [0-9]+' | cut -d' ' -f2))
+curl -s "$BASE/api/debugger/control?cmd=step" > /dev/null
+sleep 0.5
+ST=$(curl -s "$BASE/api/debugger/state" | tr -d ' ')
+assert_contains "$ST" "\"pc\":${NEXT[1]}," "Step executes exactly one instruction"
+curl -s "$BASE/api/debugger/breakpoints?cmd=add&addr=$(printf %X "${NEXT[3]}")" > /dev/null
+curl -s "$BASE/api/debugger/control?cmd=resume" > /dev/null
+sleep 1
+ST=$(curl -s "$BASE/api/debugger/state" | tr -d ' ')
+assert_contains "$ST" "\"pc\":${NEXT[3]}," "Breakpoint halts in front of its instruction"
+curl -s "$BASE/api/debugger/breakpoints?cmd=clear" > /dev/null
 
 # These come last: forcing the PC to an arbitrary vector and single-stepping
 # leaves the CPU in a state that will fault if allowed to run on, so they must

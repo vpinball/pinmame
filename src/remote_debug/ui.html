@@ -64,10 +64,12 @@
     .btn-danger { background: #a1260d; }
     .btn-success { background: #388a34; }
     .btn-cabinet {
-        background: #444; border: 1px solid #666; width: 60px; height: 30px;
-        margin: 2px; font-weight: bold; font-size: 0.7rem;
+        background: #444; border: 1px solid #666; width: 60px; min-height: 30px;
+        margin: 2px; padding: 3px 4px; font-weight: bold; font-size: 0.7rem;
+        line-height: 1.15; overflow-wrap: anywhere;
     }
     .btn-cabinet:active { background: #00ff00; color: #000; }
+    .btn-cabinet.latched { background: #388a34; }
     input, select {
         background: #3c3c3c; border: 1px solid #3d3d3d; color: #fff; padding: 4px 8px;
         border-radius: 2px; outline: none; font-family: 'Consolas', monospace;
@@ -121,10 +123,14 @@
     .hex-table td, .dasm-table td, .trace-table td { padding: 3px 8px; border: 1px solid #2d2d2d; }
     .trace-table th { padding: 3px 8px; color: #858585; text-align: left; font-weight: normal; border-bottom: 1px solid #3d3d3d; }
     .addr-col { color: #858585; width: 70px; background: #252526; text-align: right; padding-right: 12px !important; }
-    .hex-byte { cursor: pointer; text-align: center; width: 30px; color: #9cdcfe; }
+    /* the hex view is as wide as its content: with a stretched table the
+       spare width ends up in single columns */
+    .hex-table { width: auto; }
+    .hex-table td { padding: 2px 5px; }
+    .hex-byte { cursor: pointer; text-align: center; color: #9cdcfe; }
     .hex-byte:hover { background: #333; }
     .hex-changed { background: #5a3d10 !important; color: #ffb454; }
-    .hex-ascii { color: #6a9955; width: 120px; border-left: 2px solid #3d3d3d !important; font-size: 0.8rem; }
+    .hex-ascii { color: #6a9955; white-space: pre; border-left: 2px solid #3d3d3d !important; font-size: 0.8rem; }
     .hex-edit { width: 26px; padding: 1px 2px; text-align: center; }
     .current-pc { background: #3e3e10 !important; }
     .dasm-row { cursor: pointer; }
@@ -182,6 +188,7 @@
         <button class="btn" onclick="Dbg.control('step')" title="Step into (F11)">Step</button>
         <button class="btn btn-success" onclick="Dbg.control('stepover')" title="Step over (F10)">Over</button>
         <button class="btn btn-success" onclick="Dbg.control('stepout')" title="Step out (Shift+F11)">Out</button>
+        <button class="btn btn-danger" onclick="Dbg.reset()" title="Reset the machine (like F3); NVRAM and breakpoints are kept">Reset</button>
         <button class="btn btn-danger" onclick="Dbg.exitEmulator()" title="Terminate the emulator">Exit</button>
     </div>
 </header>
@@ -288,8 +295,8 @@
                         <button class="btn" onclick="Cli.run()">Exec</button>
                     </div>
                     <button class="btn btn-danger" onclick="Dbg.nvramClear()">Wipe NVRAM &amp; Reset</button>
-                    <button class="btn" onclick="Mem.nvramView()" title="Show WPC CMOS RAM in the hex editor">NVRAM View</button>
-                    <button class="btn" onclick="Dbg.nvramDownload()" title="Download the raw 8KB NVRAM dump">NVRAM Dump &darr;</button>
+                    <button class="btn" onclick="Mem.nvramView()" title="Show the battery backed memory (NVRAM/CMOS) in the hex editor">NVRAM View</button>
+                    <button class="btn" onclick="Dbg.nvramDownload()" title="Download the raw NVRAM contents">NVRAM Dump &darr;</button>
                 </div>
             </div>
             <div id="console-log"></div>
@@ -505,7 +512,8 @@ const Toast = {
 const Api = {
     failures: 0,
 
-    async get(path) {
+    /* quiet: an error answer is an expected outcome, do not raise a toast */
+    async get(path, quiet) {
         try {
             const r = await fetch(path);
             let data = null;
@@ -520,7 +528,7 @@ const Api = {
         } catch (e) {
             if (e instanceof TypeError) { /* network error */
                 this.setOnline(false);
-            } else {
+            } else if (!quiet) {
                 Toast.show(e.message);
             }
             throw e;
@@ -596,6 +604,7 @@ const Events = {
             switch (ev.event) {
                 case 'halt':
                 case 'step':
+                case 'reset':
                     refreshAfterHalt();
                     break;
                 case 'resume':
@@ -666,10 +675,29 @@ const Dbg = {
         const ms = parseInt(document.getElementById('pulse-ms').value, 10) || 0;
         if (ms === 0) { await Api.get(`/api/input?sw=${sw}&val=0`); Status.refresh(); }
     },
+    /* cabinet/operator button (bit mask of the driver's input port): same
+       press/release semantics as the switch variant above */
+    async pressButton(mask) {
+        const ms = parseInt(document.getElementById('pulse-ms').value, 10) || 0;
+        const m = mask.toString(16);
+        if (ms > 0) await Api.get(`/api/input/button?mask=${m}&val=1&pulse=${ms}`);
+        else await Api.get(`/api/input/button?mask=${m}&val=1`);
+    },
+    async releaseButton(mask) {
+        const ms = parseInt(document.getElementById('pulse-ms').value, 10) || 0;
+        if (ms === 0) await Api.get(`/api/input/button?mask=${mask.toString(16)}&val=0`);
+    },
+    async reset() {
+        if (!confirm('Reset the machine?')) return;
+        await Api.get('/api/debugger/control?cmd=reset');
+        Toast.show('Machine reset', true);
+    },
     async nvramClear() {
         if (!confirm('Wipe NVRAM and reset the machine?')) return;
         await Api.get('/api/debugger/nvram?cmd=clear');
-        Toast.show('NVRAM cleared', true);
+        /* the game only notices its memory is gone when it starts up again */
+        await Api.get('/api/debugger/control?cmd=reset');
+        Toast.show('NVRAM cleared, machine reset', true);
     },
     async nvramDownload() {
         try {
@@ -716,12 +744,20 @@ const Status = {
 
 const Names = {
     sw: {},   /* num -> standard WPC name */
+    num: {},  /* matrix position (col * 8 + row) -> switch number of this driver */
+    lamp: {}, /* matrix position -> lamp number of this driver */
     custom: JSON.parse(localStorage.getItem('pinmame-labels') || '{}'),
 
     async load() {
         try {
             const data = await Api.get('/api/switches');
-            data.switches.forEach((s) => { if (s.name) this.sw['s' + s.num] = s.name; });
+            data.switches.forEach((s) => {
+                if (s.name) this.sw['s' + s.num] = s.name;
+                this.num[s.col * 8 + s.row - 1] = s.num;
+            });
+            const lamps = await Api.get('/api/lamps');
+            lamps.lamps.forEach((l) => { this.lamp[(l.col - 1) * 8 + l.row - 1] = l.num; });
+            Matrix.relabel();
         } catch (e) { /* offline; retry later */ }
         Cabinet.build();
     },
@@ -746,8 +782,41 @@ const Names = {
 /* ================= cabinet / service buttons ================= */
 
 const Cabinet = {
+    /* Build the buttons from what the running driver declares as its
+       cabinet/operator inputs, so every generation gets its own set (WPC:
+       Escape/Down/Up/Enter, System 11: Advance, Up/Down, ...). Falls back
+       to the named switches if the emulator does not offer that list. */
+    async build() {
+        let data = null;
+        try { data = await Api.get('/api/input/buttons', true); } catch (e) { /* older emulator / offline */ }
+        if (!data || !data.buttons || !data.buttons.length) { this.buildFromSwitches(); return; }
+        const box = document.getElementById('cabinet-buttons');
+        box.innerHTML = '';
+        data.buttons.forEach((btn) => {
+            const b = document.createElement('button');
+            b.className = 'btn btn-cabinet';
+            b.style.width = 'auto';
+            /* MAME's default name "1 Player Start" is long for a button */
+            b.textContent = btn.name.replace(/^1 Player Start$/, 'Start').replace(/^(\d) Players? Start$/, 'Start $1');
+            if (btn.toggle) {
+                /* two-position switch (coin door, up/down): click flips it */
+                b.title = btn.name + ' - toggle (port bit 0x' + btn.mask.toString(16) + ')';
+                b.classList.toggle('latched', !!btn.active);
+                b.onclick = async () => {
+                    await Api.get(`/api/input/button?mask=${btn.mask.toString(16)}&val=${btn.active ? 0 : 1}`);
+                    this.build();
+                };
+            } else {
+                b.title = btn.name + ' (port bit 0x' + btn.mask.toString(16) + ')';
+                b.onmousedown = () => Dbg.pressButton(btn.mask);
+                b.onmouseup = () => Dbg.releaseButton(btn.mask);
+            }
+            box.appendChild(b);
+        });
+    },
+
     /* build service buttons from switches that carry a standard name */
-    build() {
+    buildFromSwitches() {
         const wanted = ['Coin 1', 'Coin 2', 'Start', 'Enter', 'Up', 'Down', 'Escape', 'Coin Door', 'Tilt', 'Slam Tilt'];
         const byName = {};
         Object.keys(Names.sw).forEach((k) => { byName[Names.sw[k]] = parseInt(k.substring(1), 10); });
@@ -788,6 +857,9 @@ const Matrix = {
     },
 
     swNumber(idx) {
+        /* drivers number their switches differently (WPC 11-88, System 11
+           1-64, ...): use the number the emulator reports for this position */
+        if (Names.num[idx] !== undefined) return Names.num[idx];
         const col = Math.floor(idx / 8), row = idx % 8;
         return col === 0 ? row + 1 : col * 10 + row + 1;
     },
@@ -811,8 +883,11 @@ const Matrix = {
     },
 
     relabel() {
-        for (let i = 0; i < 64; i++)
+        for (let i = 0; i < 64; i++) {
             document.getElementById(`sw-${i}`).title = this.swTitle(this.swNumber(i));
+            if (Names.lamp[i] !== undefined)
+                document.getElementById(`lamp-${i}`).title = 'lamp ' + Names.lamp[i];
+        }
     },
 
     update(data) {
@@ -842,7 +917,8 @@ const Dmd = {
     async refresh() {
         if (document.getElementById('dmd-container').style.display === 'none') return;
         if (!document.getElementById('auto-refresh-dmd').checked) return;
-        const info = await Api.get('/api/dmd/info').catch(() => null);
+        /* games without a DMD (alphanumeric displays) answer 404 here */
+        const info = await Api.get('/api/dmd/info', true).catch(() => null);
         if (!info || info.status === 'error') return;
         State.dmd.w = info.width;
         State.dmd.h = info.height;
@@ -964,8 +1040,9 @@ const Cpu = {
             const panel = document.createElement('div');
             panel.className = 'panel';
             panel.style.margin = '5px 10px';
-            const isM6809 = cpu.a !== undefined;
-            let html = `<h2>CPU ${cpu.id} (${isM6809 ? 'M6809' : 'ADSP'})</h2><div class="reg-grid">`;
+            const isM6809 = cpu.y !== undefined;   /* the M6800 family has A/B/X/CC, but no Y */
+            const cpuName = cpu.name || (isM6809 ? 'M6809' : 'ADSP');
+            let html = `<h2>CPU ${cpu.id} (${cpuName})</h2><div class="reg-grid">`;
             /* show the currently paged ROM bank next to PC (WPC main CPU) */
             if (isM6809 && cpu.id === 0 && State.wpcBank !== undefined && State.wpcBank !== -1) {
                 const inWindow = cpu.pc >= 0x4000 && cpu.pc < 0x8000;
@@ -976,7 +1053,7 @@ const Cpu = {
                         `${Fmt.hex(State.wpcBank, 2)}</span></div></div>`;
             }
             for (const [reg, val] of Object.entries(cpu)) {
-                if (reg === 'id' || reg === 'type') continue;
+                if (reg === 'id' || reg === 'type' || reg === 'name') continue;
                 html += `<div class="reg-item"><span class="reg-label">${reg.toUpperCase()}</span>` +
                         `<div><span class="reg-val" title="click to edit" ` +
                         `onclick="Cpu.editReg(${cpu.id},'${reg}',${val})">${Fmt.hex(val, 2)}</span>` +
@@ -984,7 +1061,9 @@ const Cpu = {
             }
             html += '</div>';
             if (cpu.cc !== undefined) {
-                const flags = ['C', 'V', 'Z', 'N', 'I', 'H', 'F', 'E'];
+                /* the M6800 condition codes are C V Z N I H; bits 6 and 7 are unused */
+                const flags = isM6809 ? ['C', 'V', 'Z', 'N', 'I', 'H', 'F', 'E']
+                                      : ['C', 'V', 'Z', 'N', 'I', 'H'];
                 html += '<div class="flags-grid">' + flags
                     .map((f, i) => `<div class="flag ${(cpu.cc & (1 << i)) ? 'active' : ''}">${f}</div>`)
                     .reverse().join('') + '</div>';
@@ -1227,9 +1306,11 @@ const Mem = {
             ascii += (byte >= 32 && byte <= 126) ? String.fromCharCode(byte) : '.';
         });
         if (row) {
+            /* address + 16 byte cells: pad a short last row, then add the text */
             while (row.cells.length < 17) row.insertCell();
-            row.cells[16].className = 'hex-ascii';
-            row.cells[16].textContent = ascii;
+            const c = row.insertCell();
+            c.className = 'hex-ascii';
+            c.textContent = ascii;
         }
     },
 
@@ -1272,11 +1353,31 @@ const Mem = {
         this.refresh();
     },
 
-    nvramView() {
-        document.getElementById('mem-addr').value = '0000';
-        document.getElementById('mem-size').value = 512;
-        document.getElementById('mem-cpu').value = 0;
-        this.refresh();
+    /* Show the NVRAM in the hex editor. Where it is differs per generation
+       (WPC: the whole RAM from 0000, System 11: 0000-07FF, others somewhere
+       else or not in the CPU's memory at all), so ask the emulator. */
+    async nvramView() {
+        let info = null;
+        try { info = await Api.get('/api/debugger/nvram', true); } catch (e) { /* handled below */ }
+        const blocks = (info && info.blocks) ? info.blocks : [];
+        if (!blocks.length) { Toast.show('This machine has no NVRAM'); return; }
+        const blk = blocks.find((b) => b.cpu >= 0);
+        if (!blk) {
+            Toast.show('The NVRAM is not part of the CPU memory - use "NVRAM Dump" to get its contents');
+            return;
+        }
+        const sizeInput = document.getElementById('mem-size');
+        document.getElementById('mem-addr').value = Fmt.hex(blk.addr, 4);
+        sizeInput.value = Math.min(blk.size, parseInt(sizeInput.max, 10) || 2048);
+        document.getElementById('mem-cpu').value = blk.cpu;
+        document.getElementById('mem-bank').value = '';
+        /* the hex editor may be scrolled out of sight, or already show this
+           range - make it obvious where the result went */
+        await this.refresh();
+        document.getElementById('hex-container').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const end = Fmt.hex(blk.addr + blk.size - 1, 4);
+        Toast.show(`NVRAM: ${blk.size} bytes at ${Fmt.hex(blk.addr, 4)}-${end} (CPU ${blk.cpu}), shown in the hex editor` +
+                   (blocks.length > 1 ? `; ${blocks.length - 1} more block(s) in the dump` : ''), true);
     },
 
     async search(fromAddr) {
@@ -1527,7 +1628,10 @@ const SaveState = {
         box.innerHTML = `<div class="hint">${d.count} RAM bytes changed since '${slot}' (showing ${d.diffs.length}):</div>` +
             '<table class="trace-table"><tr><th>Addr</th><th>saved</th><th>&rarr; live</th></tr>' +
             d.diffs.map((x) =>
-                `<tr><td style="color:#9cdcfe;cursor:pointer" onclick="document.getElementById('mem-addr').value='${Fmt.hex(x.addr, 4)}';Mem.refresh()">${Fmt.hex(x.addr, 4)}</td>` +
+                /* RAM outside the CPU's memory has no address: show block+offset */
+                (x.addr >= 0
+                    ? `<tr><td style="color:#9cdcfe;cursor:pointer" onclick="document.getElementById('mem-addr').value='${Fmt.hex(x.addr, 4)}';Mem.refresh()">${Fmt.hex(x.addr, 4)}</td>`
+                    : `<tr><td title="not part of the CPU memory">#${x.block}+${Fmt.hex(x.offset, 4)}</td>`) +
                 `<td>${Fmt.hex(x.a, 2)}</td><td>${Fmt.hex(x.b, 2)}</td></tr>`).join('') + '</table>';
     },
     async refresh() {

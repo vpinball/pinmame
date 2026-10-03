@@ -240,7 +240,9 @@ but ignored (reads always go through the current memory map).
 - `GET /api/screenshot/pnm` (alias `/api/screenshot`): PPM (P6) image.
 
 ### Debugger Control
-- `GET /api/debugger/control?cmd=[pause|resume|step|stepover|stepout|exit]`
+- `GET /api/debugger/control?cmd=[pause|resume|step|stepover|stepout|reset|exit]`
+  (`reset` resets the machine like the F3 key: NVRAM, breakpoints and the
+  paused state are kept, so a reset while paused halts at the reset vector)
 - `GET /api/debugger/control/runto?addr=HEX[&bank=HEX]`
 - `GET /api/debugger/state`: registers/flags of all CPUs.
 - `GET /api/debugger/state/write?reg=[NAME|ID]&val=HEX[&cpu=N]`:
@@ -289,13 +291,20 @@ but ignored (reads always go through the current memory map).
   address (`bank` restricts to that ROM bank).
 - `GET /api/debugger/trace?cmd=clear` / `GET /api/debugger/trace`: clear /
   list `{watched: [{addr, bank}, ...], logs: [{cpu, pc, adr, len, write, bank}, ...]}`.
-- `GET /api/debugger/nvram/dump`: raw 8KB WPC CMOS dump.
+- `GET /api/debugger/nvram`: where the battery backed memory of the running
+  machine is, as `{blocks: [{size, cpu, addr}]}` (`cpu`/`addr` are -1 for a
+  block that is not part of a CPU's memory). Works for all generations.
+- `GET /api/debugger/nvram/dump`: raw dump of the NVRAM (all blocks, one
+  after the other).
 - `GET /api/debugger/nvram?cmd=clear`: wipe NVRAM (machine reset required to
   reinitialize).
 
 ### Playfield Objects
-Switches, lamps and solenoids use the WPC number `col*10 + row + 1`
-(matrix 11-88; coin-door column 1-8; flipper column 111-118).
+Switches and lamps are reported with the number the running driver uses for
+that matrix position; for switches that is also what `/api/input` expects:
+`col*10 + row + 1` on WPC (matrix 11-88; coin-door column 1-8; flipper
+column 111-118), sequential on System 11 and other generations (matrix
+1-64, the dedicated switch column 0 as -7..0).
 - `GET /api/switches`: all switches as `{num, col, row, active, name}`.
   Names are the WPC standard dedicated/cabinet names where known.
 - `GET /api/lamps`: all lamps as `{num, col, row, active}`.
@@ -357,19 +366,23 @@ parameter — variables live in the unbanked RAM/ASIC region `0x0000`-`0x3FFF`):
   (results capped at 256).
 
 ### Save States
-Lightweight checkpoints of the game logic state (WPC RAM + main CPU
-registers), kept in memory in up to 8 named slots. This intentionally does
-**not** use MAME's full state-save machinery, which is incomplete for
-WPC/DCS and crashes on this driver; the checkpoint captures exactly what is
-useful for reverse engineering and works reliably, including while paused.
-It does not restore sound/DMD hardware state.
+Lightweight checkpoints of the game state (RAM + main CPU registers), kept
+in memory in up to 8 named slots. The RAM is what the debugger can find
+without knowing the driver: the plain RAM in the main CPU's memory map plus
+the battery backed memory, so this works for all generations (registers
+beyond PC and SP: M6809 and M6800 family). This intentionally does **not**
+use MAME's full state-save machinery, which is incomplete for WPC/DCS and
+crashes on this driver; the checkpoint captures exactly what is useful for
+reverse engineering and works reliably, including while paused. It does not
+restore sound/DMD/other hardware state.
 - `GET /api/debugger/savestate?cmd=save&slot=NAME`
 - `GET /api/debugger/savestate?cmd=load&slot=NAME`
 - `GET /api/debugger/savestate?cmd=delete&slot=NAME`
 - `GET /api/debugger/savestate`: list slots `{slots: [{name, pc}, ...]}`.
 - `GET /api/debugger/savestate/diff?a=SLOT[&b=SLOT]`: diff slot `a`'s RAM
   against slot `b`, or against the live RAM when `b` is omitted —
-  `{a, b, count, diffs: [{addr, a, b}, ...]}` (up to 1024 entries). Handy
+  `{a, b, count, diffs: [{addr, a, b, block, offset}, ...]}` (up to 1024
+  entries; `addr` is -1 for RAM that is not part of the CPU's memory). Handy
   for "what changed between these two moments".
 
 ### DMD Recorder
@@ -385,6 +398,15 @@ capacity ~512 frames) and download them for playback/analysis.
 - `GET /api/input?sw=N&val=[0|1][&pulse=MS]`: set a cabinet/matrix switch;
   with `pulse=MS` it holds the value for MS milliseconds then restores the
   opposite (works for coin switches too, re-asserted each frame).
+- `GET /api/input/buttons`: the cabinet/operator buttons of the running
+  driver as `{mask, name, toggle, active}` - coins, start, tilt and the
+  service buttons (WPC: Escape/Down/Up/Enter, System 11: Advance, Up/Down,
+  CPU/Sound Diagnostic, ...). They are the named bits of the driver's core
+  input port, so this works for every generation.
+- `GET /api/input/button?mask=HEX&val=[0|1][&pulse=MS]`: press or release
+  such a button by its `mask`; with `pulse=MS` the press is released after
+  MS milliseconds. Takes the same path as the keyboard. `toggle` buttons
+  (coin door, Up/Down) are two-position switches: set the level, no pulse.
 - `GET /api/debugger/command?cmd=STRING`: classic MAME-style commands
   (URL-encoded): `BP [bank:]addr`, `BC`, `WP [bank:]addr[,len[,type]]`, `WC`,
   `G`, `S`, `F addr,len,val`, `QUIT`, `HELP` — all values hex.
@@ -403,8 +425,9 @@ capacity ~512 frames) and download them for playback/analysis.
   "Next", NVRAM view preset and NVRAM dump download.
 - Watches panel (persisted in the browser) and memory trace panel.
 - Conditional breakpoints with hit counters in the points list.
-- Cabinet/service buttons built from the named switches, with a
-  configurable pulse duration.
+- Cabinet/service buttons built from `/api/input/buttons`, i.e. whatever
+  the running driver defines, with a configurable pulse duration.
+- Reset button (machine reset, like F3).
 - Switch matrix tooltips show the switch name; Shift+click a switch to
   assign a custom label (stored in the browser).
 - Code instrumentation, value scan and object monitor / action log panels.
@@ -492,6 +515,9 @@ without a friendly name (assign your own via the UI or ignore the `name`).
 Run from `src/remote_debug` (e.g. ROM `taf_l7` expected in `~/.pinmame`, override
 via `ROMPATH=/path`):
 - `./test_suite.sh` — full API verification suite.
+- `./test_suite_s11.sh` — the same for a Williams System 11 game (default
+  `f14_l1`): M6808 main CPU, sequential switch/lamp numbers, operator
+  buttons, NVRAM, callstack.
 - `./test_breakpoint.sh` — end-to-end breakpoint hit test.
 - `./re_demo.sh` — guided tour of the RE tooling (coverage, execution
   trace, tracepoints, value-condition watchpoint with callstack, monitor

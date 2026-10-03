@@ -424,6 +424,9 @@ void cpu_run(void)
 
 		/* loop until the user quits or resets */
 		time_to_reset = 0;
+#ifdef REMOTE_DEBUG
+		remote_debug_reset_done();
+#endif
 		time_fence_global_offset = -options.time_fence;
 		while (!time_to_quit && !time_to_reset)
 		{
@@ -1001,7 +1004,10 @@ static void cpu_timeslice(void)
 	{
 		/* Yield while paused to allow HTTP thread to work */
 		remote_debug_unlock();
-		while (remote_debug_is_paused() && !remote_debug_should_quit()) {
+		/* a reset requested by the remote debugger is carried out even while
+		   paused: leave without running a timeslice, so that the machine is
+		   reset and then halts again on its first instruction */
+		while (remote_debug_is_paused() && !remote_debug_should_quit() && !time_to_reset) {
 			usleep(10000);
 		}
 		remote_debug_lock();
@@ -1009,6 +1015,8 @@ static void cpu_timeslice(void)
 			time_to_quit = 1;
 			return;
 		}
+		if (time_to_reset)
+			return;
 	}
 #endif
 #if defined(VPINMAME)

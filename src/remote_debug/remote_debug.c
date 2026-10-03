@@ -12,6 +12,7 @@
 #include "cpuexec.h"
 #include "cpuintrf.h"
 #include "cpu/m6809/m6809.h"
+#include "cpu/m6800/m6800.h"
 #include "wpc/core.h"
 #include "wpc/wpc.h"
 #include "memory.h"
@@ -30,6 +31,14 @@
  * sig_atomic_t reads/writes are atomic; no lock needed for these. */
 static volatile sig_atomic_t is_paused = 0;
 static volatile sig_atomic_t step_requested = 0;
+/* set when the one instruction of a step has been let through */
+static volatile sig_atomic_t step_done = 0;
+/* a machine reset has been requested and not been carried out yet */
+static volatile sig_atomic_t reset_pending = 0;
+/* The CPU execution halts on: it is stopped in front of its next instruction
+ * and it is the one that steps. The main CPU, unless a breakpoint or
+ * watchpoint was hit by another one. */
+static int halt_cpu = 0;
 static volatile sig_atomic_t should_quit = 0;
 
 static pthread_mutex_t mame_mutex;
@@ -126,6 +135,108 @@ typedef struct {
 #define PULSE_MAX 32
 static pulse_t pulses[PULSE_MAX];
 static int pulse_count = 0;
+
+/* Timed presses of cabinet/operator buttons (see remote_debug_set_button). */
+typedef struct {
+	UINT16 mask;   /* bit(s) of input port CORE_COREINPORT held by the pulse */
+	UINT32 expiry; /* monotonic_ms() deadline */
+} button_pulse_t;
+
+static button_pulse_t button_pulses[PULSE_MAX];
+static int button_pulse_count = 0;
+
+/* ------------------------------------------------------------------ */
+/* CPU registers                                                      */
+/* ------------------------------------------------------------------ */
+
+/* The registers the debugger records (execution trace, tracepoints,
+ * callstack) and tests (breakpoint conditions), as register ids of the CPU
+ * core in question; NO_REG where a CPU family has no such register. PC and
+ * SP are not listed, every core knows them as REG_PC and REG_SP. */
+#define NO_REG (-1000)   /* not a register id: these are > 0, REG_PC etc. small negatives */
+
+typedef struct {
+	int a, b, x, y, u, dp, cc;
+} regmap_t;
+
+static const regmap_t regmap_m6809 = {
+	M6809_A, M6809_B, M6809_X, M6809_Y, M6809_U, M6809_DP, M6809_CC
+};
+/* M6800/1/2/3/8, HD63701, NSC8105: main CPU of Williams System 3-11 */
+static const regmap_t regmap_m6800 = {
+	M6800_A, M6800_B, M6800_X, NO_REG, NO_REG, NO_REG, M6800_CC
+};
+static const regmap_t regmap_none = {
+	NO_REG, NO_REG, NO_REG, NO_REG, NO_REG, NO_REG, NO_REG
+};
+
+/* Which of the M6800 family CPUs exist depends on the build, hence the #ifs. */
+int remote_debug_is_m6800_family(int cpu_type)
+{
+	switch (cpu_type) {
+#if (HAS_M6800)
+		case CPU_M6800:
+#endif
+#if (HAS_M6801)
+		case CPU_M6801:
+#endif
+#if (HAS_M6802)
+		case CPU_M6802:
+#endif
+#if (HAS_M6803)
+		case CPU_M6803:
+#endif
+#if (HAS_M6808)
+		case CPU_M6808:
+#endif
+#if (HAS_HD63701)
+		case CPU_HD63701:
+#endif
+#if (HAS_NSC8105)
+		case CPU_NSC8105:
+#endif
+			return 1;
+		default:
+			return 0;
+	}
+}
+
+static const regmap_t *regmap_for_type(int cpu_type)
+{
+	if (cpu_type == CPU_M6809)
+		return &regmap_m6809;
+	if (remote_debug_is_m6800_family(cpu_type))
+		return &regmap_m6800;
+	return &regmap_none;
+}
+
+/* Register map of the CPU that is executing right now. */
+static const regmap_t *active_regmap(void)
+{
+	int cpu = cpu_getactivecpu();
+	if (!Machine || cpu < 0)
+		return &regmap_none;
+	return regmap_for_type(Machine->drv->cpu[cpu].cpu_type);
+}
+
+/* Value of a register of the active CPU, 0 if it has no such register. */
+#define ACTIVE_REG(map, reg)  (((map)->reg != NO_REG) ? activecpu_get_reg((map)->reg) : 0)
+
+/* Battery backed memory blocks, as reported by core_nvram(). */
+typedef struct {
+	UINT8 *mem;
+	size_t length;
+} nvram_block_t;
+
+#define NVRAM_BLOCK_MAX 8
+static nvram_block_t nvram_blocks[NVRAM_BLOCK_MAX];
+static int nvram_block_count = 0;
+
+/* Shadow of the forced-value overlay in inptport.c, which can only be
+ * written as a whole: lets -holdport, /api/input/port and the per-button
+ * presses of /api/input/button change their own bits without clobbering
+ * each other's. */
+static unsigned short port_force[MAX_INPUT_PORTS];
 
 /* ------------------------------------------------------------------ */
 /* Object monitoring / action log                                     */
@@ -230,18 +341,17 @@ static UINT8  scan_snapshot[SCAN_MAX];
 static UINT8  scan_candidate[SCAN_MAX]; /* 1 = offset still matches */
 
 /* ------------------------------------------------------------------ */
-/* Lightweight game-state checkpoints (WPC RAM + main CPU registers)  */
+/* Lightweight game-state checkpoints (RAM + main CPU registers)      */
 /* ------------------------------------------------------------------ */
 
 #define SAVESTATE_SLOTS 8
-#define SAVESTATE_RAM   0x3000   /* WPC RAM size */
 
 typedef struct {
 	char   name[32];
 	int    used;
-	int    ramlen;
-	UINT8  ram[SAVESTATE_RAM];
-	UINT16 pc, s, u, x, y;
+	UINT8 *ram;           /* contents of all RAM blocks, one after the other */
+	size_t ramlen;
+	UINT32 pc, s, u, x, y;
 	UINT8  a, b, dp, cc;
 } savestate_t;
 
@@ -307,8 +417,86 @@ void remote_debug_unlock(void) { pthread_mutex_unlock(&mame_mutex); }
  * memory map. When a bank is given for an address in the window, the byte is
  * read directly from the ROM region without touching live banking, so it is
  * side-effect free. The caller must hold the debugger lock. */
+/* Nonzero if CPU `cpu` exists and has a memory map. Audio CPUs are left
+ * uninitialised when sound is disabled (-nosound), see cpu_pre_run() in
+ * cpuexec.c; touching their memory crashes.
+ * The caller must hold the debugger lock. */
+static int cpu_has_memory(int cpu)
+{
+	return Machine && cpu >= 0 && cpu < cpu_gettotalcpu()
+	       && (!(Machine->drv->cpu[cpu].cpu_flags & CPU_AUDIO_CPU) || Machine->sample_rate != 0);
+}
+
+/* Banked memory is not accessed through the memory system. Bank numbers
+ * are global, and so are the bank pointer and the offset of a bank's
+ * handler - but drivers give the same number to two CPUs at different
+ * addresses (the WPC main CPU maps bank 4 at 0x3000, the WPC sound CPU at
+ * 0x4000). The memory system then serves the CPU that was set up last; an
+ * access through the other one ends up far outside the bank. The game
+ * never goes there, but a memory dump does - and took the emulator down.
+ *
+ * find_bank() returns the bank an address of an 8-bit CPU is mapped to (0 if
+ * it is not banked) and the first address of that mapping; bank_owner() the
+ * CPU a bank number belongs to. */
+static int find_bank(int cpu, UINT32 addr, int write, UINT32 *start)
+{
+	if (cpunum_databus_width(cpu) != 8)
+		return 0;
+	if (write) {
+		const struct Memory_WriteAddress *mwa = Machine->drv->cpu[cpu].memory_write;
+		for (; mwa && !IS_MEMPORT_END(mwa); mwa++) {
+			FPTR bank = (FPTR)mwa->handler;
+			if (IS_MEMPORT_MARKER(mwa) || addr < mwa->start || addr > mwa->end)
+				continue;
+			*start = mwa->start;
+			return (bank >= STATIC_BANK1 && bank <= STATIC_BANKMAX) ? (int)bank : 0;
+		}
+	}
+	else {
+		const struct Memory_ReadAddress *mra = Machine->drv->cpu[cpu].memory_read;
+		for (; mra && !IS_MEMPORT_END(mra); mra++) {
+			FPTR bank = (FPTR)mra->handler;
+			if (IS_MEMPORT_MARKER(mra) || addr < mra->start || addr > mra->end)
+				continue;
+			*start = mra->start;
+			return (bank >= STATIC_BANK1 && bank <= STATIC_BANKMAX) ? (int)bank : 0;
+		}
+	}
+	return 0;
+}
+
+static int bank_owner(int bank)
+{
+	int cpu;
+	/* the memory maps are set up in CPU order, the last one wins */
+	for (cpu = cpu_gettotalcpu() - 1; cpu >= 0; cpu--) {
+		const struct Memory_ReadAddress *mra = Machine->drv->cpu[cpu].memory_read;
+		const struct Memory_WriteAddress *mwa = Machine->drv->cpu[cpu].memory_write;
+		if (cpunum_databus_width(cpu) != 8)
+			continue;
+		for (; mra && !IS_MEMPORT_END(mra); mra++)
+			if (!IS_MEMPORT_MARKER(mra) && (FPTR)mra->handler == (FPTR)bank)
+				return cpu;
+		for (; mwa && !IS_MEMPORT_END(mwa); mwa++)
+			if (!IS_MEMPORT_MARKER(mwa) && (FPTR)mwa->handler == (FPTR)bank)
+				return cpu;
+	}
+	return -1;
+}
+
+/* The byte at a banked address, or NULL if the bank is not set or belongs to
+ * another CPU - whose memory it would be that gets read or changed. */
+static UINT8 *banked_byte(int cpu, int bank, UINT32 addr, UINT32 start)
+{
+	if (!cpu_bankbase[bank] || bank_owner(bank) != cpu)
+		return NULL;
+	return cpu_bankbase[bank] + (addr - start);
+}
+
 UINT8 remote_debug_read_byte(int cpu, UINT32 addr, int bank)
 {
+	UINT32 start = 0;
+	int membank;
 	if (bank >= 0 && cpu == 0 && wpc_ram && addr >= 0x4000 && addr < 0x8000) {
 		UINT8 *rom = memory_region(WPC_ROMREGION);
 		if (rom) {
@@ -316,6 +504,13 @@ UINT8 remote_debug_read_byte(int cpu, UINT32 addr, int bank)
 			if (off < (UINT32)memory_region_length(WPC_ROMREGION))
 				return rom[off];
 		}
+	}
+	if (!cpu_has_memory(cpu))
+		return 0;
+	membank = find_bank(cpu, addr, 0, &start);
+	if (membank) {
+		const UINT8 *p = banked_byte(cpu, membank, addr, start);
+		return p ? *p : 0;
 	}
 	return cpunum_read_byte(cpu, addr);
 }
@@ -365,6 +560,12 @@ static void publish_event(const char *fmt, ...)
 		event_tail = (event_tail + 1) % EVENT_QUEUE_SIZE;
 	remote_debug_unlock();
 }
+
+/* forward declaration; defined with the checkpoints below */
+static void savestate_free_all(void);
+
+/* forward declaration; defined with the callstack hooks below */
+static void callstack_prune(UINT32 sp);
 
 /* forward declarations; defined with the pulse implementation below */
 static void service_pulses(void);
@@ -473,6 +674,9 @@ void remote_debug_init(void)
 	apply_holdport_option();
 	should_quit = 0;
 	step_requested = 0;
+	step_done = 0;
+	reset_pending = 0;
+	halt_cpu = 0;
 	breakpoint_count = 0;
 	watchpoint_count = 0;
 	msg_head = msg_count = 0;
@@ -481,13 +685,15 @@ void remote_debug_init(void)
 	trace_addr_count = 0;
 	callstack_ptr = 0;
 	pulse_count = 0;
+	button_pulse_count = 0;
+	nvram_block_count = 0;
 	monitor_count = 0;
 	action_head = action_count = 0;
 	instrument_count = 0;
 	scan_size = 0;
 	dmd_recording = 0;
 	dmd_rec_head = dmd_rec_count = 0;
-	memset(savestates, 0, sizeof(savestates));
+	savestate_free_all();
 	exec_trace_enabled = 0;
 	exec_trace_head = exec_trace_count = 0;
 	coverage_enabled = 0;
@@ -512,6 +718,7 @@ void remote_debug_exit(void)
 		free(coverage_bitmap);
 		coverage_bitmap = NULL;
 	}
+	savestate_free_all();
 	pthread_mutex_destroy(&mame_mutex);
 }
 
@@ -523,18 +730,54 @@ int remote_debug_is_paused(void)
 {
 	if (should_quit)
 		return 0;
-	if (step_requested) {
-		step_requested = 0;
+	/* A pending step lets the timeslice start; the instruction hook then
+	   lets exactly one instruction of the halted CPU through. */
+	if (step_requested)
 		return 0;
-	}
 	if (is_paused)
 		usleep(10000);
 	return is_paused;
 }
 
+/* Hold the emulator thread, in front of the next instruction of the active
+ * CPU, for as long as execution is paused. This is what makes a halt exact:
+ * the timeslice loop in cpuexec.c can only pause between timeslices, i.e.
+ * many instructions later. A step lets one instruction through.
+ * Called from the instruction hook with the debugger lock held; the lock is
+ * released while waiting so that the HTTP thread can inspect the machine. */
+static void wait_while_paused(void)
+{
+	if (step_done) {
+		step_done = 0;
+		publish_event("{\"event\": \"halt\", \"reason\": \"step\", \"pc\": %u}",
+		              activecpu_get_reg(REG_PC));
+	}
+	remote_debug_unlock();
+	while (is_paused && !step_requested && !should_quit && !reset_pending)
+		usleep(5000);
+	remote_debug_lock();
+	if (should_quit || reset_pending) {
+		/* neither can happen before this timeslice is over */
+		activecpu_abort_timeslice();
+		return;
+	}
+	if (is_paused && step_requested) {
+		step_requested = 0;
+		step_done = 1;
+	}
+}
+
+/* Called by cpuexec.c when the machine (re)starts. */
+void remote_debug_reset_done(void)
+{
+	reset_pending = 0;
+}
+
 void remote_debug_set_paused(int paused)
 {
 	int was = is_paused;
+	if (paused && !was)
+		halt_cpu = 0;
 	is_paused = paused ? 1 : 0;
 	if (was != is_paused)
 		publish_event("{\"event\": \"%s\", \"reason\": \"user\"}",
@@ -546,6 +789,21 @@ void remote_debug_step(void)
 	is_paused = 1;
 	step_requested = 1;
 	publish_event("{\"event\": \"step\"}");
+}
+
+/* Same as the reset key (F3) of the user interface: the machine driver is
+ * stopped and re-initialised and all CPUs start again at their reset
+ * vector. NVRAM contents, breakpoints and the paused state are kept, so a
+ * reset while paused halts on the first instruction after the reset. */
+void remote_debug_reset(void)
+{
+	remote_debug_lock();
+	reset_pending = 1;
+	machine_reset();
+	callstack_ptr = 0;
+	remote_debug_unlock();
+	remote_debug_add_message("Machine reset");
+	publish_event("{\"event\": \"reset\"}");
 }
 
 void remote_debug_quit(void)
@@ -564,31 +822,33 @@ int remote_debug_should_quit(void)
 /* Breakpoints                                                        */
 /* ------------------------------------------------------------------ */
 
-/* Resolve an M6809 register name for breakpoint conditions. */
-static int resolve_cond_register(const char *name, int len)
+/* Resolve a register name for breakpoint conditions to the register id of
+ * the given CPU type; NO_REG if that CPU has no register of this name. */
+static int resolve_cond_register(int cpu_type, const char *name, int len)
 {
+	const regmap_t *map = regmap_for_type(cpu_type);
 	if (len == 1) {
 		switch (name[0]) {
-			case 'A': return M6809_A;
-			case 'B': return M6809_B;
-			case 'X': return M6809_X;
-			case 'Y': return M6809_Y;
-			case 'U': return M6809_U;
-			case 'S': return M6809_S;
+			case 'A': return map->a;
+			case 'B': return map->b;
+			case 'X': return map->x;
+			case 'Y': return map->y;
+			case 'U': return map->u;
+			case 'S': return REG_SP;
 			default: break;
 		}
 	}
 	else if (len == 2) {
-		if (strncmp(name, "PC", 2) == 0) return M6809_PC;
-		if (strncmp(name, "SP", 2) == 0) return M6809_S;
-		if (strncmp(name, "CC", 2) == 0) return M6809_CC;
-		if (strncmp(name, "DP", 2) == 0) return M6809_DP;
+		if (strncmp(name, "PC", 2) == 0) return REG_PC;
+		if (strncmp(name, "SP", 2) == 0) return REG_SP;
+		if (strncmp(name, "CC", 2) == 0) return map->cc;
+		if (strncmp(name, "DP", 2) == 0) return map->dp;
 	}
-	return -1;
+	return NO_REG;
 }
 
 /* Parse "REG==HEXVAL" style conditions. Returns 0 on success. */
-static int parse_condition(const char *cond, int *op, int *reg, UINT32 *val)
+static int parse_condition(const char *cond, int cpu_type, int *op, int *reg, UINT32 *val)
 {
 	static const struct { const char *sym; int op; } ops[] = {
 		{"==", COND_EQ}, {"!=", COND_NE}, {"<=", COND_LE},
@@ -602,11 +862,11 @@ static int parse_condition(const char *cond, int *op, int *reg, UINT32 *val)
 	for (i = 0; i < sizeof(ops) / sizeof(ops[0]); i++) {
 		const char *p = strstr(cond, ops[i].sym);
 		if (p && p > cond) {
-			int r = resolve_cond_register(cond, (int)(p - cond));
+			int r = resolve_cond_register(cpu_type, cond, (int)(p - cond));
 			const char *v = p + strlen(ops[i].sym);
 			char *end = NULL;
 			UINT32 value;
-			if (r < 0 || !*v)
+			if (r == NO_REG || !*v)
 				return -1;
 			value = (UINT32)strtoul(v, &end, 16);
 			if (end == v)
@@ -652,7 +912,11 @@ static int breakpoint_add_internal(UINT32 adr, int bank, int cpu, int temp,
 		bp->enabled = 1;
 		bp->temp = temp;
 		bp->ignore_count = ignore;
-		if (parse_condition(cond, &bp->cond_op, &bp->cond_reg, &bp->cond_val) == 0) {
+		/* a condition names a register of the CPU the breakpoint is for; one
+		   for "any CPU" is taken to mean the main CPU */
+		int cond_cpu = (cpu >= 0 && cpu < cpu_gettotalcpu()) ? cpu : 0;
+		int cond_type = Machine ? Machine->drv->cpu[cond_cpu].cpu_type : CPU_M6809;
+		if (parse_condition(cond, cond_type, &bp->cond_op, &bp->cond_reg, &bp->cond_val) == 0) {
 			if (bp->cond_op != COND_NONE) {
 				strncpy(bp->cond_str, cond, sizeof(bp->cond_str) - 1);
 				bp->cond_str[sizeof(bp->cond_str) - 1] = 0;
@@ -730,11 +994,12 @@ static UINT32 coverage_index(UINT32 pc, int bank)
 
 void remote_debug_breakpoint_hook(void)
 {
+	const regmap_t *regs;
 	UINT32 pc;
 	int current_bank, current_cpu, i;
 
 	if (breakpoint_count == 0 && instrument_count == 0 && tracepoint_count == 0
-			&& !exec_trace_enabled && !coverage_enabled)
+			&& !exec_trace_enabled && !coverage_enabled && !is_paused)
 		return;
 	pc = activecpu_get_reg(REG_PC);
 	current_bank = wpc_get_bank();
@@ -742,15 +1007,17 @@ void remote_debug_breakpoint_hook(void)
 	   spaces overlap, so an unfiltered point on a low address counts hits from
 	   whichever core happens to be there. */
 	current_cpu = cpu_getactivecpu();
+	/* the registers recorded below, in terms of the CPU that is running */
+	regs = active_regmap();
 
 	/* execution trace: record this instruction in the ring buffer */
 	if (exec_trace_enabled) {
 		exec_trace_t *e = &exec_trace[exec_trace_head];
 		e->pc = (UINT16)pc;
 		e->bank = (INT16)current_bank;
-		e->a = (UINT8)activecpu_get_reg(M6809_A);
-		e->b = (UINT8)activecpu_get_reg(M6809_B);
-		e->x = (UINT16)activecpu_get_reg(M6809_X);
+		e->a = (UINT8)ACTIVE_REG(regs, a);
+		e->b = (UINT8)ACTIVE_REG(regs, b);
+		e->x = (UINT16)ACTIVE_REG(regs, x);
 		exec_trace_head = (exec_trace_head + 1) % EXEC_TRACE_SIZE;
 		if (exec_trace_count < EXEC_TRACE_SIZE)
 			exec_trace_count++;
@@ -777,14 +1044,14 @@ void remote_debug_breakpoint_hook(void)
 			tracepoints[i].hits++;
 			t->pc = pc;
 			t->bank = current_bank;
-			t->a = (UINT8)activecpu_get_reg(M6809_A);
-			t->b = (UINT8)activecpu_get_reg(M6809_B);
-			t->x = (UINT16)activecpu_get_reg(M6809_X);
-			t->y = (UINT16)activecpu_get_reg(M6809_Y);
-			t->u = (UINT16)activecpu_get_reg(M6809_U);
+			t->a = (UINT8)ACTIVE_REG(regs, a);
+			t->b = (UINT8)ACTIVE_REG(regs, b);
+			t->x = (UINT16)ACTIVE_REG(regs, x);
+			t->y = (UINT16)ACTIVE_REG(regs, y);
+			t->u = (UINT16)ACTIVE_REG(regs, u);
 			t->s = (UINT16)activecpu_get_reg(REG_SP);
-			t->dp = (UINT8)activecpu_get_reg(M6809_DP);
-			t->cc = (UINT8)activecpu_get_reg(M6809_CC);
+			t->dp = (UINT8)ACTIVE_REG(regs, dp);
+			t->cc = (UINT8)ACTIVE_REG(regs, cc);
 			tp_head = (tp_head + 1) % TP_LOG_SIZE;
 			if (tp_count < TP_LOG_SIZE)
 				tp_count++;
@@ -813,19 +1080,26 @@ void remote_debug_breakpoint_hook(void)
 		if (!bp->temp && bp->hit_count <= bp->ignore_count)
 			continue;
 
+		/* halt in front of this instruction, see below */
 		is_paused = 1;
-		activecpu_abort_timeslice();
+		halt_cpu = current_cpu;
+		step_done = 0;
 		{
 			char b[MSG_LEN];
 			if (current_bank != -1)
 				snprintf(b, sizeof(b), "Halt: BP at %02X:%04X", current_bank, pc);
 			else
 				snprintf(b, sizeof(b), "Halt: BP at %04X", pc);
-			if (bp->temp) {
-				int j;
-				for (j = i; j < breakpoint_count - 1; j++)
-					breakpoints[j] = breakpoints[j + 1];
-				breakpoint_count--;
+			/* Temporary breakpoints (run to, step over, step out) end with the
+			   halt, whichever point caused it: one that was not reached -
+			   the subroutine did not return - must not fire later on. */
+			{
+				int j, n = 0;
+				for (j = 0; j < breakpoint_count; j++) {
+					if (!breakpoints[j].temp)
+						breakpoints[n++] = breakpoints[j];
+				}
+				breakpoint_count = n;
 			}
 			remote_debug_add_message(b);
 			publish_event("{\"event\": \"halt\", \"reason\": \"bp\", \"pc\": %u, \"bank\": %d}",
@@ -834,6 +1108,11 @@ void remote_debug_breakpoint_hook(void)
 		}
 		break;
 	}
+
+	/* paused (just now by a breakpoint, or before): stay here until resumed
+	   or stepped, so that this instruction has not been executed yet */
+	if (is_paused && current_cpu == halt_cpu)
+		wait_while_paused();
 }
 
 /* ------------------------------------------------------------------ */
@@ -960,8 +1239,10 @@ void remote_debug_memref(UINT32 adr, int length, int write)
 		if (hit) {
 			UINT32 pc = activecpu_get_reg(REG_PC);
 			char b[MSG_LEN];
+			/* the access is part of an instruction that is under way: the CPU
+			   halts in front of the next one */
 			is_paused = 1;
-			activecpu_abort_timeslice();
+			halt_cpu = active_cpu;
 			snprintf(b, sizeof(b), "Halt: WP %s at %04X (PC=%04X, Bank=%02X)",
 			         write ? "write" : "read", adr, pc, current_bank);
 			remote_debug_add_message(b);
@@ -1055,6 +1336,8 @@ void remote_debug_get_callstack(char **buffer, int *len)
 	int i;
 	sb_init(&sb, 4096);
 	remote_debug_lock();
+	if (Machine && cpu_gettotalcpu() > 0)
+		callstack_prune(cpunum_get_reg(0, REG_SP));
 	sb_appendf(&sb, "{\"stack\": [");
 	for (i = 0; i < callstack_ptr; i++) {
 		const callstack_entry_t *e = &callstack[i];
@@ -1104,10 +1387,23 @@ void remote_debug_get_trace(char **buffer, int *len)
  * discard them; everything else goes through the CPU's memory map. */
 static void debug_write_byte(int cpu_idx, UINT32 addr, UINT8 val)
 {
-	if (cpu_idx == 0 && wpc_ram && addr < 0x3000)
+	UINT32 start = 0;
+	int bank;
+	if (cpu_idx == 0 && wpc_ram && addr < 0x3000) {
 		wpc_ram[addr] = val;
-	else
-		cpunum_write_byte(cpu_idx, addr, val);
+		return;
+	}
+	if (!cpu_has_memory(cpu_idx))
+		return;
+	bank = find_bank(cpu_idx, addr, 1, &start);
+	if (bank) {
+		/* see find_bank(): never through the memory system */
+		UINT8 *p = banked_byte(cpu_idx, bank, addr, start);
+		if (p)
+			*p = val;
+		return;
+	}
+	cpunum_write_byte(cpu_idx, addr, val);
 }
 
 void remote_debug_memory_fill(int cpu_idx, UINT32 addr, int size, UINT8 val)
@@ -1185,6 +1481,21 @@ void remote_debug_set_register(int cpu_idx, int reg, UINT32 val)
 /* Step over / step out / run to                                      */
 /* ------------------------------------------------------------------ */
 
+/* Nonzero if a disassembled instruction calls a subroutine. */
+static int is_call_mnemonic(const char *dasm)
+{
+	static const char *calls[] = { "JSR", "BSR", "LBSR", "SWI", "CALL", "RST" };
+	size_t i;
+	while (*dasm == ' ')
+		dasm++;
+	for (i = 0; i < sizeof(calls) / sizeof(calls[0]); i++) {
+		size_t n = strlen(calls[i]);
+		if (strncasecmp(dasm, calls[i], n) == 0 && (dasm[n] == ' ' || dasm[n] == 0))
+			return 1;
+	}
+	return 0;
+}
+
 void remote_debug_step_over(void)
 {
 	remote_debug_lock();
@@ -1196,13 +1507,15 @@ void remote_debug_step_over(void)
 		char dasm[64];
 		int size;
 		if (need_ctx)
-			cpuintrf_push_context(0);
+			cpuintrf_push_context(halt_cpu);
 		pc = activecpu_get_reg(REG_PC);
 		activecpu_set_op_base(pc);
 		size = (int)activecpu_dasm(dasm, pc);
 		if (need_ctx)
 			cpuintrf_pop_context();
-		if (size > 0) {
+		/* Only a subroutine call is run to the instruction behind it; anything
+		   else is a plain step - a branch or return never gets there. */
+		if (size > 0 && is_call_mnemonic(dasm)) {
 			breakpoint_add_internal(pc + (UINT32)size, -1, cpu_getactivecpu(), 1, NULL, 0);
 			is_paused = 0;
 			remote_debug_add_message("Stepping over...");
@@ -1220,7 +1533,10 @@ void remote_debug_step_out(void)
 	if (callstack_ptr > 0) {
 		const callstack_entry_t *e = &callstack[callstack_ptr - 1];
 		char b[MSG_LEN];
-		breakpoint_add_internal(e->pc, e->bank, -1, 1, NULL, 0);
+		/* the ROM bank only identifies code in the banked window; elsewhere the
+		   callee may well return with a different bank paged in */
+		int bank = (e->pc >= 0x4000 && e->pc < 0x8000) ? e->bank : -1;
+		breakpoint_add_internal(e->pc, bank, 0, 1, NULL, 0);
 		is_paused = 0;
 		snprintf(b, sizeof(b), "Stepping out to %04X...", e->pc);
 		remote_debug_add_message(b);
@@ -1250,32 +1566,49 @@ void remote_debug_run_to(UINT32 addr, int bank)
 /* Callstack hooks                                                    */
 /* ------------------------------------------------------------------ */
 
+/* Drop the frames the stack pointer has left behind. Counting calls and
+ * returns alone does not keep the callstack right: pinball operating systems
+ * drop return addresses and switch stacks, and each such frame would stay
+ * for good - until the table is full and nothing new gets in. A frame was
+ * entered with the stack pointer at e->s and is over once it is back there
+ * (the stack grows downwards).
+ * The caller must hold the debugger lock. */
+static void callstack_prune(UINT32 sp)
+{
+	while (callstack_ptr > 0 && callstack[callstack_ptr - 1].s <= sp)
+		callstack_ptr--;
+}
+
 void remote_debug_push_call(UINT32 caller, UINT32 receiver)
 {
-	if (!remote_debug_ready)
+	/* One callstack: that of the main CPU. The sound CPUs run the same CPU
+	   cores and would mix their calls into it. */
+	if (!remote_debug_ready || cpu_getactivecpu() != 0)
 		return;
 	remote_debug_lock();
+	callstack_prune(activecpu_get_reg(REG_SP));
 	if (callstack_ptr < CALLSTACK_SIZE) {
+		const regmap_t *regs = active_regmap();
 		callstack_entry_t *e = &callstack[callstack_ptr++];
 		e->caller = caller;
 		e->receiver = receiver;
 		e->bank = wpc_get_bank();
 		e->pc = (UINT16)activecpu_get_reg(REG_PC);  /* return address */
-		e->u = (UINT16)activecpu_get_reg(M6809_U);
+		e->u = (UINT16)ACTIVE_REG(regs, u);
 		e->s = (UINT16)activecpu_get_reg(REG_SP);
-		e->x = (UINT16)activecpu_get_reg(M6809_X);
-		e->y = (UINT16)activecpu_get_reg(M6809_Y);
-		e->a = (UINT8)activecpu_get_reg(M6809_A);
-		e->b = (UINT8)activecpu_get_reg(M6809_B);
-		e->dp = (UINT8)activecpu_get_reg(M6809_DP);
-		e->cc = (UINT8)activecpu_get_reg(M6809_CC);
+		e->x = (UINT16)ACTIVE_REG(regs, x);
+		e->y = (UINT16)ACTIVE_REG(regs, y);
+		e->a = (UINT8)ACTIVE_REG(regs, a);
+		e->b = (UINT8)ACTIVE_REG(regs, b);
+		e->dp = (UINT8)ACTIVE_REG(regs, dp);
+		e->cc = (UINT8)ACTIVE_REG(regs, cc);
 	}
 	remote_debug_unlock();
 }
 
 void remote_debug_pop_call(void)
 {
-	if (!remote_debug_ready)
+	if (!remote_debug_ready || cpu_getactivecpu() != 0)
 		return;
 	remote_debug_lock();
 	if (callstack_ptr > 0)
@@ -1285,7 +1618,7 @@ void remote_debug_pop_call(void)
 
 void remote_debug_reset_callstack(void)
 {
-	if (!remote_debug_ready)
+	if (!remote_debug_ready || cpu_getactivecpu() != 0)
 		return;
 	remote_debug_lock();
 	callstack_ptr = 0;
@@ -1487,10 +1820,15 @@ static int object_state(int type, int id)
 	if (type == REMOTE_DEBUG_OBJ_SWITCH)
 		return core_getSw(id) ? 1 : 0;
 	if (type == REMOTE_DEBUG_OBJ_LAMP) {
-		int col = id / 10, row = id % 10 - 1;
-		if (col < 0 || col >= CORE_MAXLAMPCOL || row < 0 || row > 7)
+		/* Lamp number -> matrix position, the way vp_getLamp() in vpintf.c
+		   does it: the driver's conversion counts the first lamp column as
+		   column 1, which is lampMatrix[0]. Without a conversion the number
+		   is taken as column/row (11 = column 1, row 1). */
+		int idx = (coreData && coreData->lamp2m) ? coreData->lamp2m(id) - 8
+		                                         : (id / 10 - 1) * 8 + id % 10 - 1;
+		if (idx < 0 || idx >= CORE_MAXLAMPCOL * 8)
 			return 0;
-		return (coreGlobals.lampMatrix[col] >> row) & 1;
+		return (coreGlobals.lampMatrix[idx / 8] >> (idx % 8)) & 1;
 	}
 	if (type == REMOTE_DEBUG_OBJ_SOL)
 		return core_getSol(id) ? 1 : 0;
@@ -1504,7 +1842,8 @@ static const char *switch_name(int num)
 {
 	static const char *coindoor[8] = {
 		"Coin 1", "Coin 2", "Coin 3", "Coin 4",
-		"Enter", "Up", "Down", "Escape"
+		/* same order as the port bits in WPC_COMPORTS (wpc.h) */
+		"Escape", "Down", "Up", "Enter"
 	};
 	static const char *flippers[8] = {
 		"L.R Flipper EOS", "L.R Flipper", "L.L Flipper EOS", "L.L Flipper",
@@ -1521,7 +1860,9 @@ static const char *switch_name(int num)
 		       ? coindoor[num - 1] : "";
 	if (num >= CORE_FLIPPERSWCOL * 10 + 1 && num <= CORE_FLIPPERSWCOL * 10 + 8)
 		return flippers[num - (CORE_FLIPPERSWCOL * 10 + 1)];
-	if (core_gameData) {
+	/* comSw is WPC game data as well; other generations keep different data
+	   in that union */
+	if (core_gameData && (core_gameData->gen & GEN_ALLWPC)) {
 		if (num == core_gameData->wpc.comSw.start)    return "Start";
 		if (num == core_gameData->wpc.comSw.tilt)     return "Tilt";
 		if (num == core_gameData->wpc.comSw.sTilt)    return "Slam Tilt";
@@ -1536,11 +1877,16 @@ static int emit_switch_col(strbuf_t *sb, int col, int first)
 {
 	int row;
 	for (row = 0; row < 8; row++) {
-		int num = col * 10 + row + 1;
+		/* The switch number is whatever the driver calls this matrix position:
+		   column/row style (WPC: 11-88) or sequential (System 11 and the core
+		   default: 1-64, with the dedicated column 0 at -7..0). It is the
+		   number core_setSw() and so /api/input expect. */
+		int num = (coreData && coreData->m2sw) ? coreData->m2sw(col, row) : col * 10 + row + 1;
 		char esc[64];
 		sb_appendf(sb,
 			"%s{\"num\": %d, \"col\": %d, \"row\": %d, \"active\": %d, \"name\": \"%s\"}",
-			first ? "" : ",", num, col, row + 1, object_state(REMOTE_DEBUG_OBJ_SWITCH, num),
+			first ? "" : ",", num, col, row + 1,
+			((coreGlobals.swMatrix[col] ^ coreGlobals.invSw[col]) >> row) & 1,
 			remote_debug_json_escape(esc, (int)sizeof(esc), switch_name(num)));
 		first = 0;
 	}
@@ -1584,10 +1930,14 @@ void remote_debug_get_lamps(char **buffer, int *len)
 			cols = CORE_MAXLAMPCOL;
 		for (col = 0; col < cols; col++) {
 			for (row = 0; row < 8; row++) {
-				int num = col * 10 + row + 1;
+				/* the number the driver gives this lamp: column/row style on
+				   WPC (11-88), sequential (1-64) on System 11 and others; col
+				   and row are reported 1-based, lampMatrix[0] is column 1 */
+				int num = (coreData && coreData->m2lamp) ? coreData->m2lamp(col + 1, row)
+				                                         : (col + 1) * 10 + row + 1;
 				sb_appendf(&sb,
 					"%s{\"num\": %d, \"col\": %d, \"row\": %d, \"active\": %d}",
-					first ? "" : ",", num, col, row + 1,
+					first ? "" : ",", num, col + 1, row + 1,
 					(coreGlobals.lampMatrix[col] >> row) & 1);
 				first = 0;
 			}
@@ -1649,13 +1999,24 @@ static void pulse_tick(int reassert)
 			i++;
 		}
 	}
+	/* release cabinet/operator buttons whose press time is over */
+	for (i = 0; i < button_pulse_count; ) {
+		if ((INT32)(now - button_pulses[i].expiry) >= 0) {
+			port_force[CORE_COREINPORT] &= ~button_pulses[i].mask;
+			input_port_set_force(CORE_COREINPORT, port_force[CORE_COREINPORT]);
+			button_pulses[i] = button_pulses[button_pulse_count - 1];
+			button_pulse_count--;
+		}
+		else
+			i++;
+	}
 }
 
 /* Expire pulses from the HTTP thread so they end even while paused (when
  * no frames are produced and the emulator-side re-assert does not run). */
 static void service_pulses(void)
 {
-	if (pulse_count == 0)
+	if (pulse_count == 0 && button_pulse_count == 0)
 		return;
 	remote_debug_lock();
 	pulse_tick(0);
@@ -1692,7 +2053,177 @@ int remote_debug_set_input_port_force(int port, int val)
 	int result = -1;
 	remote_debug_lock();
 	if (port >= 0 && port < MAX_INPUT_PORTS) {
-		input_port_set_force(port, (unsigned short)val);
+		port_force[port] = (unsigned short)val;
+		input_port_set_force(port, port_force[port]);
+		result = 0;
+	}
+	remote_debug_unlock();
+	return result;
+}
+
+/* ================================================================== */
+/* NVRAM                                                              */
+/* ================================================================== */
+
+/* Called by core_nvram() on the emulator thread, when the NVRAM is loaded
+ * at start-up and again whenever it is saved or cleared - hence the check
+ * for blocks that are known already. */
+void remote_debug_nvram_register(void *mem, size_t length)
+{
+	int i;
+	/* the NVRAM is saved once more after remote_debug_exit(), when the lock
+	   is gone already */
+	if (!remote_debug_ready || !mem || length == 0)
+		return;
+	remote_debug_lock();
+	for (i = 0; i < nvram_block_count; i++) {
+		if (nvram_blocks[i].mem == (UINT8 *)mem)
+			break;
+	}
+	if (i < NVRAM_BLOCK_MAX) {
+		nvram_blocks[i].mem = (UINT8 *)mem;
+		nvram_blocks[i].length = length;
+		if (i == nvram_block_count)
+			nvram_block_count++;
+	}
+	remote_debug_unlock();
+}
+
+/* Find the CPU whose memory region contains `mem`; the offset into the
+ * region is the address then. Returns the CPU number, or -1 if the block
+ * is kept outside the CPU memory regions (a driver's own array).
+ * The caller must hold the debugger lock. */
+static int nvram_find_cpu(const UINT8 *mem, UINT32 *addr)
+{
+	int cpu;
+	for (cpu = 0; Machine && cpu < cpu_gettotalcpu(); cpu++) {
+		const UINT8 *base = memory_region(REGION_CPU1 + cpu);
+		size_t size = memory_region_length(REGION_CPU1 + cpu);
+		if (base && mem >= base && mem < base + size) {
+			*addr = (UINT32)(mem - base);
+			return cpu;
+		}
+	}
+	return -1;
+}
+
+void remote_debug_get_nvram_info(char **buffer, int *len)
+{
+	strbuf_t sb;
+	int i;
+	sb_init(&sb, 512);
+	remote_debug_lock();
+	sb_appendf(&sb, "{\"blocks\": [");
+	for (i = 0; i < nvram_block_count; i++) {
+		UINT32 addr = 0;
+		int cpu = nvram_find_cpu(nvram_blocks[i].mem, &addr);
+		sb_appendf(&sb, "%s{\"size\": %u, \"cpu\": %d, \"addr\": %d}",
+		           i ? "," : "", (unsigned)nvram_blocks[i].length, cpu,
+		           (cpu >= 0) ? (int)addr : -1);
+	}
+	sb_appendf(&sb, "]}");
+	remote_debug_unlock();
+	*buffer = sb.buf;
+	*len = sb.len;
+}
+
+void remote_debug_get_nvram_dump(char **buffer, int *len)
+{
+	size_t total = 0;
+	int i;
+	*buffer = NULL;
+	*len = 0;
+	remote_debug_lock();
+	for (i = 0; i < nvram_block_count; i++)
+		total += nvram_blocks[i].length;
+	if (Machine && total > 0) {
+		char *buf = malloc(total);
+		if (buf) {
+			size_t pos = 0;
+			for (i = 0; i < nvram_block_count; i++) {
+				memcpy(buf + pos, nvram_blocks[i].mem, nvram_blocks[i].length);
+				pos += nvram_blocks[i].length;
+			}
+			*buffer = buf;
+			*len = (int)total;
+		}
+	}
+	remote_debug_unlock();
+}
+
+/* ================================================================== */
+/* Cabinet / operator buttons                                         */
+/* ================================================================== */
+
+/* Every PinMAME driver declares its cabinet and operator buttons (coins,
+ * start, tilt, and the service buttons - Escape/Down/Up/Enter on WPC,
+ * Advance/Up-Down/diagnostics on System 11, the black/green buttons on Data
+ * East, ...) as named bits of input port CORE_COREINPORT, and its
+ * SWITCH_UPDATE routes them to wherever that hardware wants them. Listing
+ * those bits and pressing them through the forced-value overlay of the
+ * port therefore works for all generations without any knowledge of the
+ * individual driver, and takes the same path as the keyboard. */
+
+/* Nonzero if `in` describes a button (not a port header, DIP switch, ...). */
+static int is_button_bit(const struct InputPort *in)
+{
+	UINT32 type = in->type & ~IPF_MASK;
+	return in->mask != 0 && !(in->type & IPF_UNUSED)
+	       && type != IPT_DIPSWITCH_NAME && type != IPT_DIPSWITCH_SETTING
+	       && type != IPT_EXTENSION;
+}
+
+void remote_debug_get_buttons(char **buffer, int *len)
+{
+	strbuf_t sb;
+	int first = 1;
+	sb_init(&sb, 2048);
+	remote_debug_lock();
+	sb_appendf(&sb, "{\"port\": %d, \"buttons\": [", CORE_COREINPORT);
+	if (Machine && Machine->input_ports) {
+		const struct InputPort *in = Machine->input_ports;
+		int port = -1, value = readinputport(CORE_COREINPORT);
+		for (; (in->type & ~IPF_MASK) != IPT_END; in++) {
+			const char *name;
+			char esc[64];
+			if ((in->type & ~IPF_MASK) == IPT_PORT) {
+				port++;
+				continue;
+			}
+			if (port != CORE_COREINPORT || !is_button_bit(in))
+				continue;
+			name = input_port_name(in);
+			if (!name || !name[0])
+				continue;
+			sb_appendf(&sb,
+				"%s{\"mask\": %d, \"name\": \"%s\", \"toggle\": %d, \"active\": %d}",
+				first ? "" : ",", in->mask,
+				remote_debug_json_escape(esc, (int)sizeof(esc), name),
+				(in->type & IPF_TOGGLE) ? 1 : 0, (value & in->mask) ? 1 : 0);
+			first = 0;
+		}
+	}
+	sb_appendf(&sb, "]}");
+	remote_debug_unlock();
+	*buffer = sb.buf;
+	*len = sb.len;
+}
+
+int remote_debug_set_button(int mask, int val, int pulse_ms)
+{
+	int result = -1;
+	remote_debug_lock();
+	if (Machine && mask > 0 && mask <= 0xffff) {
+		if (val)
+			port_force[CORE_COREINPORT] |= (unsigned short)mask;
+		else
+			port_force[CORE_COREINPORT] &= ~(unsigned short)mask;
+		input_port_set_force(CORE_COREINPORT, port_force[CORE_COREINPORT]);
+		if (val && pulse_ms > 0 && button_pulse_count < PULSE_MAX) {
+			button_pulses[button_pulse_count].mask = (UINT16)mask;
+			button_pulses[button_pulse_count].expiry = monotonic_ms() + (UINT32)pulse_ms;
+			button_pulse_count++;
+		}
 		result = 0;
 	}
 	remote_debug_unlock();
@@ -1737,6 +2268,8 @@ static void apply_holdport_option(void)
 		if (sep) {
 			int port = atoi(tok);
 			unsigned short mask = (unsigned short)strtoul(sep + 1, NULL, 16);
+			if (port >= 0 && port < MAX_INPUT_PORTS)
+				port_force[port] = mask;
 			input_port_set_force(port, mask);
 			printf("Remote Debugger: holding port %d bits %04X from power-on\n", port, mask);
 		}
@@ -1917,7 +2450,7 @@ int remote_debug_scan_new(int cpu, UINT32 addr, int size)
 	scan_base = addr;
 	scan_size = size;
 	for (i = 0; i < size; i++) {
-		scan_snapshot[i] = cpunum_read_byte(cpu, addr + (UINT32)i);
+		scan_snapshot[i] = remote_debug_read_byte(cpu, addr + (UINT32)i, -1);
 		scan_candidate[i] = 1;
 	}
 	remote_debug_unlock();
@@ -1937,7 +2470,7 @@ int remote_debug_scan_filter(int op, UINT8 val)
 		int keep;
 		if (!scan_candidate[i])
 			continue;
-		cur = cpunum_read_byte(scan_cpu, scan_base + (UINT32)i);
+		cur = remote_debug_read_byte(scan_cpu, scan_base + (UINT32)i, -1);
 		old = scan_snapshot[i];
 		switch (op) {
 			case REMOTE_DEBUG_SCAN_EQ:        keep = (cur == val); break;
@@ -1972,7 +2505,7 @@ void remote_debug_get_scan(char **buffer, int *len)
 			continue;
 		sb_appendf(&sb, "%s{\"addr\": %u, \"val\": %u}",
 		           (emitted > 0) ? "," : "", scan_base + (UINT32)i,
-		           Machine ? (unsigned)cpunum_read_byte(scan_cpu, scan_base + (UINT32)i) : 0);
+		           Machine ? (unsigned)remote_debug_read_byte(scan_cpu, scan_base + (UINT32)i, -1) : 0);
 		emitted++;
 	}
 	sb_appendf(&sb, "]}");
@@ -1985,6 +2518,89 @@ void remote_debug_get_scan(char **buffer, int *len)
 /* Lightweight game-state checkpoints                                 */
 /* ================================================================== */
 
+/* What a checkpoint holds is the machine's RAM as far as the debugger can
+ * find it without knowing the driver: the plain RAM in the main CPU's
+ * memory map, plus the battery backed memory the driver reported through
+ * core_nvram() (which is how the RAM behind a write handler, like the write
+ * protected WPC RAM, or a CMOS array outside the CPU memory gets in). */
+typedef struct {
+	UINT8 *mem;
+	size_t length;
+	INT32  addr;          /* address in the main CPU's memory, -1 if not mapped */
+} ram_block_t;
+
+#define RAM_BLOCK_MAX 24
+
+/* Nonzero if [mem, mem+length) lies within one of the n blocks. */
+static int ram_block_covered(const ram_block_t *blk, int n, const UINT8 *mem, size_t length)
+{
+	int i;
+	for (i = 0; i < n; i++) {
+		if (mem >= blk[i].mem && mem + length <= blk[i].mem + blk[i].length)
+			return 1;
+	}
+	return 0;
+}
+
+/* Fill blk[] with the RAM blocks of the running machine; returns their
+ * number. The caller must hold the debugger lock. */
+static int ram_blocks_collect(ram_block_t *blk)
+{
+	int n = 0, i;
+	UINT8 *base = memory_region(REGION_CPU1);
+	size_t size = memory_region_length(REGION_CPU1);
+
+	if (base && cpunum_databus_width(0) == 8 && Machine->drv->cpu[0].memory_write) {
+		const struct Memory_WriteAddress *mwa = Machine->drv->cpu[0].memory_write;
+		for (; !IS_MEMPORT_END(mwa) && n < RAM_BLOCK_MAX; mwa++) {
+			size_t length;
+			if (IS_MEMPORT_MARKER(mwa) || mwa->handler != MWA_RAM
+					|| mwa->end < mwa->start || mwa->end >= size)
+				continue;
+			length = (size_t)(mwa->end - mwa->start) + 1;
+			if (ram_block_covered(blk, n, base + mwa->start, length))
+				continue;
+			blk[n].mem = base + mwa->start;
+			blk[n].length = length;
+			blk[n].addr = (INT32)mwa->start;
+			n++;
+		}
+	}
+	for (i = 0; i < nvram_block_count && n < RAM_BLOCK_MAX; i++) {
+		UINT32 addr = 0;
+		if (ram_block_covered(blk, n, nvram_blocks[i].mem, nvram_blocks[i].length))
+			continue;
+		blk[n].mem = nvram_blocks[i].mem;
+		blk[n].length = nvram_blocks[i].length;
+		blk[n].addr = (nvram_find_cpu(nvram_blocks[i].mem, &addr) == 0) ? (INT32)addr : -1;
+		n++;
+	}
+	return n;
+}
+
+static size_t ram_blocks_size(const ram_block_t *blk, int n)
+{
+	size_t total = 0;
+	int i;
+	for (i = 0; i < n; i++)
+		total += blk[i].length;
+	return total;
+}
+
+/* Copy all blocks into buf (save != 0) or buf back into the blocks. */
+static void ram_blocks_copy(const ram_block_t *blk, int n, UINT8 *buf, int save)
+{
+	size_t pos = 0;
+	int i;
+	for (i = 0; i < n; i++) {
+		if (save)
+			memcpy(buf + pos, blk[i].mem, blk[i].length);
+		else
+			memcpy(blk[i].mem, buf + pos, blk[i].length);
+		pos += blk[i].length;
+	}
+}
+
 /* Find an existing slot by name, or -1. Caller holds the lock. */
 static int savestate_find(const char *name)
 {
@@ -1995,82 +2611,111 @@ static int savestate_find(const char *name)
 	return -1;
 }
 
+static void savestate_free_all(void)
+{
+	int i;
+	for (i = 0; i < SAVESTATE_SLOTS; i++)
+		free(savestates[i].ram);
+	memset(savestates, 0, sizeof(savestates));
+}
+
 int remote_debug_savestate_save(const char *slot)
 {
-	int idx, i;
+	ram_block_t blk[RAM_BLOCK_MAX];
+	const regmap_t *regs;
+	int idx, i, n;
+	size_t total;
+	UINT8 *ram;
 	savestate_t *s;
 	if (!slot || !slot[0])
 		return -1;
 	remote_debug_lock();
-	if (!Machine || !wpc_ram) {
+	if (!Machine || cpu_gettotalcpu() < 1) {
 		remote_debug_unlock();
 		return -1;
 	}
+	n = ram_blocks_collect(blk);
+	total = ram_blocks_size(blk, n);
 	idx = savestate_find(slot);
 	if (idx < 0) {
 		for (i = 0; i < SAVESTATE_SLOTS; i++)
 			if (!savestates[i].used) { idx = i; break; }
 	}
-	if (idx < 0) {
+	ram = (idx >= 0 && total > 0) ? malloc(total) : NULL;
+	if (!ram) {
 		remote_debug_unlock();
-		return -1;   /* all slots occupied */
+		return -1;   /* all slots occupied, no RAM found or out of memory */
 	}
 	s = &savestates[idx];
+	free(s->ram);
 	memset(s, 0, sizeof(*s));
 	strncpy(s->name, slot, sizeof(s->name) - 1);
 	s->used = 1;
-	s->ramlen = SAVESTATE_RAM;
-	memcpy(s->ram, wpc_ram, SAVESTATE_RAM);
+	s->ram = ram;
+	s->ramlen = total;
+	ram_blocks_copy(blk, n, s->ram, 1);
 	cpuintrf_push_context(0);
-	s->pc = (UINT16)activecpu_get_reg(M6809_PC);
-	s->s  = (UINT16)activecpu_get_reg(M6809_S);
-	s->u  = (UINT16)activecpu_get_reg(M6809_U);
-	s->x  = (UINT16)activecpu_get_reg(M6809_X);
-	s->y  = (UINT16)activecpu_get_reg(M6809_Y);
-	s->a  = (UINT8)activecpu_get_reg(M6809_A);
-	s->b  = (UINT8)activecpu_get_reg(M6809_B);
-	s->dp = (UINT8)activecpu_get_reg(M6809_DP);
-	s->cc = (UINT8)activecpu_get_reg(M6809_CC);
+	regs = active_regmap();
+	s->pc = activecpu_get_reg(REG_PC);
+	s->s  = activecpu_get_reg(REG_SP);
+	s->u  = ACTIVE_REG(regs, u);
+	s->x  = ACTIVE_REG(regs, x);
+	s->y  = ACTIVE_REG(regs, y);
+	s->a  = (UINT8)ACTIVE_REG(regs, a);
+	s->b  = (UINT8)ACTIVE_REG(regs, b);
+	s->dp = (UINT8)ACTIVE_REG(regs, dp);
+	s->cc = (UINT8)ACTIVE_REG(regs, cc);
 	cpuintrf_pop_context();
 	remote_debug_unlock();
 	{
 		char b[MSG_LEN];
-		snprintf(b, sizeof(b), "State saved to slot '%s'", slot);
+		snprintf(b, sizeof(b), "State saved to slot '%s' (%u bytes of RAM)", slot, (unsigned)total);
 		remote_debug_add_message(b);
 	}
 	return 0;
 }
 
+/* Set a register of the active CPU if it has that register. */
+#define ACTIVE_REG_SET(map, reg, val) \
+	do { if ((map)->reg != NO_REG) activecpu_set_reg((map)->reg, (val)); } while (0)
+
 int remote_debug_savestate_load(const char *slot)
 {
-	int idx, i;
+	ram_block_t blk[RAM_BLOCK_MAX];
+	const regmap_t *regs;
+	int idx, n;
 	const savestate_t *s;
 	if (!slot || !slot[0])
 		return -1;
 	remote_debug_lock();
-	if (!Machine || !wpc_ram) {
+	if (!Machine || cpu_gettotalcpu() < 1) {
 		remote_debug_unlock();
 		return -1;
 	}
 	idx = savestate_find(slot);
-	if (idx < 0) {
+	n = ram_blocks_collect(blk);
+	/* the blocks are the same as when the slot was saved; the size check is
+	   only there to never write beyond what was saved */
+	if (idx < 0 || savestates[idx].ramlen != ram_blocks_size(blk, n)) {
 		remote_debug_unlock();
 		return -1;
 	}
 	s = &savestates[idx];
-	for (i = 0; i < s->ramlen; i++)
-		wpc_ram[i] = s->ram[i];
+	ram_blocks_copy(blk, n, s->ram, 0);
 	cpuintrf_push_context(0);
-	activecpu_set_reg(M6809_PC, s->pc);
-	activecpu_set_reg(M6809_S,  s->s);
-	activecpu_set_reg(M6809_U,  s->u);
-	activecpu_set_reg(M6809_X,  s->x);
-	activecpu_set_reg(M6809_Y,  s->y);
-	activecpu_set_reg(M6809_A,  s->a);
-	activecpu_set_reg(M6809_B,  s->b);
-	activecpu_set_reg(M6809_DP, s->dp);
-	activecpu_set_reg(M6809_CC, s->cc);
+	regs = active_regmap();
+	activecpu_set_reg(REG_PC, s->pc);
+	activecpu_set_reg(REG_SP, s->s);
+	ACTIVE_REG_SET(regs, u, s->u);
+	ACTIVE_REG_SET(regs, x, s->x);
+	ACTIVE_REG_SET(regs, y, s->y);
+	ACTIVE_REG_SET(regs, a, s->a);
+	ACTIVE_REG_SET(regs, b, s->b);
+	ACTIVE_REG_SET(regs, dp, s->dp);
+	ACTIVE_REG_SET(regs, cc, s->cc);
 	cpuintrf_pop_context();
+	/* the frames on the callstack belong to the execution that was left */
+	callstack_ptr = 0;
 	remote_debug_unlock();
 	{
 		char b[MSG_LEN];
@@ -2085,8 +2730,10 @@ void remote_debug_savestate_delete(const char *slot)
 	int idx;
 	remote_debug_lock();
 	idx = savestate_find(slot);
-	if (idx >= 0)
-		savestates[idx].used = 0;
+	if (idx >= 0) {
+		free(savestates[idx].ram);
+		memset(&savestates[idx], 0, sizeof(savestates[idx]));
+	}
 	remote_debug_unlock();
 }
 
@@ -2393,48 +3040,60 @@ void remote_debug_get_tracepoints(char **buffer, int *len)
 /* ================================================================== */
 
 /* Diff the RAM of two save slots (or slot 'a' against the live RAM when
- * 'b' is NULL/empty). Returns the differing offsets as JSON. */
+ * 'b' is NULL/empty). Returns the differing bytes as JSON: the address in
+ * the main CPU's memory (-1 for RAM that is not mapped there), and the RAM
+ * block with the offset into it. */
 void remote_debug_savestate_diff(char **buffer, int *len, const char *a, const char *b)
 {
 	strbuf_t sb;
-	int ia, ib, i, first = 1, count = 0;
+	ram_block_t blk[RAM_BLOCK_MAX];
+	int ia, ib, n = 0, k, first = 1, count = 0, emitted = 0;
+	size_t total = 0, i, pos;
 	const UINT8 *ba = NULL, *bb = NULL;
-	UINT8 live[SAVESTATE_RAM];
+	UINT8 *live = NULL;
 
 	sb_init(&sb, 8192);
 	remote_debug_lock();
+	if (Machine && cpu_gettotalcpu() > 0) {
+		n = ram_blocks_collect(blk);
+		total = ram_blocks_size(blk, n);
+	}
 	ia = savestate_find(a);
-	if (ia >= 0)
+	if (ia >= 0 && savestates[ia].ramlen == total)
 		ba = savestates[ia].ram;
 	if (b && b[0]) {
 		ib = savestate_find(b);
-		if (ib >= 0)
+		if (ib >= 0 && savestates[ib].ramlen == total)
 			bb = savestates[ib].ram;
 	}
-	else if (Machine && wpc_ram) {
-		memcpy(live, wpc_ram, SAVESTATE_RAM);
+	else if (total > 0 && (live = malloc(total)) != NULL) {
+		ram_blocks_copy(blk, n, live, 1);
 		bb = live;
 	}
 	if (ba && bb) {
-		for (i = 0; i < SAVESTATE_RAM; i++)
+		for (i = 0; i < total; i++)
 			if (ba[i] != bb[i])
 				count++;
 	}
 	sb_appendf(&sb, "{\"a\": \"%s\", \"b\": \"%s\", \"count\": %d, \"diffs\": [",
 	           ba ? a : "", (b && b[0]) ? b : "(live)", ba && bb ? count : -1);
 	if (ba && bb) {
-		int emitted = 0;
-		for (i = 0; i < SAVESTATE_RAM && emitted < 1024; i++) {
-			if (ba[i] != bb[i]) {
-				sb_appendf(&sb, "%s{\"addr\": %d, \"a\": %u, \"b\": %u}",
-				           first ? "" : ",", i, ba[i], bb[i]);
-				first = 0;
-				emitted++;
+		for (k = 0, pos = 0; k < n; pos += blk[k].length, k++) {
+			for (i = 0; i < blk[k].length && emitted < 1024; i++) {
+				if (ba[pos + i] != bb[pos + i]) {
+					sb_appendf(&sb, "%s{\"addr\": %d, \"a\": %u, \"b\": %u, \"block\": %d, \"offset\": %u}",
+					           first ? "" : ",",
+					           (blk[k].addr >= 0) ? (int)(blk[k].addr + (INT32)i) : -1,
+					           ba[pos + i], bb[pos + i], k, (unsigned)i);
+					first = 0;
+					emitted++;
+				}
 			}
 		}
 	}
 	sb_appendf(&sb, "]}");
 	remote_debug_unlock();
+	free(live);
 	*buffer = sb.buf;
 	*len = sb.len;
 }

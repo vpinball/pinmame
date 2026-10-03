@@ -536,6 +536,7 @@ INLINE void WM16( UINT32 Addr, PAIR *p )
 static void ENTER_INTERRUPT(const char *message,UINT16 irq_vector)
 {
 	LOG((message, cpu_getactivecpu()));
+	DEBUG_PUSH_CALL(PC, RM16( irq_vector ));
 	if( m6800.wai_state & (M6800_WAI|M6800_SLP) )
 	{
 		if( m6800.wai_state & M6800_WAI )
@@ -625,6 +626,7 @@ void m6800_init(void)
 
 void m6800_reset(void *param)
 {
+	DEBUG_RESET_CALLSTACK();
 	SEI;				/* IRQ disabled */
 	PCD = RM16( 0xfffe );
 	CHANGE_PC();

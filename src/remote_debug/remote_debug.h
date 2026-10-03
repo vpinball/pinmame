@@ -54,6 +54,17 @@ int remote_debug_should_quit(void);
 /* Pause (1) or resume (0) execution. */
 void remote_debug_set_paused(int paused);
 
+/* Nonzero for the CPUs of the M6800 core (M6800/1/2/3/8, HD63701, NSC8105
+ * - the main CPU of Williams System 3-11), which share one register set. */
+int remote_debug_is_m6800_family(int cpu_type);
+
+/* Reset the machine (all CPUs and the machine driver), like the F3 key. */
+void remote_debug_reset(void);
+
+/* Called by cpuexec.c when the machine (re)starts: a reset requested by
+ * remote_debug_reset() has been carried out. */
+void remote_debug_reset_done(void);
+
 /* Execute a single instruction, then pause again. */
 void remote_debug_step(void);
 
@@ -173,6 +184,30 @@ int remote_debug_set_switch(int sw, int val, int pulse_ms);
  * before MACHINE_INIT runs. Returns 0 on success, -1 if port is out of
  * range. */
 int remote_debug_set_input_port_force(int port, int val);
+
+/* Battery backed memory (NVRAM/CMOS). core_nvram() in wpc/core.c reports
+ * every block a driver loads or saves, which is how the debugger learns
+ * where the NVRAM of the running machine is - for all generations. */
+void remote_debug_nvram_register(void *mem, size_t length);
+
+/* Describe the NVRAM blocks as JSON: size and, where a block is part of a
+ * CPU's memory, that CPU and the address (cpu/addr are -1 otherwise). */
+void remote_debug_get_nvram_info(char **buffer, int *len);
+
+/* Copy of all NVRAM blocks, one after the other. *buffer is malloc()ed and
+ * NULL if the machine has no NVRAM. */
+void remote_debug_get_nvram_dump(char **buffer, int *len);
+
+/* List the cabinet/operator buttons of the running driver: the named bits
+ * of input port CORE_COREINPORT, as JSON. Works for every generation, as
+ * the names and bits come from the driver's own port definition. */
+void remote_debug_get_buttons(char **buffer, int *len);
+
+/* Press (val != 0) or release one of those buttons, `mask` being its port
+ * bit(s); with pulse_ms > 0 a press is released again after that many
+ * milliseconds (wall clock). Goes through the same path as the keyboard.
+ * Returns 0 on success, -1 if the machine is not ready or mask is invalid. */
+int remote_debug_set_button(int mask, int val, int pulse_ms);
 
 /* Write switch-matrix column `col` directly, bypassing core_setSw's sw2m
  * mapping (see /api/input/matrix) -- the only way to reach a dedicated
