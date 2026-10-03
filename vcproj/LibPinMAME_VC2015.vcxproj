@@ -785,6 +785,10 @@
     </ClCompile>
     <ClCompile Include="..\src\cpu\at91\at91.c" />
     <ClCompile Include="..\src\cpu\at91\at91dasm.c" />
+    <ClCompile Include="..\src\cpu\mips32\mips32.c" />
+    <ClCompile Include="..\src\cpu\mips32\mips32dasm.c" />
+    <ClCompile Include="..\src\cpu\pic32mx\pic32mx.c" />
+    <ClCompile Include="..\src\cpu\pic32mx\pic32mxcpu.c" />
     <ClCompile Include="..\src\cpu\arm7\arm7.c" />
     <ClCompile Include="..\src\cpu\arm7\arm7core.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">true</ExcludedFromBuild>
@@ -1039,6 +1043,133 @@
     <ClCompile Include="..\src\wpc\rotation.c" />
     <ClCompile Include="..\src\wpc\recel.c" />
     <ClCompile Include="..\src\wpc\recelgames.c" />
+    <ClCompile Include="..\src\wpc\pinheck.c" />
+    <ClCompile Include="..\src\wpc\pinheckgames.c" />
+    <ClCompile Include="..\src\wpc\sims\pinheck\amh.c" />
+    <ClCompile Include="..\src\wpc\pinheck\dmd.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)pinheck\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\src\wpc\pinheck\hexload.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)pinheck\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\src\wpc\sims\pinheck\jetsons.c" />
+    <ClCompile Include="..\src\wpc\sims\pinheck\rzspook.c" />
+    <ClCompile Include="..\src\wpc\sims\pinheck\dominos.c" />
+    <ClCompile Include="..\src\wpc\pinheck\board.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)pinheck\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\src\wpc\pinheck\audio.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)pinheck\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\src\wpc\pinheck\display.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)pinheck\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\src\cpu\p8x32a\p8x32a.c" />
+    <ClCompile Include="..\src\wpc\pinheck\eeprom.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)pinheck\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\src\wpc\pinheck\prop.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)pinheck\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\src\wpc\pinheck\rtc.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)pinheck\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\src\wpc\pinheck\bootldr.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)pinheck\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\src\wpc\pinheck\sd.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)pinheck\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\src\wpc\pinheck\vfat.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)pinheck\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\src\wpc\pinheck\zipsrc.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)pinheck\</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)pinheck\</ObjectFileName>
+    </ClCompile>
     <ClCompile Include="..\src\wpc\recelsnd.c" />
     <ClCompile Include="..\src\wpc\rowamet.c" />
     <ClCompile Include="..\src\wpc\s11.c" />
@@ -1253,6 +1384,23 @@
     <ClInclude Include="..\src\cpu\i8051\i8051.h" />
     <ClInclude Include="..\src\cpu\tms7000\tms7000.h" />
     <ClInclude Include="..\src\cpu\at91\at91.h" />
+    <ClInclude Include="..\src\cpu\mips32\mips32.h" />
+    <ClInclude Include="..\src\cpu\pic32mx\pic32mx.h" />
+    <ClInclude Include="..\src\cpu\pic32mx\pic32mxcpu.h" />
+    <ClInclude Include="..\src\wpc\pinheck.h" />
+    <ClInclude Include="..\src\wpc\pinheck\dmd.h" />
+    <ClInclude Include="..\src\wpc\pinheck\hexload.h" />
+    <ClInclude Include="..\src\wpc\pinheck\board.h" />
+    <ClInclude Include="..\src\wpc\pinheck\audio.h" />
+    <ClInclude Include="..\src\wpc\pinheck\display.h" />
+    <ClInclude Include="..\src\cpu\p8x32a\p8x32a.h" />
+    <ClInclude Include="..\src\wpc\pinheck\eeprom.h" />
+    <ClInclude Include="..\src\wpc\pinheck\prop.h" />
+    <ClInclude Include="..\src\wpc\pinheck\rtc.h" />
+    <ClInclude Include="..\src\wpc\pinheck\bootldr.h" />
+    <ClInclude Include="..\src\wpc\pinheck\sd.h" />
+    <ClInclude Include="..\src\wpc\pinheck\vfat.h" />
+    <ClInclude Include="..\src\wpc\pinheck\zipsrc.h" />
     <ClInclude Include="..\src\cpu\arm7\arm7.h" />
     <ClInclude Include="..\src\cpu\arm7\arm7core.h" />
     <ClInclude Include="..\src\cpu\arm7\arm7jit.h" />

@@ -346,6 +346,9 @@ enum
 /* Return the number of paths for a given type */
 int osd_get_path_count(int pathtype);
 
+/* Return the directory of a given path entry */
+const char *osd_get_path(int pathtype, int pathindex);
+
 /* Get information on the existence of a file */
 int osd_get_path_info(int pathtype, int pathindex, const char *filename);
 

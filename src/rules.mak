@@ -1685,6 +1685,19 @@ else
 CPUDEFS += -DHAS_AT91=0
 endif
 
+CPU=$(strip $(findstring PIC32MX@,$(CPUS)))
+ifneq ($(CPU),)
+OBJDIRS += $(OBJ)/cpu/mips32 $(OBJ)/cpu/pic32mx
+CPUDEFS += -DHAS_PIC32MX=1
+CPUOBJS += $(OBJ)/cpu/mips32/mips32.o $(OBJ)/cpu/mips32/mips32dasm.o $(OBJ)/cpu/pic32mx/pic32mx.o $(OBJ)/cpu/pic32mx/pic32mxcpu.o
+$(OBJ)/cpu/mips32/mips32.o: src/cpu/mips32/mips32.c src/cpu/mips32/mips32.h
+$(OBJ)/cpu/mips32/mips32dasm.o: src/cpu/mips32/mips32dasm.c src/cpu/mips32/mips32.h
+$(OBJ)/cpu/pic32mx/pic32mx.o: src/cpu/pic32mx/pic32mx.c src/cpu/pic32mx/pic32mx.h src/cpu/mips32/mips32.h
+$(OBJ)/cpu/pic32mx/pic32mxcpu.o: src/cpu/pic32mx/pic32mxcpu.c src/cpu/pic32mx/pic32mxcpu.h src/cpu/pic32mx/pic32mx.h
+else
+CPUDEFS += -DHAS_PIC32MX=0
+endif
+
 CPU=$(strip $(findstring MEDIAGX@,$(CPUS)))
 ifneq ($(CPU),)
 CPUDEFS += -DHAS_MEDIAGX=1
