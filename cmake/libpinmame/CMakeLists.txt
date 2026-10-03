@@ -811,6 +811,13 @@ if(BUILD_SHARED)
       DESTINATION ${CMAKE_INSTALL_PREFIX}/include/pinmame
    )
 
+   install(
+       DIRECTORY src/libpinmame/plugins/
+       DESTINATION ${CMAKE_INSTALL_PREFIX}/include/pinmame/plugins
+       FILES_MATCHING
+           PATTERN "*.h"
+   )
+
    if(PLATFORM STREQUAL "win" OR PLATFORM STREQUAL "win-mingw" OR PLATFORM STREQUAL "macos" OR PLATFORM STREQUAL "linux")
       add_executable(pinmame_test
          src/libpinmame/test.cpp
@@ -843,6 +850,13 @@ if(BUILD_STATIC)
       src/libpinmame/libpinmame.h
       src/libpinmame/PinMAMEPlugin.h
       DESTINATION ${CMAKE_INSTALL_PREFIX}/include/pinmame
+   )
+
+   install(
+       DIRECTORY src/libpinmame/plugins/
+       DESTINATION ${CMAKE_INSTALL_PREFIX}/include/pinmame/plugins
+       FILES_MATCHING
+           PATTERN "*.h"
    )
 
    if(PLATFORM STREQUAL "win" OR PLATFORM STREQUAL "win-mingw" OR PLATFORM STREQUAL "macos" OR PLATFORM STREQUAL "linux")
