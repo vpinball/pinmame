@@ -858,6 +858,15 @@ if(BUILD_STATIC)
    endif()
 endif()
 
+# --- Profile-guided optimisation (PINMAME_PGO), off by default; see cmake/pgo.cmake
+include(${CMAKE_SOURCE_DIR}/cmake/pgo.cmake)
+if(TARGET pinmame_shared)
+   pinmame_enable_pgo(pinmame_shared)
+endif()
+if(TARGET pinmame_static)
+   pinmame_enable_pgo(pinmame_static)
+endif()
+
 # --- asmjit-based ARM7 JIT backend
 include(${CMAKE_SOURCE_DIR}/cmake/asmjit.cmake)
 if(TARGET pinmame_shared)
