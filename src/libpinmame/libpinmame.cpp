@@ -1419,11 +1419,16 @@ PINMAMEAPI int PinmameGetMaxSolenoids()
 
 PINMAMEAPI int PinmameGetSolenoid(const int solNo)
 {
-	if (!_isRunning)
+	if (!_isRunning || solNo < 1 || solNo > CORE_MODOUT_SOL_MAX)
 		return 0;
 
-	if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL))
-		core_update_pwm_outputs(CORE_MODOUT_SOL0 + solNo - 1, 1);
+	if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) {
+		// core_getSol reads 29-48 from other outputs than solNo - 1
+		if (solNo >= 29 && solNo <= 48)
+			core_update_pwm_solenoids();
+		else
+			core_update_pwm_outputs(CORE_MODOUT_SOL0 + solNo - 1, 1);
+	}
 
 	return vp_getSolenoid(solNo);
 }
@@ -1461,11 +1466,12 @@ PINMAMEAPI int PinmameGetMaxLamps()
 
 PINMAMEAPI int PinmameGetLamp(const int lampNo)
 {
-	if (!_isRunning)
+	const int index = _isRunning ? vp_getLampIndex(lampNo) : -1;
+	if (index < 0)
 		return 0;
 
 	if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_LAMPS))
-		core_update_pwm_outputs(CORE_MODOUT_LAMP0 + lampNo - 1, 1);
+		core_update_pwm_outputs(CORE_MODOUT_LAMP0 + index, 1);
 
 	return vp_getLamp(lampNo);
 }
