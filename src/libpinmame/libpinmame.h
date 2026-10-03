@@ -19,7 +19,7 @@
 #define PINMAMEAPI extern "C" __attribute__((visibility("default")))
 #define PINMAMECALLBACK
 #else
-#define PINMAMEAPI __attribute__((visibility("default"))
+#define PINMAMEAPI __attribute__((visibility("default")))
 #define PINMAMECALLBACK
 #endif
 
