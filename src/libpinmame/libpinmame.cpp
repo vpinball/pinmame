@@ -19,7 +19,8 @@
  #pragma message ( "Warning: No SSE optimizations for Display enabled" )
 #endif
 
-#if defined(_WIN32) || defined(_WIN64)
+// MinGW has strcasecmp: renaming it there makes <string.h>'s inline wrapper call itself
+#if (defined(_WIN32) || defined(_WIN64)) && !defined(__MINGW32__)
 #define strcasecmp _stricmp
 #endif
 
