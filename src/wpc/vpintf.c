@@ -30,8 +30,14 @@ void vp_init(void) {
 /*------------------------------------
 /  get status of a lamp (0=off, 1=on)
 /-------------------------------------*/
-int vp_getLamp(int lampNo) {
+int vp_getLampIndex(int lampNo) {
   if (coreData && coreData->lamp2m) lampNo = coreData->lamp2m(lampNo) - 8;
+  return lampNo >= 0 && lampNo < CORE_MODOUT_LAMP_MAX ? lampNo : -1;
+}
+
+int vp_getLamp(int lampNo) {
+  lampNo = vp_getLampIndex(lampNo);
+  if (lampNo < 0) return 0;
   /*-- Physical output mode: return a physically meaningful value depending on the output type --*/
   if (coreGlobals.nLamps && (options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS))
     return (int)saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + lampNo].value);

@@ -43,6 +43,11 @@ INLINE int vp_getWPCNumbering(void) { return WPCNUMBERING; }
 int vp_getLamp(int lampNo);
 
 /*------------------------------------
+/  lamp matrix index of a lamp number, -1 if the game has no such lamp
+/-------------------------------------*/
+int vp_getLampIndex(int lampNo);
+
+/*------------------------------------
 /  set status of a switch (0=off, !0=on)
 /-------------------------------------*/
 INLINE void vp_putSwitch(int swNo, int newStat) { core_setSw(swNo, newStat); }
