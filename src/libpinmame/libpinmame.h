@@ -15,8 +15,11 @@
 #ifdef _MSC_VER
 #define PINMAMEAPI extern "C" __declspec(dllexport)
 #define PINMAMECALLBACK __stdcall
-#else
+#elif defined(__cplusplus)
 #define PINMAMEAPI extern "C" __attribute__((visibility("default")))
+#define PINMAMECALLBACK
+#else
+#define PINMAMEAPI __attribute__((visibility("default"))
 #define PINMAMECALLBACK
 #endif
 
