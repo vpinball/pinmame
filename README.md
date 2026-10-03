@@ -47,7 +47,7 @@ record/playback, command line switches etc.).
 
 In addition to the built-in debugger, it also includes an **Advanced Remote Debugger** module, providing a thread-safe REST API and a high-fidelity web dashboard for headless or remote analysis.
 Features include real-time DMD/Alphanumeric rendering, hardware breakpoints, memory pattern search, and interactive matrix visualization. See the [README](src/remote_debug/README.md) for full documentation and API reference.
-For the moment, it's mostly useful for debugging WPC/6809-based machines, but is applicable to all machines.
+For the moment, it's mostly useful for debugging WPC/Sys11/6809-based machines, but is applicable to all machines.
 
 In addition, there is special compile time support for the [P-ROC](http://www.pinballcontrollers.com),
 to drive (at least) real WPC machines with PinMAME/P-ROC, [PPUC](https://github.com/PPUC) and LISY

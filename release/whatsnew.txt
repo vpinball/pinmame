@@ -9,7 +9,7 @@ Version 3.7 (XX XXth, 2026) - "Rise of the Machines"
 Users now can set the 'serial_device' setting (registry key) to a COM port,
 to attach to the WPC/WPC95 serial printer interface
 
-Add a HTTP remote debugger (see 'src/remote_debug/README.md' for all details), mostly targeted at WPC/6809-based machines and Linux PinMAME (for now), but in general applicable to all machines.
+Add a HTTP remote debugger (see 'src/remote_debug/README.md' for all details), mostly targeted at WPC/Sys11/6809-based machines and Linux PinMAME (for now), but in general applicable to all machines.
 
 Workaround a crash / race-condition when reading PinMAME state, e.g. when exiting VPX
 
@@ -50,7 +50,9 @@ Added physical/PWM lamps and/or solenoids support to some GTS80 games (Amazon Hu
 Added physical/PWM (dimmed) segment support to GTS80A games
 Added physical/PWM support to Star Wars Trilogy and Titanic
 Added physical/PWM support to games employing mini-DMDs and the like
-Fixed Breakshots invalid PWM flasher definition
+Fixed Breakshots/Family Guys invalid PWM flasher definition
+Fixed Airbornes/Transformers/Trons PWM flasher count
+Fixed Stern SAM flasher PWM behavior
 Fixed some potential general solenoid issues with physical/PWM
 Improved physical/PWM bulb integration
 Improved BY6803 emulation, and add dimmed segments support, and bright physical/PWM lights
@@ -59,6 +61,7 @@ In general, (almost) all DMD/mini-DMD outputs have been moved to the proper phys
 Implemented memory protect logic/coin-door-switch on Sega/Stern WhiteStar games: Previously, the coin door was always considered to be open, but the coin door message doesn't get displayed if the door is already open on boot. It will only display after the door has been closed and then reopened.
 Rewired Striker Xtreme, Playboy and Sharkey's Shootout to use the J2 auxiliary-data latch of 520-5192 (fixes e.g. center and outlane pegs stuck in up position for Sharkey's)
 Fixed trolls in Medieval Madness
+Improved Taito reset/(re-)load behavior (on real machines, it tries to resume the resetted game, PinMAME instead now forces the machine into a stable 'new' state/attract-mode)
 Improved sound for Metal Man, and a bit for Jolly Park and Verne's World (in general, slightly more authentic MSM5205 sound)
 Fixed Wico's Af-Tor music/note tempo (and some minor details)
 Slightly improved YM262 sound for Sir Lancelot
