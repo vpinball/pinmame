@@ -694,6 +694,10 @@ set_target_properties(pinmame PROPERTIES
    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
 )
 
+# --- Profile-guided optimisation (PINMAME_PGO), off by default; see cmake/pgo.cmake
+include(${CMAKE_SOURCE_DIR}/cmake/pgo.cmake)
+pinmame_enable_pgo(pinmame)
+
 # --- asmjit-based ARM7 JIT backend
 include(${CMAKE_SOURCE_DIR}/cmake/asmjit.cmake)
 pinmame_enable_asmjit(pinmame)
