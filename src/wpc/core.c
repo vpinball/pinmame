@@ -2515,6 +2515,10 @@ static MACHINE_INIT(core) {
     memset(&coreGlobals, 0, sizeof(coreGlobals));
     memset(&locals, 0, sizeof(locals));
     coreData = (struct pinMachine *)&Machine->drv->pinmame;
+#if defined(VPINMAME) || defined(PINMAME) || defined(LIBPINMAME)
+    /*-- new run, new -dmd_dump_dir dump; a soft reset keeps appending --*/
+    dmd_dump_txtFresh = dmd_dump_rawFresh = 1;
+#endif
     //-- initialise timers --
     if (coreData->timers[0].callback) {
       int ii;

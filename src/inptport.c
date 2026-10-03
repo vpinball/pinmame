@@ -1626,7 +1626,8 @@ static void save_default_keys(void)
 
 #define MAX_DIP_OVERRIDES 16
 
-static char *dip_overrides[MAX_DIP_OVERRIDES];
+/* never freed: every run in the process applies them */
+static struct { char *spec; int priority; } dip_overrides[MAX_DIP_OVERRIDES];
 static int dip_override_count;
 
 /* case-insensitive compare of a driver string against arg[0..len),
@@ -1655,14 +1656,43 @@ static const struct InputPort *dip_next_setting(const struct InputPort *in)
 	return ((in->type & ~IPF_MASK) == IPT_DIPSWITCH_SETTING) ? in : NULL;
 }
 
+/* number of DIP switches called arg[0..len); the nth (1-based) in *found, or NULL */
+static int dip_find(const char *arg, size_t len, int nth, struct InputPort **found)
+{
+	struct InputPort *in;
+	int n = 0;
+
+	*found = NULL;
+	for (in = Machine->input_ports; in->type != IPT_END; in++)
+		if ((in->type & ~IPF_MASK) == IPT_DIPSWITCH_NAME &&
+			dip_name_matches(input_port_name(in), arg, len) && ++n == nth)
+			*found = in;
+	return n;
+}
+
+/* a shared name is listed as "<name>#<n>", the form -dip accepts for it */
 static void dip_list_names(void)
 {
-	const struct InputPort *in;
+	struct InputPort *in, *prev, *unused;
 
 	fprintf(stderr, "       %s has these DIP switches:\n", Machine->gamedrv->name);
 	for (in = Machine->input_ports; in->type != IPT_END; in++)
 		if ((in->type & ~IPF_MASK) == IPT_DIPSWITCH_NAME && input_port_name(in))
-			fprintf(stderr, "         %s\n", input_port_name(in));
+		{
+			const char *name = input_port_name(in);
+			int nth = 1;
+
+			if (dip_find(name, strlen(name), 0, &unused) < 2)
+			{
+				fprintf(stderr, "         %s\n", name);
+				continue;
+			}
+			for (prev = Machine->input_ports; prev != in; prev++)
+				if ((prev->type & ~IPF_MASK) == IPT_DIPSWITCH_NAME &&
+					dip_name_matches(input_port_name(prev), name, strlen(name)))
+					nth++;
+			fprintf(stderr, "         %s#%d\n", name, nth);
+		}
 }
 
 static void dip_list_settings(const struct InputPort *dip)
@@ -1679,11 +1709,13 @@ static void dip_list_settings(const struct InputPort *dip)
 static int dip_override_one(const char *spec)
 {
 	const char *eq = strchr(spec, '=');
-	const char *value;
-	struct InputPort *in, *dip = NULL;
+	const char *value, *p, *hash = NULL;
+	struct InputPort *dip;
 	const struct InputPort *set;
 	char *end;
 	long numeric;
+	size_t len;
+	int count, nth = 0;
 
 	if (!eq)
 	{
@@ -1691,19 +1723,45 @@ static int dip_override_one(const char *spec)
 		return -1;
 	}
 	value = eq + 1;
+	len = eq - spec;
 
-	for (in = Machine->input_ports; in->type != IPT_END; in++)
-		if ((in->type & ~IPF_MASK) == IPT_DIPSWITCH_NAME &&
-			dip_name_matches(input_port_name(in), spec, eq - spec))
+	count = dip_find(spec, len, 1, &dip);
+
+	/* "<name>#<n>": the nth DIP switch called <name>, unless one is called that in full */
+	for (p = spec; p < eq; p++)
+		if (*p == '#') hash = p;
+	if (!count && hash && hash != spec)
+	{
+		nth = (int)strtol(hash + 1, &end, 10);
+		while (end < eq && isspace((UINT8)*end)) end++;
+		if (end == eq && end != hash + 1 && nth > 0)
 		{
-			dip = in;
-			break;
+			len = hash - spec;
+			count = dip_find(spec, len, nth, &dip);
 		}
+		else
+			nth = 0;
+	}
 
-	if (!dip)
+	if (!count)
 	{
 		fprintf(stderr, "error: -dip \"%s\": no DIP switch called \"%.*s\"\n",
 				spec, (int)(eq - spec), spec);
+		dip_list_names();
+		return -1;
+	}
+	if (!dip)
+	{
+		fprintf(stderr, "error: -dip \"%s\": only %d DIP switch%s called \"%.*s\"\n",
+				spec, count, count == 1 ? " is" : "es are", (int)len, spec);
+		dip_list_names();
+		return -1;
+	}
+	if (count > 1 && !nth)
+	{
+		fprintf(stderr, "error: -dip \"%s\": %d DIP switches are called \"%.*s\", "
+				"pick one with \"%.*s#1\" to \"%.*s#%d\"\n",
+				spec, count, (int)len, spec, (int)len, spec, (int)len, spec, count);
 		dip_list_names();
 		return -1;
 	}
@@ -1721,7 +1779,14 @@ static int dip_override_one(const char *spec)
 	while (isspace((UINT8)*end)) end++;
 	if (end != value && *end == 0)
 	{
-		dip->default_value = (UINT16)numeric & dip->mask;
+		if ((unsigned long)numeric & ~(unsigned long)dip->mask)
+		{
+			fprintf(stderr, "error: -dip \"%s\": %s has bits outside \"%s\"'s mask 0x%04x\n",
+					spec, value, input_port_name(dip), dip->mask);
+			dip_list_settings(dip);
+			return -1;
+		}
+		dip->default_value = (UINT16)numeric;
 		fprintf(stderr, "dip: %s = 0x%04x\n", input_port_name(dip), dip->default_value);
 		return 0;
 	}
@@ -1732,7 +1797,7 @@ static int dip_override_one(const char *spec)
 	return -1;
 }
 
-int dip_override_add(const char *spec)
+int dip_override_add(const char *spec, int priority)
 {
 	char *copy;
 
@@ -1754,29 +1819,35 @@ int dip_override_add(const char *spec)
 		return -1;
 	}
 	strcpy(copy, spec);
-	dip_overrides[dip_override_count++] = copy;
+	dip_overrides[dip_override_count].spec = copy;
+	dip_overrides[dip_override_count].priority = priority;
+	dip_override_count++;
 	return 0;
 }
 
 int dip_override_apply(void)
 {
-	int i, err = 0;
-	const int noports = (Machine->input_ports == NULL);
+	int i, p, lo, hi, err = 0;
 
-	if (dip_override_count && noports)
+	if (!dip_override_count)
+		return 0;
+	if (Machine->input_ports == NULL)
 	{
 		fprintf(stderr, "error: -dip: %s has no input ports\n", Machine->gamedrv->name);
-		err = -1;
+		return -1;
 	}
 
-	for (i = 0; i < dip_override_count; i++)
+	/* lowest rc priority first, so for the same DIP switch the command line beats an ini; equal priorities in the order given */
+	lo = hi = dip_overrides[0].priority;
+	for (i = 1; i < dip_override_count; i++)
 	{
-		if (!noports && dip_override_one(dip_overrides[i]))
-			err = -1;
-		free(dip_overrides[i]);
-		dip_overrides[i] = NULL;
+		if (dip_overrides[i].priority < lo) lo = dip_overrides[i].priority;
+		if (dip_overrides[i].priority > hi) hi = dip_overrides[i].priority;
 	}
-	dip_override_count = 0;
+	for (p = lo; p <= hi; p++)
+		for (i = 0; i < dip_override_count; i++)
+			if (dip_overrides[i].priority == p && dip_override_one(dip_overrides[i].spec))
+				err = -1;
 	return err;
 }
 #endif /* PINMAME */

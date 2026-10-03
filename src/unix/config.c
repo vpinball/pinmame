@@ -73,12 +73,16 @@ static int add_device(struct rc_option *option, const char *arg, int priority);
 #ifdef PINMAME
 static int config_handle_rtc(struct rc_option *option, const char *arg, int priority)
 {
-	return rtc_set_start(arg);
+	/* rc leaves recording the priority to callbacks; without it an ini, read after the command line, would override it */
+	if (rtc_set_start(arg))
+		return -1;
+	option->priority = priority;
+	return 0;
 }
 
 static int config_handle_dip(struct rc_option *option, const char *arg, int priority)
 {
-	return dip_override_add(arg);
+	return dip_override_add(arg, priority);
 }
 
 struct rc_option pinmame_opts[] = {
@@ -100,8 +104,8 @@ struct rc_option pinmame_opts[] = {
 	{ "dmd_antialias",NULL, rc_int,&pmoptions.dmd_antialias,  "50", 0, 100, NULL, "DMD antialias intensity [%]" },
 	{ "key_script", NULL, rc_string, &pmoptions.key_script, NULL, 0, 0, NULL, "File of scripted keyboard events" },
 	{ "dmd_dump_dir", NULL, rc_string, &pmoptions.dmd_dump_dir, NULL, 0, 0, NULL, "Directory to write the DMD frame dump to" },
-	{ "dip", NULL, rc_string, &pmoptions.dip, NULL, 0, 0, config_handle_dip, "Set a DIP switch: \"<name>=<setting>\", repeatable" },
-	{ "rtc", NULL, rc_string, &pmoptions.rtc, NULL, 0, 0, config_handle_rtc, "Fix the emulated real-time clock: \"YYYY-MM-DD HH:MM[:SS]\"" },
+	{ "dip", NULL, rc_use_function, NULL, NULL, 0, 0, config_handle_dip, "Set a DIP switch: \"<name>=<setting>\", repeatable" },
+	{ "rtc", NULL, rc_use_function, NULL, NULL, 0, 0, config_handle_rtc, "Fix the emulated real-time clock: \"YYYY-MM-DD HH:MM[:SS]\"" },
 #ifdef PROC_SUPPORT
 	{ "alpha_on_dmd",NULL, rc_bool,&pmoptions.alpha_on_dmd, "0",  0, 0, NULL, "Emulate alphanumeric display on DMD" },
 	{ "p-roc",NULL, rc_string,&pmoptions.p_roc, "None",  0, 0, NULL, "YAML Machine description file" },

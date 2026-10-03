@@ -83,8 +83,6 @@ typedef struct {
   int dmd_opacity;
   char *key_script;            /* scripted keyboard input, NULL = off */
   char *dmd_dump_dir;          /* directory for the DMD frame dump, NULL = off */
-  char *dip;                   /* last -dip given; the overrides themselves live in inptport.c */
-  char *rtc;                   /* last -rtc given; the fixed clock itself lives in timer.c */
   int resampling_quality;      // 0 = fast, 1 = normal (for SRC setting)
 #if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND) || defined(LIBPINMAME)
   int sound_mode; // 0 = pinmame/emulation, 1 = altsound, 2 = pinsound, 3 = pinsound + recordings
@@ -157,7 +155,7 @@ extern void machine_add_timer(struct InternalMachineDriver *machine, void (*func
   machine->pinmame.init = machine_init_##iname; \
   machine->pinmame.reset = machine_reset_##rname; \
   machine->pinmame.stop = machine_stop_##sname;
-#define GAME_USES_CHIMES            0x0000
+#define GAME_USES_CHIMES 0x0000
 #endif /* PINMAME */
 
 /***************************************************************************
@@ -357,11 +355,11 @@ void machine_remove_sound(struct InternalMachineDriver *machine, const char *tag
 
 ***************************************************************************/
 
-#define MAX_CPU 8       /* MAX_CPU is the maximum number of CPUs which cpuintrf.c */
-                                        /* can run at the same time. Currently, 8 is enough. */
+#define MAX_CPU 8   /* MAX_CPU is the maximum number of CPUs which cpuintrf.c */
+                    /* can run at the same time. Currently, 8 is enough. */
 
-#define MAX_SOUND 5     /* MAX_SOUND is the maximum number of sound subsystems */
-                                        /* which can run at the same time. Currently, 5 is enough. */
+#define MAX_SOUND 5 /* MAX_SOUND is the maximum number of sound subsystems */
+                    /* which can run at the same time. Currently, 5 is enough. */
 
 struct InternalMachineDriver
 {
@@ -442,10 +440,10 @@ struct InternalMachineDriver
 
 /* In most cases we assume pixels are square (1:1 aspect ratio) but some games need */
 /* different proportions, e.g. 1:2 for Blasteroids */
-#define VIDEO_PIXEL_ASPECT_RATIO_MASK 0x0060
-#define VIDEO_PIXEL_ASPECT_RATIO_1_1 0x0000
-#define VIDEO_PIXEL_ASPECT_RATIO_1_2 0x0020
-#define VIDEO_PIXEL_ASPECT_RATIO_2_1 0x0040
+#define VIDEO_PIXEL_ASPECT_RATIO_MASK   0x0060
+#define VIDEO_PIXEL_ASPECT_RATIO_1_1    0x0000
+#define VIDEO_PIXEL_ASPECT_RATIO_1_2    0x0020
+#define VIDEO_PIXEL_ASPECT_RATIO_2_1    0x0040
 
 #define VIDEO_DUAL_MONITOR              0x0080
 
@@ -475,20 +473,20 @@ struct InternalMachineDriver
 
 struct GameDriver
 {
-        const char *source_file;        /* set this to __FILE__ */
-        const struct GameDriver *clone_of;      /* if this is a clone, point to */
-                                                                                /* the main version of the game */
+        const char *source_file;           /* set this to __FILE__ */
+        const struct GameDriver *clone_of; /* if this is a clone, point to */
+                                           /* the main version of the game */
         const char *name;
-        const struct SystemBios *bios;  /* if this system has alternate bios roms use this */
-                                                                        /* structure to list names and ROM_BIOSFLAGS. */
+        const struct SystemBios *bios;     /* if this system has alternate bios roms use this */
+                                           /* structure to list names and ROM_BIOSFLAGS. */
         const char *description;
         const char *year;
         const char *manufacturer;
         void (*drv)(struct InternalMachineDriver *);
         const struct InputPortTiny *input_ports;
-        void (*driver_init)(void);      /* optional function to be called during initialization */
-                                                                /* This is called ONCE, unlike Machine->init_machine */
-                                                                /* which is called every time the game is reset. */
+        void (*driver_init)(void);         /* optional function to be called during initialization */
+                                           /* This is called ONCE, unlike Machine->init_machine */
+                                           /* which is called every time the game is reset. */
 
         const struct RomModule *rom;
 
@@ -601,9 +599,9 @@ const struct GameDriver driver_##NAME =         \
 
 /* monitor parameters to be used with the GAME() macro */
 #define ROT0    0
-#define ROT90   (ORIENTATION_SWAP_XY|ORIENTATION_FLIP_X)        /* rotate clockwise 90 degrees */
-#define ROT180  (ORIENTATION_FLIP_X|ORIENTATION_FLIP_Y)         /* rotate 180 degrees */
-#define ROT270  (ORIENTATION_SWAP_XY|ORIENTATION_FLIP_Y)        /* rotate counter-clockwise 90 degrees */
+#define ROT90   (ORIENTATION_SWAP_XY|ORIENTATION_FLIP_X) /* rotate clockwise 90 degrees */
+#define ROT180  (ORIENTATION_FLIP_X|ORIENTATION_FLIP_Y)  /* rotate 180 degrees */
+#define ROT270  (ORIENTATION_SWAP_XY|ORIENTATION_FLIP_Y) /* rotate counter-clockwise 90 degrees */
 
 /* this allows to leave the INIT field empty in the GAME() macro call */
 #define init_0 0

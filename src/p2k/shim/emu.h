@@ -1439,6 +1439,15 @@ public:
 enum { STATE_GENPC = -1, STATE_GENPCBASE = -2, STATE_GENSP = -3, STATE_GENFLAGS = -4 };
 
 // ---------------------------------------------------------------- out-of-line
+// -rtc's fixed clock (src/timer.c), for base_datetime() and p2k_driver.cpp's RTC save/restore. Weak because standalone does not link timer.c; there they are null and the host clock is used
+extern "C" {
+	int    rtc_is_fixed(void) P2K_WEAK;
+	time_t rtc_now(void) P2K_WEAK;
+	void   rtc_now_tm(struct tm *out) P2K_WEAK;
+}
+
+#define P2K_RTC_FIXED() (P2K_HAVE_WEAK(rtc_is_fixed) && rtc_is_fixed())
+
 inline void running_machine::base_datetime(system_time &systime)
 {
 	time_t t = P2K_RTC_FIXED() ? rtc_now() : ::time(nullptr);

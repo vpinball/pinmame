@@ -391,12 +391,11 @@ int load_input_port_settings(void);
 void save_input_port_settings(void);
 
 #ifdef PINMAME
-/* Command-line DIP switch overrides: -dip "<DIP switch name>=<setting>",
-   repeatable, both sides matched case-insensitively against the driver's own
-   strings; a setting with no name can be given as a number (0x20 or 32).
-   Applied after load_input_port_settings(), so they override both the driver
-   default and the saved cfg. */
-int dip_override_add(const char *spec);
+/* -dip "<DIP switch name>=<setting>", repeatable. Both sides match the driver's
+   strings case-insensitively; a setting may be a number (0x20 or 32), a shared
+   name "<name>#<n>". Applied after load_input_port_settings(), so they beat the
+   driver default and the saved cfg, and the command line beats an ini */
+int dip_override_add(const char *spec, int priority);
 int dip_override_apply(void);
 #endif /* PINMAME */
 
@@ -415,7 +414,7 @@ void init_analog_seq(void);
 
 void update_analog_port(int port);
 void update_input_ports(void);	/* called by cpuintrf.c - not for external use */
-void inputport_vblank_end(void);	/* called by cpuintrf.c - not for external use */
+void inputport_vblank_end(void);/* called by cpuintrf.c - not for external use */
 
 int readinputport(int port);
 
