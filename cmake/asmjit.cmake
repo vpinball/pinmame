@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------
-#  Optional asmjit-based ARM7 JIT backend
+#  Optional asmjit-based ARM7 and Propeller (P8X32A) JIT backends
 #
 #  ARM7 JIT -> asmjit migration/generalization
 #
@@ -23,7 +23,7 @@
 #      pinmame_enable_asmjit(<target>)
 # ---------------------------------------------------------------------------
 
-option(PINMAME_JIT_ASMJIT "Build the asmjit-based ARM7 JIT backend (x86/x64 targets only)" ON)
+option(PINMAME_JIT_ASMJIT "Build the asmjit-based ARM7 and Propeller JIT backends (x86/x64 targets only)" ON)
 
 # Resolve the effective switch: option ON + x86/x64 target.
 set(PINMAME_JIT_ASMJIT_EFFECTIVE FALSE)
@@ -75,7 +75,8 @@ endif()
 # No-op unless PINMAME_JIT_ASMJIT resolved to an x86/x64 target (see above).
 function(pinmame_enable_asmjit target)
    if(PINMAME_JIT_ASMJIT_EFFECTIVE)
-      target_sources(${target} PRIVATE ${_PINMAME_ASMJIT_LIST_DIR}/../src/windows/jit_asmjit.cpp)
+      target_sources(${target} PRIVATE ${_PINMAME_ASMJIT_LIST_DIR}/../src/windows/jit_asmjit.cpp
+                                        ${_PINMAME_ASMJIT_LIST_DIR}/../src/cpu/p8x32a/p8x32ajit.cpp)
       target_compile_features(${target} PRIVATE cxx_std_17)  # asmjit needs C++17; the win targets default to 14
       # Link by appending to the LINK_LIBRARIES property rather than calling
       # target_link_libraries: CMake forbids mixing the plain and keyword

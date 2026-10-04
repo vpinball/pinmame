@@ -30,6 +30,9 @@
 #if defined(PINMAME) && (HAS_MEDIAGX)
 #include "p2k/p2k_cpuintrf.h"
 #endif
+#if defined(PINMAME) && (HAS_PIC32MX)
+#include "cpu/pic32mx/pic32mxcpu.h"
+#endif
 #if defined(PINMAME) && (HAS_PPS4)
 #include "cpu/pps4/pps4.h"
 #endif
@@ -390,6 +393,9 @@ const struct cpu_interface cpuintrf[] =
 #endif
 #if defined(PINMAME) && (HAS_MEDIAGX)
 	CPU0(MEDIAGX,  mediagx,	 2,  0,1.00,32,32ledw, 0,32,LE,1,15	),
+#endif
+#if defined(PINMAME) && (HAS_PIC32MX)
+	CPU0(PIC32MX,  pic32cpu,	 1,  0,1.00,32,32ledw, 0,32,LE,4, 4	),
 #endif
 #if defined(PINMAME) && (HAS_PPS4)
 	CPU0(PPS4,	   PPS4,	 4,255,1.00, 8, 16,	  0,16,LE,1, 3	),

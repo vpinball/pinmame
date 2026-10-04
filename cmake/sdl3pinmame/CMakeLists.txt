@@ -148,6 +148,7 @@ add_compile_definitions(
    HAS_I8752=1
    HAS_TMS7000=1
    HAS_AT91=1
+   HAS_PIC32MX=1
    HAS_ARM7=1
    HAS_CDP1802=1
    HAS_TMS9980=1
@@ -281,6 +282,15 @@ add_executable(sdl3pinmame
    src/cpu/m68000/m68kdasm.c
    src/cpu/m68000/m68kmame.c
    src/cpu/m68000/m68kmame.h
+   src/cpu/mips32/mips32.c
+   src/cpu/mips32/mips32.h
+   src/cpu/mips32/mips32dasm.c
+   src/cpu/p8x32a/p8x32a.c
+   src/cpu/p8x32a/p8x32a.h
+   src/cpu/pic32mx/pic32mx.c
+   src/cpu/pic32mx/pic32mx.h
+   src/cpu/pic32mx/pic32mxcpu.c
+   src/cpu/pic32mx/pic32mxcpu.h
    src/cpu/pps4/pps4.c
    src/cpu/pps4/pps4.h
    src/cpu/pps4/pps4dasm.c
@@ -564,6 +574,33 @@ add_executable(sdl3pinmame
    src/wpc/peyper.c
    src/wpc/peyper.h
    src/wpc/peypergames.c
+   src/wpc/pinheck.c
+   src/wpc/pinheck.h
+   src/wpc/pinheck/audio.c
+   src/wpc/pinheck/audio.h
+   src/wpc/pinheck/board.c
+   src/wpc/pinheck/board.h
+   src/wpc/pinheck/bootldr.c
+   src/wpc/pinheck/bootldr.h
+   src/wpc/pinheck/display.c
+   src/wpc/pinheck/display.h
+   src/wpc/pinheck/dmd.c
+   src/wpc/pinheck/dmd.h
+   src/wpc/pinheck/eeprom.c
+   src/wpc/pinheck/eeprom.h
+   src/wpc/pinheck/hexload.c
+   src/wpc/pinheck/hexload.h
+   src/wpc/pinheck/prop.c
+   src/wpc/pinheck/prop.h
+   src/wpc/pinheck/rtc.c
+   src/wpc/pinheck/rtc.h
+   src/wpc/pinheck/sd.c
+   src/wpc/pinheck/sd.h
+   src/wpc/pinheck/vfat.c
+   src/wpc/pinheck/vfat.h
+   src/wpc/pinheck/zipsrc.c
+   src/wpc/pinheck/zipsrc.h
+   src/wpc/pinheckgames.c
    src/wpc/play.c
    src/wpc/play.h
    src/wpc/playgames.c
@@ -596,6 +633,10 @@ add_executable(sdl3pinmame
    src/wpc/segames.c
    src/wpc/sim.c
    src/wpc/sim.h
+   src/wpc/sims/pinheck/amh.c
+   src/wpc/sims/pinheck/dominos.c
+   src/wpc/sims/pinheck/jetsons.c
+   src/wpc/sims/pinheck/rzspook.c
    src/wpc/sims/wpc/full/sttng.c
    src/wpc/sims/wpc/full/fh.c
    src/wpc/sims/wpc/full/jd.c

@@ -33,7 +33,7 @@ Nuova Bell, Inder, Juegos Populares, LTD, Peyper, Sonic, Allied Leisure, Fascina
 Sleic, Playmatic, NSM, Grand Products, Jac van Ham, Videodens, Astro, Micropin,
 Christian Tabart, Jeutel, Valley Manufacturing, MAC / CICPlay, Stargame, Barni,
 Seeben/Sirmo, Splin Bingo, Playbar, Cirsa, Nondum / CIFA, Maibesa, ManilaMatic, Joctronic, Mirco,
-Sport Matic, Regama, Recel, Interflip, Recreativos Franco, Illinois Pinball.
+Sport Matic, Regama, Recel, Interflip, Recreativos Franco, Illinois Pinball, Spooky Pinball pinHeck.
 
 *Note: Emulation is not 100% working and correct for all hardware, but very close for the vast majority.*
 
@@ -137,6 +137,7 @@ and listen to/record the pinball game sounds with the pure PinMAME package itsel
 - *Mirco*
 - *Sport Matic*
 - *Regama* - Trebol
+- *Spooky Pinball (pinHeck)* - America's Most Haunted (2014), Domino's Spectacular Pinball Adventure (2016), Rob Zombie's Spookshow International (2016), The Jetsons (2017)
 - **Prototype games and modifications**
   - Dave Nutting's Flicker (Sep 1974)
   - Bally's Bow & Arrow (Jan 1976)

@@ -202,7 +202,8 @@ MY_CFLAGS = $(CFLAGS) $(IL) $(CFLAGS.$(MY_CPU)) \
 	$(COREDEFS) $(SOUNDDEFS) $(CPUDEFS) $(ASMDEFS) $(DEFS)\
 	$(INCLUDES) $(INCLUDE_PATH)
 
-MY_LIBS = $(LIBS) $(LIBS.$(ARCH)) $(LIBS.$(DISPLAY_METHOD)) -lz
+# -lpthread: the pinHeck driver's Propeller worker thread (src/wpc/pinheck/prop.c)
+MY_LIBS = $(LIBS) $(LIBS.$(ARCH)) $(LIBS.$(DISPLAY_METHOD)) -lz -lpthread
 
 ifdef PROC
 MY_LIBS += -lyaml-cpp -lpinproc -lftdi1 -lusb

@@ -66,6 +66,7 @@
 #define GEN_SPA         U64(0x4000000000000) /* Stern PA */ //!! can be removed again as soon as SPIKE is emulated
 
 #define GEN_P2K         U64(0x8000000000000) /* Midway Pinball 2000 */
+#define GEN_PINHECK     U64(0x10000000000000) /* Spooky pinHeck */
 
 #define GEN_ALLWPC      U64(0x00000000000ff) /* All WPC */
 #define GEN_ALLS11      U64(0x000008000ff00) /* All Sys11 */

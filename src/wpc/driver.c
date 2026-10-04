@@ -1462,6 +1462,14 @@ DRIVERNV(topgame)       // 19?? - Top Game Laser L10 (Bingo)
 DRIVERNV(topgamet)      // 19?? - Top Game Turbo (Bingo)
 
 // ---------------
+// SPOOKY PINBALL
+// ---------------
+DRIVERNV(amh)           // 2014 - America's Most Haunted (V23)
+DRIVERNV(dominos)       // 2016 - Domino's Spectacular Pinball Adventure (V6)
+DRIVERNV(rzspook)       // 2016 - Rob Zombie's Spookshow International (V26)
+DRIVERNV(jetsons)       // 2017 - The Jetsons (V4)
+
+// ---------------
 // SPORT MATIC
 // ---------------
 DRIVERNV(flashman)      // 1984 - Flashman

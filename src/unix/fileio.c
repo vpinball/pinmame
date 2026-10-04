@@ -424,6 +424,11 @@ int osd_get_path_count(int pathtype)
 	return count;
 }
 
+const char *osd_get_path(int pathtype, int pathindex)
+{
+	return get_path_for_filetype(pathtype, pathindex, NULL);
+}
+
 
 
 /*============================================================ */

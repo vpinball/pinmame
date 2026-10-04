@@ -634,6 +634,7 @@ INLINE void core_zero_cross(void) { coreGlobals.lastACPositiveZeroCrossTimeStamp
 #define CORE_DMD_PWM_FILTER_ALVG2                7
 #define CORE_DMD_PWM_FILTER_CAPCOM_128x32        8
 #define CORE_DMD_PWM_FILTER_CAPCOM_256x64        9
+#define CORE_DMD_PWM_FILTER_PINHECK_16           10
 
 // note that the following are only used to support the pre-PWM legacy path (e.g. for old colorizations)
 #define CORE_DMD_PWM_COMBINER_GTS3_4C_A          0
@@ -646,6 +647,7 @@ INLINE void core_zero_cross(void) { coreGlobals.lastACPositiveZeroCrossTimeStamp
 #define CORE_DMD_PWM_COMBINER_SUM_4              7
 #define CORE_DMD_PWM_COMBINER_SUM_1_2_1          8
 #define CORE_DMD_PWM_COMBINER_1                  9
+#define CORE_DMD_PWM_COMBINER_SUM_16             10
 
 #define CORE_DMD_PWM_PREINTEGRATED_LINEAR_4  0x100
 #define CORE_DMD_PWM_PREINTEGRATED_SAM       0x101

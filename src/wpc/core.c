@@ -1077,7 +1077,7 @@ static void core_dmd_send_vpm(const int width, const int height, const float* co
   const float perc33 = hasPercents ? (float)pmoptions.dmd_perc33 : 33.f;
   const float perc66 = hasPercents ? (float)pmoptions.dmd_perc66 : 67.f;
 
-  if ((core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0)) {
+  if ((core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2 | GEN_PINHECK)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0)) { // pinHeck: the raw DMD's 16 levels
     // Backward compatibility: 16 shades mode has no colorization and fixed lighting levels ranging from 0 to 100
     //static const UINT8 levelgts3[16] = {0/*5*/, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100}; // GTS3 and AlvinG brightness seems okay
     //static const UINT8 levelsam[16]  = {0/*5*/, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 90, 100}; // SAM brightness seems okay
@@ -2252,7 +2252,7 @@ int core_getSol(int solNo) {
   if (solNo <= 28)
     return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value) : coreGlobals.solenoids & CORE_SOLBIT(solNo);
   else if (solNo <= 32) { // 29-32
-    if (core_gameData->gen & GEN_ALLS11)
+    if (core_gameData->gen & (GEN_ALLS11 | GEN_PINHECK))
       return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value) : coreGlobals.solenoids & CORE_SOLBIT(solNo);
     else if (core_gameData->gen & GEN_ALLWPC) // Remap WPC GameOn/J111 GPIO (hacky)
       return coreGlobals.solenoids2 & (1<<(solNo-29+8));
@@ -2281,7 +2281,7 @@ int core_getSol(int solNo) {
       else
         return coreGlobals.solenoids & (1<<((solNo - 13)|4));
     }
-    if (core_gameData->gen & GEN_ALLS11)
+    if (core_gameData->gen & (GEN_ALLS11 | GEN_PINHECK))
       return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 32 + solNo - 37 + 8].value) : coreGlobals.solenoids2 & (1<<(solNo - 37 + 8));
   }
   else if (solNo <= 48) { // 45-48 Lower flippers
@@ -2337,7 +2337,7 @@ UINT64 core_getAllSol(void) {
      sol |= (((UINT64)(coreGlobals.solenoids2 & 0x10)) << 28);
   else if (core_gameData->gen & GEN_ALLWS) // 33..36 various aux board outputs
      sol |= ((UINT64)(coreGlobals.solenoids2 & 0x00f0)) << 28;
-  if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA)) // 37-44 S11, SAM extra
+  if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA | GEN_PINHECK)) // 37-44 S11, SAM extra, pinHeck GI 8-15
      sol |= ((UINT64)(coreGlobals.solenoids2 & 0xff00)) << 28;
   { // 45-48 flipper solenoids (hold coil is set if either coil is set)
     UINT8 lFlip = (coreGlobals.solenoids2 & (CORE_LRFLIPSOLBITS|CORE_LLFLIPSOLBITS));
@@ -2396,7 +2396,7 @@ void core_getAllPhysicSols(float* const state)
       state[i    ] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
       state[i + 4] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
     }
-  else if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA)) // 37-44 S11, SAM extra
+  else if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA | GEN_PINHECK)) // 37-44 S11, SAM extra, pinHeck GI 8-15
     for (int i = 40; i < 48; i++)
       state[i - 4] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
   /*-- 45..48 lower flipper solenoids --*/
@@ -3669,6 +3669,13 @@ void core_dmd_pwm_init(const core_tLCDLayout* layout, const int filter, const in
       dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_254_15) / sizeof(UINT32);
     }
     break;
+  case CORE_DMD_PWM_FILTER_PINHECK_16: // pinHeck raw DMD: 16 subframes of one level each (a dot of value v is lit in v of them), about 785 Hz
+    {
+      static const UINT32 fir_box_16[] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }; // any 16 consecutive subframes hold each level once
+      dmd_state->fir_weights = fir_box_16;
+      dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_box_16) / sizeof(UINT32);
+    }
+    break;
   default:
     assert(0); // Unsupported filter
   }
@@ -4001,6 +4008,21 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
         *rawData++ = (intens1 >> 6) & 0x03;
         *rawData++ = (intens2 >> 7) & 0x03;
       }
+    }
+    break;
+  case CORE_DMD_PWM_COMBINER_SUM_16: // Sum of the last 16 frames (pinHeck raw DMD: one subframe per level, the level-15 one always dark, so 0-15)
+    {
+      assert((dmd_state->width & 7) == 0 && dmd_state->nFrames >= 16);
+      memset(dmd_state->tempRawFrame, 0, dmd_state->frameSize);
+      for (int i = 1; i <= 16; i++) {
+        UINT8* rawData = dmd_state->tempRawFrame;
+        const UINT8* frameData = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - i)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+        for (int kk = 0; kk < dmd_state->rawFrameSize; kk++)
+          for (UINT8 ll = 0, data = *frameData++; ll < 8; ll++, data <<= 1)
+            (*rawData++) += (data >> 7);
+      }
+      for (int kk = 0; kk < dmd_state->frameSize; kk++)
+        if (dmd_state->tempRawFrame[kk] > 15) dmd_state->tempRawFrame[kk] = 15;
     }
     break;
   default:
