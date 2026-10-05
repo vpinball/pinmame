@@ -1579,14 +1579,18 @@ static void callstack_prune(UINT32 sp)
 		callstack_ptr--;
 }
 
-void remote_debug_push_call(UINT32 caller, UINT32 receiver)
+/* The frame keeps SP from before the call stacked anything, so
+   callstack_prune() drops it only after the matching RTS/RTI. */
+void remote_debug_push_int(UINT32 caller, UINT32 receiver, UINT32 stacked)
 {
+	UINT16 sp;
 	/* One callstack: that of the main CPU. The sound CPUs run the same CPU
 	   cores and would mix their calls into it. */
 	if (!remote_debug_ready || cpu_getactivecpu() != 0)
 		return;
 	remote_debug_lock();
-	callstack_prune(activecpu_get_reg(REG_SP));
+	sp = (UINT16)(activecpu_get_reg(REG_SP) + stacked);
+	callstack_prune(sp);
 	if (callstack_ptr < CALLSTACK_SIZE) {
 		const regmap_t *regs = active_regmap();
 		callstack_entry_t *e = &callstack[callstack_ptr++];
@@ -1595,7 +1599,7 @@ void remote_debug_push_call(UINT32 caller, UINT32 receiver)
 		e->bank = wpc_get_bank();
 		e->pc = (UINT16)activecpu_get_reg(REG_PC);  /* return address */
 		e->u = (UINT16)ACTIVE_REG(regs, u);
-		e->s = (UINT16)activecpu_get_reg(REG_SP);
+		e->s = sp;
 		e->x = (UINT16)ACTIVE_REG(regs, x);
 		e->y = (UINT16)ACTIVE_REG(regs, y);
 		e->a = (UINT8)ACTIVE_REG(regs, a);
@@ -1604,6 +1608,11 @@ void remote_debug_push_call(UINT32 caller, UINT32 receiver)
 		e->cc = (UINT8)ACTIVE_REG(regs, cc);
 	}
 	remote_debug_unlock();
+}
+
+void remote_debug_push_call(UINT32 caller, UINT32 receiver)
+{
+	remote_debug_push_int(caller, receiver, 0);
 }
 
 void remote_debug_pop_call(void)

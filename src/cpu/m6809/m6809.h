@@ -15,10 +15,12 @@ enum {
 #ifdef REMOTE_DEBUG
 #include "remote_debug/remote_debug.h"
 #define DEBUG_PUSH_CALL(caller, receiver) remote_debug_push_call(caller, receiver)
+#define DEBUG_PUSH_INT(caller, receiver, stacked) remote_debug_push_int(caller, receiver, stacked)
 #define DEBUG_POP_CALL() remote_debug_pop_call()
 #define DEBUG_RESET_CALLSTACK() remote_debug_reset_callstack()
 #else
 #define DEBUG_PUSH_CALL(caller, receiver)
+#define DEBUG_PUSH_INT(caller, receiver, stacked)
 #define DEBUG_POP_CALL()
 #define DEBUG_RESET_CALLSTACK()
 #endif

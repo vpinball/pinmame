@@ -140,6 +140,8 @@ void remote_debug_get_points(char **buffer, int *len);
 /* ------------------------------------------------------------------ */
 
 void remote_debug_push_call(UINT32 caller, UINT32 receiver);
+/* interrupt entry; stacked = bytes WAI/CWAI already pushed */
+void remote_debug_push_int(UINT32 caller, UINT32 receiver, UINT32 stacked);
 void remote_debug_pop_call(void);
 void remote_debug_reset_callstack(void);
 

@@ -536,7 +536,7 @@ INLINE void WM16( UINT32 Addr, PAIR *p )
 static void ENTER_INTERRUPT(const char *message,UINT16 irq_vector)
 {
 	LOG((message, cpu_getactivecpu()));
-	DEBUG_PUSH_CALL(PC, RM16( irq_vector ));
+	DEBUG_PUSH_INT(PC, RM16( irq_vector ), (m6800.wai_state & M6800_WAI) ? 7 : 0); /* WAI stacked 7 bytes */
 	if( m6800.wai_state & (M6800_WAI|M6800_SLP) )
 	{
 		if( m6800.wai_state & M6800_WAI )

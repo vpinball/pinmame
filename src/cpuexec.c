@@ -420,7 +420,14 @@ void cpu_run(void)
 	while (!time_to_quit)
 	{
 		/* prepare everything to run */
+#ifdef REMOTE_DEBUG
+		/* the HTTP thread must not read CPU state while it is (re)initialised */
+		remote_debug_lock();
+#endif
 		cpu_pre_run();
+#ifdef REMOTE_DEBUG
+		remote_debug_unlock();
+#endif
 
 		/* loop until the user quits or resets */
 		time_to_reset = 0;
@@ -459,7 +466,13 @@ void cpu_run(void)
 		}
 
 		/* finish up this iteration */
+#ifdef REMOTE_DEBUG
+		remote_debug_lock();
+#endif
 		cpu_post_run();
+#ifdef REMOTE_DEBUG
+		remote_debug_unlock();
+#endif
 	}
 
 #ifdef MAME_DEBUG
