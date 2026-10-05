@@ -613,6 +613,20 @@ int pic32mx_run(pic32mx *p, int cycles)
 	return (int)(p->cpu.cycles - start);
 }
 
+/* for the debugger: unlike bus_read, never touches the SFRs (UART FIFO, I2C flags, port callbacks) */
+int pic32mx_peek(pic32mx *p, uint32_t pa, int size, uint32_t *v)
+{
+	const uint8_t *m = mem_ptr(p, pa, size, 0);
+	int i;
+	*v = 0;
+	if (!m) {
+		if (pa >= 0x1D000000u && pa - 0x1D000000u < PIC32MX_FLASH_SIZE) { *v = 0xFFFFFFFFu; return 1; } /* erased flash */
+		return 0;
+	}
+	for (i = 0; i < size; i++) *v |= (uint32_t)m[i] << (8 * i);
+	return 1;
+}
+
 uint32_t pic32mx_sfr_peek(const pic32mx *p, uint32_t va)
 {
 	uint32_t off = (va & 0x1FFFFFFFu) - PIC32MX_SFR_BASE;

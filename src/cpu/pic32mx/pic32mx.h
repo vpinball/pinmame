@@ -76,5 +76,6 @@ void pic32mx_set_irq(pic32mx *p, int irq);
 void pic32mx_uncertain(pic32mx *p, uint32_t mask, uint32_t token); /* from port_read: these bits are settled later */
 int pic32mx_irq_vector(int irq);
 uint32_t pic32mx_sfr_peek(const pic32mx *p, uint32_t va);
+int pic32mx_peek(pic32mx *p, uint32_t pa, int size, uint32_t *v); /* RAM and flash only, no side effects; 0: not RAM or flash */
 
 #endif

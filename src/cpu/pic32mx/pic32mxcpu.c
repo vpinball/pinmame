@@ -97,11 +97,7 @@ const char *pic32cpu_info(void *context, int regnum)
 
 unsigned pic32cpu_dasm(char *buffer, unsigned pc)
 {
-	uint32_t pa;
-	int err = 0;
-	uint32_t op;
-	if (!mips32_translate(&soc.cpu, pc, &pa)) { sprintf(buffer, "???"); return 4; }
-	op = soc.cpu.bus.read(soc.cpu.bus.ctx, pa, 4, 1, &err);
-	if (err) { sprintf(buffer, "???"); return 4; }
+	uint32_t pa, op;
+	if (!mips32_translate(&soc.cpu, pc, &pa) || !pic32mx_peek(&soc, pa, 4, &op)) { sprintf(buffer, "???"); return 4; }
 	return mips32_dasm(buffer, pc, op);
 }

@@ -21,7 +21,7 @@ static void init_##name(void) { core_gameData = &name##GameData.core; }
 INIT_PINHECK(pinheck, 3, 0, PINHECK_DOMINOS_DATA)
 PINHECK_BIOS_ROMSTART(pinheck)
 PINHECK_ROMEND
-GAMEX(2014,pinheck,0,PINHECK,pinheck,pinheck,ROT0,"Spooky Pinball","pinHeck System",NOT_A_DRIVER)
+GAMEX(2014,pinheck,0,PINHECK,pinheck,pinheck,ROT0,"Spooky Pinball","PinHeck System",NOT_A_DRIVER)
 
 /* Domino's Spectacular Pinball Adventure: sims/pinheck/dominos.c */
 /* Rob Zombie's Spookshow International: sims/pinheck/rzspook.c */
