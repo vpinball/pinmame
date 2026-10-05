@@ -288,4 +288,9 @@ static void init_amh(void) {
 PINHECK_HEX_ROMSTART(amh_023, "AMH_V023.hex", 705004, CRC(d5147386) SHA1(adbf469841e4aa5063fe7d7e8fb1d756d932d64d),
                      "PROP_023.BIN", CRC(bd5a99e8) SHA1(763e1e01c663cc8eace3dbe0689da894dc4cadec))
 PINHECK_ROMEND
-CORE_CLONEDEFNV(amh_023, pinheck, "America's Most Haunted", 2014, "Spooky Pinball", gl_mPINHECKDMD, 0)
+CORE_CLONEDEFNV(amh_023, pinheck, "America's Most Haunted (V23)", 2014, "Spooky Pinball", gl_mPINHECKDMD, 0)
+
+PINHECK_HEX_ROMSTART(amh_022, "AMH_V022.hex", 612459, CRC(B74F2A7B) SHA1(4a36e71ba9fcfcd5779645e849babeed5a842c0b),
+                     "PROP_022.BIN", CRC(53A6B98B) SHA1(6427841d9f3ac6a744bf86856dfd3faf58e43828))
+PINHECK_ROMEND
+CORE_CLONEDEFNV(amh_022, pinheck, "America's Most Haunted (V22)", 2014, "Spooky Pinball", gl_mPINHECKDMD, 0)

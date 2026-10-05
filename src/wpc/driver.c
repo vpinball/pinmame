@@ -1464,6 +1464,7 @@ DRIVERNV(topgamet)      // 19?? - Top Game Turbo (Bingo)
 // ---------------
 // SPOOKY PINBALL
 // ---------------
+DRIVERNV(amh_022)       // 2014 - America's Most Haunted (V22)
 DRIVERNV(amh_023)       // 2014 - America's Most Haunted (V23)
 DRIVERNV(dominos_006)   // 2016 - Domino's Spectacular Pinball Adventure (V6)
 DRIVERNV(rzspook_026)   // 2016 - Rob Zombie's Spookshow International (V26)
