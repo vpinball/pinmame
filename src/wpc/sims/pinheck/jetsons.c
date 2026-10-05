@@ -240,7 +240,7 @@ static void init_jetsons(void) {
   for (i = 0; i < 2; i++) locals.eos[i] = -1;
 }
 
-PINHECK_ROMSTART(jetsons, "JET_V004.PRG", 0x2FF60, CRC(c778cb10) SHA1(a70445cae2e013ac8c14dba7507657e6cf1583ca),
+PINHECK_ROMSTART(jetsons_004, "JET_V004.PRG", 0x2FF60, CRC(c778cb10) SHA1(a70445cae2e013ac8c14dba7507657e6cf1583ca),
                  "PRP_V002.BIN", CRC(91725a9a) SHA1(c9d4335c0c6872e7d019a58fcdf000a08c93123d))
 PINHECK_ROMEND
-CORE_CLONEDEFNV(jetsons, pinheck, "Jetsons, The", 2017, "Spooky Pinball", gl_mPINHECK, 0)
+CORE_CLONEDEFNV(jetsons_004, pinheck, "Jetsons, The", 2017, "Spooky Pinball", gl_mPINHECK, 0)

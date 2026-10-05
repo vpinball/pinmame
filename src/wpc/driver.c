@@ -1027,7 +1027,7 @@ DRIVERNV(r_quijote)     //Don Quijote (1979)
 DRIVERNV(r_torneo)      //Torneo (1978)
 DRIVERNV(r_torneoa)     //Torneo (corrected dump, 3 balls)
 DRIVERNV(r_crzyrace)    //Crazy Race (1978)
-DRIVERNV(r_flipper)     //The Flipper Game (1980)
+DRIVERNV(r_flipper)     //Flipper Game, The (1980)
 DRIVERNV(r_blackmag)    //Black Magic (1980)
 DRIVERNV(r_blackm4)     //Black Magic 4 (1980)
 
@@ -1464,10 +1464,10 @@ DRIVERNV(topgamet)      // 19?? - Top Game Turbo (Bingo)
 // ---------------
 // SPOOKY PINBALL
 // ---------------
-DRIVERNV(amh)           // 2014 - America's Most Haunted (V23)
-DRIVERNV(dominos)       // 2016 - Domino's Spectacular Pinball Adventure (V6)
-DRIVERNV(rzspook)       // 2016 - Rob Zombie's Spookshow International (V26)
-DRIVERNV(jetsons)       // 2017 - The Jetsons (V4)
+DRIVERNV(amh_023)       // 2014 - America's Most Haunted (V23)
+DRIVERNV(dominos_006)   // 2016 - Domino's Spectacular Pinball Adventure (V6)
+DRIVERNV(rzspook_026)   // 2016 - Rob Zombie's Spookshow International (V26)
+DRIVERNV(jetsons_004)   // 2017 - Jetsons, The (V4)
 
 // ---------------
 // SPORT MATIC
