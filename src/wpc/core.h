@@ -460,7 +460,7 @@ typedef struct {
 
 typedef void (*core_tPhysOutputIntegrator)(const double, const int, const int, const int);
 
-#define FLIP_BUFFER_SIZE 32               /* Number of state considered for PWM integration. Must be even (and should a power of 2 for performance reason) */
+#define FLIP_BUFFER_SIZE 32               /* Number of flips kept for PWM integration. Must be a power of 2 (flip positions are free running counters) */
 typedef struct {
    int type;                              /* Type of modulation from CORE_MODOUT_ definitions */
    float value;                           /* Last computed output main physical characteristic (relative brightness for bulbs, strength for solenoids,...) */
@@ -489,8 +489,12 @@ typedef struct {
       } sol; // Physical model of a solenoid
    } state;
    double flipTimeStamps[FLIP_BUFFER_SIZE];
-   unsigned int flipBufferPos;
-   unsigned int lastIntegrationFlipPos;
+   unsigned int flipBufferPos;            /* Writer: free running flip count; parity is the binary state, % FLIP_BUFFER_SIZE the buffer index */
+   unsigned int flipSeq;                  /* Writer: odd while a flip is being recorded */
+   double onTime;                         /* Writer: total ON time up to the last flip */
+   unsigned int lastIntegrationFlipPos;   /* Reader: last integrated flip */
+   double readTime;                       /* Reader: time of the last integration */
+   double readOnTime;                     /* Reader: total ON time up to readTime */
 } core_tPhysicOutput;
 
 #ifdef LSB_FIRST

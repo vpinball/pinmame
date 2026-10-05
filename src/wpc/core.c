@@ -3390,6 +3390,51 @@ int core_get_pwm_output_type(int index)
    return 0;
 }
 
+// Called when more flips than the buffer safely holds happened since the last integration (fast PWM, or an output read
+// rarely): the oldest may have been overwritten. The newest FLIP_BUFFER_SIZE / 2 flips stay exact; the period before them
+// is replaced by a PWM signal with the same ON time and flip count, in periods of at least 1ms (the bulb integration step)
+static void core_replace_lost_pwm_flips(core_tPhysicOutput* const output, const int index, const unsigned int pos, const double onTime)
+{
+   const unsigned int first = pos - FLIP_BUFFER_SIZE / 2 + 1; // oldest kept flip
+   const unsigned int lost = first - 1 - output->lastIntegrationFlipPos;
+   const double start = output->readTime, end = output->flipTimeStamps[first % FLIP_BUFFER_SIZE], length = end - start;
+   int state = output->lastIntegrationFlipPos & 1;
+   if (length > 0.)
+   {
+      // ON time up to the oldest kept flip: total minus the ON periods between the kept flips
+      double onAtEnd = onTime;
+      for (unsigned int k = first; k != pos; k++)
+         if (k & 1)
+            onAtEnd -= output->flipTimeStamps[(k + 1) % FLIP_BUFFER_SIZE] - output->flipTimeStamps[k % FLIP_BUFFER_SIZE];
+      double duty = (onAtEnd - output->readOnTime) / length;
+      duty = duty < 0. ? 0. : duty > 1. ? 1. : duty;
+      int periods = (int)(lost / 2);
+      if (periods > length * 1000.)
+         periods = (int)(length * 1000.);
+      if (periods < 1)
+         periods = 1;
+      const double period = length / periods;
+      for (int p = 0; p < periods; p++)
+      {
+         const double t = start + p * period;
+         if (duty > 0. && state == 0)
+         {
+            output->integrator(t, index, TRUE, state);
+            state = 1;
+         }
+         if (duty < 1. && state == 1)
+         {
+            output->integrator(t + duty * period, index, TRUE, state);
+            state = 0;
+         }
+      }
+   }
+   // Continue with the state before the oldest kept flip
+   if (state != (int)((first - 1) & 1))
+      output->integrator(end, index, TRUE, state);
+   output->lastIntegrationFlipPos = first - 1;
+}
+
 // Perform emulation of the requested physical outputs from the stored PWM digital output states
 // Initial implementation was performing this task upon digital output writes causing DMD animation stutters and sound buffer underflow.
 // This is now performed on physic output reads, moving the CPU load to the caller thread. The client is responsible and has the ability
@@ -3405,14 +3450,28 @@ void core_update_pwm_outputs(const int startIndex, const int count)
    {
       const unsigned int index = startIndex + i;
       core_tPhysicOutput* const output = &coreGlobals.physicOutputState[index];
+      // Consistent flip position and ON time, while the emulation thread may be recording a flip
+      unsigned int seq, pos;
+      double onTime;
+      do {
+         seq = *(volatile unsigned int*)&output->flipSeq;
+         pos = *(volatile unsigned int*)&output->flipBufferPos;
+         onTime = *(volatile double*)&output->onTime;
+      } while ((seq & 1) || seq != *(volatile unsigned int*)&output->flipSeq);
+      if (pos - output->lastIntegrationFlipPos > FLIP_BUFFER_SIZE / 2)
+         core_replace_lost_pwm_flips(output, index, pos, onTime);
       // Perform integration of flip states that appended since last integration and before now if any
-      while (output->lastIntegrationFlipPos != output->flipBufferPos)
+      while (output->lastIntegrationFlipPos != pos)
       {
-         output->lastIntegrationFlipPos = (output->lastIntegrationFlipPos + 1) % FLIP_BUFFER_SIZE;
-         output->integrator(output->flipTimeStamps[output->lastIntegrationFlipPos], index, TRUE, (output->lastIntegrationFlipPos & 1) ^ 1);
+         output->lastIntegrationFlipPos++;
+         output->integrator(output->flipTimeStamps[output->lastIntegrationFlipPos % FLIP_BUFFER_SIZE], index, TRUE, (output->lastIntegrationFlipPos & 1) ^ 1);
       }
       // Perform integration of stable state up to now
-      output->integrator(now, index, FALSE, output->lastIntegrationFlipPos & 1);
+      output->integrator(now, index, FALSE, pos & 1);
+      // Kept for core_replace_lost_pwm_flips
+      const double lastFlip = output->flipTimeStamps[pos % FLIP_BUFFER_SIZE];
+      output->readTime = now > lastFlip ? now : lastFlip;
+      output->readOnTime = onTime + ((pos & 1) ? output->readTime - lastFlip : 0.);
    }
    // Also update non PWM data structure if needed
    if (options.usemodsol & CORE_MODOUT_FORCE_ON)
@@ -3439,6 +3498,18 @@ void core_update_pwm_outputs(const int startIndex, const int count)
    }
 }
 
+// Record a flip of an output and the ON time it ends; flipSeq lets the reader thread see both consistently
+INLINE void core_flip_pwm_output(core_tPhysicOutput* const output, const double now)
+{
+   const unsigned int pos = output->flipBufferPos;
+   *(volatile unsigned int*)&output->flipSeq = output->flipSeq + 1;
+   if (pos & 1)
+      *(volatile double*)&output->onTime = output->onTime + (now - output->flipTimeStamps[pos % FLIP_BUFFER_SIZE]);
+   *(volatile double*)&output->flipTimeStamps[(pos + 1) % FLIP_BUFFER_SIZE] = now;
+   *(volatile unsigned int*)&output->flipBufferPos = pos + 1;
+   *(volatile unsigned int*)&output->flipSeq = output->flipSeq + 1;
+}
+
 // Write binary state of outputs, taking care of PWM integration based on physical model of the connected device
 void core_write_pwm_output(int index, int count, UINT8 bitStates)
 {
@@ -3447,9 +3518,7 @@ void core_write_pwm_output(int index, int count, UINT8 bitStates)
    for (int i = 0; i < count; i++, bitStates = bitStates >> 1, index++, output++) {
       const int pos = index >> 3, ofs = index & 7;
       if (((coreGlobals.binaryOutputState[pos] >> ofs) & 1) != (bitStates & 1)) {
-         const unsigned int bufferPos = (output->flipBufferPos + 1) % FLIP_BUFFER_SIZE;
-         output->flipTimeStamps[bufferPos] = now;
-         output->flipBufferPos = bufferPos;
+         core_flip_pwm_output(output, now);
          coreGlobals.binaryOutputState[pos] ^= 1 << ofs;
       }
    }
@@ -3464,11 +3533,7 @@ void core_write_pwm_output_8b(int index, UINT8 bitStates)
    const double now = timer_get_time();
    for (core_tPhysicOutput* output = &coreGlobals.physicOutputState[index]; changeMask; changeMask >>= 1, output++)
       if (changeMask & 1)
-      {
-         const unsigned int bufferPos = (output->flipBufferPos + 1) % FLIP_BUFFER_SIZE;
-         output->flipTimeStamps[bufferPos] = now;
-         output->flipBufferPos = bufferPos;
-      } 
+         core_flip_pwm_output(output, now);
    coreGlobals.binaryOutputState[index >> 3] = bitStates;
 }
 
@@ -3481,11 +3546,7 @@ void core_write_masked_pwm_output_8b(int index, UINT8 bitStates, UINT8 bitMask)
    const double now = timer_get_time();
    for (core_tPhysicOutput* output = &coreGlobals.physicOutputState[index]; changeMask; changeMask >>= 1, output++)
       if (changeMask & 1)
-      {
-         const unsigned int bufferPos = (output->flipBufferPos + 1) % FLIP_BUFFER_SIZE;
-         output->flipTimeStamps[bufferPos] = now;
-         output->flipBufferPos = bufferPos;
-      }
+         core_flip_pwm_output(output, now);
    coreGlobals.binaryOutputState[index >> 3] = (coreGlobals.binaryOutputState[index >> 3] & ~bitMask) | (bitStates & bitMask);
 }
 
