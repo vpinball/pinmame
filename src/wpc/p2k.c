@@ -707,7 +707,7 @@ MACHINE_DRIVER_START(p2k)
 	MDRV_SWITCH_UPDATE(p2k)
 	MDRV_SWITCH_CONV(p2k_sw2m, p2k_m2sw)
 	MDRV_NVRAM_HANDLER(p2k)
-	MDRV_CPU_ADD_TAG("mcpu", MEDIAGX, 233000000/3) //!! sync with p2k_pinmame.cpp
+	MDRV_CPU_ADD_TAG("mcpu", MEDIAGX, 233000000/3) //!! sync with p2k_pinmame.cpp (233/5 would fix SWE1's missing intro scroll speech, see there)
 	MDRV_CPU_MEMORY(p2k_readmem, p2k_writemem)
 	/* Once per frame, and it does not interrupt the CPU - MEDIAGX has no vblank line wired here.
 	   It is a scheduler callback, which is exactly what wpc.c and se.c use theirs for */
@@ -1811,11 +1811,9 @@ ROM_END
    header stores major and minor separately and "Software version: %d.%d" prints the minor as a
    plain number - the same reason rfm_010 displays 0.1.
 
-   Power up with the coin door open and these six print "DCS2 board SRAM test failed" and lose
-   sound for that boot. Nothing to do with this flash - the stock one does it too - and nothing to
-   do with being prototypes: it is every set on XINA 1.12 and older and only those, rfm_010,
-   rfm_080, rfm_120 and swep1_040 included. Written up under "Old sets lose sound if the coin door
-   is open" in src/p2k/README.md; none of the ten needs a sound flag for it.
+   Powered up with the coin door open these six, like every set on XINA 1.12 and older, used to print
+   "DCS2 board SRAM test failed" and lose sound for that boot - an emulation fault, the sound board
+   reporting itself always ready, since fixed in wmssnd.c. Written up in src/p2k/PAST_FAILURES.md.
 
    The revision history in the same archive covers 0.5 (07/03/99, "Release for Waukegan startup"),
    0.6 (16/03/99, "Release for samples", XINA 1.01), 0.7 (26/03/99, XINA 1.02), 0.8 (30/03/99,

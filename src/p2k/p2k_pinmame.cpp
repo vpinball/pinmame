@@ -47,6 +47,11 @@ void p2k_pinmame_start(const unsigned char *prism, unsigned prismLen,
 	// A potential downclock is not free: the firmware programs the PIT as a rate generator with divisor 298,
 	// so a tick arrives every e.g. ~6400 CPU cycles if it would run at 20 MHz, and the operating system's tick handler
 	// would not even fit in that
+	// Going down to 233/5 would bring back SWE1's missing second intro sentence (sound 0x03cb). DeffGameIntro::Run
+	// requests the speeches at text crawl steps 70/120/200, and RequestTrack drops one while the previous one's
+	// duration has not run out. The crawl (blit_text_crawl) is drawn by the CPU, and costs far fewer cycles here
+	// than on the real MediaGX (no cache misses or memory wait states), so at 233/3 (and still at 233/4) step 120
+	// arrives about 0.4s too early and speech 2 is dropped
 	u32 cpu_hz = 233000000/3; //!! sync with p2k.c
 #if P2K_DEBUG
 	// P2K_CPU_HZ raises it, which is how that was measured

@@ -272,7 +272,16 @@ void p2k_state::rtc_restore()
 		int years = b.tm_year - a.tm_year;
 		if (years <  0) years = 0;
 		if (years > 99) years = 99; // a register, not a span to be trusted blindly
-		m_rtc->p2k_data()[9] = u8(m_rtc_nv[9] + years);
+		// in the register's own format, which register B's DM bit gives: BCD unless the guest asked
+		// for binary. A plain add made BCD 0x09 + 1 into 0x0a
+		const u8 y = m_rtc_nv[9];
+		if (m_rtc_nv[0x0b] & 0x04)
+			m_rtc->p2k_data()[9] = u8((y + years) % 100);
+		else
+		{
+			const int v = ((y >> 4) * 10 + (y & 0x0f) + years) % 100;
+			m_rtc->p2k_data()[9] = u8(((v / 10) << 4) | (v % 10));
+		}
 	}
 
 	// The register file went in behind the device's back, so the timers and the interrupt line are
@@ -679,6 +688,19 @@ void p2k_state::reset()
 	// bails out - which is where the game code's failure chain starts
 	m_superio_regs[0x20] = 0xDF;
 	m_superio_regs[0x21] = 0x01;
+
+	// Cyrix configuration registers: all 0 but GCR = 0x0d, a 4 KB scratchpad (which also enables the
+	// 0f 3a-0f 3d display driver instructions) and GX_BASE 1, i.e. the MediaGX at 0x40000000, as in
+	// Encore's qemu/p2k-cyrix-ccr.c. A GCR of 0 puts GX_BASE on top of low RAM - very likely what
+	// derailed the boot when a register file was first tried here
+	memset(m_mediagx_config_regs, 0, sizeof(m_mediagx_config_regs));
+	m_mediagx_config_regs[0xb8] = 0x0d;
+	m_mediagx_config_reg_sel = 0;
+
+	// the update flash powers up reading its array
+	m_flash_cmd = 0xff;
+	m_flash_status = 0x80;
+	m_flash_buf_phase = 0;
 }
 
 
@@ -1848,71 +1870,120 @@ void p2k_state::biu_ctrl_w(offs_t offset, u32 data, u32 mem_mask)
 #endif
 }
 
-// The update flash behaves like an Intel 28F320J5: command writes put it into a mode, and reads
-// then return either the array, the CFI query table or the status register. Ported from the
-// MAME driver's nvram_updates_r/w
+// The update flash is an Intel 28F640J5 as far as the CFI table below goes: 64 Mbit, x16, 64 blocks of
+// 128 KB, a 32 byte write buffer. Commands select what reads return - array, identifier, CFI or status.
+// The command set follows Encore's qemu/p2k-bar3-flash.c (2026-10-02), which passes XINA's hidden-shell
+// "pci flash test": programming only clears bits, an erase clears its whole block, and a write to buffer
+// is counted, kept within one block and confirmed. Reads are by byte, writes by 16-bit word
 u8 p2k_state::nvram_updates_r(offs_t offset) const
 {
-	if (m_flash_mode == 1)
+	switch (m_flash_cmd)
 	{
-		// CFI query response, as tabulated in the MAME driver (8 Mbit part)
-		static constexpr u8 cfi[] = {
-			0x51,0x00,0x52,0x00,0x59,0x00,0x01,0x00, 0x00,0x00,0x31,0x00,0x00,0x00,0x00,0x00,
-			0x00,0x00,0x00,0x00,0x00,0x00,0x45,0x00, 0x55,0x00,0x00,0x00,0x00,0x00,0x07,0x00,
-			0x07,0x00,0x0a,0x00,0x00,0x00,0x04,0x00, 0x04,0x00,0x04,0x00,0x00,0x00,0x17,0x00,
-			0x02,0x00,0x00,0x00,0x05,0x00,0x00,0x00, 0x01,0x00,0x3f,0x00,0x00,0x00,0x00,0x00,
-			0x02,0x00,0x50,0x00,0x52,0x00,0x49,0x00,
-		};
-		if (offset >= 0x20 && offset - 0x20 < sizeof(cfi)) return cfi[offset - 0x20];
-		return 0;
+		case 0xff:
+			return (offset < m_nvram_updates.size()) ? m_nvram_updates[offset] : 0xff;
+		case 0x90: // identifier, on the low byte of words 0 and 1
+			if (offset & 1) return 0;
+			return (offset >> 1) == 0 ? 0x89 /* Intel */ : (offset >> 1) == 1 ? 0x15 /* 28F640J5 */ : 0;
+		case 0x98:
+		{
+			// CFI query response, as tabulated in the MAME driver
+			static constexpr u8 cfi[] = {
+				0x51,0x00,0x52,0x00,0x59,0x00,0x01,0x00, 0x00,0x00,0x31,0x00,0x00,0x00,0x00,0x00,
+				0x00,0x00,0x00,0x00,0x00,0x00,0x45,0x00, 0x55,0x00,0x00,0x00,0x00,0x00,0x07,0x00,
+				0x07,0x00,0x0a,0x00,0x00,0x00,0x04,0x00, 0x04,0x00,0x04,0x00,0x00,0x00,0x17,0x00,
+				0x02,0x00,0x00,0x00,0x05,0x00,0x00,0x00, 0x01,0x00,0x3f,0x00,0x00,0x00,0x00,0x00,
+				0x02,0x00,0x50,0x00,0x52,0x00,0x49,0x00,
+			};
+			if (offset >= 0x20 && offset - 0x20 < sizeof(cfi)) return cfi[offset - 0x20];
+			return 0;
+		}
+		default: // read status, and every mode a program, erase or lock command leaves behind
+			return m_flash_status;
 	}
-	if (m_flash_mode == 2 || m_flash_mode == 5)
-		return 0x80; // status: ready
-	return (offset < m_nvram_updates.size()) ? m_nvram_updates[offset] : 0xff;
+}
+
+// Program one word: a flash can only clear bits, so a 1 written over a 0 stays 0 and reports a program error
+bool p2k_state::flash_program_word(offs_t offset, u16 data)
+{
+	if (offset * 2 + 1 >= m_nvram_updates.size()) return true;
+	u8 *const p = &m_nvram_updates[offset * 2];
+	const bool error = ((u8(data) & ~p[0]) | (u8(data >> 8) & ~p[1])) != 0;
+	p[0] &= u8(data);
+	p[1] &= u8(data >> 8);
+	return error;
+}
+
+void p2k_state::flash_enter_status(u8 status)
+{
+	m_flash_buf_phase = 0;
+	m_flash_status = status;
+	m_flash_cmd = 0x70;
 }
 
 void p2k_state::nvram_updates_w(offs_t offset, u16 data)
 {
-	if (m_flash_mode != 6)
+	constexpr u32 BLOCK = 0x20000; // bytes
+	const u8 cmd = u8(data);
+	const u32 block = (offset * 2) & ~(BLOCK - 1);
+
+	switch (m_flash_buf_phase)
 	{
-		if (data == 0x0098) { m_flash_mode = 1; return; } // read query
-		if (data == 0x0070) { m_flash_mode = 2; return; } // read status register
-		if (data == 0x00ff) { m_flash_mode = 0; return; } // read array
-		// Block erase. Three different block sizes meet here and none of them agree: the CFI table
-		// this same device answers with declares one region of 0x3f+1 blocks of 0x200*256 bytes,
-		// so 64 blocks of 128 KB across the 8 MB part; this check aligns on a *word* offset of
-		// 0x2000, which is 16 KB of bytes; and the loop below clears 0x2000 *bytes*, 8 KB. An
-		// erase therefore clears an eighth of the block the part says it has.
-		//
-		// It does not bite today because programming below is a plain store rather than the AND a
-		// real flash does, so a half-erased block still takes new data, and because the update
-		// image is not persisted - a bad erase lasts one run. It would bite the moment either of
-		// those changed, or if a firmware erased a block it then checked was blank
-		if (data == 0x0020 && (offset % 0x2000) == 0) { m_flash_mode = 3; return; }
-		if (m_flash_mode == 3 && data == 0x00d0)
-		{
-			for (u32 i = 0; i < 0x2000; i++)
-				if (offset * 2 + i < m_nvram_updates.size()) m_nvram_updates[offset * 2 + i] = 0xff;
-			m_flash_mode = 2;
+		case 1: // write to buffer: the word count, minus one
+			if (cmd == 0xe8) return; // a guest polling for buffer availability repeats the command
+			if (cmd == 0xff) { m_flash_buf_phase = 0; m_flash_cmd = 0xff; return; }
+			m_flash_buf_words = (data & 0xff) + 1u;
+			if (m_flash_buf_words > sizeof(m_flash_buf_data) / sizeof(m_flash_buf_data[0])) { flash_enter_status(0xb0); return; }
+			m_flash_buf_block = block;
+			m_flash_buf_loaded = 0;
+			m_flash_buf_phase = 2;
 			return;
-		}
-		if (data == 0x00e8) { m_flash_mode = 5; m_buffer_counter = 0; return; }   // write to buffer
-		if (m_flash_mode == 5 && m_buffer_counter == 0)
-		{
-			m_flash_mode = 6;
-			m_buffer_counter = data;
+		case 2: // the data, all inside the block the count was written to
+			if (block != m_flash_buf_block) { flash_enter_status(0xb0); return; }
+			m_flash_buf_off[m_flash_buf_loaded] = offset;
+			m_flash_buf_data[m_flash_buf_loaded] = data;
+			if (++m_flash_buf_loaded == m_flash_buf_words) m_flash_buf_phase = 3;
 			return;
-		}
+		case 3: // confirm, in the same block
+			if (cmd == 0xd0 && block == m_flash_buf_block)
+			{
+				bool error = false;
+				for (unsigned i = 0; i < m_flash_buf_loaded; i++)
+					error |= flash_program_word(m_flash_buf_off[i], m_flash_buf_data[i]);
+				flash_enter_status(error ? 0x90 : 0x80);
+			}
+			else if (cmd == 0xff) { m_flash_buf_phase = 0; m_flash_cmd = 0xff; }
+			else flash_enter_status(0xb0);
+			return;
+	}
+
+	if (m_flash_cmd == 0x40 || m_flash_cmd == 0x10) // the word after a program command is the data
+	{
+		flash_enter_status(flash_program_word(offset, data) ? 0x90 : 0x80);
 		return;
 	}
 
-	// buffered program: the driver only lets the last 128 KB be rewritten
-	if (offset >= 0x3e0000 && offset * 2 + 1 < m_nvram_updates.size())
+	switch (cmd)
 	{
-		m_nvram_updates[offset * 2] = u8(data);
-		m_nvram_updates[offset * 2 + 1] = u8(data >> 8);
+		case 0xff: m_flash_cmd = 0xff; return; // read array
+		case 0x70: case 0x90: case 0x98:       // read status, identifier, query
+		case 0x20: case 0x40: case 0x10: case 0x60: // erase, program and lock setup, waiting for their second cycle
+			m_flash_cmd = cmd;
+			return;
+		case 0xe8: // write to buffer; the buffer is always available
+			m_flash_status = 0x80;
+			m_flash_cmd = 0xe8;
+			m_flash_buf_phase = 1;
+			return;
+		case 0xd0: // erase confirm clears the whole block; after anything else it only ends the command
+			if (m_flash_cmd == 0x20)
+				for (u32 i = block; i < block + BLOCK && i < m_nvram_updates.size(); i++) m_nvram_updates[i] = 0xff;
+			flash_enter_status(0x80);
+			return;
+		case 0x01: case 0x2f: // lock bit commands: nothing is locked here
+		case 0x50:            // clear status
+			flash_enter_status(0x80);
+			return;
 	}
-	if (--m_buffer_counter < 0) m_flash_mode = 2;
 }
 
 // PCI configuration space. The identifiers come from the MAME driver: 1078:0001 MediaGX host
@@ -1985,11 +2056,8 @@ u32 p2k_state::mem_r(offs_t addr, u32 mem_mask)
 	}
 #endif
 
-	// the firmware reaches the MediaGX control registers through their 0xc0000000 alias
-	// The firmware addresses the whole MediaGX region through its 0xc0000000 alias, not just the
-	// control registers: its own framebuffer base pointer is 0xc0800000, and a write map showed
-	// 30 M writes at 0xc0800000 and 13 M at 0xc0900000 - the picture, going nowhere, because the
-	// alias window used to stop at the register block
+	// The MediaGX region at 0xc0000000, where the firmware puts it if GCR reads 0xff (ports 0x22/0x23
+	// unanswered). GCR answers 0x0d now, which means 0x40000000, so this is only a fallback
 	if (addr >= 0xc0000000 && addr < 0xc1000000) addr -= 0x80000000;
 	if (addr < 0x000a0000)                       return read_le(m_main_ram, addr, mem_mask);
 	if (addr < 0x000b0000)                       return read_le(m_video_ram_a, addr - 0x000a0000, mem_mask);
@@ -2049,10 +2117,12 @@ u32 p2k_state::mem_r(offs_t addr, u32 mem_mask)
 	if (addr >= 0x40008100 && addr < 0x40008300) return gx_pipeline_r((addr - 0x40008100) / 4) & mem_mask;
 	if (addr >= 0x40008300 && addr < 0x40008400) return disp_ctrl_r((addr - 0x40008300) / 4) & mem_mask;
 	if (addr >= 0x40008400 && addr < 0x40008500) return memory_ctrl_r((addr - 0x40008400) / 4) & mem_mask;
-	// Nothing answers at 0x40020000, where Encore puts BC_DRAM_TOP and preloads 0x007fffff so the
-	// guest BIOS can size RAM (qemu/p2k-gx.c). No set here has been seen to read it so far, and the two
-	// versions that want 8 MB - rfm_180 and Episode I 1.60 - boot without it, main RAM being 256 MB
-	// regardless. If a machine ever sizes its own memory, that register is what it will ask
+	// BC_DRAM_TOP is the BIU register at GX_BASE+0x8000, served by biu_ctrl_r above with the databook
+	// reset value (see reset()). Encore had it at +0x20000 until 2026-10-02 and now agrees on +0x8000;
+	// it seeds 0x007fffff, an "8 MB" answer for its BIOS path, where this driver uses the reset value -
+	// the firmware reads it once and then writes its own. Of the two versions that want 8 MB, rfm_180 takes
+	// that size from XINU's sizmem(), which returns a constant (Encore's docs), not from this register;
+	// Episode I 1.60 is unchecked but likely the same
 	if (addr >= 0x40400000 && addr < 0x40480000) return read_le(m_smm, addr - 0x40400000, mem_mask);
 	if (addr >= 0x40800000 && addr < 0x40c00000) return read_le(m_vram, addr - 0x40800000, mem_mask);
 	// the same framebuffer through the MediaGX 0xc0000000 alias, which is where the firmware's own
@@ -2109,10 +2179,7 @@ void p2k_state::mem_w(offs_t addr, u32 data, u32 mem_mask)
 	}
 #endif
 
-	// The firmware addresses the whole MediaGX region through its 0xc0000000 alias, not just the
-	// control registers: its own framebuffer base pointer is 0xc0800000, and a write map showed
-	// 30 M writes at 0xc0800000 and 13 M at 0xc0900000 - the picture, going nowhere, because the
-	// alias window used to stop at the register block
+	// the MediaGX region at 0xc0000000: a fallback now, see mem_r
 	if (addr >= 0xc0000000 && addr < 0xc1000000) addr -= 0x80000000;
 
 #if P2K_DEBUG
@@ -2483,15 +2550,12 @@ u8 p2k_state::port_read(offs_t port)
 	if (port >= 0x00a0 && port <= 0x00a1) return m_pic2->read(port & 1);
 	if (port >= 0x00c0 && port <= 0x00df) return m_dma2->read((port - 0x00c0) / 2);
 
-	// Ports 0x22/0x23 are the Cyrix configuration registers. The MAME driver implements them as
-	// a plain indexed register file, but wiring that up here derails the boot: the firmware then
-	// takes a configuration path that ends in garbage execution, while leaving the ports
-	// unmapped (reads return 0xff) lets it continue. This used to say the missing piece was SMM.
-	// It is not: the SMM region at 0x40400000 is never read or written by any set, and the only
-	// SMI sources the databook gives the bus interface unit are the VGA I/O traps in BC_XMAP_1
-	// bits 13-15, which no set sets (4.2.3, and P2K_BIUWATCH shows the XMAP registers untouched).
-	// What is behind these registers is GX_BASE itself, among the rest of the configuration - so
-	// answering them wrongly can move the whole register aperture out from under the driver
+	// Ports 0x22/0x23 are the Cyrix configuration registers, index then data. The firmware takes the
+	// MediaGX base from GCR (0xb8), its low two bits << 30 - see reset(). SMM plays no part: no set
+	// touches 0x40400000, and the BIU's only SMI sources, the VGA I/O traps in BC_XMAP_1 bits 13-15,
+	// stay off (databook 4.2.3; P2K_BIUWATCH shows the XMAP registers untouched)
+	if (port == 0x0022) return m_mediagx_config_reg_sel;
+	if (port == 0x0023) return m_mediagx_config_regs[m_mediagx_config_reg_sel];
 	if (port >= 0x002e && port <= 0x002f)
 		return (port == 0x002f) ? m_superio_regs[m_superio_reg_sel] : 0;
 	if (port >= 0x00e8 && port <= 0x00eb) return 0xff; // I/O delay port
@@ -2626,6 +2690,8 @@ void p2k_state::port_w(offs_t port, u8 data)
 		return;
 	}
 	if (port == 0x0278) return;
+	if (port == 0x0022) { m_mediagx_config_reg_sel = data; return; }
+	if (port == 0x0023) { m_mediagx_config_regs[m_mediagx_config_reg_sel] = data; return; }
 	if (port >= 0x002e && port <= 0x002f)
 	{
 		if (port == 0x002e) m_superio_reg_sel = data;

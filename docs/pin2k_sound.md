@@ -125,11 +125,13 @@ On real hardware these live in the PRISM BAR4 window at `0x13000000`:
 | byte offset 2 | - | `dcs_p2k_status_r()` / `dcs_p2k_status_w(v)` |
 | - | - | `sndbrd_0_ctrl_w(0, x)` - board reset (also resets the SDRC and drops the queue) |
 
-**Status bits are independent flags, not a state machine:** `0x40` = ready to
-accept a command (always set), `0x80` = a response is available. A read also
-ORs in whatever the host last wrote to the same register - the game does a
-write-then-read sanity check during sound board detection, and a register that
-drops the write reads as a dead board.
+**Status bits are independent flags, not a state machine:** `0x40` = ready for
+a command (the DSP took the last word and none is queued - the firmware polls it
+before every word, and the XINA 1.12 and older sets lose their sound at boot if
+it is always set), `0x80` = a response is available. A read also ORs in
+whatever the host last wrote to the same register, bit 6 aside - the game does
+a write-then-read sanity check during sound board detection, and a register
+that drops the write reads as a dead board.
 
 **The echo byte is a liveness probe.** The host writes a byte and expects to
 read it back before it will talk to the board at all.

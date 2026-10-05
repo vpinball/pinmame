@@ -2297,14 +2297,17 @@ UINT16 dcs_p2k_data_r(void) {
 
 /* Host status/flag register (BAR4 byte offset 2 on real hardware).
    These are independent bit flags, not a state machine:
-     bit 6 (0x40) - ready to accept a command; always set
+     bit 6 (0x40) - ready for a command: the DSP took the last word, none queued
      bit 7 (0x80) - a response is available
-   plus whatever the host last stashed via dcs_p2k_status_w().  The game does
-   a write-then-read sanity check here during sound board detection, and a
-   register that drops the write reads as a dead board. */
+   plus whatever the host last stashed via dcs_p2k_status_w(), bit 6 aside: the
+   game does a write-then-read sanity check during sound board detection, and a
+   register that drops the write reads as a dead board.
+   The firmware polls bit 6 before every command word. Always set, it let the
+   coin door's display effect send requests during XINA's DSP SRAM test on the
+   XINA 1.12 and older sets: "DCS2 board SRAM test failed" and no sound */
 UINT16 dcs_p2k_status_r(void) {
-  UINT16 f = dcslocals.p2k.flagLatch & 0xff;
-  f |= 0x40;
+  UINT16 f = dcslocals.p2k.flagLatch & 0xbf;
+  if (!dcslocals.p2k.inputFull && dcslocals.p2k.cmdOut == dcslocals.p2k.cmdIn) f |= 0x40;
   if (dcslocals.p2k.outputFull) f |= 0x80;
   return f;
 }
