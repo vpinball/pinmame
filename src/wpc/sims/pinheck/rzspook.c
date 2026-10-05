@@ -71,8 +71,8 @@ PINHECK_INPUT_PORTS_END
 #define swROutlane  21
 #define swRInlane   22
 #define swRSling    23
-#define swRFlipEOS      24
-#define swLFlipEOS      25
+#define swRFlipEOS  24
+#define swLFlipEOS  25
 #define swLSling    26
 #define swLInlane   27
 #define swLOutlane  28
@@ -84,7 +84,7 @@ PINHECK_INPUT_PORTS_END
 #define swRPop      36
 #define swChicken   37
 #define swGasoline  38
-#define swUFlipEOS      41
+#define swUFlipEOS  41
 #define swROrbit    42
 #define swVUK       43
 #define swSecret    44
@@ -239,8 +239,8 @@ static sim_tInportData rzspook_inportData[] = {
   {0, 0x0400, stRamp},     {0, 0x0800, stVUK},      {0, 0x1000, stSecret},
   {0, 0x2000, stDrain},
   {1, 0x0001, stGate},     {1, 0x0002, stChicken},  {1, 0x0004, stGasoline},
-  {1, 0x0008, stRampTgt},  {1, 0x0010, stExtraBall}, {1, 0x0020, stRattle},
-  {1, 0x0040, stPopTarget}, {1, 0x0080, stExit},
+  {1, 0x0008, stRampTgt},  {1, 0x0010, stExtraBall},{1, 0x0020, stRattle},
+  {1, 0x0040, stPopTarget},{1, 0x0080, stExit},
   {0}
 };
 

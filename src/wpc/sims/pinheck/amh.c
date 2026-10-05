@@ -136,9 +136,9 @@ enum { stTrough4 = SIM_FIRSTSTATE, stTrough3, stTrough2, stTrough1, stShooter, s
        stPop0, stPop1, stPop2, stWiki, stTech, stPsychic, stGhost1, stGhost2, stGhost3, stRollO, stRollR, stRollB };
 
 static sim_tState amh_stateDef[] = {
-  {"Not Installed", 0, 0,           0, stDrain,  0, 0, 0, SIM_STNOTEXCL},
+  {"Not Installed", 0, 0,           0, stDrain,   0, 0, 0, SIM_STNOTEXCL},
   {"Moving"},
-  {"Playfield",     0, 0,           0, 0,        0, 0, 0, SIM_STNOTEXCL},
+  {"Playfield",     0, 0,           0, 0,         0, 0, 0, SIM_STNOTEXCL},
 
   {"Trough 4",      1, swTrough4,   0, stTrough3, 3},
   {"Trough 3",      1, swTrough3,   0, stTrough2, 3},
@@ -167,9 +167,9 @@ static sim_tState amh_stateDef[] = {
   {"Lower L Orbit", 1, swLLOrbit,   0, stFree,    5, 0, 0, SIM_STNOTEXCL},
   {"Hotel Path",    1, swHotel,     0, stFree,    5, 0, 0, SIM_STNOTEXCL},
   {"Elevator Call", 1, swCall,      0, stFree,    3, 0, 0, SIM_STNOTEXCL},
-  {"Jump Approach", 1, swJumpApp,   0, stJumpMade, 5, 0, 0, SIM_STNOTEXCL},
+  {"Jump Approach", 1, swJumpApp,   0, stJumpMade,5, 0, 0, SIM_STNOTEXCL},
   {"Jump Made",     1, swJumpMade,  0, stFree,    5, 0, 0, SIM_STNOTEXCL},
-  {"Jump Short",    1, swJumpApp,   0, stJumpFail, 5, 0, 0, SIM_STNOTEXCL},
+  {"Jump Short",    1, swJumpApp,   0, stJumpFail,5, 0, 0, SIM_STNOTEXCL},
   {"Jump Fail",     1, swPopPath,   0, stFree,    5, 0, 0, SIM_STNOTEXCL},
   {"Basement Upper",1, swBaseUpper, 0, stFree,    5, 0, 0, SIM_STNOTEXCL},
   {"Basement Lower",1, swBaseLower, 0, stFree,    5, 0, 0, SIM_STNOTEXCL},
@@ -198,7 +198,7 @@ static int amh_handleBallState(sim_tBallStatus *ball, int *inports) {
   switch (ball->state) {
     case stTrough1:  if (sol(sLoad) && !core_getSw(swShooter)) return setState(stShooter, 5); break; /* a full lane loses the pulse */
     case stShooter:  if (sol(sLaunch) || sim_getSol(sShooterRel)) return setState(stLaunched, 2); break;
-    case stDrainHole: if (sol(sDrainKick)) return setState(stTrough4, 3); break;
+    case stDrainHole:if (sol(sDrainKick)) return setState(stTrough4, 3); break;
     case stScoop:    if (sol(sScoop)) return setState(stFree, 5); break;
     case stDoor:     return setState(doorOpen() ? stVUK : stDoorHit, 3);
     case stVUK:      if (sol(sVUK)) return setState(stFree, 10); break;
@@ -241,7 +241,7 @@ static sim_tInportData amh_inportData[] = {
   {0, 0x0080, stScoop},    {0, 0x0100, stDoor},     {0, 0x0200, stCar},
   {0, 0x0400, stLoop},     {0, 0x0800, stHotel},    {0, 0x1000, stCall},
   {0, 0x2000, stDrain},
-  {0, 0x4001, stBaseUpper}, {0, 0x4002, stBaseLower},
+  {0, 0x4001, stBaseUpper},{0, 0x4002, stBaseLower},
   {1, 0x0001, stJumpApp},  {1, 0x0002, stJumpShort},
   {1, 0x0008, stWiki},     {1, 0x0010, stTech},     {1, 0x0020, stPsychic},
   {1, 0x0040, stGhost1},   {1, 0x0080, stGhost2},   {1, 0x0100, stGhost3},

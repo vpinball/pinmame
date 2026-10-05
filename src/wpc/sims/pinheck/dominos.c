@@ -117,9 +117,9 @@ enum { stTrough3 = SIM_FIRSTSTATE, stTrough2, stTrough1, stShooter, stLaunched, 
        stBankL, stBankM, stBankR, stDelivery, stQuality, stBake, stPrepare, stOrder };
 
 static sim_tState dominos_stateDef[] = {
-  {"Not Installed", 0, 0,          0, stDrain,  0, 0, 0, SIM_STNOTEXCL},
+  {"Not Installed", 0, 0,          0, stDrain,   0, 0, 0, SIM_STNOTEXCL},
   {"Moving"},
-  {"Playfield",     0, 0,          0, 0,        0, 0, 0, SIM_STNOTEXCL},
+  {"Playfield",     0, 0,          0, 0,         0, 0, 0, SIM_STNOTEXCL},
 
   {"Trough 3",      1, swTrough3,  0, stTrough2, 3},
   {"Trough 2",      1, swTrough2,  0, stTrough1, 3},
