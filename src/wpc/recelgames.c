@@ -204,7 +204,7 @@ CORE_CLONEDEFNV(r_crzyrace,recel,"Crazy Race",1978,"Recel",gl_mRECEL,0)
 INIT_RECEL(r_flipper, recel_disp, 2)
 RECEL_ROMSTART(r_flipper, "fl.c5", 0x0800, CRC(76ee0370) SHA1(f2a835a0b76f7258d5e65390c239f5456e30e87a))
 RECEL_ROMEND
-CORE_CLONEDEFNV(r_flipper,recel,"The Flipper Game",1980,"Recel",gl_mRECEL,0)
+CORE_CLONEDEFNV(r_flipper,recel,"Flipper Game, The",1980,"Recel",gl_mRECEL,0)
 
 /*-------------------------------------------------------------------
 / Black Magic (1980) - model 1.065, doc December 1979. One player
