@@ -12,15 +12,25 @@
  #include <stdarg.h>
 #endif
 
-#ifdef _MSC_VER
-#define PINMAMEAPI extern "C" __declspec(dllexport)
-#define PINMAMECALLBACK __stdcall
-#elif defined(__cplusplus)
-#define PINMAMEAPI extern "C" __attribute__((visibility("default")))
-#define PINMAMECALLBACK
+#ifdef __cplusplus
+#define PINMAME_EXTERN_C extern "C"
 #else
-#define PINMAMEAPI __attribute__((visibility("default")))
+#define PINMAME_EXTERN_C
+#endif
+
+#ifdef _MSC_VER
+#define PINMAMEAPI PINMAME_EXTERN_C __declspec(dllexport)
+#define PINMAMECALLBACK __stdcall
+#else
+#define PINMAMEAPI PINMAME_EXTERN_C __attribute__((visibility("default")))
 #define PINMAMECALLBACK
+#endif
+
+// enums with a fixed underlying type: C++11, Clang in any C mode, C23 (not yet in MSVC's C compiler)
+#if defined(__cplusplus) || defined(__clang__) || (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L && !defined(_MSC_VER))
+#define PINMAME_FIXED_ENUMS 1
+#else
+#define PINMAME_FIXED_ENUMS 0
 #endif
 
 #define PINMAME_MAX_PATH 512
@@ -108,7 +118,11 @@ typedef enum {
 	PINMAME_MOD_OUTPUT_TYPE_ALPHASEG = 3,  // Alpha Numeric segment output type
 } PINMAME_MOD_OUTPUT_TYPE;
 
+#if PINMAME_FIXED_ENUMS
 typedef enum : uint64_t {
+#else
+enum { // GCC gives values above 32 bits a wider type; MSVC's C compiler truncates them
+#endif
 	PINMAME_HARDWARE_GEN_WPCALPHA_1 = 0x0000000000001,  // Alpha-numeric display S11 sound, Dr Dude 10/90
 	PINMAME_HARDWARE_GEN_WPCALPHA_2 = 0x0000000000002,  // Alpha-numeric display,  - The Machine BOP 4/91
 	PINMAME_HARDWARE_GEN_WPCDMD = 0x0000000000004,      // Dot Matrix Display, Terminator 2 7/91 - Party Zone 10/91
@@ -168,7 +182,12 @@ typedef enum : uint64_t {
 	PINMAME_HARDWARE_GEN_ALLBY35 = 0x0000047e00000,     // All Bally35 and derivatives
 	PINMAME_HARDWARE_GEN_ALLS80 = 0x0000600000000,      // All GTS80
 	PINMAME_HARDWARE_GEN_LLWS = 0x001c000000000,       // All Whitestar
+#if PINMAME_FIXED_ENUMS
 } PINMAME_HARDWARE_GEN;
+#else
+};
+typedef uint64_t PINMAME_HARDWARE_GEN;
+#endif
 
 typedef enum {
 	PINMAME_GAME_DRIVER_FLAGS_ORIENTATION_MASK = 0x0007,
@@ -203,7 +222,11 @@ typedef enum {
 	PINMAME_MECH_FLAGS_LENGTHSW = 0x100
 } PINMAME_MECH_FLAGS;
 
+#if PINMAME_FIXED_ENUMS
 typedef enum : unsigned int {
+#else
+typedef enum { // same size as unsigned int
+#endif
 	PINMAME_KEYCODE_A = 0,
 	PINMAME_KEYCODE_B = 1,
 	PINMAME_KEYCODE_C = 2,

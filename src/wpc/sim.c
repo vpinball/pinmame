@@ -54,9 +54,6 @@ void sim_run(int *inports, int firstGameInport, int useSimKeys, int noOfBalls) {
     if (inports[CORE_SIMINPORT] & SIM_PREVKEY) locals.currBall -= 1;
     if (locals.currBall < 0)                     locals.currBall = noOfBalls -1;
     if (locals.currBall >= noOfBalls)            locals.currBall = 0;
-    if (simData->autoBall && locals.balls[locals.currBall].state != stFree)
-      for (ii = 0; ii < noOfBalls; ii++)
-        if (locals.balls[ii].state == stFree) { locals.currBall = ii; break; }
   locals.balls[locals.currBall].current = TRUE;
 
   /* update spinners running */
@@ -69,6 +66,10 @@ void sim_run(int *inports, int firstGameInport, int useSimKeys, int noOfBalls) {
     sim_tBallStatus *ball = &locals.balls[locals.currBall];
     sim_tInportData *iData = simData->inportData;
     int eventFound = FALSE;
+    /*-- autoBall: the keys act on the first ball on the playfield; the selection itself stays --*/
+    if (simData->autoBall && ball->state != stFree)
+      for (ii = 0; ii < noOfBalls; ii++)
+        if (locals.balls[ii].state == stFree) { ball = &locals.balls[ii]; break; }
     while (iData->mask) {
 	if (!eventFound && (inports[iData->port + firstGameInport] & iData->mask) == iData->mask &&
 	    !(simData->autoBall && iData->action >= SIM_STATES &&
