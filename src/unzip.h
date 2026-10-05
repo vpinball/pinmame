@@ -39,7 +39,7 @@ typedef struct _ZIP {
 	char* zip; /* zip name */
 	osd_file* fp; /* zip handler */
 	int pathtype,pathindex;	/* additional path info */
-	long length; /* length of zip file */
+	INT64 length; /* length of zip file */
 
 	char* ecd; /* end_of_cent_dir data */
 	unsigned ecd_length; /* end_of_cent_dir length */
@@ -121,6 +121,20 @@ int readcompresszip(ZIP* zip, struct zipent* ent, char* data);
      <0 error
 */
 int readuncompresszip(ZIP* zip, struct zipent* ent, char* data);
+
+/* Offset of an entry's (compressed) data in the zip file
+   return:
+     >=0 success
+     <0 error
+*/
+INT64 offsetcompresszip(ZIP* zip, struct zipent* ent);
+
+/* Read length bytes at offset in the zip file, e.g. part of a stored entry from its offsetcompresszip()
+   return:
+     ==0 success
+     <0 error
+*/
+int readzipat(ZIP* zip, INT64 offset, char* data, UINT32 length);
 
 /* public functions */
 int /* error */ load_zipped_file (int pathtype, int pathindex, const char *zipfile, const char *filename,

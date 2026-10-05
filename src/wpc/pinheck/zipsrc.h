@@ -3,8 +3,8 @@
 #ifndef PINHECK_ZIPSRC_H
 #define PINHECK_ZIPSRC_H
 
-#include <stdio.h>
 #include <stdint.h>
+#include "unzip.h"
 #include "vfat.h"
 
 #ifdef __cplusplus
@@ -13,21 +13,22 @@ extern "C" {
 
 typedef struct zipsrc_entry {
 	char *name;
-	uint32_t csize, usize, hdr_off, data_off;
-	uint16_t method;
-	uint8_t *data;
+	struct zipent ent; /* its name is NULL, the entry owns name */
+	INT64 data_off;    /* stored entries: data offset in the zip, 0 until known */
+	uint8_t *data;     /* deflated entries: the decompressed data while cached */
 	uint32_t stamp;
+	int failed;        /* do not retry (and report) a broken entry */
 } zipsrc_entry;
 
 typedef struct zipsrc {
-	FILE *f;
+	ZIP *zip;
 	int count;
 	zipsrc_entry *e;
 	uint32_t cache_bytes, cache_used, clock;
 	vfat_source src;
 } zipsrc;
 
-int zipsrc_open(zipsrc *z, const char *zip_path, uint32_t cache_bytes);
+int zipsrc_open(zipsrc *z, int pathtype, int pathindex, const char *zip_name, uint32_t cache_bytes);
 void zipsrc_close(zipsrc *z);
 const vfat_source *zipsrc_source(zipsrc *z);
 

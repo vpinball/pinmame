@@ -184,15 +184,14 @@ static void pinheck_brd_rgb(void *ctx, uint64_t t, int chain, int led, uint8_t r
 
 static void pinheck_brd_servo(void *ctx, uint64_t t, int servo, uint32_t pulse)
 {
-	const double lo = pinheck_game()->servoMin, hi = pinheck_game()->servoMax;
-	double us = pulse / (PINHECK_CLOCK / 1e6), v = (us - lo) / (hi - lo);
+	const uint32_t tpu = PINHECK_CLOCK / 1000000; /* clock ticks per us */
+	const uint32_t lo = (uint32_t)pinheck_game()->servoMin * tpu, hi = (uint32_t)pinheck_game()->servoMax * tpu;
 	(void)ctx;
-	if (brd_log) fprintf(brd_log, "%.9f V %d %.1f %llu\n", timer_get_time(), servo, us, (unsigned long long)t);
-	brd_servo_us[servo] = pulse ? (int)(us + 0.5) : 0;
+	if (brd_log) fprintf(brd_log, "%.9f V %d %.1f %llu\n", timer_get_time(), servo, pulse / (double)tpu, (unsigned long long)t);
+	brd_servo_us[servo] = (int)((pulse + tpu / 2) / tpu);
 	if (!pulse) return; /* no pulses: the servo holds its position */
-	if (v < 0.0) v = 0.0;
-	if (v > 1.0) v = 1.0;
-	pinheck_brd_level(PINHECK_SOL_SRV + servo, (UINT8)(v * 255.0 + 0.5));
+	/* servoMin..servoMax us map to levels 0..255, rounded half up */
+	pinheck_brd_level(PINHECK_SOL_SRV + servo, (UINT8)(pulse <= lo ? 0 : pulse >= hi ? 255 : ((uint64_t)(pulse - lo) * 255 + (hi - lo) / 2) / (hi - lo)));
 }
 
 /* switch n (0-63) is PinMAME (n/8+1)*10 + n%8+1, lamps likewise; cabinet inputs are columns 0 and 9.
@@ -461,17 +460,18 @@ static void pinheck_check_card(const vfat_source *s)
 
 static void pinheck_open_card(void)
 {
-	char path[1024];
+	char name[32], msg[96];
 	int i, n = osd_get_path_count(FILETYPE_ROM);
 	sd_blockdev dev;
 
-	for (i = 0; i < n && !locals.have_zip; i++) {
-		sprintf(path, "%.1000s/%.16s.zip", osd_get_path(FILETYPE_ROM, i), Machine->gamedrv->name);
-		if (zipsrc_open(&zip, path, PINHECK_ZIP_CACHE) == 0) locals.have_zip = 1;
-	}
+	sprintf(name, "%.16s.zip", Machine->gamedrv->name);
+	/* probe first: openzip reports a missing file (a message box in VPinMAME) */
+	for (i = 0; i < n && !locals.have_zip; i++)
+		if (osd_get_path_info(FILETYPE_ROM, i, name) == PATH_IS_FILE && zipsrc_open(&zip, FILETYPE_ROM, i, name, PINHECK_ZIP_CACHE) == 0)
+			locals.have_zip = 1;
 	if (!locals.have_zip) {
-		sprintf(path, "pinheck: no %.16s.zip on the ROM path, the SD card is empty", Machine->gamedrv->name);
-		pinheck_warn(path);
+		sprintf(msg, "pinheck: no %s on the ROM path, the SD card is empty", name);
+		pinheck_warn(msg);
 		return;
 	}
 	pinheck_check_card(zipsrc_source(&zip));
@@ -952,6 +952,8 @@ static MACHINE_INIT(pinheck)
 #endif
 	prop_set_log(&prop, pinheck_prop_log, NULL);
 	prop_set_tx(&prop, pinheck_prop_tx, NULL);
+	/* a reset re-runs MACHINE_INIT but not the sound start: restart the audio's time base with the Propeller's */
+	if (sndl.started) audio_init(&snd, sndl.rate, pinheck_snd_log, NULL);
 	if (sndl.started) prop_set_sound(&prop, pinheck_snd_ctr, pinheck_snd_pins, NULL);
 	if (sndl.started && pinheck_env("PINHECK_SND_SELFTEST")) {
 		audio_pins(&snd, 0, 0, 1u << AUDIO_PIN_L);
@@ -1002,7 +1004,7 @@ static MACHINE_RESET(pinheck)
 static NVRAM_HANDLER(pinheck)
 {
 	const int first = !read_or_write && !file;
-	if (locals.idle) return;
+	/* also while idle: the load runs before MACHINE_INIT, and an idle session must save what it loaded */
 	prop_sync(&prop);
 	core_nvram(file, read_or_write, u13mem, sizeof(u13mem), 0xFF);
 	core_nvram(file, read_or_write, propmem + 0x8000, sizeof(propmem) - 0x8000, 0xFF);
@@ -1032,6 +1034,7 @@ static MACHINE_STOP(pinheck)
 	time_log = NULL;
 	if (link_log) fclose(link_log);
 	link_log = NULL;
+	locals.idle = 0; /* the next session's NVRAM load runs before MACHINE_INIT clears locals */
 }
 
 static MEMORY_READ32_START(pinheck_readmem)

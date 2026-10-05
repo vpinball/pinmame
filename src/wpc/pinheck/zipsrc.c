@@ -4,28 +4,12 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
-#include <zlib.h>
 
-static uint32_t le16(const uint8_t *p) { return (uint32_t)p[0] | (uint32_t)p[1] << 8; }
-static uint32_t le32(const uint8_t *p) { return le16(p) | le16(p + 2) << 16; }
-
-static int read_at(FILE *f, uint32_t off, void *buf, uint32_t len)
-{
-	if (fseek(f, (long)off, SEEK_SET)) return -1;
-	return fread(buf, 1, len, f) == len ? 0 : -1;
-}
+/* The SD card's files, read from the romset zip with unzip.c: stored entries are read in place, deflated ones
+   are decompressed whole on first use and kept in a cache of cache_bytes, the least recently used evicted */
 
 static const char *zs_name(void *ctx, int i) { return ((zipsrc *)ctx)->e[i].name; }
-static uint32_t zs_size(void *ctx, int i) { return ((zipsrc *)ctx)->e[i].usize; }
-
-static int data_offset(zipsrc *z, zipsrc_entry *e)
-{
-	uint8_t h[30];
-	if (e->data_off) return 0;
-	if (read_at(z->f, e->hdr_off, h, 30) || le32(h) != 0x04034B50u) return -1;
-	e->data_off = e->hdr_off + 30 + le16(h + 26) + le16(h + 28);
-	return 0;
-}
+static uint32_t zs_size(void *ctx, int i) { return ((zipsrc *)ctx)->e[i].ent.uncompressed_size; }
 
 static void evict(zipsrc *z, uint32_t need, int keep)
 {
@@ -36,37 +20,24 @@ static void evict(zipsrc *z, uint32_t need, int keep)
 		if (old < 0) return;
 		free(z->e[old].data);
 		z->e[old].data = NULL;
-		z->cache_used -= z->e[old].usize;
+		z->cache_used -= z->e[old].ent.uncompressed_size;
 	}
 }
 
 static int inflate_entry(zipsrc *z, int i)
 {
 	zipsrc_entry *e = &z->e[i];
-	z_stream s;
-	uint8_t in[16384];
-	uint32_t left = e->csize;
-	int r = Z_OK;
+	const uint32_t size = e->ent.uncompressed_size;
 
-	evict(z, e->usize, i);
-	e->data = (uint8_t *)malloc(e->usize ? e->usize : 1);
+	evict(z, size, i);
+	e->data = (uint8_t *)malloc(size ? size : 1);
 	if (!e->data) return -1;
-	memset(&s, 0, sizeof(s));
-	if (inflateInit2(&s, -MAX_WBITS) != Z_OK) { free(e->data); e->data = NULL; return -1; }
-	s.next_out = e->data;
-	s.avail_out = e->usize;
-	if (fseek(z->f, (long)e->data_off, SEEK_SET)) r = Z_ERRNO;
-	while (r == Z_OK && left) {
-		uint32_t n = left < sizeof(in) ? left : (uint32_t)sizeof(in);
-		if (fread(in, 1, n, z->f) != n) { r = Z_ERRNO; break; }
-		left -= n;
-		s.next_in = in;
-		s.avail_in = n;
-		r = inflate(&s, Z_NO_FLUSH);
+	if (readuncompresszip(z->zip, &e->ent, (char *)e->data)) {
+		free(e->data);
+		e->data = NULL;
+		return -1;
 	}
-	inflateEnd(&s);
-	if (r != Z_STREAM_END || s.total_out != e->usize) { free(e->data); e->data = NULL; return -1; }
-	z->cache_used += e->usize;
+	z->cache_used += size;
 	return 0;
 }
 
@@ -77,11 +48,13 @@ static int zs_read(void *ctx, int i, uint32_t off, uint8_t *buf, uint32_t len)
 
 	if (i < 0 || i >= z->count) return -1;
 	e = &z->e[i];
-	if (off > e->usize || len > e->usize - off) return -1;
-	if (data_offset(z, e)) return -1;
-	if (e->method == 0) return read_at(z->f, e->data_off + off, buf, len);
-	if (e->method != 8) return -1;
-	if (!e->data && inflate_entry(z, i)) return -1;
+	if (e->failed || off > e->ent.uncompressed_size || len > e->ent.uncompressed_size - off) return -1;
+	if (e->ent.compression_method == 0) {
+		if (!e->data_off && (e->data_off = offsetcompresszip(z->zip, &e->ent)) <= 0) { e->data_off = 0; e->failed = 1; return -1; }
+		if (readzipat(z->zip, e->data_off + off, (char *)buf, len)) { e->failed = 1; return -1; }
+		return 0;
+	}
+	if (e->ent.compression_method != 8 || (!e->data && inflate_entry(z, i))) { e->failed = 1; return -1; }
 	e->stamp = ++z->clock;
 	memcpy(buf, e->data + off, len);
 	return 0;
@@ -112,56 +85,33 @@ static void strip_common_folder(zipsrc *z)
 	z->count = k;
 }
 
-int zipsrc_open(zipsrc *z, const char *zip_path, uint32_t cache_bytes)
+int zipsrc_open(zipsrc *z, int pathtype, int pathindex, const char *zip_name, uint32_t cache_bytes)
 {
-	uint8_t tail[65557], *p, *cd = NULL;
-	long size;
-	uint32_t n, cd_size, cd_off, i, pos;
-	int k;
+	struct zipent *ent;
+	int max;
 
 	memset(z, 0, sizeof(*z));
 	z->cache_bytes = cache_bytes;
-	z->f = fopen(zip_path, "rb");
-	if (!z->f) return -1;
-	if (fseek(z->f, 0, SEEK_END) || (size = ftell(z->f)) < 22) goto fail;
-	n = size < (long)sizeof(tail) ? (uint32_t)size : (uint32_t)sizeof(tail);
-	if (read_at(z->f, (uint32_t)size - n, tail, n)) goto fail;
-	for (p = tail + n - 22; p >= tail && le32(p) != 0x06054B50u; p--) ;
-	if (p < tail) goto fail;
-	z->count = (int)le16(p + 10);
-	cd_size = le32(p + 12);
-	cd_off = le32(p + 16);
-	if (cd_off == 0xFFFFFFFFu || le16(p + 10) == 0xFFFF) goto fail;
-	cd = (uint8_t *)malloc(cd_size ? cd_size : 1);
-	z->e = (zipsrc_entry *)calloc((size_t)z->count + 1, sizeof(zipsrc_entry));
-	if (!cd || !z->e || read_at(z->f, cd_off, cd, cd_size)) goto fail;
-	for (i = 0, pos = 0, k = 0; i < (uint32_t)z->count; i++) {
-		uint8_t *h = cd + pos;
-		uint32_t nl, el, cl;
-		char *name;
-		if (pos + 46 > cd_size || le32(h) != 0x02014B50u) goto fail;
-		nl = le16(h + 28); el = le16(h + 30); cl = le16(h + 32);
-		if (pos + 46 + nl > cd_size) goto fail;
-		name = (char *)malloc(nl + 1);
-		if (!name) goto fail;
-		memcpy(name, h + 46, nl);
-		name[nl] = 0;
-		pos += 46 + nl + el + cl;
-		if (!nl) { free(name); continue; }
-		{
-			char *c;
-			for (c = name; *c; c++) if (*c == '\\') *c = '/';
-		}
-		z->e[k].name = name;
-		z->e[k].method = (uint16_t)le16(h + 10);
-		z->e[k].csize = le32(h + 20);
-		z->e[k].usize = le32(h + 24);
-		z->e[k].hdr_off = le32(h + 42);
-		k++;
+	z->zip = openzip(pathtype, pathindex, zip_name);
+	if (!z->zip) return -1;
+	max = z->zip->total_entries_cent_dir;
+	z->e = (zipsrc_entry *)calloc((size_t)max + 1, sizeof(zipsrc_entry));
+	if (!z->e) goto fail;
+	while (z->count < max && (ent = readzip(z->zip)) != NULL) {
+		zipsrc_entry *e = &z->e[z->count];
+		char *c;
+		if (!ent->filename_length) continue;
+		e->name = (char *)malloc((size_t)ent->filename_length + 1);
+		if (!e->name) goto fail;
+		memcpy(e->name, ent->name, (size_t)ent->filename_length + 1);
+		for (c = e->name; *c; c++) if (*c == '\\') *c = '/';
+		e->ent = *ent;
+		e->ent.name = NULL;
+		z->count++;
 	}
-	z->count = k;
+	/* readzip stops early on a broken directory */
+	if (z->zip->cd_pos < z->zip->size_of_cent_dir && z->count < max) goto fail;
 	strip_common_folder(z);
-	free(cd);
 	z->src.ctx = z;
 	z->src.count = z->count;
 	z->src.name = zs_name;
@@ -169,7 +119,6 @@ int zipsrc_open(zipsrc *z, const char *zip_path, uint32_t cache_bytes)
 	z->src.read = zs_read;
 	return 0;
 fail:
-	free(cd);
 	zipsrc_close(z);
 	return -1;
 }
@@ -181,7 +130,7 @@ void zipsrc_close(zipsrc *z)
 		for (k = 0; k < z->count; k++) { free(z->e[k].name); free(z->e[k].data); }
 		free(z->e);
 	}
-	if (z->f) fclose(z->f);
+	if (z->zip) closezip(z->zip);
 	memset(z, 0, sizeof(*z));
 }
 
