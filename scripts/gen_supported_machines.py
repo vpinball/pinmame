@@ -391,9 +391,12 @@ def parse_drivers(wpc=WPC):
             with open(path, encoding="utf-8", errors="replace") as f:
                 src = strip_comments(f.read())
             defs = local_defines(src)
-            # sims/<system>/full/ is a complete table simulator, prelim/ a partial one.
-            sim = ("full" if "/sims/" in rel and "/full/" in rel else
-                   "preliminary" if "/sims/" in rel and "/prelim/" in rel else "")
+            # sims/<system>/full/ is a complete table simulator, prelim/ a partial
+            # one.  sims/sleic and sims/pinheck sit outside that split, so the
+            # simulator is reported without a tier.
+            sim = ("" if "/sims/" not in rel else
+                   "full" if "/full/" in rel else
+                   "preliminary" if "/prelim/" in rel else "yes")
             for m in MACRO.finditer(src):
                 end = close_paren(src, m.end())
                 kind = m.group(1)
@@ -924,9 +927,11 @@ def render(titles, orphans, other, stamp, cutoff, eol_years):
       "no row in that table carries a caveat; when only some revisions are "
       "affected, the note says which. The "
       "simulator column reports PinMAME's optional table simulation "
-      "(`src/wpc/sims`), which lets a machine be played from the keyboard; it "
+      "(`src/wpc/sims`), which lets a machine be played from the keyboard. It "
       "is independent of emulation accuracy, and its absence says nothing "
-      "about how well the ROM runs under Visual Pinball.")
+      "about how well the ROM runs under Visual Pinball. `full` and "
+      "`preliminary` are the driver tree's own split; `yes` is a simulator "
+      "that sits outside it and so is not classified either way.")
     w("")
     w("Machines are matched to drivers by name, with a year and manufacturer "
       "guard. This is not exact: a machine listed as not emulated may have a "
@@ -971,6 +976,10 @@ def self_test():
     assert any(s["status"] == "broken" for s in sets)
     assert any(s["status"] == "partial" for s in sets)
     assert by_rom["mm_109"]["sim"] == "full"
+    # Every set defined under sims/ has a simulator, including the ones outside
+    # the full/prelim split (sims/sleic, sims/pinheck).
+    assert all(s["sim"] for s in sets if "/sims/" in s["file"])
+    assert by_rom["iomoon"]["sim"] == "yes" and by_rom["jetsons_004"]["sim"] == "yes"
     assert not by_rom["topaz_l1"]["pinball"] and by_rom["topazi"]["pinball"]
 
     # PinHeck is defined through a wrapper macro.

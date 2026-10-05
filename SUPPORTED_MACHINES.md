@@ -555,7 +555,7 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | Flipper Football                               | 1996 | Capcom                 | DMD          | `ffv101`, `ffv103`, `ffv104`                         |             |       |
 | Goldeneye                                      | 1996 | Sega                   | DMD          | `gldneye`                                            |             |       |
 | Independence Day                               | 1996 | Sega                   | DMD          | `id4`, `id4_201`, `id4_201f` + 1 more                |             |       |
-| Io Moon                                        | 1996 | Sleic                  | DMD          | `iomoon`, `iomoona`, `iomoont` + 1 more              |             |       |
+| Io Moon                                        | 1996 | Sleic                  | DMD          | `iomoon`, `iomoona`, `iomoont` + 1 more              | yes         |       |
 | Junk Yard                                      | 1996 | Williams               | DMD          | `jy_03`, `jy_11`, `jy_12` + 1 more                   | preliminary |       |
 | Kingpin                                        | 1996 | Capcom                 | DMD          | `kpb105`                                             |             |       |
 | Safe Cracker                                   | 1996 | Bally                  | DMD          | `sc_091`, `sc_10`, `sc_14` + 7 more                  | preliminary |       |
@@ -618,12 +618,12 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | Avengers the Pin                               | 2013 | Stern                  | DMD          | `avs_170`, `avs_170c`                                |             |       |
 | Metallica                                      | 2013 | Stern                  | DMD          | `mtl_052`, `mtl_103`, `mtl_105` + 31 more            |             |       |
 | Star Trek                                      | 2013 | Stern                  | DMD          | `st_120`, `st_130`, `st_140` + 15 more               |             |       |
-| America's Most Haunted                         | 2014 | Spooky Pinball         | DMD          | `amh_022`, `amh_023`                                 |             |       |
+| America's Most Haunted                         | 2014 | Spooky Pinball         | DMD          | `amh_022`, `amh_023`                                 | yes         |       |
 | Mustang                                        | 2014 | Stern                  | DMD          | `mt_120`, `mt_130`, `mt_130h` + 8 more               |             |       |
 | The Walking Dead                               | 2014 | Stern                  | DMD          | `twd_105`, `twd_111`, `twd_111h` + 20 more           |             |       |
-| Domino's Spectacular Pinball Adventure         | 2016 | Spooky Pinball         | DMD          | `dominos_006`                                        |             |       |
-| Rob Zombie's Spookshow International           | 2016 | Spooky Pinball         | DMD          | `rzspook_026`                                        |             |       |
-| The Jetsons                                    | 2017 | Spooky Pinball         | DMD          | `jetsons_004`                                        |             |       |
+| Domino's Spectacular Pinball Adventure         | 2016 | Spooky Pinball         | DMD          | `dominos_006`                                        | yes         |       |
+| Rob Zombie's Spookshow International           | 2016 | Spooky Pinball         | DMD          | `rzspook_026`                                        | yes         |       |
+| The Jetsons                                    | 2017 | Spooky Pinball         | DMD          | `jetsons_004`                                        | yes         |       |
 
 ## Partially working (34)
 
@@ -1151,8 +1151,9 @@ to the original. Its status is that of the *worst* of its ROM sets, so "fully wo
 means every revision is clean and no row in that table carries a caveat; when only some
 revisions are affected, the note says which. The simulator column reports PinMAME's
 optional table simulation (`src/wpc/sims`), which lets a machine be played from the
-keyboard; it is independent of emulation accuracy, and its absence says nothing about how
-well the ROM runs under Visual Pinball.
+keyboard. It is independent of emulation accuracy, and its absence says nothing about how
+well the ROM runs under Visual Pinball. `full` and `preliminary` are the driver tree's own
+split; `yes` is a simulator that sits outside it and so is not classified either way.
 
 Machines are matched to drivers by name, with a year and manufacturer guard. This is not
 exact: a machine listed as not emulated may have a driver under a name the matcher missed.
