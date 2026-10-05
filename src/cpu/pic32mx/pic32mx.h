@@ -64,6 +64,7 @@ typedef struct pic32mx {
 	uint8_t logged[PIC32MX_SFR_SIZE / 16];
 	int *icount;      /* host cycle counter, kept current across board callbacks; NULL = none */
 	uint64_t run_end; /* cycle at which the current pic32mx_run ends */
+	int soft_irq;     /* Cause IP1:IP0 last seen; their rising edges raise CS0/CS1 */
 	uint32_t unc, unc_tok; /* port_read's bits not known yet (pic32mx_uncertain) */
 } pic32mx;
 

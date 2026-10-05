@@ -78,7 +78,8 @@ static void timer_cfg(const pic32mx *p, int i, uint32_t *div, uint32_t *pr, uint
 	uint32_t base = 0x0600u + (uint32_t)i * 0x200, con = SFR(p, base);
 	*div = (i == 0 ? tckps_a[(con >> 4) & 3] : tckps_b[(con >> 4) & 7]) * pbdiv(p);
 	if (timer_t32(p, i)) {
-		*pr = (SFR(p, base + 0x20) & 0xFFFFu) | (SFR(p, base + 0x220) << 16);
+		/* the 32-bit period is written to PRx (DS61143B 14.3.6); PRy writes update its upper half */
+		*pr = SFR(p, base + 0x20);
 		*max = 0xFFFFFFFFu;
 	} else {
 		*pr = SFR(p, base + 0x20) & 0xFFFFu;
@@ -149,7 +150,7 @@ static uint32_t timer_read(pic32mx *p, int i, uint32_t reg)
 	if (reg == 0x10) {
 		timers_sync(p);
 		if (timer_slave(p, i)) return p->timer[i - 1].tmr >> 16;
-		return p->timer[i].tmr & 0xFFFFu;
+		return timer_t32(p, i) ? p->timer[i].tmr : p->timer[i].tmr & 0xFFFFu;
 	}
 	return SFR(p, 0x0600u + (uint32_t)i * 0x200 + reg);
 }
@@ -418,9 +419,15 @@ static void sfr_write(pic32mx *p, uint32_t off, uint32_t v)
 	if (reg == OFF_INTSTAT || reg == OFF_RCON + 0x0) { SFR(p, reg) = nv; return; }
 	SFR(p, reg) = nv;
 	if (timer_reg(reg, &i, &sub)) {
+		/* 32-bit mode: TMRx and PRx take the whole 32-bit value, TMRy and PRy its upper half */
 		if (sub == 0x10) {
 			if (timer_slave(p, i)) p->timer[i - 1].tmr = (p->timer[i - 1].tmr & 0xFFFFu) | (nv << 16);
-			else p->timer[i].tmr = timer_t32(p, i) ? (p->timer[i].tmr & 0xFFFF0000u) | (nv & 0xFFFFu) : nv & 0xFFFFu;
+			else p->timer[i].tmr = timer_t32(p, i) ? nv : nv & 0xFFFFu;
+		}
+		if (sub == 0x20) {
+			uint32_t base = 0x0600u + (uint32_t)i * 0x200;
+			if (timer_slave(p, i)) SFR(p, base - 0x200 + 0x20) = (SFR(p, base - 0x200 + 0x20) & 0xFFFFu) | (nv << 16);
+			else if (timer_t32(p, i)) SFR(p, base + 0x200 + 0x20) = nv >> 16;
 		}
 		return;
 	}
@@ -533,6 +540,7 @@ void pic32mx_reset(pic32mx *p)
 	for (i = 0; i < PIC32MX_PORTS; i++) SFR(p, OFF_TRISA + (uint32_t)i * 0x40) = 0xFFFFu;
 	for (i = 0; i < PIC32MX_UARTS; i++) SFR(p, uart_base[i] + 0x10) = 0x110u;
 	mips32_reset(&p->cpu);
+	p->soft_irq = mips32_soft_irq(&p->cpu);
 }
 
 void pic32mx_uncertain(pic32mx *p, uint32_t mask, uint32_t token)
@@ -593,6 +601,13 @@ int pic32mx_run(pic32mx *p, int cycles)
 		timers_sync(p);
 		i2c_sync(p);
 		if (mips32_timer_irq(&p->cpu)) pic32mx_set_irq(p, 0);
+		{
+			/* core software interrupts CS0/CS1 (IRQ 1/2, edge) from Cause IP0/IP1 */
+			const int soft = mips32_soft_irq(&p->cpu), rise = soft & ~p->soft_irq;
+			if (rise & 1) pic32mx_set_irq(p, 1);
+			if (rise & 2) pic32mx_set_irq(p, 2);
+			p->soft_irq = soft;
+		}
 	}
 	host_enter(p);
 	return (int)(p->cpu.cycles - start);

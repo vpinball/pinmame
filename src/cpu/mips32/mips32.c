@@ -205,7 +205,12 @@ static void set_cp0(mips32_state *s, int reg, int sel, uint32_t v)
 	case 12 * 8 + 1: s->intctl = v & 0x3E0u; break;
 	case 12 * 8 + 2: s->srsctl = (s->srsctl & ~0xF3C0u) | (v & 0xF3C0u); break;
 	case 12 * 8 + 3: s->srsmap = v; break;
-	case 13 * 8:     s->cause = (s->cause & ~CA_WMASK) | (v & CA_WMASK); break;
+	case 13 * 8: {
+		const uint32_t was = s->cause;
+		s->cause = (s->cause & ~CA_WMASK) | (v & CA_WMASK);
+		if (s->cause & ~was & 0x300u) s->stop = 1; /* IP0/IP1 raised: return so the interrupt controller sees it */
+		break;
+	}
 	case 14 * 8:     s->epc = v; break;
 	case 15 * 8 + 1: s->ebase = 0x80000000u | (v & 0x3FFFF000u); break;
 	case 16 * 8:     s->config0 = (s->config0 & ~7u) | (v & 7u); break;
