@@ -107,7 +107,7 @@ static void program(pic32_boot *b, uint32_t a, uint8_t v)
 	b->flash[a] = v;
 }
 
-static void handle(pic32_boot *b, uint64_t t, uint64_t now)
+static void handle(pic32_boot *b, uint32_t size, uint64_t t, uint64_t now)
 {
 	uint8_t *f = b->frame, out[BOOT_FRAME + 8];
 	uint8_t cmd = f[5];
@@ -130,6 +130,8 @@ static void handle(pic32_boot *b, uint64_t t, uint64_t now)
 		break;
 	case 0x13:
 		cnt = (uint32_t)f[6] << 8 | f[7];
+		/* the data starts 10 bytes into the body; refuse a count the frame does not carry */
+		if (cnt + 10 > size) { out[1] = 0xC0; b->errors++; break; }
 		for (i = 0; i < cnt; i++) program(b, b->addr + i, f[15 + i]);
 		b->addr += cnt;
 		b->programmed += cnt;
@@ -179,7 +181,7 @@ static void feed(pic32_boot *b, uint8_t v, uint64_t t, uint64_t now)
 	b->flen = 0;
 	if (x || size == 0) { b->errors++; return; }
 	if (b->state == BOOT_APP) return;
-	handle(b, t, now);
+	handle(b, size, t, now);
 }
 
 void boot_advance(pic32_boot *b, uint64_t now)

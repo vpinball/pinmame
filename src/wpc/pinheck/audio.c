@@ -16,6 +16,9 @@
 
 static const int chan_pin[2] = { AUDIO_PIN_L, AUDIO_PIN_R };
 
+/* callers format the message only when this is true: pin_level runs at every counter write */
+static int log_due(const audio *a, int ch, unsigned bit) { return !(a->ch[ch].logged & bit); }
+
 static void log_once(audio *a, int ch, unsigned bit, const char *msg)
 {
 	if (a->ch[ch].logged & bit) return;
@@ -35,14 +38,16 @@ static double pin_level(audio *a, int ch)
 			uint32_t c = a->ctr[n][k];
 			if (MODE(c) == 0 || (APIN(c) != (uint32_t)pin && !(DIFF(MODE(c)) && BPIN(c) == (uint32_t)pin))) continue;
 			if (MODE(c) != DUTY1 || APIN(c) != (uint32_t)pin) {
-				sprintf(msg, "audio: counter mode %u on P%d not modelled, silence", (unsigned)MODE(c), pin);
-				log_once(a, ch, LOG_MODE, msg);
+				if (log_due(a, ch, LOG_MODE)) {
+					sprintf(msg, "audio: counter mode %u on P%d not modelled, silence", (unsigned)MODE(c), pin);
+					log_once(a, ch, LOG_MODE, msg);
+				}
 				return 0.0;
 			}
 			sum += a->frq[n][k] / 4294967296.0;
 			drivers++;
 		}
-	if (drivers > 1) {
+	if (drivers > 1 && log_due(a, ch, LOG_TWO)) {
 		sprintf(msg, "audio: %d counters drive P%d, combined as OR", drivers, pin);
 		log_once(a, ch, LOG_TWO, msg);
 	}
@@ -140,12 +145,17 @@ double audio_level(audio *a, int ch, uint64_t t0, uint64_t t1)
 	return t1 > t0 ? acc / (double)(t1 - t0) : level;
 }
 
+/* Each sample is the mean level over its interval, then a 10 Hz DC blocker.
+   TODO: the mean is a crude anti-aliasing filter; content above half the sample rate aliases into the top of the
+   audible range. A windowed-sinc or polyphase resampler would remove it (at maybe 5-10x this path's ~0.1% CPU).
+   TODO: the board's RC low-pass (and amplifier) after the Propeller pins is not modelled; with its R/C values from
+   the schematic it would match the real machine more closely and also reduce the aliasing */
 void audio_render(audio *a, int16_t *out_stereo, int n, uint64_t t_end)
 {
-	uint64_t t0 = a->t_render, span = t_end > t0 ? t_end - t0 : 0;
+	uint64_t t0 = a->t_render, span = t_end > t0 ? t_end - t0 : 0, s0 = t0, s1;
 	int j, ch;
-	for (j = 0; j < n; j++) {
-		uint64_t s0 = t0 + span * (uint64_t)j / (uint64_t)n, s1 = t0 + span * (uint64_t)(j + 1) / (uint64_t)n;
+	for (j = 0; j < n; j++, s0 = s1) {
+		s1 = t0 + span * (uint64_t)(j + 1) / (uint64_t)n;
 		for (ch = 0; ch < 2; ch++) {
 			audio_chan *c = &a->ch[ch];
 			double x = audio_level(a, ch, s0, s1), y = x - c->x1 + a->r * c->y1;

@@ -388,7 +388,7 @@ static uint64_t now_ns(void)
 	LARGE_INTEGER c;
 	if (!f.QuadPart) QueryPerformanceFrequency(&f);
 	QueryPerformanceCounter(&c);
-	return (uint64_t)((double)c.QuadPart * 1e9 / (double)f.QuadPart);
+	return (uint64_t)(c.QuadPart / f.QuadPart) * 1000000000u + (uint64_t)(c.QuadPart % f.QuadPart) * 1000000000u / (uint64_t)f.QuadPart;
 }
 static int cpus_allowed(void)
 {
