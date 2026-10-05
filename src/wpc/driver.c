@@ -43,6 +43,7 @@ DRIVERNV(wldtexas)      // Wild Texas (Firepower II clone)
 // ALLIED LEISURE INC.
 // --------------------
 // early Allied solid-state games don't use a CPU!
+DRIVERNV(allied)        // System (not a game)
 DRIVERNV(suprpick)      // 01/77 Roy Clark Super Picker
 DRIVERNV(thndbolt)      // 11/77 Thunderbolt
 DRIVERNV(hoedown)       // 03/78 Hoe Down
@@ -597,6 +598,7 @@ DRIVERNV(erosone)       // 03/79 Eros One
 // GAME PLAN GAMES
 // -------------------
 /*Games below are Cocktail #110 Model*/
+DRIVERNV(gp_110)        //Model 110 (not a game)
 DRIVERNV(foxylady)      //Foxy Lady (May 1978)
 DRIVERNV(blvelvet)      //Black Velvet (May 1978)
 DRIVERNV(camlight)      //Camel Lights (May 1978)
@@ -630,6 +632,8 @@ DRIVERNV(cyclopes)      //Cyclopes (December 1985)
 // GOTTLIEB GAMES
 // ------------------
 //System 1
+DRIVERNV(gts1)          //System 1 (not a game)
+DRIVERNV(gts1s)         //System 1 with sound board (not a game)
 DRIVERNV(cleoptra)      //S1-409    11/77 Cleopatra
 DRIVERNV(sinbad)        //S1-412    05/78 Sinbad
 DRIVERNV(sinbadn)       //S1-412NO1 05/78 Sinbad (Norway)
@@ -649,6 +653,8 @@ DRIVERNV(roldisco)      //S1-440    02/80 Roller Disco
 DRIVERNV(astannie)      //S1-442    12/80 Asteroid Annie and the Aliens
 DRIVERNV(sys1test)      //S1-T      ??    System1 test prom
 //System 80
+DRIVERNV(gts80)         //System 80 with speech board (not a game)
+DRIVERNV(gts80s)        //System 80 (not a game)
 DRIVERNV(spidermn)      //S80-653:  05/80 Amazing Spider-Man, The
 DRIVERNV(spiderm7)      //          01/08 Amazing Spider-Man, The (7-digit conversion)
 DRIVERNV(panthera)      //S80-652:  06/80 Panthera
@@ -699,6 +705,8 @@ DRIVERNV(eclipse)       //S80-671:  ??/82 Eclipse
 DRIVERNV(eclipse7)      //          01/08 Eclipse (7-digit conversion)
 DRIVERNV(s80tst)        //S80: Text Fixture
 //System 80a
+DRIVERNV(gts80a)        //System 80A with speech board (not a game)
+DRIVERNV(gts80as)       //System 80A (not a game)
 DRIVERNV(dvlsdre)       //S80a-670: 08/82 Devil's Dare (Sound & Speech)
 DRIVERNV(dvlsdre2)      //                Devil's Dare (Sound Only)
 DRIVERNV(dvlsdrea)      //                Devil's Dare (Sound & Speech alternate set)
@@ -1464,6 +1472,7 @@ DRIVERNV(topgamet)      // 19?? - Top Game Turbo (Bingo)
 // ---------------
 // SPOOKY PINBALL
 // ---------------
+DRIVERNV(pinheck)       // PinHeck System (not a game)
 DRIVERNV(amh_022)       // 2014 - America's Most Haunted (V22)
 DRIVERNV(amh_023)       // 2014 - America's Most Haunted (V23)
 DRIVERNV(dominos_006)   // 2016 - Domino's Spectacular Pinball Adventure (V6)
