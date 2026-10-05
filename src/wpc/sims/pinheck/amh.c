@@ -267,7 +267,9 @@ static core_tLCDLayout amh_disp[] = {
 };
 
 /* raw DMD frame at hub $5B0C, servos 0.544-2.4 ms, ghost on on-board LED 2, no in-service record; the 5 s
-   boot hold covers the Propeller's main loop starting 3.9 s after power-on */
+   boot hold covers the Propeller's main loop starting 3.9 s after power-on.
+   TODO: $5B0C is verified for V23 only; for V22 it lies in PROP_022.BIN's VAR area ($3A78-$78D4) but is unconfirmed.
+   Only PINHECK_DMD_PROOF and PINHECK_FRAME_LOG read the hub frame; the display is decoded from the scan pins */
 static pinheck_tGameData amhGameData = {
   { GEN_PINHECK, amh_disp,
     { FLIP_SWNO(PINHECK_SWLFLIP, PINHECK_SWRFLIP), 0, 1, PINHECK_CUSTSOLS, SNDBRD_NONE, 0, 23, 0,
@@ -288,9 +290,9 @@ static void init_amh(void) {
 PINHECK_HEX_ROMSTART(amh_023, "AMH_V023.hex", 705004, CRC(d5147386) SHA1(adbf469841e4aa5063fe7d7e8fb1d756d932d64d),
                      "PROP_023.BIN", CRC(bd5a99e8) SHA1(763e1e01c663cc8eace3dbe0689da894dc4cadec))
 PINHECK_ROMEND
-CORE_CLONEDEFNV(amh_023, pinheck, "America's Most Haunted (V23)", 2014, "Spooky Pinball", gl_mPINHECKDMD, 0)
+PINHECK_GAMEDEF(amh, 023, "America's Most Haunted (V23)", 2014, "Spooky Pinball", gl_mPINHECKDMD, 0)
 
 PINHECK_HEX_ROMSTART(amh_022, "AMH_V022.hex", 612459, CRC(B74F2A7B) SHA1(4a36e71ba9fcfcd5779645e849babeed5a842c0b),
                      "PROP_022.BIN", CRC(53A6B98B) SHA1(6427841d9f3ac6a744bf86856dfd3faf58e43828))
 PINHECK_ROMEND
-CORE_CLONEDEFNV(amh_022, pinheck, "America's Most Haunted (V22)", 2014, "Spooky Pinball", gl_mPINHECKDMD, 0)
+PINHECK_GAMEDEF(amh, 022, "America's Most Haunted (V22)", 2014, "Spooky Pinball", gl_mPINHECKDMD, 0)

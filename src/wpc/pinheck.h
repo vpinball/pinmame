@@ -66,6 +66,10 @@
 
 #define PINHECK_ROMEND ROM_END
 
+/* set name_ver as a clone of the pinheck BIOS; all versions share input_ports_name and init_name */
+#define PINHECK_GAMEDEF(name, ver, longname, year, manuf, machine, flag) \
+  GAMEX(year,name##_##ver,pinheck,machine,name,name,ROT0,manuf,longname,flag)
+
 /* per-game data; core_gameData points at its core member */
 typedef struct {
   core_tGameData core;
