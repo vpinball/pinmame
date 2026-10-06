@@ -543,12 +543,22 @@ static int spin(uint64_t *t0, unsigned *k)
 	return 0;
 }
 
+/* the counters grouped by the thread that writes them, each group on cache lines of its own */
 typedef struct prop_worker {
 	prop_os os;
 	prop_cmd q[PROP_Q];
-	volatile unsigned head, tail; /* head: next to run; tail: next free */
+	char pad0[PROP_PAD];
+	/* the worker's: written after each command */
+	volatile unsigned head;          /* next to run */
+	char pad1[PROP_PAD];
+	/* the poster's: written for each post */
+	volatile unsigned tail;          /* next free */
 	volatile unsigned sleeping;
+	unsigned head_seen;              /* head as the poster last read it: behind, never ahead */
+	char pad2[PROP_PAD];
+	/* the poster's, written only when it blocks; the worker reads them after each command */
 	volatile unsigned waiting, want; /* the poster blocks until head reaches want */
+	char pad3[PROP_PAD];
 } prop_worker;
 
 /* an idle worker blocks until the next post */
@@ -600,11 +610,11 @@ static void worker_loop(void *arg)
 {
 	pinheck_prop *p = (pinheck_prop *)arg;
 	prop_worker *w = (prop_worker *)p->worker;
-	unsigned h = w->head, k = 0;
+	unsigned h = w->head, t = h, k = 0;
 	uint64_t t0 = 0;
 	for (;;) {
-		unsigned t = get_acq(&w->tail);
-		if (h == t) {
+		/* tail is read again only once the commands already seen are done: its line stays with the poster */
+		if (h == t && (t = get_acq(&w->tail)) == h) {
 			if (spin(&t0, &k)) { idle_wait(w, h); k = 0; }
 			continue;
 		}
@@ -620,7 +630,8 @@ static void post(pinheck_prop *p, int kind, uint64_t pic, uint32_t pins)
 	prop_worker *w = (prop_worker *)p->worker;
 	unsigned t = w->tail;
 	prop_cmd *c;
-	if (t - get_acq(&w->head) >= PROP_Q) wait_head(w, t - PROP_Q + 1);
+	/* head is read only when the queue looks full by head_seen */
+	if (t - w->head_seen >= PROP_Q && t - (w->head_seen = get_acq(&w->head)) >= PROP_Q) wait_head(w, t - PROP_Q + 1);
 	c = &w->q[t % PROP_Q];
 	c->kind = kind;
 	c->pic = pic;

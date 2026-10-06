@@ -14,6 +14,8 @@ extern "C" {
 #define PROP_SEGS  32
 #define PROP_PIC_PINS ((1u << 24) | (1u << 25) | (1u << 26))
 #define PROP_SAMPS 1024
+/* gap that keeps the two threads' fields on separate cache lines: Intel's adjacent-line prefetcher fetches 64 byte lines in pairs, Apple's M cores have 128 byte lines */
+#define PROP_PAD 128
 
 typedef int (*prop_spi_fn)(void *ctx, int cs, int sclk, int mosi);
 typedef void (*prop_log_fn)(void *ctx, const char *msg);
@@ -56,14 +58,19 @@ typedef struct pinheck_prop {
 	void *pins_lazy_ctx;
 	uint32_t lazy_mask;
 	uint32_t lz_mask, lz_out, lz_dir; /* the lazy cog's pins and their last state */
+	/* With the worker thread, the fields above are the worker's. What the emulation thread uses for each post is
+	   kept off the worker's lines, so that a post does not fetch a line back from the worker's core */
+	char pad_poster[PROP_PAD];
 	prop_clock_fn clock; /* the PIC32 cycle now */
 	void *clock_ctx;
-	uint64_t stamp; /* the PIC32 cycle at which the running call was made */
 	void *worker; /* worker thread, NULL = calls run inline */
+	uint64_t owner; /* the thread that started the worker: the only one whose prop_sync waits for it */
 	uint32_t samp_post, samp_cmd[PROP_SAMPS]; /* P24 samples (prop_sample): posted, and the queue position of each */
+	char pad_worker[PROP_PAD];
+	/* written by the worker */
+	uint64_t stamp; /* the PIC32 cycle at which the running call was made */
 	volatile uint32_t samp_done;
 	uint8_t samp_val[PROP_SAMPS];
-	uint64_t owner; /* the thread that started the worker: the only one whose prop_sync waits for it */
 } pinheck_prop;
 
 void prop_init(pinheck_prop *p, const uint8_t *rom32k, uint8_t *eemem);

@@ -25,6 +25,14 @@ typedef struct mips32_state mips32_state;
 
 #define MIPS32_REGIONS 4
 
+#if defined(_MSC_VER)
+#define MIPS32_ALIGN64 __declspec(align(64))
+#elif defined(__GNUC__) || defined(__clang__)
+#define MIPS32_ALIGN64 __attribute__((aligned(64)))
+#else
+#define MIPS32_ALIGN64
+#endif
+
 /* physical memory served directly, without the bus callbacks; wr NULL = read-only (writes go to the bus) */
 typedef struct mips32_region {
 	uint32_t base, size;
@@ -42,31 +50,37 @@ typedef struct mips32_bus {
 	int (*settle)(void *ctx, uint32_t token, int wait, uint32_t *bits);
 } mips32_bus;
 
+/* fast_run's data first, in as few cache lines as it fits (checked in mips32.c): its scalars in line 0, the region
+   table and what mips32_run checks between fast_run calls in lines 1-2, then the register sets, aligned so that each takes exactly two lines */
 struct mips32_state {
-	uint32_t gpr[8][32];
 	uint32_t pc, npc, hi, lo;
 	int delay;
+	int dslot;                    /* direct region of the last fast load */
+	int wslot;                    /* direct region of the last fast store, -1 none */
+	uint32_t status, srsctl;
+	uint32_t fva, fsize;          /* instructions at [fva, fva + fsize) come from fptr */
+	uint64_t cycles;
+	const uint8_t *fptr;
+	mips32_region region[MIPS32_REGIONS];
+	uint64_t c0, ti_at;           /* instruction start; Timer fires at ti_at */
+	int irq_chk;                  /* interrupt state may have changed */
+	int waiting;
+	int prov;                     /* a register awaits bus.settle (prov_* below) */
+	int stop;
+	MIPS32_ALIGN64 uint32_t gpr[8][32];
 	uint32_t cur_pc, skip_pc;
 	int cur_delay;
 	int llbit;
-	int waiting;
-	int stop;
 	int shadow_sets;
-	uint32_t status, cause, epc, errorepc, badvaddr, count, compare, ebase;
-	uint32_t intctl, srsctl, srsmap, hwrena, config0, prid;
+	uint32_t cause, epc, errorepc, badvaddr, count, compare, ebase;
+	uint32_t intctl, srsmap, hwrena, config0, prid;
 	int count_half;
 	int eic_ripl, eic_vector, eic_srs;
-	uint64_t cycles;
 	mips32_bus bus;
-	mips32_region region[MIPS32_REGIONS];
-	uint64_t c0, count_at, ti_at; /* instruction start; count/count_half hold Count at count_at; Timer fires at ti_at */
-	int irq_chk;                  /* interrupt state may have changed */
-	uint32_t fva, fsize;          /* instructions at [fva, fva + fsize) come from fptr */
-	const uint8_t *fptr;
-	int dslot;                    /* direct region of the last fast load */
+	uint64_t count_at;            /* count/count_half hold Count at count_at */
 	unsigned exc_seq;             /* exceptions taken */
 	/* a register whose bits prov_mask await bus.settle; readers wait for them */
-	int prov, prov_kind;
+	int prov_kind;
 	unsigned prov_set, prov_reg, prov_gen, prov_n;
 	uint32_t prov_v, prov_mask, prov_tok, unc, unc_tok;
 };
