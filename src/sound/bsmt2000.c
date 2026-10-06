@@ -206,6 +206,7 @@ struct BSMT2000LLE
     double      cycles_per_sample;      /* DSP cycles per output sample, on average */
     bool        mono;                   /* mode 0: the program only writes the left DAC */
     bool        tick;                   /* the program wrote the left DAC, i.e. completed a sample */
+    bool        right_seen;             /* the right DAC has carried sound (sticky, see bsmt2000_lle_update) */
     /* output cadence measurement, to check the stream rate against what the program really does */
     UINT64      cycles_run;
     UINT64      cycles_at_first_dac;
@@ -315,7 +316,11 @@ static void lle_io_w(void *param, int port, UINT16 data)
             l->tick = true;
             tms320c1x_abort(&l->dsp);
             break;
-        case 7: l->right = (INT16)data; break;
+        case 7:
+            l->right = (INT16)data;
+            if (l->right > 64 || l->right < -64)
+                l->right_seen = true;
+            break;
     }
 }
 
@@ -387,7 +392,11 @@ static void bsmt2000_lle_update(int num, INT16 **buffer, int length)
             spent += tms320c1x_execute(&l->dsp, cap - spent);
         l->cycles_run += spent;
         ldest[samp] = l->left;
-        rdest[samp] = l->mono ? l->left : l->right;
+        /* Mode 0 is mono (only the left DAC is written). Some stereo-mode games never set a right volume
+           (Monopoly, RollerCoaster Tycoon: the HLE's right_volume_set): the chip then really outputs
+           silence on the right, and those mono machines use the left output only. So, as the HLE does,
+           the left output goes to both channels until the right one has carried any sound. */
+        rdest[samp] = (l->mono || !l->right_seen) ? l->left : l->right;
     }
 }
 
