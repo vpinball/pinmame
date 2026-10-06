@@ -24,6 +24,8 @@ Fixed broken fast frames UI/registry option (VPinMAME, to enable faster boot/sta
 
 Fixed in libPinMAME: Handle aliases properly
 
+Simulator: add possibility to add a 'autoBall'
+
 VS2026 build support
 
 Get rid of BasicBitmap external dependency
@@ -55,7 +57,10 @@ Fixed Breakshots/Family Guys invalid PWM flasher definition
 Fixed Airbornes/Transformers/Trons PWM flasher count
 Fixed Stern SAM flasher PWM behavior
 Fixed some potential general solenoid issues with physical/PWM
+Fixed PWM solenoid issues for WPC fliptronics and SE aux boards
 Improved physical/PWM bulb integration
+Improved handling of fast switching PWM outputs
+Implemented varying power flippers for Capcom (for now only for sets abv106, bbb109, bsv103, ffv104, kpb, pmv112) via PWM
 Improved BY6803 emulation, and add dimmed segments support, and bright physical/PWM lights
 Improved Alvin G. first generation DMD simulation
 In general, (almost) all DMD/mini-DMD outputs have been moved to the proper physical/PWM pipeline, allowing for more subtle effects
@@ -73,6 +78,7 @@ Improved (slightly) the SN76496/SN76489(A)/SN76494 sound emulation (more accurat
 Improved MSM6585 sound emulation (accurate sample rate/prescale mapping)
 Wired up sample rate selection for Verne's World and Jolly Park (potentially fixes some samples played)
 Fixed sound problems if a OKI6295 game is used after a OKI6376 game (e.g. GTS3 after Sleic)
+Improved BSMT2000 sound emulation speed a bit
 Fixed VGM recording for machines using OKI6295 sound
 Added VGM recording for machines using BSMT2000 sound
 Added VGM recording for machines using MSM5205/MSM6585 sound

@@ -172,7 +172,7 @@ static void set_mode(struct BSMT2000Chip * const chip, int i)
 #ifndef PINMAME
         /* mode 0: 24kHz, 12 channel PCM, 1 channel ADPCM, mono */
     case 0:
-        chip->sample_rate = chip->clock / 1000.;
+        chip->sample_rate = chip->clock / 4. / 249.5;
         chip->stereo = 0;
         chip->voices = 12;
         chip->adpcm = 1;
@@ -182,7 +182,7 @@ static void set_mode(struct BSMT2000Chip * const chip, int i)
 
         /* mode 1: 24kHz, 11 channel PCM, 1 channel ADPCM, stereo */
     case 1:
-        chip->sample_rate = chip->clock / 1000.;
+        chip->sample_rate = chip->clock / 4. / 250.5;
         chip->stereo = 1;
         chip->voices = 11;
         chip->adpcm = 1;
@@ -194,7 +194,7 @@ static void set_mode(struct BSMT2000Chip * const chip, int i)
 
         /* mode 5: 24kHz, 12 channel PCM, stereo */
     case 5:
-        chip->sample_rate = chip->clock / 1000.;
+        chip->sample_rate = chip->clock / 4. / 254.;
         chip->stereo = 1;
         chip->voices = 12;
         chip->adpcm = 0;
@@ -203,7 +203,7 @@ static void set_mode(struct BSMT2000Chip * const chip, int i)
 
         /* mode 6: 34kHz, 8 channel PCM, stereo */
     case 6:
-        chip->sample_rate = chip->clock / 706.;
+        chip->sample_rate = chip->clock / 4. / 193.;
         chip->stereo = 1;
         chip->voices = 8;
         chip->adpcm = 0;
@@ -212,7 +212,7 @@ static void set_mode(struct BSMT2000Chip * const chip, int i)
 
         /* mode 7: 32kHz, 9 channel PCM, stereo */
     case 7:
-        chip->sample_rate = chip->clock / 750.;
+        chip->sample_rate = chip->clock / 4. / 208.;
         chip->stereo = 1;
         chip->voices = 9;
         chip->adpcm = 0;
