@@ -659,7 +659,7 @@ static WRITE_HANDLER(nvram4_w) { atari4_CMOS[offset] = data & 0x0f; }
 /------------------------------------------*/
 static MEMORY_READ_START(ATARI4_readmem)
   {0x0000,0x07ff,	MRA_RAM},
-  {0x1000,0x17ff,	MRA_RAM},
+  {0x1000,0x17ff,	MRA_BANK1},	/* mirror of $0000-$07FF: A12 is not decoded */
   {0x2000,0x24ff,	slice_r},	/* five Pinball Slice pairs */
   {0x2500,0x25ff,	nvram4_r},	/* 256x4 CMOS */
   {0x2600,0x27ff,	slice2_r},	/* two further 16-register devices */
@@ -669,7 +669,7 @@ MEMORY_END
 
 static MEMORY_WRITE_START(ATARI4_writemem)
   {0x0000,0x07ff,	MWA_RAM},
-  {0x1000,0x17ff,	MWA_RAM},
+  {0x1000,0x17ff,	MWA_BANK1},
   {0x2000,0x24ff,	slice_w},
   {0x2500,0x25ff,	nvram4_w, &atari4_CMOS},
   {0x2600,0x27ff,	slice2_w},
@@ -702,6 +702,11 @@ static MACHINE_INIT(ATARI4) {
   memset(&locals, 0, sizeof locals);
   memset(&slice, 0, sizeof slice);
   memset(memory_region(ATARI_MEMREG_CPU), 0, 0x2000);
+  /*-- $1000-$17FF is the $0000-$07FF chip again, because the board does not
+  /   decode A12.  It has to be a bank rather than a read/write handler: the
+  /   power-up RAM test at $DF10 copies self-modifying code into $1000 and
+  /   does JMP $1000, and an opcode fetch bypasses memory handlers. --*/
+  cpu_setbank(1, memory_region(ATARI_MEMREG_CPU));
 }
 
 /*-- The cabinet switches are SW28 start, SW29 tilt, SW2A left coin, SW2B right
