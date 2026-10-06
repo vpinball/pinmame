@@ -1267,17 +1267,18 @@ static unsigned hub_rw(p8x32a *p, int n, uint32_t i, uint32_t s, uint32_t d, uin
 }
 
 /* run cog n's event instruction inline if the scheduler would take it next; 0 if it must wait */
-P8_INLINE int event_run(p8x32a *p, int n, const p8x32a_dec *e, uint32_t ix, unsigned pc, unsigned *fl, uint64_t *t2, uint32_t *nix, uint64_t t, uint64_t lim, unsigned gen)
+P8_INLINE int event_run(p8x32a * const p, int n, const p8x32a_dec * const e, uint32_t ix, unsigned pc, unsigned * const fl, uint64_t * const t2, uint32_t * const nix, uint64_t t, uint64_t lim, unsigned gen)
 {
-	p8x32a_cog *c = &p->cog[n];
-	p8x32a_loop *l = &p->loop[n];
-	uint32_t *ram = c->ram, s, d, r;
-	unsigned op = OP(ix), f = *fl;
-	uint64_t now = *t2;
+	p8x32a_cog * const c = &p->cog[n];
+	p8x32a_loop * const l = &p->loop[n];
+	uint32_t * const ram = c->ram, s, d, r;
+	const unsigned op = OP(ix);
+	unsigned f = *fl;
+	const uint64_t now = *t2;
 
 	if (p->sched_gen != gen || p->stop || l->state != LOOP_SEARCH || !((e->cond >> f) & 1)) return 0;
 	if (op <= 2) {
-		uint64_t latch = next_slot(p, n, now + 1), h = latch + 2, m3 = latch + 4;
+		const uint64_t latch = next_slot(p, n, now + 1), h = latch + 2, m3 = latch + 4;
 		if ((e->fl & F_INA) || h > t || (h << 4 | (uint64_t)n) >= lim || m3 + 1 >= c->disable_at) return 0;
 		if (e->fl & F_IMM) s = e->src;
 		else if (!(e->fl & F_SPEC)) s = ram[e->src];

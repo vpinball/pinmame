@@ -131,7 +131,17 @@ static uint8_t *direct_wr(const mips32_state *s, uint32_t pa, uint32_t size)
 	return NULL;
 }
 
-static uint32_t le32(const uint8_t *m) { return m[0] | (uint32_t)m[1] << 8 | (uint32_t)m[2] << 16 | (uint32_t)m[3] << 24; }
+static uint32_t le32(const uint8_t * const p)
+{
+	uint32_t v;
+	memcpy(&v, p, sizeof(v));
+#if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+	v = __builtin_bswap32(v);
+#elif defined(_MSC_VER) && !defined(__clang__)
+	/* all MSVC targets supported are little-endian */
+#endif
+	return v;
+}
 
 static int load(mips32_state *s, uint32_t va, int size, uint32_t *out)
 {
@@ -653,17 +663,20 @@ static int direct_slot(const mips32_state *s, uint32_t pa, uint32_t size, int wr
 
 /* Runs instructions that raise no exception, touch only registers and direct memory and leave CP0 alone, until
    another one or lim; returns the count run. */
-static int fast_run(mips32_state *s, uint64_t lim)
+static int fast_run(mips32_state * const s, const uint64_t lim)
 {
-	uint32_t *r = REGS(s);
-	uint32_t pc = s->pc, npc = s->npc, fva = s->fva, fsize = s->fsize;
-	const uint8_t *fptr = s->fptr;
+	uint32_t * const r = REGS(s);
+	uint32_t pc = s->pc, npc = s->npc;
+	const uint32_t fva = s->fva, fsize = s->fsize;
+	const uint8_t * const fptr = s->fptr;
 	uint64_t cyc = s->cycles;
-	int delay = s->delay, n = 0, kern = !USER(s), erl = (s->status & ST_ERL) != 0, ds = s->dslot, ws = -1;
+	int delay = s->delay, n = 0, ds = s->dslot, ws = -1;
+	const int kern = !USER(s), erl = (s->status & ST_ERL) != 0;
 
 	if (!fsize) return 0;
 	while (cyc < lim) {
-		uint32_t off = pc - fva, op, rs, rt, v, ea, pa, tpc = npc + 4, nd = 0;
+		const uint32_t off = pc - fva;
+		uint32_t op, rs, rt, v, tpc = npc + 4, nd = 0;
 		unsigned d = 0;
 		uint64_t add = 1;
 		const mips32_region *m;
@@ -738,7 +751,7 @@ static int fast_run(mips32_state *s, uint64_t lim)
 		case 0x0E: d = RT(op); v = rs ^ UIMM(op); break;
 		case 0x0F: d = RT(op); v = UIMM(op) << 16; break;
 		case 0x14: case 0x15: case 0x16: case 0x17: {
-			int c = (op >> 26) == 0x14 ? rs == rt : (op >> 26) == 0x15 ? rs != rt : (op >> 26) == 0x16 ? (int32_t)rs <= 0 : (int32_t)rs > 0;
+			const int c = (op >> 26) == 0x14 ? rs == rt : (op >> 26) == 0x15 ? rs != rt : (op >> 26) == 0x16 ? (int32_t)rs <= 0 : (int32_t)rs > 0;
 			v = 0;
 			if (c) { tpc = pc + 4 + (SIMM(op) << 2); nd = 1; }
 			else { npc += 4; tpc = npc + 4; }
@@ -778,7 +791,8 @@ static int fast_run(mips32_state *s, uint64_t lim)
 			break;
 		case 0x23: {
 			/* LW, the most frequent load, without the size dispatch */
-			ea = rs + SIMM(op);
+			const uint32_t ea = rs + SIMM(op);
+			uint32_t pa;
 			if (ea & 3) goto out;
 			if (ea < 0x80000000u) pa = erl ? ea : ea + 0x40000000u;
 			else if (kern && ea < 0xC0000000u) pa = ea & 0x1FFFFFFFu;
@@ -795,9 +809,10 @@ static int fast_run(mips32_state *s, uint64_t lim)
 			break;
 		}
 		case 0x20: case 0x21: case 0x24: case 0x25: {
-			uint32_t sz = (op >> 26) == 0x23 ? 4 : ((op >> 26) & 1) ? 2 : 1;
+			const uint32_t sz = (op >> 26) == 0x23 ? 4 : ((op >> 26) & 1) ? 2 : 1;
 			const uint8_t *h;
-			ea = rs + SIMM(op);
+			uint32_t pa;
+			const uint32_t ea = rs + SIMM(op);
 			if (ea & (sz - 1)) goto out;
 			if (ea < 0x80000000u) pa = erl ? ea : ea + 0x40000000u;
 			else if (kern && ea < 0xC0000000u) pa = ea & 0x1FFFFFFFu;
@@ -820,10 +835,11 @@ static int fast_run(mips32_state *s, uint64_t lim)
 			break;
 		}
 		case 0x28: case 0x29: case 0x2B: {
-			uint32_t sz = (op >> 26) == 0x2B ? 4 : (op >> 26) == 0x29 ? 2 : 1;
+			const uint32_t sz = (op >> 26) == 0x2B ? 4 : (op >> 26) == 0x29 ? 2 : 1;
 			uint8_t *h;
 			int k;
-			ea = rs + SIMM(op);
+			uint32_t pa;
+			const uint32_t ea = rs + SIMM(op);
 			if (ea & (sz - 1)) goto out;
 			if (ea < 0x80000000u) pa = erl ? ea : ea + 0x40000000u;
 			else if (kern && ea < 0xC0000000u) pa = ea & 0x1FFFFFFFu;
@@ -853,10 +869,8 @@ static int fast_run(mips32_state *s, uint64_t lim)
 		delay = (int)nd;
 		cyc += add;
 		n++;
-		continue;
-	out:
-		break;
 	}
+out:
 	s->pc = pc;
 	s->npc = npc;
 	s->delay = delay;
