@@ -559,28 +559,21 @@ MACHINE_DRIVER_END
 /------------------------------------------*/
 #define ATARI4_SLICE_DEVS 7  /* $2000,$2100,$2200,$2300,$2400,$2600,$2700 */
 
-/*-- Neither clock is sourced -- no CPU-board schematic sheet has surfaced and
-/   there is no photograph of the crystal.  Both values below are derived, not
-/   measured, but they are far better supported than the 575 kHz PinMAME used
-/   and the 1 MHz MAME used, neither of which had any stated basis.
-/
-/   CPU: Atari's house standard for 6502 boards of this era is a 12.096 MHz
+/*-- CPU: Atari's house standard for 6502 boards of this era is a 12.096 MHz
 /   crystal divided by 8.  Centipede, Asteroids, Asteroids Deluxe, Tempest,
-/   Black Widow and Food Fight all use exactly that, so 1.512 MHz is the clock
-/   a 1982 Atari 6502 board would be expected to carry.
+/   Black Widow and Food Fight all use exactly that.
 /
-/   IRQ: the handler at $9665 costs a near-constant 3328 cycles (measured:
-/   median and 90th percentile both 3328 over 4000 samples).  It has to fit in
-/   one interrupt period, so at 1.512 MHz the rate must be below 1512000/3328 =
-/   454 Hz.  That rules out 500 Hz and also generation 2's 488 Hz.  1.512 MHz /
-/   4096 = 369 Hz is the natural binary divider inside that limit and leaves the
-/   handler at 81% duty.
-/
-/   Still unresolved: the exact divider.  Crash-rate measurements across rates
-/   do not select one, and cannot while the stack-page excursion is unexplained
-/   -- notably, no clock setting makes the game progress. --*/
+/   IRQ: 60 Hz, the AC line frequency.  A mains zero-crossing interrupt is the
+/   usual arrangement for a pinball of this period, and this is a US 60 Hz
+/   machine (the wiring diagram's transformer has 120 V and 100 V primaries).
+/   It is also what the game itself demands: the interrupt handler costs a
+/   near-constant 3328 cycles, so at 369 Hz it consumed 81% of the CPU and the
+/   Forth layer managed under 5000 words in a minute of emulated time.  At
+/   60 Hz the handler takes 13% and the game executes 1.1 million words in the
+/   same minute, with no illegal opcodes and no execution outside ROM.  The
+/   earlier 575 kHz / 500 Hz and 1 MHz / 500 Hz pairs had no stated basis. --*/
 #define ATARI4_CPUFREQ 1512000
-#define ATARI4_IRQFREQ 369
+#define ATARI4_IRQFREQ 60
 
 /*-- The game kicks $230C on every interrupt and inside its power-up busy-wait,
 /   so a gap of a second means it has stopped running and the real board would
