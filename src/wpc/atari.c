@@ -584,8 +584,16 @@ static UINT8 slice_read(int dev, int offset) {
   UINT8 data;
   if (offset & 0xf0)
     SLICE_LOG("4x4 slice R dev=%d OFFPAGE off=%02X\n", dev, offset & 0xff);
-  if (dev <= 2 && reg >= 0x0e)
-    data = 0xff;  /* switch inputs -- active low, so all-open until wired up */
+  /*-- Registers E and F of the first three pairs read the switch columns, six
+  /   ports of eight giving the 48 switches SW00-SW2F.  The inputs have 470R
+  /   pull-ups to +5V and the switches pull to switch ground, so a closed
+  /   switch reads low; $9248 inverts with EOR #$FF before storing. --*/
+  if (dev <= 2 && reg >= 0x0e) {
+    int col = 1 + dev * 2 + (reg - 0x0e);
+    data = ~coreGlobals.swMatrix[col];
+    SLICE_LOG("4x4 switchmap dev=%d reg=%X -> col=%d matrix=%02X data=%02X\n",
+              dev, reg, col, coreGlobals.swMatrix[col], data);
+  }
   else
     data = slice.reg[dev][reg];
   SLICE_LOG("4x4 slice R dev=%d reg=%X data=%02X\n", dev, reg, data);
@@ -675,5 +683,5 @@ MACHINE_DRIVER_START(ATARI4)
   MDRV_DIPS(32)
   MDRV_SWITCH_UPDATE(ATARI4)
   MDRV_DIAGNOSTIC_LEDH(1)
-//  MDRV_SWITCH_CONV(ATARI_sw2m,ATARI_m2sw)
+  MDRV_SWITCH_CONV(ATARI_sw2m,ATARI_m2sw)
 MACHINE_DRIVER_END
