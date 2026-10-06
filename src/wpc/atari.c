@@ -567,6 +567,13 @@ MACHINE_DRIVER_END
 /   both plausible beep intervals, so it does not settle the question. --*/
 #define ATARI4_CPUFREQ 1000000
 #define ATARI4_IRQFREQ 500
+
+/*-- The game kicks $230C on every interrupt and inside its power-up busy-wait,
+/   so a gap of a second means it has stopped running and the real board would
+/   have reset.  Modelling that matters while both clocks above are guesses: a
+/   stalled machine has to announce itself rather than sit there looking idle.
+/   logerror is compiled out of release builds, so the reset is the signal. --*/
+#define ATARI4_WDOG_IRQS (ATARI4_IRQFREQ)  /* ~1 s without a kick */
 #define ATARI4_TEST_HOOKS 0  /* 1 = log every slice access */
 
 #if ATARI4_TEST_HOOKS
@@ -577,6 +584,7 @@ MACHINE_DRIVER_END
 
 static struct {
   UINT8 reg[ATARI4_SLICE_DEVS][16];
+  int   wdog;   /* interrupts since the last $230C kick */
 } slice;
 
 static UINT8 slice_read(int dev, int offset) {
@@ -606,7 +614,7 @@ static void slice_write(int dev, int offset, UINT8 data) {
     SLICE_LOG("4x4 slice W dev=%d OFFPAGE off=%02X data=%02X\n", dev, offset & 0xff, data);
   if (reg == 0x0c) {
     if (dev == 2) cpu_set_irq_line(ATARI_CPU, 0, CLEAR_LINE);  /* $220C: IRQ ack */
-    if (dev == 3) SLICE_LOG("4x4 watchdog kick\n");            /* $230C */
+    if (dev == 3) { slice.wdog = 0; SLICE_LOG("4x4 watchdog kick\n"); }  /* $230C */
   }
   /*-- $91B9 blits all 33 output ports every second interrupt, so logging every
   /   write floods the trace.  Only transitions carry information. --*/
@@ -652,6 +660,12 @@ static MEMORY_WRITE_START(ATARI4_writemem)
   {0x2500,0x25ff,	nvram4_w, &atari4_CMOS},
   {0x2600,0x27ff,	slice2_w},
   {0x3000,0x37ff,	MWA_RAM},
+  /*-- Writes above $8000 hit ROM and do nothing on the real board.  They must
+  /   be mapped: MAME's unmapped-write handler stores into the region for a
+  /   16-bit address bus, so a stray write would silently patch the loaded ROM
+  /   image.  The game does make two, through a generic pointer-store routine
+  /   at $836D/$8377 that lands on $FFF8.  ATARI1_writemem has the same guard. --*/
+  {0x8000,0xffff,	MWA_NOP},
 MEMORY_END
 
 /*-- The IRQ handler at $9665 acknowledges by writing $01 to $220C as its very
@@ -661,6 +675,12 @@ MEMORY_END
 /   watchdog, not an interrupt control.  The previous enable/disable latch here
 /   was invented when neither was known. --*/
 static INTERRUPT_GEN(ATARI4_irq) {
+  if (++slice.wdog > ATARI4_WDOG_IRQS) {
+    logerror("4x4 watchdog timeout: $230C not kicked for %d interrupts\n", slice.wdog);
+    slice.wdog = 0;
+    cpu_set_reset_line(ATARI_CPU, PULSE_LINE);
+    return;
+  }
   cpu_set_irq_line(ATARI_CPU, 0, ASSERT_LINE);
 }
 
@@ -670,9 +690,19 @@ static MACHINE_INIT(ATARI4) {
   memset(memory_region(ATARI_MEMREG_CPU), 0, 0x2000);
 }
 
+/*-- The cabinet switches are SW28 start, SW29 tilt, SW2A left coin, SW2B right
+/   coin and SW2C test, per the playfield diagram's legend -- so they live in
+/   column 6, not column 1.  Generation 2's update, which this was copied from,
+/   writes column 1; under the 4x4 switch map that column is SW00-SW07, real
+/   playfield switches, and the 0x62 mask forced five of them open every frame.
+/   Tilt has no key assigned, so bit 1 is preserved along with SW2D-SW2F. --*/
 static SWITCH_UPDATE(ATARI4) {
 	if (inports) {
-		coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x62) | (inports[ATARI_COMINPORT] & 0x9d);
+		coreGlobals.swMatrix[6] = (coreGlobals.swMatrix[6] & 0xe2)
+			| ((inports[ATARI_COMINPORT] & 0x0004) ? 0x01 : 0)   /* Game       -> SW28 */
+			| ((inports[ATARI_COMINPORT] & 0x0008) ? 0x04 : 0)   /* Left coin  -> SW2A */
+			| ((inports[ATARI_COMINPORT] & 0x0010) ? 0x08 : 0)   /* Right coin -> SW2B */
+			| ((inports[ATARI_COMINPORT] & 0x0081) ? 0x10 : 0);  /* Test       -> SW2C */
 	}
 }
 
