@@ -608,6 +608,10 @@ static void slice_write(int dev, int offset, UINT8 data) {
     if (dev == 2) cpu_set_irq_line(ATARI_CPU, 0, CLEAR_LINE);  /* $220C: IRQ ack */
     if (dev == 3) SLICE_LOG("4x4 watchdog kick\n");            /* $230C */
   }
+  /*-- $91B9 blits all 33 output ports every second interrupt, so logging every
+  /   write floods the trace.  Only transitions carry information. --*/
+  if (slice.reg[dev][reg] != data)
+    SLICE_LOG("4x4 out dev=%d reg=%X %02X -> %02X\n", dev, reg, slice.reg[dev][reg], data);
   slice.reg[dev][reg] = data;
   SLICE_LOG("4x4 slice W dev=%d reg=%X data=%02X\n", dev, reg, data);
 }
