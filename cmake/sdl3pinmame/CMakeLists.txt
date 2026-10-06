@@ -787,6 +787,11 @@ add_executable(sdl3pinmame
    src/unix/frameskip-drivers/barath.c
 )
 
+# mips32.c: fast_run's threaded dispatch (GCC/Clang) only pays off with tail merging off
+set_source_files_properties(src/cpu/mips32/mips32.c PROPERTIES COMPILE_OPTIONS
+   "$<$<C_COMPILER_ID:GNU>:-fno-crossjumping>;$<$<C_COMPILER_ID:Clang,AppleClang>:-mllvm>;$<$<C_COMPILER_ID:Clang,AppleClang>:-enable-tail-merge=false>"
+)
+
 find_package(ZLIB REQUIRED)
 
 target_include_directories(sdl3pinmame PUBLIC

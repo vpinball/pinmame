@@ -146,12 +146,13 @@ typedef struct p8x32a {
 	int stop;
 	int ctr_ok;
 	uint64_t ctr_from, ctr_nt;
-	uint16_t nco_mask, nco_ok; /* counters (2 * cog + ctr) in an NCO mode; cached next changes */
+	uint16_t nco_mask, nco_ok;  /* counters (2 * cog + ctr) in an NCO mode; cached next changes */
 	uint8_t nco_n, nco_list[16];
 	int pins_ok; /* reg_out .. nco_lvl are current */
 	uint32_t reg_out, reg_dir, cog_dir[8], cog_out[8], nco_lvl[16];
 	uint64_t nco_from[16], nco_nt[16];
 	uint8_t sleepers;
+	uint8_t waiters;            /* cogs in WAITPEQ/WAITPNE (bit n); a bit may outlive its wait */
 	uint8_t lz_on, lz, lz_nh;   /* the lazy cog; its pending pin changes */
 	uint32_t lazy_ok;           /* pins a lazy cog may drive; 0 = none */
 	uint32_t lz_pins, lz_out, lz_hout[P8X32A_LZH];
@@ -165,12 +166,12 @@ typedef struct p8x32a {
 	uint16_t jn_a[P8X32A_JN];
 	uint64_t jn_t[P8X32A_JN];
 	uint8_t jmap[2048];         /* bit a / 4: hub long a has an entry */
-	uint64_t jn_full, jn_writes; /* catch-ups forced by a full journal; entries made */
+	uint64_t jn_full, jn_writes;/* catch-ups forced by a full journal; entries made */
 	unsigned sched_gen; /* bumped when one cog changes another's next event */
 	uint64_t sleeps; /* idle loops entered */
 	p8x32a_loop loop[8];
 	p8x32a_dec dec[8][512];
-	p8x32a_jit_fn jit_build; /* NULL: no translation */
+	p8x32a_jit_fn jit_build;    /* NULL: no translation */
 	void *jit;
 	p8x32a_jblk *jblk[8][512];
 	p8x32a_jlink jlink[8][512];
@@ -179,7 +180,7 @@ typedef struct p8x32a {
 	uint32_t jres_i[8];
 	unsigned jres_px[8], jres_ep[8], jep[8];
 	uint32_t jvar[8][512];
-	uint64_t jit_refused; /* lookups left to the interpreter */
+	uint64_t jit_refused;       /* lookups left to the interpreter */
 	uint8_t jcode[8][64];
 	uint64_t jot[P8X32A_JOUT];
 	uint32_t jov[P8X32A_JOUT];

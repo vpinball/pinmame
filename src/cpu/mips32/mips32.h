@@ -58,9 +58,10 @@ struct mips32_state {
 	int dslot;                    /* direct region of the last fast load */
 	int wslot;                    /* direct region of the last fast store, -1 none */
 	uint32_t status, srsctl;
-	uint32_t fva, fsize;          /* instructions at [fva, fva + fsize) come from fptr */
+	/* instructions come from fbase + pc for pc - fva aligned and below 4 * fwords; fwords 0 none */
+	uint32_t fva, fwords;
 	uint64_t cycles;
-	const uint8_t *fptr;
+	uintptr_t fbase;
 	mips32_region region[MIPS32_REGIONS];
 	uint64_t c0, ti_at;           /* instruction start; Timer fires at ti_at */
 	int irq_chk;                  /* interrupt state may have changed */

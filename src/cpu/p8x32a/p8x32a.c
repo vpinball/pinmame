@@ -195,6 +195,8 @@ P8_INLINE void jit_void(p8x32a * const p, const int n, const unsigned a)
 }
 
 
+static void wait_notify(p8x32a *p, uint64_t t, uint32_t pins);
+
 /* queue a pin change at t; what: P8X32A_PEND_COG / P8X32A_PEND_CTR bits */
 static void add_pending(p8x32a * const p, const uint64_t t, const uint32_t pins, const uint32_t what)
 {
@@ -203,6 +205,7 @@ static void add_pending(p8x32a * const p, const uint64_t t, const uint32_t pins,
 	if (t < p->flushed) chk_fail("pin change sent", t, p->flushed);
 #endif
 	if (p->sleepers) loop_notify(p, t, pins);
+	if (p->waiters) wait_notify(p, t, pins);
 	for (k = 0; k < p->npend; k++)
 		if (p->pend[k] == t) { p->pend_pins[k] |= pins; p->pend_what[k] |= what; return; }
 	if (p->npend < (int)(sizeof(p->pend) / sizeof(p->pend[0]))) {
@@ -819,16 +822,17 @@ static uint64_t loop_bound(p8x32a * const p, const int n, const uint64_t t)
 {
 	const uint32_t m = p->loop[n].wake;
 	uint64_t w = p->horizon == P8X32A_NEVER ? P8X32A_NEVER : p->horizon + 1, e;
-	int k, j;
+	int k;
 	if (m) {
 		for (k = 0; k < p->npend; k++)
 			if (p->pend[k] > t && p->pend[k] < w && (p->pend_pins[k] & m)) w = p->pend[k];
-		for (k = 0; k < 8; k++)
-			for (j = 0; j < 2; j++) {
-				const p8x32a_cog * const c = &p->cog[k];
-				if (!((nco_pins(c->ctr[j]) | (t < c->ctr_at[j] ? nco_pins(c->ctr_old[j]) : 0)) & m)) continue;
-				if ((e = ctr_toggle(c, j, t)) > t && e < w) w = e;
-			}
+		/* only counters in nco_list drive pins */
+		for (k = 0; k < p->nco_n; k++) {
+			const int j = p->nco_list[k] & 1;
+			const p8x32a_cog * const c = &p->cog[p->nco_list[k] >> 1];
+			if (!((nco_pins(c->ctr[j]) | (t < c->ctr_at[j] ? nco_pins(c->ctr_old[j]) : 0)) & m)) continue;
+			if ((e = ctr_toggle(c, j, t)) > t && e < w) w = e;
+		}
 		if (p->bus.pins_next && (e = p->bus.pins_next(p->bus.ctx, t)) < w) w = e;
 	}
 	return w > t ? w : t + 1;
@@ -1106,6 +1110,19 @@ static void do_hub(p8x32a * const p, const int n)
 	complete(p, n, m3, q, p->sys_c);
 }
 
+/* a pin change at t wakes the cogs waiting on those pins; on any pin those waiting on an input that is not pure (one a device may change in answer to an output) */
+static void wait_notify(p8x32a * const p, const uint64_t t, const uint32_t pins)
+{
+	int n;
+	for (n = 0; n < 8; n++) {
+		p8x32a_cog * const c = &p->cog[n];
+		if (!(p->waiters >> n & 1)) continue;
+		if (c->ev != EV_WAITPIN) { p->waiters &= (uint8_t)~(1u << n); continue; }
+		if ((pins & ((c->s & ~p->bus.pure_in) ? 0xFFFFFFFFu : c->s)) && t < c->ev_t) { c->ev_t = t; p->sched_gen++; }
+	}
+}
+
+/* WAITPEQ/WAITPNE: done, or wait for the next change it can see coming (pending points, counters, inputs, the slice end); another cog's pin change wakes it earlier (wait_notify) */
 static void wait_pins(p8x32a * const p, const int n)
 {
 	p8x32a_cog * const c = &p->cog[n];
@@ -1119,9 +1136,10 @@ static void wait_pins(p8x32a * const p, const int n)
 	if (match) { c->ev = EV_DONE; c->ev_t = t + 2; return; }
 	for (k = 0; k < p->npend; k++)
 		if (p->pend[k] > t && p->pend[k] < nt) nt = p->pend[k];
-	if (ctr_next(p, t) < nt) nt = ctr_next(p, t);
-	for (k = 0; k < 8; k++)
-		if (k != n && p->cog[k].ev != EV_NONE && !(p->lz_on && k == p->lz) && p->cog[k].ev_t + 1 < nt) nt = p->cog[k].ev_t + 1;
+	{
+		const uint64_t ct = ctr_next(p, t);
+		if (ct < nt) nt = ct;
+	}
 	if (p->bus.pins_next) {
 		const uint64_t e = p->bus.pins_next(p->bus.ctx, t);
 		if (e < nt) nt = e;
@@ -1163,6 +1181,7 @@ static void exec(p8x32a * const p, const int n)
 	}
 	if (c->cond && (op == 0x3C || op == 0x3D)) {
 		c->ev = EV_WAITPIN;
+		p->waiters |= (uint8_t)(1u << n);
 		c->ev_t = t0 + 3;
 		return;
 	}
@@ -1924,7 +1943,7 @@ void p8x32a_reset(p8x32a *p, uint64_t t)
 	p->nco_n = 0;
 	memset(p->nco_lvl, 0, sizeof(p->nco_lvl));
 	p->pins_ok = 0;
-	p->sleepers = 0;
+	p->sleepers = p->waiters = 0;
 	for (n = 0; n < 8; n++) loop_reset(&p->loop[n]);
 	if (p->lz_on) {
 		jit_drop(p, p->lz);

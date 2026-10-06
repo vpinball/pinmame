@@ -766,6 +766,11 @@ set(PINMAME_SOURCES
    ext/zlib/zutil.c
 )
 
+# mips32.c: fast_run's threaded dispatch (GCC/Clang) only pays off with tail merging off
+set_source_files_properties(src/cpu/mips32/mips32.c PROPERTIES COMPILE_OPTIONS
+   "$<$<C_COMPILER_ID:GNU>:-fno-crossjumping>;$<$<C_COMPILER_ID:Clang,AppleClang>:-mllvm>;$<$<C_COMPILER_ID:Clang,AppleClang>:-enable-tail-merge=false>"
+)
+
 if(PLATFORM STREQUAL "win")
    list(APPEND PINMAME_SOURCES
       src/vc/dirent.c
