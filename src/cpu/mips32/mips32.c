@@ -676,7 +676,7 @@ static int direct_slot(const mips32_state * const s, const uint32_t pa, const ui
 #if (defined(__GNUC__) || defined(__clang__)) && !defined(MIPS32_NO_THREADED)
 #define FR_THREADED
 #endif
-/* d is 0 for none: written and cleared again, without a branch; delay is stored, not kept in a register - it is only read after the loop */
+/* d is 0 for none: written and cleared again, without a branch; delay is stored, not kept in a register: it is only read after the loop */
 #define FR_SET() do { r[d] = v; r[0] = 0; pc = npc; npc += 4; s->delay = (int)nd; cyc++; } while (0)
 /* a taken branch or jump: t is live only from its handler to here */
 #define FR_JMPSET() do { r[d] = v; r[0] = 0; pc = npc; npc = t; s->delay = 1; cyc++; } while (0)

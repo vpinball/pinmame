@@ -1110,7 +1110,7 @@ static void do_hub(p8x32a * const p, const int n)
 	complete(p, n, m3, q, p->sys_c);
 }
 
-/* a pin change at t wakes the cogs waiting on those pins; on any pin those waiting on an input that is not pure (one a device may change in answer to an output) */
+/* a pin change at t wakes the cogs waiting on those pins; on any pin, those waiting on an input that is not pure (one a device may change in answer to an output) */
 static void wait_notify(p8x32a * const p, const uint64_t t, const uint32_t pins)
 {
 	int n;

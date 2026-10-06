@@ -1880,7 +1880,9 @@ void core_updateSw(int flipEn) {
         #ifdef LIBPINMAME
         OnSolenoid(ii, v);
         #else
-        if ((v > 128) != (locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii - 1] > 128)) {
+        // On above half; 2 state solenoids above 0, as their onValue may be below 1 (Capcom flipper strength)
+        const UINT8 onLevel = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + ii - 1].integrator == &core_update_pwm_output_sol_2_state ? 0 : 128;
+        if ((v > onLevel) != (locals.lastPhysicsOutput[CORE_MODOUT_SOL0 + ii - 1] > onLevel)) {
           OnSolenoid(ii, v);
           /*-- log solenoid number on the display (except flippers) --*/
           if (!pmoptions.dmd_only && ((ii < CORE_FIRSTLFLIPSOL) || (ii >= CORE_FIRSTSIMSOL))) {
@@ -1894,7 +1896,7 @@ void core_updateSw(int flipEn) {
           }
           #ifdef ENABLE_MECHANICAL_SAMPLES
           if (coreGlobals.soundEn)
-            proc_mechsounds(ii, v > 128);
+            proc_mechsounds(ii, v > onLevel);
           #endif
         }
         #endif
@@ -2281,8 +2283,8 @@ int core_getSol(int solNo) {
       else
         return coreGlobals.solenoids & (1<<((solNo - 13)|4));
     }
-    if (core_gameData->gen & (GEN_ALLS11 | GEN_PINHECK))
-      return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 32 + solNo - 37 + 8].value) : coreGlobals.solenoids2 & (1<<(solNo - 37 + 8));
+    if (core_gameData->gen & (GEN_ALLS11 | GEN_PINHECK)) // S11 outputs in slots 40-47; pinHeck's GI 8-15 in 36-43, its lower flippers using 44-47
+      return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + ((core_gameData->gen & GEN_PINHECK) ? solNo - 1 : 32 + solNo - 37 + 8)].value) : coreGlobals.solenoids2 & (1<<(solNo - 37 + 8));
   }
   else if (solNo <= 48) { // 45-48 Lower flippers
     if (coreGlobals.hasModulatedFlippers && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
@@ -2337,6 +2339,11 @@ UINT64 core_getAllSol(void) {
      sol |= (((UINT64)(coreGlobals.solenoids2 & 0x10)) << 28);
   else if (core_gameData->gen & GEN_ALLWS) // 33..36 various aux board outputs
      sol |= ((UINT64)(coreGlobals.solenoids2 & 0x00f0)) << 28;
+  else if (core_gameData->gen & GEN_PINHECK) { // 33-36 pinHeck upper flipper solenoids (hold coil is set if either coil is set)
+    UINT8 uFlip = (coreGlobals.solenoids2 & (CORE_URFLIPSOLBITS|CORE_ULFLIPSOLBITS));
+    uFlip |= (uFlip & 0x50)<<1;
+    sol |= (((UINT64)uFlip)<<28);
+  }
   if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA | GEN_PINHECK)) // 37-44 S11, SAM extra, pinHeck GI 8-15
      sol |= ((UINT64)(coreGlobals.solenoids2 & 0xff00)) << 28;
   { // 45-48 flipper solenoids (hold coil is set if either coil is set)
@@ -2396,7 +2403,10 @@ void core_getAllPhysicSols(float* const state)
       state[i    ] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
       state[i + 4] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
     }
-  else if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA | GEN_PINHECK)) // 37-44 S11, SAM extra, pinHeck GI 8-15
+  else if (core_gameData->gen & GEN_PINHECK) // 37-44 pinHeck GI 8-15
+    for (int i = 36; i < 44; i++)
+      state[i] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
+  else if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA)) // 37-44 S11, SAM extra
     for (int i = 40; i < 48; i++)
       state[i - 4] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
   /*-- 45..48 lower flipper solenoids --*/
@@ -2515,6 +2525,8 @@ static MACHINE_INIT(core) {
     memset(&coreGlobals, 0, sizeof(coreGlobals));
     memset(&locals, 0, sizeof(locals));
     coreData = (struct pinMachine *)&Machine->drv->pinmame;
+    /*-- CORE_MODOUT_FORCE_ON is per driver: the game run before may have set it (SAM, Capcom, pinHeck) --*/
+    options.usemodsol &= ~CORE_MODOUT_FORCE_ON;
 #if defined(VPINMAME) || defined(PINMAME) || defined(LIBPINMAME)
     /*-- new run, new -dmd_dump_dir dump; a soft reset keeps appending --*/
     dmd_dump_txtFresh = dmd_dump_rawFresh = 1;
@@ -2927,11 +2939,11 @@ void core_update_pwm_output_sol_2_state(const double now, const int index, const
      output->state.sol.lastFlipTimestamp = now;
   if (isFlip && state == 0) {
      // If binary output is flipping to ON state, immediately retain and report the ON state
-     output->value = 1.0f;
+     output->value = output->state.sol.onValue;
   }
   else if ((float)(now - output->state.sol.lastFlipTimestamp) > output->state.sol.switchDownLatency) {
      // Output is in a stable state (not PWMed since at least the defined switch down latency), just report its value
-     output->value = state ? 1.f : 0.f;
+     output->value = state ? output->state.sol.onValue : 0.f;
   }
   #ifdef LOG_PWM_OUT
   if (index == LOG_PWM_OUT)
@@ -2942,7 +2954,7 @@ void core_update_pwm_output_sol_2_state(const double now, const int index, const
   if (output->state.sol.fastOn && (prevValue != output->value)) {
     // We simply push solenoid to the corresponding solenoids/solenoids2 (the driver is responsible to map things correctly from the start, without relying on an additional remap by core.c)
     const int sol = (index - CORE_MODOUT_SOL0) & 0x1F;
-    const UINT32 statel = output->value > 0.5f ? 1 : 0;
+    const UINT32 statel = output->value > 0.f ? 1 : 0; // on is any value above 0: onValue may be below 1
     if (index < CORE_MODOUT_SOL0 + 32)
       coreGlobals.solenoids = (coreGlobals.solenoids & ~(1u << sol)) | (statel << sol);
     else if (index < CORE_MODOUT_SOL0 + 64)
@@ -3150,12 +3162,14 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
       coreGlobals.physicOutputState[i].state.sol.fastOn = TRUE;
       // TODO 60ms is likely too much. For example for Stern SAM, the sequence is 40ms pulse to lift flipper then 1ms pulse every 12ms to hold.
       coreGlobals.physicOutputState[i].state.sol.switchDownLatency = 0.060f;
+      coreGlobals.physicOutputState[i].state.sol.onValue = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_sol_2_state;
       break;
     case CORE_MODOUT_LEGACY_SOL_2_STATE:
       coreGlobals.physicOutputState[i].state.sol.fastOn = FALSE;
       // TODO 60ms is likely too much. For example for Stern SAM, the sequence is 40ms pulse to lift flipper then 1ms pulse every 12ms to hold.
       coreGlobals.physicOutputState[i].state.sol.switchDownLatency = 0.060f;
+      coreGlobals.physicOutputState[i].state.sol.onValue = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_sol_2_state;
       break;
     case CORE_MODOUT_BULB_44_5_7V_AC: // Sega/Stern Whitestar uses 5.7V AC wired to #44 bulbs for GI which leads to a (very slow) bulb equilibrium around 78% of the rated bulb brightness. Likely for less heat and longer bulb life ?
@@ -3490,9 +3504,12 @@ void core_update_pwm_outputs(const int startIndex, const int count)
       if (((options.usemodsol & (CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS)) == 0) && (startIndex < CORE_MODOUT_SOL0 + CORE_MODOUT_SOL_MAX) && (startIndex + count >= CORE_MODOUT_SOL0))
       {
          UINT32 sols = 0;
-         for (int i = 0; i < 32; i++)
-            if (coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value >= 0.5f)
+         for (int i = 0; i < 32; i++) {
+            const core_tPhysicOutput* const output = &coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i];
+            // 2 state solenoids are on at any value above 0: their onValue may be below 1
+            if (output->integrator == &core_update_pwm_output_sol_2_state ? output->value > 0.f : output->value >= 0.5f)
                sols |= 1u << i;
+         }
          coreGlobals.solenoids = sols;
       }
    }

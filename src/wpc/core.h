@@ -486,6 +486,7 @@ typedef struct {
          int fastOn;
          double lastFlipTimestamp;
          float switchDownLatency;
+         float onValue;                   /* value while on: 1, or a drive strength the driver sets (Capcom flippers) */
       } sol; // Physical model of a solenoid
    } state;
    double flipTimeStamps[FLIP_BUFFER_SIZE];
@@ -612,6 +613,7 @@ extern void core_getAllPhysicSols(float* const state);
 
 /*-- AC sync and PWM integration --*/
 extern void core_update_pwm_outputs(const int startIndex, const int count);
+extern void core_update_pwm_output_sol_2_state(const double now, const int index, const int isFlip, const int state);
 INLINE void core_update_pwm_gis(void) { if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_GI)) core_update_pwm_outputs(CORE_MODOUT_GI0, coreGlobals.nGI); }
 INLINE void core_update_pwm_solenoids(void) { if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) core_update_pwm_outputs(CORE_MODOUT_SOL0, coreGlobals.nSolenoids); }
 INLINE void core_update_pwm_segments(void) { if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS)) core_update_pwm_outputs(CORE_MODOUT_SEG0, coreGlobals.nAlphaSegs); }
