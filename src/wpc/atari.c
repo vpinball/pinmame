@@ -543,12 +543,68 @@ MACHINE_DRIVER_START(ATARI3)
 MACHINE_DRIVER_END
 
 /*-----------------------------------------
+/  4x4 custom I/O -- the Atari "Pinball Slice"
+/
+/  4x4 shares no I/O with generations 1-3.  It uses Atari custom gate arrays
+/  silkscreened PINBALL SLICE (schematic 039032-01, designators 12E and 13E).
+/  Each is a 40-pin part with a 4-bit data bus, A0-A3 selecting 16 registers,
+/  8 switch inputs and 16 outputs in four groups; two of them share a chip
+/  select and split the byte, one driving D0-D3 and the other D4-D7.  Five such
+/  pairs sit at $2000-$2400 and two further 16-register devices at $2600/$2700
+/  whose identity is not yet established.
+/
+/  Only the register roles the game code proves are decoded here.  Everything
+/  else is stored and logged, because no datasheet for this part is known to
+/  exist and the CPU-board sheet of the schematic has never surfaced.
+/------------------------------------------*/
+#define ATARI4_SLICE_DEVS 7  /* $2000,$2100,$2200,$2300,$2400,$2600,$2700 */
+#define ATARI4_TEST_HOOKS 0  /* 1 = log every slice access */
+
+#if ATARI4_TEST_HOOKS
+#define SLICE_LOG logerror
+#else
+#define SLICE_LOG(...) ((void)0)
+#endif
+
+static struct {
+  UINT8 reg[ATARI4_SLICE_DEVS][16];
+} slice;
+
+static UINT8 slice_read(int dev, int offset) {
+  int reg = offset & 0x0f;
+  UINT8 data;
+  if (offset & 0xf0)
+    SLICE_LOG("4x4 slice R dev=%d OFFPAGE off=%02X\n", dev, offset & 0xff);
+  if (dev <= 2 && reg >= 0x0e)
+    data = 0xff;  /* switch inputs -- active low, so all-open until wired up */
+  else
+    data = slice.reg[dev][reg];
+  SLICE_LOG("4x4 slice R dev=%d reg=%X data=%02X\n", dev, reg, data);
+  return data;
+}
+
+static void slice_write(int dev, int offset, UINT8 data) {
+  int reg = offset & 0x0f;
+  if (offset & 0xf0)
+    SLICE_LOG("4x4 slice W dev=%d OFFPAGE off=%02X data=%02X\n", dev, offset & 0xff, data);
+  slice.reg[dev][reg] = data;
+  SLICE_LOG("4x4 slice W dev=%d reg=%X data=%02X\n", dev, reg, data);
+}
+
+static READ_HANDLER(slice_r)   { return slice_read(offset >> 8, offset); }
+static WRITE_HANDLER(slice_w)  { slice_write(offset >> 8, offset, data); }
+static READ_HANDLER(slice2_r)  { return slice_read(5 + (offset >> 8), offset); }
+static WRITE_HANDLER(slice2_w) { slice_write(5 + (offset >> 8), offset, data); }
+
+/*-----------------------------------------
 /  Memory map for 4x4
 /------------------------------------------*/
 static MEMORY_READ_START(ATARI4_readmem)
   {0x0000,0x07ff,	MRA_RAM},
   {0x1000,0x17ff,	MRA_RAM},
-  {0x2000,0x27ff,	MRA_RAM},
+  {0x2000,0x24ff,	slice_r},	/* five Pinball Slice pairs */
+  {0x2500,0x25ff,	MRA_RAM},	/* 256x4 CMOS -- real handler in a later task */
+  {0x2600,0x27ff,	slice2_r},	/* two further 16-register devices */
   {0x3000,0x37ff,	MRA_RAM},
   {0x8000,0xffff,	MRA_ROM},
 MEMORY_END
@@ -556,7 +612,9 @@ MEMORY_END
 static MEMORY_WRITE_START(ATARI4_writemem)
   {0x0000,0x07ff,	MWA_RAM},
   {0x1000,0x17ff,	MWA_RAM},
-  {0x2000,0x27ff,	MWA_RAM, &generic_nvram, &generic_nvram_size},
+  {0x2000,0x24ff,	slice_w},
+  {0x2500,0x25ff,	MWA_RAM},
+  {0x2600,0x27ff,	slice2_w},
   {0x3000,0x37ff,	MWA_RAM},
 MEMORY_END
 
@@ -575,6 +633,7 @@ static INTERRUPT_GEN(ATARI4_irq) {
 
 static MACHINE_INIT(ATARI4) {
   memset(&locals, 0, sizeof locals);
+  memset(&slice, 0, sizeof slice);
   locals.enable_irq = 1;
   memset(memory_region(ATARI_MEMREG_CPU), 0, 0x2000);
   cpu_set_irq_callback(0, irq_callback);
