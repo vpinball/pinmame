@@ -559,14 +559,28 @@ MACHINE_DRIVER_END
 /------------------------------------------*/
 #define ATARI4_SLICE_DEVS 7  /* $2000,$2100,$2200,$2300,$2400,$2600,$2700 */
 
-/*-- Neither clock is sourced.  PinMAME used 575 kHz and MAME 1 MHz, both
-/   guesses; the CPU-board sheet of schematic 039032-01 has never surfaced and
-/   no photograph of the crystal is available.  1 MHz is the better guess for a
-/   6502 design of this era and matches generation 1.  The ROM's own delay loop
-/   at $DFD6 is ~164k cycles, which is 0.16 s at 1 MHz and 0.29 s at 575 kHz --
-/   both plausible beep intervals, so it does not settle the question. --*/
-#define ATARI4_CPUFREQ 1000000
-#define ATARI4_IRQFREQ 500
+/*-- Neither clock is sourced -- no CPU-board schematic sheet has surfaced and
+/   there is no photograph of the crystal.  Both values below are derived, not
+/   measured, but they are far better supported than the 575 kHz PinMAME used
+/   and the 1 MHz MAME used, neither of which had any stated basis.
+/
+/   CPU: Atari's house standard for 6502 boards of this era is a 12.096 MHz
+/   crystal divided by 8.  Centipede, Asteroids, Asteroids Deluxe, Tempest,
+/   Black Widow and Food Fight all use exactly that, so 1.512 MHz is the clock
+/   a 1982 Atari 6502 board would be expected to carry.
+/
+/   IRQ: the handler at $9665 costs a near-constant 3328 cycles (measured:
+/   median and 90th percentile both 3328 over 4000 samples).  It has to fit in
+/   one interrupt period, so at 1.512 MHz the rate must be below 1512000/3328 =
+/   454 Hz.  That rules out 500 Hz and also generation 2's 488 Hz.  1.512 MHz /
+/   4096 = 369 Hz is the natural binary divider inside that limit and leaves the
+/   handler at 81% duty.
+/
+/   Still unresolved: the exact divider.  Crash-rate measurements across rates
+/   do not select one, and cannot while the stack-page excursion is unexplained
+/   -- notably, no clock setting makes the game progress. --*/
+#define ATARI4_CPUFREQ 1512000
+#define ATARI4_IRQFREQ 369
 
 /*-- The game kicks $230C on every interrupt and inside its power-up busy-wait,
 /   so a gap of a second means it has stopped running and the real board would
