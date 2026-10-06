@@ -596,6 +596,17 @@ static WRITE_HANDLER(slice_w)  { slice_write(offset >> 8, offset, data); }
 static READ_HANDLER(slice2_r)  { return slice_read(5 + (offset >> 8), offset); }
 static WRITE_HANDLER(slice2_w) { slice_write(5 + (offset >> 8), offset, data); }
 
+/*-- 4x4 stores scores and audits in a 256x4 CMOS at $2500.  Every read site in
+/   the ROM normalises with ORA #$F0 and masks back with AND #$0F, which is the
+/   idiom for a nibble-wide part whose upper bits float high; the arithmetic on
+/   it runs in decimal mode.  Only the low nibble is real, so only it is kept. --*/
+static UINT8 *atari4_CMOS;
+static NVRAM_HANDLER(ATARI4) {
+  core_nvram(file, read_or_write, atari4_CMOS, 0x100, 0x00);
+}
+static READ_HANDLER(nvram4_r)  { return atari4_CMOS[offset]; }
+static WRITE_HANDLER(nvram4_w) { atari4_CMOS[offset] = data & 0x0f; }
+
 /*-----------------------------------------
 /  Memory map for 4x4
 /------------------------------------------*/
@@ -603,7 +614,7 @@ static MEMORY_READ_START(ATARI4_readmem)
   {0x0000,0x07ff,	MRA_RAM},
   {0x1000,0x17ff,	MRA_RAM},
   {0x2000,0x24ff,	slice_r},	/* five Pinball Slice pairs */
-  {0x2500,0x25ff,	MRA_RAM},	/* 256x4 CMOS -- real handler in a later task */
+  {0x2500,0x25ff,	nvram4_r},	/* 256x4 CMOS */
   {0x2600,0x27ff,	slice2_r},	/* two further 16-register devices */
   {0x3000,0x37ff,	MRA_RAM},
   {0x8000,0xffff,	MRA_ROM},
@@ -613,7 +624,7 @@ static MEMORY_WRITE_START(ATARI4_writemem)
   {0x0000,0x07ff,	MWA_RAM},
   {0x1000,0x17ff,	MWA_RAM},
   {0x2000,0x24ff,	slice_w},
-  {0x2500,0x25ff,	MWA_RAM},
+  {0x2500,0x25ff,	nvram4_w, &atari4_CMOS},
   {0x2600,0x27ff,	slice2_w},
   {0x3000,0x37ff,	MWA_RAM},
 MEMORY_END
@@ -652,7 +663,7 @@ MACHINE_DRIVER_START(ATARI4)
   MDRV_CPU_VBLANK_INT(ATARI2_vblank, 1)
   MDRV_CPU_PERIODIC_INT(ATARI4_irq, 500)
   MDRV_CORE_INIT_RESET_STOP(ATARI4,NULL,ATARI)
-  MDRV_NVRAM_HANDLER(generic_0fill)
+  MDRV_NVRAM_HANDLER(ATARI4)
   MDRV_DIPS(32)
   MDRV_SWITCH_UPDATE(ATARI4)
   MDRV_DIAGNOSTIC_LEDH(1)
