@@ -25,6 +25,7 @@ extern "C" {
 /* the look: the module's service-menu settings, from its 14-byte config packet */
 #define DISPLAY_LOOK_W  (2 * DISPLAY_W)
 #define DISPLAY_LOOK_H  (2 * DISPLAY_H)
+#define DISPLAY_LOOK_MAX (DISPLAY_LOOK_W * 2 * DISPLAY_LOOK_H * 3) /* bytes of the 128 x 64 module's look */
 #define DISPLAY_ROUND   0
 #define DISPLAY_SQUARE  1
 #define DISPLAY_HIGHREZ 2
@@ -59,7 +60,7 @@ void pinheck_display_init(display *d, void *ctx, display_frame_fn on_frame, disp
 int pinheck_display_size(display *d, int w, int h);
 void pinheck_display_pins(display *d, uint64_t t, uint32_t out, uint32_t dir);
 int pinheck_display_look(display_look *look, const uint8_t *cfg, int n);
-void pinheck_display_render(const display_look *look, const uint8_t *frame, uint8_t *rgb);
+void pinheck_display_render(const display_look *look, const uint8_t *frame, int h, uint8_t *rgb);
 
 #ifdef __cplusplus
 }

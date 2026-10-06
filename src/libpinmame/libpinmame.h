@@ -112,10 +112,10 @@ typedef enum {
 } PINMAME_DISPLAY_TYPE;
 
 typedef enum {
-	PINMAME_MOD_OUTPUT_TYPE_SOLENOID = 0,  // Solenoid output type
-	PINMAME_MOD_OUTPUT_TYPE_LAMP = 1,      // Lamp output type
-	PINMAME_MOD_OUTPUT_TYPE_GI = 2,        // Global Illumination output type
-	PINMAME_MOD_OUTPUT_TYPE_ALPHASEG = 3,  // Alpha Numeric segment output type
+	PINMAME_MOD_OUTPUT_TYPE_SOLENOID = 0, // Solenoid output type
+	PINMAME_MOD_OUTPUT_TYPE_LAMP = 1,     // Lamp output type
+	PINMAME_MOD_OUTPUT_TYPE_GI = 2,       // Global Illumination output type
+	PINMAME_MOD_OUTPUT_TYPE_ALPHASEG = 3, // Alpha Numeric segment output type
 } PINMAME_MOD_OUTPUT_TYPE;
 
 #if PINMAME_FIXED_ENUMS
@@ -177,11 +177,12 @@ enum { // GCC gives values above 32 bits a wider type; MSVC's C compiler truncat
 	PINMAME_HARDWARE_GEN_SPA = 0x4000000000000,         // Stern PA
 	PINMAME_HARDWARE_GEN_P2K = 0x8000000000000,         // Midway Pinball 2000
 	PINMAME_HARDWARE_GEN_PINHECK = 0x10000000000000,    // Spooky pinHeck
+	PINMAME_HARDWARE_GEN_CAPCOM = 0x20000000000000,     // Capcom
 	PINMAME_HARDWARE_GEN_ALLWPC = 0x00000000000ff,      // All WPC
 	PINMAME_HARDWARE_GEN_ALLS11 = 0x000008000ff00,      // All Sys11
 	PINMAME_HARDWARE_GEN_ALLBY35 = 0x0000047e00000,     // All Bally35 and derivatives
 	PINMAME_HARDWARE_GEN_ALLS80 = 0x0000600000000,      // All GTS80
-	PINMAME_HARDWARE_GEN_LLWS = 0x001c000000000,       // All Whitestar
+	PINMAME_HARDWARE_GEN_LLWS = 0x001c000000000,        // All Whitestar
 #if PINMAME_FIXED_ENUMS
 } PINMAME_HARDWARE_GEN;
 #else

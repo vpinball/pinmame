@@ -4,6 +4,8 @@
 
 #include "../../ext/libsamplerate/samplerate.h"
 
+#include <atomic>
+#include <shared_mutex>
 #include <thread>
 #include <vector>
 #include <algorithm>
@@ -48,7 +50,12 @@ PINMAME_DMD_MODE g_fDmdMode = PINMAME_DMD_MODE_BRIGHTNESS;
 char g_szGameName[256] = {}; // String containing requested game name (may be different from ROM if aliased), set by PinmameRun
 }
 
-static int _isRunning = 0;
+// Run state: 0 stopped, 2 starting (PinmameRun), 1 running (end of the core's machine init), 3 stopping (start of its
+// machine stop). The API only touches the emulation in state 1, under a shared lock of _stateMutex: the game thread
+// takes it exclusively to change the state, so it can't leave state 1 (and tear down) while an API call is in flight
+static std::atomic<int> _isRunning = 0;
+static std::shared_mutex _stateMutex;
+static inline bool IsEmulationRunning() { return _isRunning == 1; }
 static int _timeToQuit = 0;
 static PinmameConfig* _p_Config = nullptr;
 static std::thread* _p_gameThread = nullptr;
@@ -771,7 +778,11 @@ extern "C" void OnStateChange(const int state)
    if (_isRunning == state)
       return;
 
-   _isRunning = state;
+   {
+      // Not held for the callbacks below: they may call the API, or wait for the main thread
+      const std::unique_lock lock(_stateMutex);
+      _isRunning = state;
+   }
 
    if (msgLocals.msgApi != NULL)
    {
@@ -1244,7 +1255,8 @@ PINMAMEAPI int PinmameIsRunning()
 
 PINMAMEAPI PINMAME_STATUS PinmameReset()
 {
-	if (!_isRunning)
+	const std::shared_lock lock(_stateMutex);
+	if (!IsEmulationRunning())
 		return PINMAME_STATUS_EMULATOR_NOT_RUNNING;
 
 	machine_reset();
@@ -1258,7 +1270,8 @@ PINMAMEAPI PINMAME_STATUS PinmameReset()
 
 PINMAMEAPI PINMAME_STATUS PinmamePause(const int pause)
 {
-	if (!_isRunning)
+	const std::shared_lock lock(_stateMutex);
+	if (!IsEmulationRunning())
 		return PINMAME_STATUS_EMULATOR_NOT_RUNNING;
 
 	g_fPause = pause;
@@ -1285,7 +1298,7 @@ PINMAMEAPI void PinmameStop()
 
 	if (!_p_gameThread) {
 		if (_isRunning) {
-			libpinmame_log_error("PinmameStop(): run state is %d but game thread handle is null; forcing stopped state.", _isRunning);
+			libpinmame_log_error("PinmameStop(): run state is %d but game thread handle is null; forcing stopped state.", _isRunning.load());
 			OnStateChange(0);
 		}
 		return;
@@ -1311,7 +1324,7 @@ PINMAMEAPI void PinmameStop()
 	_displays.clear();
 
 	if (_isRunning) {
-		libpinmame_log_error("PinmameStop(): game thread joined but run state is %d; forcing stopped state.", _isRunning);
+		libpinmame_log_error("PinmameStop(): game thread joined but run state is %d; forcing stopped state.", _isRunning.load());
 		OnStateChange(0);
 	}
 }
@@ -1322,7 +1335,8 @@ PINMAMEAPI void PinmameStop()
 
 PINMAMEAPI PINMAME_HARDWARE_GEN PinmameGetHardwareGen()
 {
-	const UINT64 hardwareGen = (_isRunning) ? core_gameData->gen : 0;
+	const std::shared_lock lock(_stateMutex);
+	const UINT64 hardwareGen = IsEmulationRunning() ? core_gameData->gen : 0;
 	return (PINMAME_HARDWARE_GEN)hardwareGen;
 }
 
@@ -1332,7 +1346,8 @@ PINMAMEAPI PINMAME_HARDWARE_GEN PinmameGetHardwareGen()
 
 PINMAMEAPI int PinmameGetSwitch(const int swNo)
 {
-	return (_isRunning) ? vp_getSwitch(swNo) : 0;
+	const std::shared_lock lock(_stateMutex);
+	return IsEmulationRunning() ? vp_getSwitch(swNo) : 0;
 }
 
 /******************************************************
@@ -1341,7 +1356,8 @@ PINMAMEAPI int PinmameGetSwitch(const int swNo)
 
 PINMAMEAPI void PinmameSetSwitch(const int swNo, const int state)
 {
-	if (!_isRunning)
+	const std::shared_lock lock(_stateMutex);
+	if (!IsEmulationRunning())
 		return;
 
 	vp_putSwitch(swNo, state ? 1 : 0);
@@ -1353,7 +1369,8 @@ PINMAMEAPI void PinmameSetSwitch(const int swNo, const int state)
 
 PINMAMEAPI void PinmameSetSwitches(const PinmameSwitchState* const p_states, const int numSwitches)
 {
-	if (!_isRunning)
+	const std::shared_lock lock(_stateMutex);
+	if (!IsEmulationRunning())
 		return;
 
 	for (int i = 0; i < numSwitches; ++i)
@@ -1420,7 +1437,8 @@ PINMAMEAPI int PinmameGetMaxSolenoids()
 
 PINMAMEAPI int PinmameGetSolenoid(const int solNo)
 {
-	if (!_isRunning || solNo < 1 || solNo > CORE_MODOUT_SOL_MAX)
+	const std::shared_lock lock(_stateMutex);
+	if (!IsEmulationRunning() || solNo < 1 || solNo > CORE_MODOUT_SOL_MAX)
 		return 0;
 
 	if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) {
@@ -1440,7 +1458,8 @@ PINMAMEAPI int PinmameGetSolenoid(const int solNo)
 
 PINMAMEAPI int PinmameGetChangedSolenoids(PinmameSolenoidState* const p_changedStates)
 {
-	if (!_isRunning)
+	const std::shared_lock lock(_stateMutex);
+	if (!IsEmulationRunning())
 		return -1;
 
 	core_update_pwm_solenoids();
@@ -1467,7 +1486,8 @@ PINMAMEAPI int PinmameGetMaxLamps()
 
 PINMAMEAPI int PinmameGetLamp(const int lampNo)
 {
-	const int index = _isRunning ? vp_getLampIndex(lampNo) : -1;
+	const std::shared_lock lock(_stateMutex);
+	const int index = IsEmulationRunning() ? vp_getLampIndex(lampNo) : -1;
 	if (index < 0)
 		return 0;
 
@@ -1483,7 +1503,8 @@ PINMAMEAPI int PinmameGetLamp(const int lampNo)
 
 PINMAMEAPI int PinmameGetChangedLamps(PinmameLampState* const p_changedStates)
 {
-	if (!_isRunning)
+	const std::shared_lock lock(_stateMutex);
+	if (!IsEmulationRunning())
 		return -1;
 
 	core_update_pwm_lamps();
@@ -1510,7 +1531,8 @@ PINMAMEAPI int PinmameGetMaxGIs()
 
 PINMAMEAPI int PinmameGetGI(const int giNo)
 {
-	if (!_isRunning)
+	const std::shared_lock lock(_stateMutex);
+	if (!IsEmulationRunning())
 		return 0;
 
 	if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_GI))
@@ -1525,7 +1547,8 @@ PINMAMEAPI int PinmameGetGI(const int giNo)
 
 PINMAMEAPI int PinmameGetChangedGIs(PinmameGIState* const p_changedStates)
 {
-	if (!_isRunning)
+	const std::shared_lock lock(_stateMutex);
+	if (!IsEmulationRunning())
 		return -1;
 
 	core_update_pwm_gis();
@@ -1552,7 +1575,8 @@ PINMAMEAPI int PinmameGetMaxLEDs()
 
 PINMAMEAPI int PinmameGetChangedLEDs(const uint64_t mask, const uint64_t mask2, PinmameLEDState* const p_changedStates)
 {
-	if (!_isRunning)
+	const std::shared_lock lock(_stateMutex);
+	if (!IsEmulationRunning())
 		return -1;
 
 	core_update_pwm_segments();
@@ -1579,7 +1603,8 @@ PINMAMEAPI int PinmameGetMaxMechs()
 
 PINMAMEAPI int PinmameGetMech(const int mechNo)
 {
-	return (_isRunning) ? vp_getMech(mechNo) : 0;
+	const std::shared_lock lock(_stateMutex);
+	return IsEmulationRunning() ? vp_getMech(mechNo) : 0;
 }
 
 /******************************************************
@@ -1639,7 +1664,8 @@ PINMAMEAPI int PinmameGetMaxSoundCommands()
 
 PINMAMEAPI int PinmameGetNewSoundCommands(PinmameSoundCommand* const p_newCommands)
 {
-	if (!_isRunning)
+	const std::shared_lock lock(_stateMutex);
+	if (!IsEmulationRunning())
 		return -1;
 
 	vp_tChgSound chgSounds;
@@ -1655,7 +1681,8 @@ PINMAMEAPI int PinmameGetNewSoundCommands(PinmameSoundCommand* const p_newComman
 
 PINMAMEAPI int PinmameGetDIP(const int dipBank)
 {
-	return (_isRunning) ? vp_getDIP(dipBank) : 0;
+	const std::shared_lock lock(_stateMutex);
+	return IsEmulationRunning() ? vp_getDIP(dipBank) : 0;
 }
 
 /******************************************************
@@ -1664,7 +1691,8 @@ PINMAMEAPI int PinmameGetDIP(const int dipBank)
 
 PINMAMEAPI void PinmameSetDIP(const int dipBank, const int value)
 {
-	if (!_isRunning)
+	const std::shared_lock lock(_stateMutex);
+	if (!IsEmulationRunning())
 		return;
 
 	vp_setDIP(dipBank, value);
@@ -1685,7 +1713,8 @@ PINMAMEAPI int PinmameGetMaxNVRAM()
 
 PINMAMEAPI int PinmameGetNVRAM(PinmameNVRAMState* const p_nvramStates)
 {
-	if (!_isRunning)
+	const std::shared_lock lock(_stateMutex);
+	if (!IsEmulationRunning())
 		return -1;
 
 	if (!(Machine && Machine->drv && Machine->drv->nvram_handler))
@@ -1717,7 +1746,8 @@ PINMAMEAPI int PinmameGetNVRAM(PinmameNVRAMState* const p_nvramStates)
 
 PINMAMEAPI int PinmameGetChangedNVRAM(PinmameNVRAMState* const p_nvramStates)
 {
-	if (!_isRunning)
+	const std::shared_lock lock(_stateMutex);
+	if (!IsEmulationRunning())
 		return -1;
 
 	if (!(Machine && Machine->drv && Machine->drv->nvram_handler))
@@ -1797,7 +1827,8 @@ static int ReadThroughRamBase(const uint32_t address, uint8_t* const p_buffer, c
 
 PINMAMEAPI int PinmameReadMainCPUMemory(const uint32_t address, uint8_t* const p_buffer, const int size)
 {
-	if (!_isRunning || p_buffer == nullptr || size <= 0)
+	const std::shared_lock lock(_stateMutex);
+	if (!IsEmulationRunning() || p_buffer == nullptr || size <= 0)
 	{
 		return 0;
 	}
@@ -1822,7 +1853,8 @@ PINMAMEAPI int PinmameReadMainCPUMemory(const uint32_t address, uint8_t* const p
 
 PINMAMEAPI const uint8_t* PinmameGetRawMemoryRegion(const int region)
 {
-	return _isRunning ? memory_region(region) : nullptr;
+	const std::shared_lock lock(_stateMutex);
+	return IsEmulationRunning() ? memory_region(region) : nullptr;
 }
 
 /******************************************************
@@ -1831,7 +1863,8 @@ PINMAMEAPI const uint8_t* PinmameGetRawMemoryRegion(const int region)
 
 PINMAMEAPI size_t PinmameGetRawMemoryRegionLength(const int region)
 {
-	return _isRunning ? memory_region_length(region) : 0;
+	const std::shared_lock lock(_stateMutex);
+	return IsEmulationRunning() ? memory_region_length(region) : 0;
 }
 
 /******************************************************
@@ -1851,7 +1884,8 @@ PINMAMEAPI void PinmameSetUserData(void* const p_userData)
 
 static void OnGetMachineState(const unsigned int eventId, void* userData, void* msgData)
 {
-   if (_isRunning != 1)
+   const std::shared_lock lock(_stateMutex);
+   if (!IsEmulationRunning())
       return;
 
    auto msg = static_cast<PinMAMEMachineStateMsg*>(msgData);
@@ -1862,7 +1896,7 @@ static void OnGetMachineState(const unsigned int eventId, void* userData, void* 
 
 static void OnReadMemory(const unsigned int eventId, void* userData, void* msgData)
 {
-   if (_isRunning != 1)
+   if (!IsEmulationRunning())
       return;
 
    auto msg = static_cast<PinMAMEReadMemoryMsg*>(msgData);
@@ -2114,9 +2148,10 @@ static void SetupMsgApiGameStates()
                addDevice(PMPI_GROUP_VPM_SOLENOID, fmtString("%s", label), descVPM, mappingId, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_CUSTOM, getVPM, nullptr, mappingSrc);
             }
          };
-      // 1..28, solenoid/flasher outputs from driver board
+      // 1..28, solenoid/flasher outputs from driver board (pinHeck: 25..32 are GI 0..7)
       for (uint16_t i = 1; i <= 28; i++)
-         addPhysSol(fmtString("Output #%02d", i), nullptr, nullptr, i, GetSolenoid1State, GetSolenoid1VPMState, 1 << (i - 1), i - 1);
+         addPhysSol(((core_gameData->gen & GEN_PINHECK) && i >= 25) ? fmtString("pinHeck GI #%d", i - 25) : fmtString("Output #%02d", i),
+            nullptr, nullptr, i, GetSolenoid1State, GetSolenoid1VPMState, 1 << (i - 1), i - 1);
       // 29..32
       {
          // 29..31, WPC 29 & 30 are J111 GPIO, 31 is a fake GameOn solenoids for fast flip (not modulated, stored in 0x0F00 of solenoids2)
@@ -2134,7 +2169,8 @@ static void SetupMsgApiGameStates()
          else // if (core_gameData->gen & GEN_ALLS11)
          {
             for (uint16_t i = 29; i <= 32; i++)
-               addPhysSol(fmtString("Output #%02d", i), nullptr, nullptr, i, GetSolenoid1State, GetSolenoid1VPMState, 1 << (i - 1), i - 1);
+               addPhysSol((core_gameData->gen & GEN_PINHECK) ? fmtString("pinHeck GI #%d", i - 25) : fmtString("Output #%02d", i),
+                  nullptr, nullptr, i, GetSolenoid1State, GetSolenoid1VPMState, 1 << (i - 1), i - 1);
          }
       }
       // 33..36
@@ -2149,6 +2185,14 @@ static void SetupMsgApiGameStates()
          {
             for (uint16_t i = 33; i <= 36; i++)
                addPhysSol(fmtString("Whitestar Ext Sol #%02d", i - 32), nullptr, nullptr, i, GetSolenoid2State, GetSolenoid2VPMState, 1 << (i - 33 + 4), i - 1);
+         }
+         // 33..36: pinHeck upper flipper solenoids, mirrored from the coils the game declares (FLIP_SOL)
+         else if ((core_gameData->gen & GEN_PINHECK) && coreGlobals.hasModulatedFlippers)
+         {
+            for (uint16_t i = 33; i < 37; i++)
+               if (core_gameData->hw.flippers & FLIP_SOL((i < 35) ? FLIP_UR : FLIP_UL))
+                  addPhysSol(fmtString("Upper %s Flipper: %s solenoid (CPU controlled)", (i < 35) ? "Right" : "Left", (i & 1) ? "Power" : "Hold"),
+                     nullptr, nullptr, i, GetSolenoid2State, GetSolenoid2VPMState, 1 << (i - 33 + 4), i - 1);
          }
          // 33..36, WPC fliptronic board: upper flipper solenoids that may also be used as generic modulated outputs (Solenoids 29..32 in schematics)
          // Note: core_getSol returns each coil state while core_getAllSol will set hold coil if either of Hold/Power is set
@@ -2207,7 +2251,7 @@ static void SetupMsgApiGameStates()
                addPhysSol(
                   (core_gameData->gen & GEN_PINHECK) ? fmtString("pinHeck GI #%d", i - 29)
                      : fmtString("%s Ext Output #%d", (core_gameData->gen & GEN_ALLS11) ? "S11" : (core_gameData->gen & GEN_SAM) ? "SAM" : "SPA", i - 36),
-                  nullptr, nullptr, i, GetSolenoid2State, GetSolenoid2VPMState, 1 << (8 + i - 37), 40 + i - 37);
+                  nullptr, nullptr, i, GetSolenoid2State, GetSolenoid2VPMState, 1 << (8 + i - 37), ((core_gameData->gen & GEN_PINHECK) ? 36 : 40) + i - 37);
          }
       }
       // 45..48, lower flipper solenoids

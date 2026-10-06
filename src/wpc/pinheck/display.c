@@ -108,52 +108,53 @@ static void rgb332(uint8_t v, int *c)
 	c[2] = (v & 3) * 255 / 3;
 }
 
-/* adds dot (x, y)'s colour to c; outside the frame is black */
-static void add_dot(const uint8_t *f, int x, int y, int *c)
+/* adds dot (x, y)'s colour to c; outside the frame (h rows) is black */
+static void add_dot(const uint8_t *f, int h, int x, int y, int *c)
 {
 	int d[3];
-	if (x >= DISPLAY_W || y >= DISPLAY_H) return;
+	if (x >= DISPLAY_W || y >= h) return;
 	rgb332(f[y * DISPLAY_W + x], d);
 	c[0] += d[0];
 	c[1] += d[1];
 	c[2] += d[2];
 }
 
-/* Scale2x: sub-pixel (sx, sy) of dot (x, y), neighbours clamped at the edges */
-static uint8_t scale2x(const uint8_t *f, int x, int y, int sx, int sy)
+/* Scale2x: sub-pixel (sx, sy) of dot (x, y), neighbours clamped at the edges.
+   TODO: find out what the module's HIGH REZ really does (photos, videos or its firmware); Scale2x is a stand-in */
+static uint8_t scale2x(const uint8_t *f, int h, int x, int y, int sx, int sy)
 {
 	uint8_t p = f[y * DISPLAY_W + x];
-	uint8_t up = y > 0 ? f[(y - 1) * DISPLAY_W + x] : p, down = y < DISPLAY_H - 1 ? f[(y + 1) * DISPLAY_W + x] : p;
+	uint8_t up = y > 0 ? f[(y - 1) * DISPLAY_W + x] : p, down = y < h - 1 ? f[(y + 1) * DISPLAY_W + x] : p;
 	uint8_t left = x > 0 ? f[y * DISPLAY_W + x - 1] : p, right = x < DISPLAY_W - 1 ? f[y * DISPLAY_W + x + 1] : p;
-	uint8_t v = sy ? down : up, h = sx ? right : left, v2 = sy ? up : down, h2 = sx ? left : right;
-	return v == h && h != v2 && v != h2 ? v : p;
+	uint8_t v = sy ? down : up, hz = sx ? right : left, v2 = sy ? up : down, hz2 = sx ? left : right;
+	return v == hz && hz != v2 && v != hz2 ? v : p;
 }
 
-/* frame (128x32 RGB332) -> rgb (256x64, 3 bytes per pixel) in the look */
-void pinheck_display_render(const display_look *look, const uint8_t *frame, uint8_t *rgb)
+/* frame (128 x h RGB332, h = 32 or 64) -> rgb (256 x 2h, 3 bytes per pixel) in the look */
+void pinheck_display_render(const display_look *look, const uint8_t *frame, int h, uint8_t *rgb)
 {
 	int x, y, k, dy = look->position - DISPLAY_ALIGNED;
 	dy = dy >= 0 ? dy / 4 : -((3 - dy) / 4);
-	memset(rgb, 0, DISPLAY_LOOK_W * DISPLAY_LOOK_H * 3);
-	for (y = 0; y < DISPLAY_LOOK_H; y++) {
+	memset(rgb, 0, (size_t)DISPLAY_LOOK_W * 2 * h * 3);
+	for (y = 0; y < 2 * h; y++) {
 		const int dotY = y >> 1, sy = y & 1;
 		uint8_t *out;
-		if (y + dy < 0 || y + dy >= DISPLAY_LOOK_H) continue;
-		out = rgb + (y + dy) * DISPLAY_LOOK_W * 3;
+		if (y + dy < 0 || y + dy >= 2 * h) continue;
+		out = rgb + (y + dy) * (DISPLAY_LOOK_W * 3);
 		for (x = 0; x < DISPLAY_LOOK_W; x++) {
 			const int dotX = x >> 1, sx = x & 1;
 			int c[3] = { 0, 0, 0 };
 			if (look->shape == DISPLAY_HIGHREZ)
-				rgb332(scale2x(frame, dotX, dotY, sx, sy), c);
+				rgb332(scale2x(frame, h, dotX, dotY, sx, sy), c);
 			else if (look->shape == DISPLAY_SQUARE || !(sx | sy))
-				add_dot(frame, dotX, dotY, c);
+				add_dot(frame, h, dotX, dotY, c);
 			else {
 				/* a gap between round dots: the mean of the dots around it, times bar / 124 */
 				const int m = (1 + sx) * (1 + sy);
-				add_dot(frame, dotX, dotY, c);
-				if (sx) add_dot(frame, dotX + 1, dotY, c);
-				if (sy) add_dot(frame, dotX, dotY + 1, c);
-				if (sx && sy) add_dot(frame, dotX + 1, dotY + 1, c);
+				add_dot(frame, h, dotX, dotY, c);
+				if (sx) add_dot(frame, h, dotX + 1, dotY, c);
+				if (sy) add_dot(frame, h, dotX, dotY + 1, c);
+				if (sx && sy) add_dot(frame, h, dotX + 1, dotY + 1, c);
 				for (k = 0; k < 3; k++) c[k] = c[k] * look->bar / (124 * m);
 			}
 			for (k = 0; k < 3; k++) *out++ = (uint8_t)(c[k] * look->brightness / 255);

@@ -261,13 +261,15 @@ static core_tLCDLayout rzspook_disp[] = {
   {0, 0, PINHECK_VIDEO_H, PINHECK_VIDEO_W, CORE_VIDEO, (genf *)pinheck_video, NULL}, {0}
 };
 
-/* factory POSITION 460 (the Propeller's defaults); servo levels 0-255 = 0-180 degrees (0.544-2.4 ms) */
+/* factory POSITION 460 (the Propeller's defaults); servo levels 0-255 = 0-180 degrees (0.544-2.4 ms).
+   The ROM fires the upper flipper from the right button, so it is PinMAME's upper right flipper (33/34) */
 static pinheck_tGameData rzspookGameData = {
   { GEN_PINHECK, rzspook_disp,
-    { FLIP_SWNO(PINHECK_SWLFLIP, PINHECK_SWRFLIP), 0, 1, PINHECK_CUSTSOLS, SNDBRD_NONE, 0, 26, 0,
+    { FLIP_SWNO(PINHECK_SWLFLIP, PINHECK_SWRFLIP) | FLIP_SOL(FLIP_L) | FLIP_SOL(FLIP_UR), 0, 1, PINHECK_CUSTSOLS, SNDBRD_NONE, 0, 26, 0,
       pinheck_getsol, rzspook_handleMech, rzspook_getMech },
     &rzspookSimData },
-  128, 32, 460, 544, 2400, 0, 1, 0, 3000, 0
+  128, 32, 460, 544, 2400, 0, 1, 0, 3000, 0,
+  { sRFlipHigh, sRFlipLow, sLFlipHigh, sLFlipLow, sUFlipHigh, sUFlipLow }
 };
 
 static void init_rzspook(void) {

@@ -93,9 +93,13 @@ PINHECK_INPUT_PORTS_END
 #define sMagnet     6
 #define sPost       7
 #define sLScoop     9
+#define sLFlipHigh  10
+#define sLFlipLow   12
 #define sRScoop     13
 #define sLaunch     17
 #define sLoad       18
+#define sRFlipLow   19
+#define sRFlipHigh  21
 
 #define NOID_TURN   120  /* frames per Noid revolution */
 #define NOID_HOME   10   /* frames of it with the home switch closed */
@@ -243,10 +247,11 @@ static core_tLCDLayout dominos_disp[] = {
 
 static pinheck_tGameData dominosGameData = {
   { GEN_PINHECK, dominos_disp,
-    { FLIP_SWNO(PINHECK_SWLFLIP, PINHECK_SWRFLIP), 0, 1, PINHECK_CUSTSOLS, SNDBRD_NONE, 0, 6, 0,
+    { FLIP_SWNO(PINHECK_SWLFLIP, PINHECK_SWRFLIP) | FLIP_SOL(FLIP_L), 0, 1, PINHECK_CUSTSOLS, SNDBRD_NONE, 0, 6, 0,
       pinheck_getsol, dominos_handleMech, dominos_getMech },
     &dominosSimData },
-  PINHECK_DOMINOS_DATA
+  PINHECK_DOMINOS_DATA,
+  { sRFlipHigh, sRFlipLow, sLFlipHigh, sLFlipLow }
 };
 
 static void init_dominos(void) {

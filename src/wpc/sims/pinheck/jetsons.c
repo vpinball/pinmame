@@ -226,10 +226,11 @@ static core_tLCDLayout jetsons_disp[] = {
 /* the 128x64 module, factory POSITION 55; servo levels 0-255 = 0-180 degrees (0.544-2.4 ms) */
 static pinheck_tGameData jetsonsGameData = {
   { GEN_PINHECK, jetsons_disp,
-    { FLIP_SWNO(PINHECK_SWLFLIP, PINHECK_SWRFLIP), 0, 1, PINHECK_CUSTSOLS, SNDBRD_NONE, 0, 4, 0,
+    { FLIP_SWNO(PINHECK_SWLFLIP, PINHECK_SWRFLIP) | FLIP_SOL(FLIP_L), 0, 1, PINHECK_CUSTSOLS, SNDBRD_NONE, 0, 4, 0,
       pinheck_getsol, jetsons_handleMech, jetsons_getMech },
     &jetsonsSimData },
-  128, 64, 55, 544, 2400, 0, 1, 0, 3000, 0
+  128, 64, 55, 544, 2400, 0, 1, 0, 3000, 0,
+  { sRFlipHigh, sRFlipLow, sLFlipHigh, sLFlipLow }
 };
 
 static void init_jetsons(void) {

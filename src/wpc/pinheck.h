@@ -73,7 +73,7 @@
 /* per-game data; core_gameData points at its core member */
 typedef struct {
   core_tGameData core;
-  int width, height;      /* display module in dots: 128 x 32 (drawn in its look) or 128 x 64 (as sent) */
+  int width, height;      /* display module in dots: 128 x 32 (drawn in its look) or 128 x 64 (round dots) */
   int aligned;            /* the POSITION the look draws unshifted: the game's factory POSITION */
   int servoMin, servoMax; /* servo pulse widths in us drawn as servo levels 0 and 255 */
   int rgbInverted;        /* WS2801 lines inverted on the board; the driver supports 0 */
@@ -81,6 +81,10 @@ typedef struct {
   int dmdHub;             /* a raw 128 x 32 DMD scanned by a Propeller cog: hub address of its 4 bpp frame; 0: the display link */
   int bootHold;           /* ms the bootloader stand-in holds the PIC32 after a reset without a sign-on */
   int onbLed2;            /* 1: a third on-board WS2801 LED, on outputs 62-64 (the external chain's LED 0 then has none) */
+  /* the CPU-driven flipper coils (coil numbers 1-24, 0 none): right power, right hold, left power, left hold, then the
+     same for upper right and upper left. pinheck.c mirrors them as PinMAME's flipper outputs 45-48 and 33-36; the
+     game data declares them with FLIP_SOL. Games without them get 45-48 from the flipper buttons */
+  int flipSols[8];
 } pinheck_tGameData;
 
 /* Domino's values (128 x 32, POSITION 340, servos 1.0-2.0 ms, display link, 3 s boot hold), also used by the system set */

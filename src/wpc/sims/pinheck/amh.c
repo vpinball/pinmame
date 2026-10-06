@@ -272,10 +272,11 @@ static core_tLCDLayout amh_disp[] = {
    Only PINHECK_DMD_PROOF and PINHECK_FRAME_LOG read the hub frame; the display is decoded from the scan pins */
 static pinheck_tGameData amhGameData = {
   { GEN_PINHECK, amh_disp,
-    { FLIP_SWNO(PINHECK_SWLFLIP, PINHECK_SWRFLIP), 0, 1, PINHECK_CUSTSOLS, SNDBRD_NONE, 0, 23, 0,
+    { FLIP_SWNO(PINHECK_SWLFLIP, PINHECK_SWRFLIP) | FLIP_SOL(FLIP_L), 0, 1, PINHECK_CUSTSOLS, SNDBRD_NONE, 0, 23, 0,
       pinheck_getsol, amh_handleMech, amh_getMech },
     &amhSimData },
-  128, 32, 0, 544, 2400, 0, 0, 0x5B0C, 5000, 1
+  128, 32, 0, 544, 2400, 0, 0, 0x5B0C, 5000, 1,
+  { sRFlipHigh, sRFlipHold, sLFlipHigh, sLFlipHold }
 };
 
 static void init_amh(void) {

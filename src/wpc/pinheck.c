@@ -81,9 +81,16 @@ static struct {
 #define pinheck_test_on(name) 0
 #endif
 
-/* board I/O: lamps, coils, switches, GI, RGB and servos (board.c) */
+/* Board I/O: lamps, coils, switches, GI, RGB and servos (board.c), as PinMAME numbers them for a table:
+     solenoids 1-24   the coils
+     solenoids 25-32  GI strings 0-7, and 37-44 GI strings 8-15: the board has 16, PinMAME's GI outputs only 8, so they
+                      are solenoids (Controller.Solenoid / SolCallback / modulated solenoids), never GIString callbacks
+     solenoids 45-48  the lower flippers (33-36 the upper ones), mirrored from the game's flipper coils (flipSols)
+     solenoids 51-64  levels 0-255: the RGB LEDs (51-56, 62-64) and the servos (57-61)
+     lamps 11-88      the lamp matrix, lamp 91 the start button
+     switches 11-88   the switch matrix, 1-8 and 91-98 the cabinet inputs */
 #define PINHECK_SOL_GI0 24  /* GI 0-7: solenoids 25-32 */
-#define PINHECK_SOL_GI8 40  /* GI 8-15: solenoids 37-44 through core.c's S11 layout */
+#define PINHECK_SOL_GI8 36  /* GI 8-15: solenoids 37-44 (core.c reads pinHeck's 37-44 from slots 36-43) */
 #define PINHECK_SOL_RGB 50  /* on-board RGB left R,G,B, right R,G,B: 51-56 */
 #define PINHECK_SOL_SRV 56  /* servos 0-4: 57-61 */
 #define PINHECK_SOL_EXT 61  /* external WS2801 LED 0 R,G,B, or on-board LED 2 R,G,B: 62-64 */
@@ -99,6 +106,10 @@ static UINT32 brd_sols_seen;
 static UINT16 brd_gi8_seen;
 static UINT8 brd_cust[PINHECK_NSOLS - PINHECK_SOL_RGB];
 static int brd_servo_us[BOARD_SERVOS];
+static mame_timer *brd_wd_timer; /* fires when the board's watchdog runs out */
+static uint64_t brd_wd_armed;    /* the expiry it is set for */
+/* the output slot of flipSols[k] (solenoids 45-48, then 33-36); its flipper bit in solenoids2 is bit k */
+static const UINT8 brd_flip_slot[8] = { 44, 45, 46, 47, 32, 33, 34, 35 };
 
 #ifdef PINHECK_TEST_HOOKS
 /* test hook PINHECK_OUT_LOG: board writes, output levels, switches and the lamp matrix */
@@ -111,6 +122,17 @@ static UINT8 brd_logged[PINHECK_NLAMPS + PINHECK_NSOLS], brd_sw_logged[10], brd_
 #endif
 
 static const pinheck_tGameData *pinheck_game(void) { return (const pinheck_tGameData *)core_gameData; }
+
+/* the flipper coils among sols: bit k for flipSols[k] */
+static UINT8 pinheck_flip_bits(UINT32 sols)
+{
+	const int * const f = pinheck_game()->flipSols;
+	UINT8 bits = 0;
+	int k;
+	for (k = 0; k < 8; k++)
+		if (f[k] && (sols >> (f[k] - 1) & 1)) bits |= (UINT8)(1u << k);
+	return bits;
+}
 
 /* to the log; show: also on screen, for what the user has to fix */
 static void pinheck_warn(const char *msg, int show)
@@ -154,6 +176,11 @@ static void pinheck_brd_sols(void *ctx, uint64_t t, uint32_t sols)
 	int i;
 	(void)ctx; (void)t;
 	for (i = 0; i < 3; i++) core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 8 * i, (UINT8)(sols >> (8 * i)));
+	if (coreGlobals.hasModulatedFlippers) {
+		const UINT8 flips = pinheck_flip_bits(sols);
+		for (i = 0; i < 8; i++)
+			if (pinheck_game()->flipSols[i]) core_write_pwm_output(CORE_MODOUT_SOL0 + brd_flip_slot[i], 1, (UINT8)(flips >> i & 1));
+	}
 	coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFF000000u) | sols;
 	brd_sols_seen |= sols;
 	PINHECK_BRD_LOG("%.9f S %06x %llu\n", timer_get_time(), (unsigned)sols, (unsigned long long)t);
@@ -265,8 +292,18 @@ static void pinheck_brd_log_outputs(void)
 }
 #endif
 
+/* the watchdog runs out: the coils go off at that time, not at the next vblank */
+static void pinheck_brd_wd_expire(int param)
+{
+	const uint64_t now = pic32cpu_soc()->cpu.cycles;
+	(void)param;
+	brd_wd_armed = 0;
+	pinheck_board_tick(&brd, brd.wd_on && now < brd.wd_until ? brd.wd_until : now);
+}
+
 static void pinheck_brd_init(void)
 {
+	int i;
 #ifdef PINHECK_TEST_HOOKS
 	const char *path = pinheck_env("PINHECK_OUT_LOG");
 	if (brd_log) fclose(brd_log);
@@ -284,6 +321,15 @@ static void pinheck_brd_init(void)
 	core_set_pwm_output_type(CORE_MODOUT_SOL0 + PINHECK_SOL_GI0, 8, CORE_MODOUT_LED);
 	core_set_pwm_output_type(CORE_MODOUT_SOL0 + PINHECK_SOL_GI8, 8, CORE_MODOUT_LED);
 	core_set_pwm_output_type(CORE_MODOUT_SOL0 + PINHECK_SOL_RGB, PINHECK_NSOLS - PINHECK_SOL_RGB, CORE_MODOUT_NONE);
+	/* flipper coils, where the game names them: also PinMAME's flipper outputs. Not fast on, which would write slot & 31
+	   of solenoids2: the GI 8-15 bits for 45-48, the lower flipper bits for 33-36; pinheck_brd_vblank sets the bits */
+	coreGlobals.hasModulatedFlippers = FALSE;
+	for (i = 0; i < 8; i++)
+		if (pinheck_game()->flipSols[i]) {
+			coreGlobals.hasModulatedFlippers = TRUE;
+			core_set_pwm_output_type(CORE_MODOUT_SOL0 + brd_flip_slot[i], 1, CORE_MODOUT_LEGACY_SOL_2_STATE);
+		}
+	brd_wd_timer = timer_alloc(pinheck_brd_wd_expire);
 }
 
 /* PIC32 reset: all pins are inputs, all outputs off */
@@ -300,6 +346,11 @@ static void pinheck_brd_reset(void)
 	core_write_pwm_output_8b(CORE_MODOUT_SOL0 + PINHECK_SOL_GI8, 0);
 	for (i = PINHECK_SOL_RGB; i < PINHECK_NSOLS; i++) pinheck_brd_level(i, 0);
 	memset(brd_servo_us, 0, sizeof(brd_servo_us));
+	for (i = 0; i < 8; i++)
+		if (pinheck_game()->flipSols[i]) core_write_pwm_output(CORE_MODOUT_SOL0 + brd_flip_slot[i], 1, 0);
+	coreGlobals.solenoids2 &= ~0xFFu;
+	if (brd_wd_timer) timer_adjust(brd_wd_timer, TIME_NEVER, 0, 0);
+	brd_wd_armed = 0;
 	coreGlobals.pulsedSolState = 0;
 	brd_rgb_extra = 0;
 	brd_sols_seen = 0;
@@ -309,11 +360,22 @@ static void pinheck_brd_reset(void)
 
 static void pinheck_brd_vblank(void)
 {
+	int i;
 	pinheck_board_tick(&brd, pic32cpu_soc()->cpu.cycles);
 	memcpy((void *)coreGlobals.lampMatrix, (void *)coreGlobals.tmpLampMatrix, 9);
 	memset((void *)coreGlobals.tmpLampMatrix, 0, 9);
 	coreGlobals.solenoids = brd_sols_seen | coreGlobals.pulsedSolState;
 	coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0xFF00u) | brd_gi8_seen | (brd.gi & 0xFF00u);
+	/* the flipper bits from the flipper outputs, integrated like the coils' binary state (off 60 ms after the coil);
+	   with no coils named the core sets them from the buttons */
+	if (coreGlobals.hasModulatedFlippers) {
+		UINT8 flips = 0;
+		core_update_pwm_outputs(CORE_MODOUT_SOL0 + 32, 16);
+		for (i = 0; i < 8; i++)
+			if (pinheck_game()->flipSols[i] && coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + brd_flip_slot[i]].value > 0.f)
+				flips |= (UINT8)(1u << i);
+		coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0xFFu) | flips;
+	}
 	brd_sols_seen = 0;
 	brd_gi8_seen = 0;
 #ifdef PINHECK_TEST_HOOKS
@@ -393,6 +455,11 @@ static void pinheck_port_write(void *ctx, int port, uint32_t lat, uint32_t tris,
 	if (port == PIC32MX_PORTF)
 		prop_pic_pins(&prop, cycle, (drv & RF12 ? 1u << 25 : 0) | (drv & RF5 ? 1u << 26 : 0));
 	pinheck_board_port(&brd, port, lat, tris, cycle);
+	/* a watchdog kick moves its expiry: the timer follows */
+	if (brd.wd_on && brd.wd_until != brd_wd_armed && brd_wd_timer) {
+		brd_wd_armed = brd.wd_until;
+		timer_adjust(brd_wd_timer, (double)(brd.wd_until - cycle) / PINHECK_CLOCK, 0, 0);
+	}
 }
 
 /* RF13 (P24) with the worker thread: settled only when an instruction uses it (mips32_uncertain);
@@ -580,7 +647,7 @@ static int disp_opened;
 static UINT32 disp_rgb32[256];
 static UINT16 disp_rgb15[256];
 static display_look disp_look;
-static uint8_t disp_img[DISPLAY_LOOK_W * DISPLAY_LOOK_H * 3];
+static uint8_t disp_img[DISPLAY_LOOK_MAX];
 static int disp_dirty;
 
 #ifdef PINHECK_TEST_HOOKS
@@ -850,25 +917,29 @@ PINMAME_VIDEO_UPDATE(pinheck_video)
 	prop_sync(&prop);
 	(void)cliprect;
 #if !defined(LIBPINMAME) && PINHECK_VIDEO_SCALE == 2
-	/* the 128x32 module's look; the 128x64 module and libpinmame get the raw frame */
-	if (h == DISPLAY_H) {
-		if (disp_dirty) pinheck_display_render(&disp_look, disp_shown, disp_img);
-		disp_dirty = 0;
-		for (y = 0; y < DISPLAY_LOOK_H && y0 + y < bitmap->height; y++)
-			for (x = 0; x < DISPLAY_LOOK_W && x0 + x < bitmap->width; x++) {
-				const uint8_t *p = disp_img + (y * DISPLAY_LOOK_W + x) * 3;
-				if (bitmap->depth == 32) ((UINT32 *)bitmap->line[y0 + y])[x0 + x] = MAKE_RGB(p[0], p[1], p[2]);
-				else ((UINT16 *)bitmap->line[y0 + y])[x0 + x] = (UINT16)(((p[0] >> 3) << 10) | ((p[1] >> 3) << 5) | (p[2] >> 3));
-			}
-		return;
-	}
-#endif
+	/* the module's look: the 128x32 one's from its config packet, round dots for the 128x64 one (libpinmame: below).
+	   TODO: find out if The Jetsons sends the 128x64 module config packets (pinheck_disp_config logs any) and has
+	   display settings (PIXEL SHAPE, BRIGHTNESS, POSITION, BAR BRIGHT); if so, use them instead of the fixed look */
+	static const display_look round64 = { DISPLAY_ROUND, 255, DISPLAY_ALIGNED, 62 };
+	if (disp_dirty) pinheck_display_render(h == DISPLAY_H ? &disp_look : &round64, disp_shown, h, disp_img);
+	disp_dirty = 0;
+	for (y = 0; y < 2 * h && y0 + y < bitmap->height; y++)
+		for (x = 0; x < DISPLAY_LOOK_W && x0 + x < bitmap->width; x++) {
+			const uint8_t * const p = disp_img + y * (DISPLAY_LOOK_W * 3) + x * 3;
+			if (bitmap->depth == 32) ((UINT32 *)bitmap->line[y0 + y])[x0 + x] = MAKE_RGB(p[0], p[1], p[2]);
+			else ((UINT16 *)bitmap->line[y0 + y])[x0 + x] = (UINT16)(((p[0] >> 3) << 10) | ((p[1] >> 3) << 5) | (p[2] >> 3));
+		}
+#else
+	/* the raw pixels, without the module's look.
+	   TODO: decide whether libpinmame keeps leaving the look (PIXEL SHAPE, BRIGHTNESS, POSITION, BAR BRIGHT) to the
+	   host, or respects the display config, e.g. applying BRIGHTNESS and POSITION or passing the settings with the frame */
 	for (y = 0; y < h * PINHECK_VIDEO_SCALE && y0 + y < bitmap->height; y++)
 		for (x = 0; x < DISPLAY_W * PINHECK_VIDEO_SCALE && x0 + x < bitmap->width; x++) {
 			const uint8_t v = disp_shown[(y / PINHECK_VIDEO_SCALE) * DISPLAY_W + x / PINHECK_VIDEO_SCALE];
 			if (bitmap->depth == 32) ((UINT32 *)bitmap->line[y0 + y])[x0 + x] = disp_rgb32[v];
 			else ((UINT16 *)bitmap->line[y0 + y])[x0 + x] = disp_rgb15[v];
 		}
+#endif
 }
 
 #ifdef PINHECK_TEST_HOOKS
@@ -889,7 +960,8 @@ static INTERRUPT_GEN(pinheck_vblank)
 	if (!locals.idle) prop_governor(&prop, &gov, pinheck_host_s(), timer_get_time());
 	if (!locals.idle) pinheck_brd_vblank();
 	if (!locals.idle && dmd_on) pinheck_dmd_vblank();
-	core_updateSw(0);
+	/* flippers enabled: games that name their flipper coils (FLIP_SOL) report those instead, see pinheck_brd_sols */
+	core_updateSw(1);
 }
 
 static int hex_bad;   /* the game's Intel HEX did not convert: the machine refuses to run */
