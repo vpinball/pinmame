@@ -79,6 +79,7 @@ Improved MSM6585 sound emulation (accurate sample rate/prescale mapping)
 Wired up sample rate selection for Verne's World and Jolly Park (potentially fixes some samples played)
 Fixed sound problems if a OKI6295 game is used after a OKI6376 game (e.g. GTS3 after Sleic)
 Improved BSMT2000 sound emulation speed a bit
+Added an optional low level emulation of the BSMT2000 sound chip, running the chip's own program (needs bsmt2000.bin, in bsmt2000.zip in the roms folder): enable via the 'bsmt2000_lle' setting (registry key), off by default as it costs more CPU
 Fixed VGM recording for machines using OKI6295 sound
 Added VGM recording for machines using BSMT2000 sound
 Added VGM recording for machines using MSM5205/MSM6585 sound

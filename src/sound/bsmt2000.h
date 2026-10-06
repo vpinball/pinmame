@@ -28,3 +28,8 @@ void BSMT2000_sh_stop(void);
 void BSMT2000_sh_reset(void);
 
 WRITE16_HANDLER( BSMT2000_data_0_w );
+
+/* Low level emulation (the chip's own program, see bsmt2000.c); all of these also work with the HLE */
+int  BSMT2000_lle_active(void);                          /* nonzero when the real chip program runs */
+int  BSMT2000_status_0_r(void);                          /* 1: ready for the next write, 0: the last one is still pending (HLE: always 1) */
+void BSMT2000_set_ready_callback(int num, void (*cb)(void)); /* called when the chip takes a data word (LLE only) */

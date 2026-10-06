@@ -361,13 +361,21 @@ static WRITE_HANDLER(de2s_bsmtcmdLo_w)
   //cpu_set_irq_line(de2slocals.brdData.cpuNo, M6809_IRQ_LINE, HOLD_LINE);
 }
 
-static READ_HANDLER(de2s_bsmtready_r) { return 0x80; } // BSMT is always ready
+/* D7 = 1: the BSMT took the last word and is ready for the next one (the sound program polls it
+   before each write). The HLE is always ready; with the LLE this is the chip's real handshake. */
+static READ_HANDLER(de2s_bsmtready_r) { return BSMT2000_status_0_r() ? 0x80 : 0x00; }
 
-/* Writing 0x80 here resets BSMT ?*/
+/* D7 is the BSMT reset line */
 static WRITE_HANDLER(de2s_bsmtreset_w) {
 	static data8_t last_data = 0;
-	//Watch for 0->1 transition in 8th bit to force a reset
-	if (!(last_data & 0x80) && (data & 0x80))
+	if (BSMT2000_lle_active()) {
+		// as MAME's decobsmt: the chip restarts when the line is released (1->0); its program then
+		// reads its mode from the register select latch, i.e. the register written while in reset
+		if ((last_data & 0x80) && !(data & 0x80))
+			BSMT2000_sh_reset();
+	}
+	//HLE: Watch for 0->1 transition in 8th bit to force a reset
+	else if (!(last_data & 0x80) && (data & 0x80))
 		BSMT2000_sh_reset();
 	last_data = data;
 }

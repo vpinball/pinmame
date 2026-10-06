@@ -477,6 +477,8 @@ PINMAMEAPI int PinmameGetHandleMechanics();
 PINMAMEAPI void PinmameSetHandleMechanics(const int handleMechanics);
 PINMAMEAPI PINMAME_DMD_MODE PinmameGetDmdMode();
 PINMAMEAPI void PinmameSetDmdMode(const PINMAME_DMD_MODE dmdMode);
+PINMAMEAPI int PinmameGetBSMT2000LLE();
+PINMAMEAPI void PinmameSetBSMT2000LLE(const int enable);
 PINMAMEAPI PINMAME_STATUS PinmameRun(const char* const p_name);
 PINMAMEAPI int PinmameIsRunning();
 PINMAMEAPI PINMAME_STATUS PinmamePause(const int pause);

@@ -106,6 +106,7 @@ struct rc_option pinmame_opts[] = {
 	{ "dmd_dump_dir", NULL, rc_string, &pmoptions.dmd_dump_dir, NULL, 0, 0, NULL, "Directory to write the DMD frame dump to" },
 	{ "dip", NULL, rc_use_function, NULL, NULL, 0, 0, config_handle_dip, "Set a DIP switch: \"<name>=<setting>\", repeatable" },
 	{ "rtc", NULL, rc_use_function, NULL, NULL, 0, 0, config_handle_rtc, "Fix the emulated real-time clock: \"YYYY-MM-DD HH:MM[:SS]\"" },
+	{ "bsmt2000_lle", NULL, rc_bool, &pmoptions.bsmt2000_lle, "0", 0, 0, NULL, "BSMT2000 sound: run the chip's own program (needs bsmt2000.bin, uses more CPU) instead of the high level emulation" },
 #ifdef PROC_SUPPORT
 	{ "alpha_on_dmd",NULL, rc_bool,&pmoptions.alpha_on_dmd, "0",  0, 0, NULL, "Emulate alphanumeric display on DMD" },
 	{ "p-roc",NULL, rc_string,&pmoptions.p_roc, "None",  0, 0, NULL, "YAML Machine description file" },

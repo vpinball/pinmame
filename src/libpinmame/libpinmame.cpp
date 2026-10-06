@@ -1210,6 +1210,28 @@ PINMAMEAPI PINMAME_DMD_MODE PinmameGetDmdMode()
 }
 
 /******************************************************
+ * PinmameGetBSMT2000LLE
+ ******************************************************/
+
+PINMAMEAPI int PinmameGetBSMT2000LLE()
+{
+	return pmoptions.bsmt2000_lle;
+}
+
+/******************************************************
+ * PinmameSetBSMT2000LLE
+ * BSMT2000 sound (Data East, Sega, Stern Whitestar, Alvin G.): 1 runs the
+ * chip's own program (bsmt2000.bin, in bsmt2000.zip in the roms folder)
+ * instead of the high level emulation; more accurate, but more expensive.
+ * Off by default, read when a game starts.
+ ******************************************************/
+
+PINMAMEAPI void PinmameSetBSMT2000LLE(const int enable)
+{
+	pmoptions.bsmt2000_lle = enable ? 1 : 0;
+}
+
+/******************************************************
  * PinmameRun
  ******************************************************/
 

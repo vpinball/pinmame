@@ -213,6 +213,7 @@ typedef struct
 #endif
 	int vgmwrite; // bool
 	int force_mono_to_stereo; // bool
+	int bsmt2000_lle; // bool
 #endif /* PINMAME */
 
 } options_type;

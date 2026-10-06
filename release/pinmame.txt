@@ -271,6 +271,9 @@ PinMAME Specific Command line switches
                          the WPC serial port of the Printer Kit or WPC95 AV board)
   -sound_mode 0-3       (Sound processing mode; 0=PinMAME, 1=Alternative, 2=PinSound,
                          3=PinSound + Recordings)
+  -[no]bsmt2000_lle     (BSMT2000 sound, i.e. Data East, Sega, Stern Whitestar and Alvin G.:
+                         run the chip's own program instead of the high level emulation;
+                         needs bsmt2000.bin in bsmt2000.zip in the roms folder, uses more CPU)
 
 Headless and scripted runs
 --------------------------
