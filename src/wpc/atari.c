@@ -647,6 +647,34 @@ static WRITE_HANDLER(slice2_w) { slice_write(5 + (offset >> 8), offset, data); }
 /   the ROM normalises with ORA #$F0 and masks back with AND #$0F, which is the
 /   idiom for a nibble-wide part whose upper bits float high; the arithmetic on
 /   it runs in decimal mode.  Only the low nibble is real, so only it is kept. --*/
+/*-- The Forth task records sit at $1nE9-$1nFF within the mirrored RAM.  Their
+/   dispatch stubs ($1nEF-$1nFF) are never written by any instruction in the
+/   ROM -- verified by exhaustive search and by runtime watch -- yet the task
+/   switcher copies a stub out of them on every switch.  The only arrangement
+/   under which that can work is one where every task's stub region reads back
+/   the live zero page, so a switch into a task that has not run yet inherits
+/   the current interpreter state instead of zeroing it.
+/
+/   Only the stub region behaves this way; the rest of $1000-$17FF is the plain
+/   2K mirror, which is what the power-up RAM test at $DD80 walks for adjacency.
+/   A read/write handler is enough here because the stub region is copied as
+/   data and never executed -- unlike $1000-$1041, which the test at $DF10 runs
+/   from, and which is why the mirror itself has to be a bank. --*/
+static UINT8 *atari4_lowram;
+
+/* offset is relative to $1100, so the mirrored address is offset + 0x100 */
+static READ_HANDLER(taskrec_r) {
+  int addr = offset + 0x100;
+  if ((addr & 0xff) >= 0xef) {              /* dispatch stub of a task record */
+    int base = addr & 0x700, k, blank = 1;
+    for (k = 0xef; k <= 0xff; k++) if (atari4_lowram[base | k]) { blank = 0; break; }
+    if (blank)                              /* never started: inherit the live context */
+      for (k = 0xef; k <= 0xff; k++) atari4_lowram[base | k] = atari4_lowram[k];
+  }
+  return atari4_lowram[addr];
+}
+static WRITE_HANDLER(taskrec_w) { atari4_lowram[offset + 0x100] = data; }
+
 static UINT8 *atari4_CMOS;
 static NVRAM_HANDLER(ATARI4) {
   core_nvram(file, read_or_write, atari4_CMOS, 0x100, 0x00);
@@ -659,7 +687,8 @@ static WRITE_HANDLER(nvram4_w) { atari4_CMOS[offset] = data & 0x0f; }
 /------------------------------------------*/
 static MEMORY_READ_START(ATARI4_readmem)
   {0x0000,0x07ff,	MRA_RAM},
-  {0x1000,0x17ff,	MRA_BANK1},	/* mirror of $0000-$07FF: A12 is not decoded */
+  {0x1000,0x10ff,	MRA_BANK1},	/* mirror of $0000-$07FF: A12 is not decoded */
+  {0x1100,0x17ff,	taskrec_r},
   {0x2000,0x24ff,	slice_r},	/* five Pinball Slice pairs */
   {0x2500,0x25ff,	nvram4_r},	/* 256x4 CMOS */
   {0x2600,0x27ff,	slice2_r},	/* two further 16-register devices */
@@ -668,8 +697,9 @@ static MEMORY_READ_START(ATARI4_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(ATARI4_writemem)
-  {0x0000,0x07ff,	MWA_RAM},
-  {0x1000,0x17ff,	MWA_BANK1},
+  {0x0000,0x07ff,	MWA_RAM, &atari4_lowram},
+  {0x1000,0x10ff,	MWA_BANK1},
+  {0x1100,0x17ff,	taskrec_w},
   {0x2000,0x24ff,	slice_w},
   {0x2500,0x25ff,	nvram4_w, &atari4_CMOS},
   {0x2600,0x27ff,	slice2_w},
