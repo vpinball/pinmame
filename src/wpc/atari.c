@@ -558,6 +558,15 @@ MACHINE_DRIVER_END
 /  exist and the CPU-board sheet of the schematic has never surfaced.
 /------------------------------------------*/
 #define ATARI4_SLICE_DEVS 7  /* $2000,$2100,$2200,$2300,$2400,$2600,$2700 */
+
+/*-- Neither clock is sourced.  PinMAME used 575 kHz and MAME 1 MHz, both
+/   guesses; the CPU-board sheet of schematic 039032-01 has never surfaced and
+/   no photograph of the crystal is available.  1 MHz is the better guess for a
+/   6502 design of this era and matches generation 1.  The ROM's own delay loop
+/   at $DFD6 is ~164k cycles, which is 0.16 s at 1 MHz and 0.29 s at 575 kHz --
+/   both plausible beep intervals, so it does not settle the question. --*/
+#define ATARI4_CPUFREQ 1000000
+#define ATARI4_IRQFREQ 500
 #define ATARI4_TEST_HOOKS 0  /* 1 = log every slice access */
 
 #if ATARI4_TEST_HOOKS
@@ -587,6 +596,10 @@ static void slice_write(int dev, int offset, UINT8 data) {
   int reg = offset & 0x0f;
   if (offset & 0xf0)
     SLICE_LOG("4x4 slice W dev=%d OFFPAGE off=%02X data=%02X\n", dev, offset & 0xff, data);
+  if (reg == 0x0c) {
+    if (dev == 2) cpu_set_irq_line(ATARI_CPU, 0, CLEAR_LINE);  /* $220C: IRQ ack */
+    if (dev == 3) SLICE_LOG("4x4 watchdog kick\n");            /* $230C */
+  }
   slice.reg[dev][reg] = data;
   SLICE_LOG("4x4 slice W dev=%d reg=%X data=%02X\n", dev, reg, data);
 }
@@ -629,25 +642,20 @@ static MEMORY_WRITE_START(ATARI4_writemem)
   {0x3000,0x37ff,	MWA_RAM},
 MEMORY_END
 
-static int irq_callback(int line) {
-  cpu_set_irq_line(0, 0, CLEAR_LINE);
-  locals.enable_irq = 1;
-  return 0;
-}
-
+/*-- The IRQ handler at $9665 acknowledges by writing $01 to $220C as its very
+/   first act, and kicks $230C with $10 on the way out.  $230C is also poked
+/   twice inside the power-up self-test's busy-wait at $DFD1/$DFDD, where
+/   nothing else happens at all -- a register written inside a delay loop is a
+/   watchdog, not an interrupt control.  The previous enable/disable latch here
+/   was invented when neither was known. --*/
 static INTERRUPT_GEN(ATARI4_irq) {
-  if (locals.enable_irq) {
-    cpu_set_irq_line(0, 0, ASSERT_LINE);
-    locals.enable_irq = 0;
-  }
+  cpu_set_irq_line(ATARI_CPU, 0, ASSERT_LINE);
 }
 
 static MACHINE_INIT(ATARI4) {
   memset(&locals, 0, sizeof locals);
   memset(&slice, 0, sizeof slice);
-  locals.enable_irq = 1;
   memset(memory_region(ATARI_MEMREG_CPU), 0, 0x2000);
-  cpu_set_irq_callback(0, irq_callback);
 }
 
 static SWITCH_UPDATE(ATARI4) {
@@ -658,10 +666,10 @@ static SWITCH_UPDATE(ATARI4) {
 
 MACHINE_DRIVER_START(ATARI4)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD_TAG("mcpu", M6502, 575000)
+  MDRV_CPU_ADD_TAG("mcpu", M6502, ATARI4_CPUFREQ)
   MDRV_CPU_MEMORY(ATARI4_readmem, ATARI4_writemem)
   MDRV_CPU_VBLANK_INT(ATARI2_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(ATARI4_irq, 500)
+  MDRV_CPU_PERIODIC_INT(ATARI4_irq, ATARI4_IRQFREQ)
   MDRV_CORE_INIT_RESET_STOP(ATARI4,NULL,ATARI)
   MDRV_NVRAM_HANDLER(ATARI4)
   MDRV_DIPS(32)
