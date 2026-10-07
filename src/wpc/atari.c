@@ -677,7 +677,7 @@ static void slice_write(int dev, int offset, UINT8 data) {
   /   shows which port answers which input without needing the schematic. --*/
   if (dev == 3 && reg == 0x0c) {
     static int n = 0;
-    if (++n % 40 == 0) {
+    if (++n % 30 == 0) {
       int k;
       logerror("4x4 DISP f=%4d ", atari4_frame);
       for (k = 0; k < 32; k++) {
@@ -899,13 +899,14 @@ static SWITCH_UPDATE(ATARI4) {
 		| ((atari4_frame >= 500 && atari4_frame < 516) ? 0x01 : 0);   /* start */
 	/* after the game has started, pulse one playfield switch every 80 frames
 	   so the score displays can be identified by what moves */
+	/* after the game is under way, hit the mid pop bumper every 60 frames so
+	   the scoring display can be identified by what moves */
 	if (atari4_frame >= 700) {
-		int n = (atari4_frame - 700) / 120, phase = (atari4_frame - 700) % 120;
-		int col = 1 + (n / 8) % 7, bit = n % 8;
+		int phase = (atari4_frame - 700) % 60;
 		memset(&coreGlobals.swMatrix[1], 0, 7);
-		if (n < 56 && phase < 10) {
-			coreGlobals.swMatrix[col] = 1 << bit;
-			if (phase == 0) logerror("4x4 SWEEP sw=%02X\n", (col - 1) * 8 + bit);
+		if (phase < 10) {
+			coreGlobals.swMatrix[1] = 0x04;    /* switch $02, the mid pop */
+			if (phase == 0) logerror("4x4 HIT mid pop\n");
 		}
 	}
 	if (atari4_frame == 200 || atari4_frame == 260) logerror("4x4 TEST coin\n");

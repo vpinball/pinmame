@@ -14,9 +14,13 @@
  outhole), and switches $17 and $1F -- eight apart -- reset the left and right
  drop target banks, which is the two four-bank sets IPDB lists.
 
- Still unknown: the left flipper button, the kick-out hole switch, the
- rollunder spinner, the inlanes and outlanes, and which of the four segment
- buses is which physical display.
+ Still unknown: the left flipper button, the rollunder spinner, the inlanes
+ and outlanes, and which of the four segment buses is which physical display.
+
+ There is no sound.  The 82S130 PROM that circulates with this ROM set was
+ dumped from a Superman (see the note in atarigames.c) and is not 4x4's, and
+ nothing in the ROM writes a port with the shape of the gen-2 sound board's
+ control and data registers.  Hence GAME_NO_SOUND.
  ******************************************************************************/
 
 /*------------------------------------------------------------------------------
@@ -232,4 +236,4 @@ static void init_fourx4(void) {
   core_gameData = &fourx4GameData;
 }
 
-CORE_GAMEDEFNV(fourx4,"4x4 (Prototype)",1982,"Atari",gl_mATARI4,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(fourx4,"4x4 (Prototype)",1982,"Atari",gl_mATARI4,GAME_NO_SOUND)
