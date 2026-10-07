@@ -21,8 +21,18 @@
  The playfield diagram also shows the lamps as a four-by-four grid, L1 through
  L10, which is what the machine is named after.
 
- Still unknown: the left flipper button, the rollunder spinner, the inlanes and
- outlanes.
+ Sweeping all 56 switches with a ball in play and watching the score, the ante
+ countdown and the lamp columns sorts them further.  These score: $02-$04,
+ $06-$08, $0D-$14, $18-$24.  These do not: $01, $05, $09-$0C and everything
+ from $28 up, which is the cabinet column and the unused column 6.  Switches
+ $15, $17, $1D and $1F score differently from their neighbours -- they jump a
+ higher digit rather than stepping the low one -- and $17 and $1F are the two
+ that fire the bank resets, so the four of them are the ends of the two drop
+ target banks.
+
+ Still unknown by name: the left flipper button, the rollunder spinner, the
+ inlanes and the outlanes.  They are among the scoring switches above; telling
+ which is which needs a playfield with the switch numbers on it.
 
  There is no sound.  The 82S130 PROM that circulates with this ROM set was
  dumped from a Superman (see the note in atarigames.c) and is not 4x4's, and
