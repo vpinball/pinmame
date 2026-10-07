@@ -110,7 +110,7 @@
 // the lower right/lower left/upper right/upper left outputs, as existing DOF configs expect; 0 mirrors them to the matching
 // side. In all Capcom games 9 is the left flipper and 10 the right (the solenoid tests' names); 11 is the upper right
 // flipper in Breakshot, Pool Player and Big Bang Bar, while in Flipper Football 11 is the upper left and 12 the upper right
-// (its flipper descriptors in ROM), see MACHINE_INIT(cc)
+// (its flipper descriptors in ROM), see MACHINE_INIT(cc). 11/12 are only mirrored where capgames.c declares the upper flipper
 #ifndef CAPCOM_LEGACY_FLIPPER_SWAP
 #define CAPCOM_LEGACY_FLIPPER_SWAP 1
 #endif
@@ -182,10 +182,13 @@ static INTERRUPT_GEN(cc_vblank) {
         const int n = (ramptr[a >> 1] >> ((a & 1) ? 0 : 8)) & 0xFF;
         strength = (float)(n < 2 ? 2 : n > 32 ? 32 : n) / 32.f; // as the ROM clamps it
       }
-      if (strength <= 0.f) // not set up yet
-        strength = 1.f;
+      if (strength <= 0.f) // not set up yet, or caught while the game rewrites it: keep the last value
+        continue;
       coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 9 - 1 + i].state.sol.onValue = strength;
-      coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + locals.flipMirror[i] - 1].state.sol.onValue = strength;
+      if (locals.flipMirror[i]) {
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + locals.flipMirror[i] - 1].state.sol.onValue = strength; // power
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + locals.flipMirror[i]    ].state.sol.onValue = strength; // hold
+      }
     }
 
   /*-- flipper bits from the flipper outputs, integrated like the other coils' binary state (on above 0: the strength may
@@ -709,9 +712,12 @@ static WRITE16_HANDLER(io_w) {
       // Mirror solenoids 8..11 to PinMAME standard flipper solenoids outputs (8/9 are used for lower flippers and 10/11 are either used for flippers or modulated lights)
       // This should be removed as this push the legacy PinMAME specific mapping forward while it does not correspond to manuals or any other reference
       // System using this driver must use the native output 8..11. But as it breaks existing DOF config, we still maintain this hack for the sake of backward compatibility.
-      // Which output each goes to: locals.flipMirror (CAPCOM_LEGACY_FLIPPER_SWAP)
+      // Each goes to the power output locals.flipMirror (0: none) and the hold output after it, as binary mode reports the hold coil on with either coil
       for (int i = 0; i < 4; i++)
-        core_write_pwm_output(CORE_MODOUT_SOL0 + locals.flipMirror[i] - 1, 1, (soldata >> (8 + i)) & 0x01);
+        if (locals.flipMirror[i]) {
+          core_write_pwm_output(CORE_MODOUT_SOL0 + locals.flipMirror[i] - 1, 1, (soldata >> (8 + i)) & 0x01);
+          core_write_pwm_output(CORE_MODOUT_SOL0 + locals.flipMirror[i]    , 1, (soldata >> (8 + i)) & 0x01);
+        }
       break;
 
     ////////////////////////////// SWITCH0 => 16 Cabinet switches
@@ -800,31 +806,35 @@ static MACHINE_INIT(cc) {
   // which is very similar to what Williams uses on WPC hardware, so just uses CORE_MODOUT_BULB_89_20V_DC_WPC
   if (strncasecmp(gn, "abv", 3) == 0) { // Airborne
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 9, CORE_MODOUT_BULB_89_20V_DC_WPC);
-    // "FLIPPER STRENGTH" (2..16, factory 12) as the power pattern of the left and right flipper descriptors; 1.06 only
-    if (strcmp(set, "abv106") == 0)
-      cc_set_flip_strength(CC_FLIP_PATTERN16, 0x397e, 0x3996, 0, 0);
+    // "FLIPPER STRENGTH" (2..16, factory 12) as the power pattern of the left and right flipper descriptors
+    cc_set_flip_strength(CC_FLIP_PATTERN16, 0x397e, 0x3996, 0, 0);
   }
   else if (strncasecmp(gn, "bbb", 3) == 0) { // Big Bang Bar
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 6, CORE_MODOUT_BULB_89_20V_DC_WPC);
-    // "FLIPPER STRENGTH" (2..16, factory 13) as the power pattern of the left, right and upper flipper descriptors; 1.09 only
-    if (strcmp(set, "bbb109") == 0)
-      cc_set_flip_strength(CC_FLIP_PATTERN16, 0x39a4, 0x39bc, 0x39d4, 0);
+    // "FLIPPER STRENGTH" (2..16, factory 13) as the power pattern of the left, right and upper flipper descriptors
+    cc_set_flip_strength(CC_FLIP_PATTERN16, 0x39a4, 0x39bc, 0x39d4, 0);
   }
   else if (strncasecmp(gn, "bsv", 3) == 0) { // Breakshot (and its clone Pool Player)
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC); // Center pocket Flasher
     // core_set_pwm_output_type(CORE_MODOUT_SOL0 + 27 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC); // Plunger Flasher (appears in doc but was not kept in production)
     // "FLIPPER STRENGTH" and "U.R. FLIPPER STRENGTH" (2..16, factory 13) as the power pattern of the left/right and upper
-    // right flipper descriptors; Breakshot 1.03 and Pool Player 1.0 only
-    if (strcmp(set, "bsv103") == 0 || strcmp(set, "pp100") == 0)
+    // right flipper descriptors; the beta 1.05 has them elsewhere, and one setting for all three
+    if (strcmp(set, "bsb105") == 0)
+      cc_set_flip_strength(CC_FLIP_PATTERN16, 0x3996, 0x39ae, 0x39c6, 0);
+    else
       cc_set_flip_strength(CC_FLIP_PATTERN16, 0x39a2, 0x39ba, 0x39d2, 0);
   }
   else if (strncasecmp(gn, "ffv", 3) == 0) { // Flipper Football
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
-    // Flipper strength adjustments "L./R./L.UPR./R.UPR. Flipper Strength" (4..32, lower ones factory 18), the power stroke's
-    // duty in 32nds, read by the flipper descriptors in ROM at 0x10ce8de4 (solenoid 9, left), 0x10ce8e00 (10, right),
-    // 0x10ce8df2 (11, upper left) and 0x10ce8e0e (12, upper right); found in 1.04 only, the other versions are unchecked
+    // Flipper strength adjustments "L./R./L.UPR./R.UPR. Flipper Strength" (4..32, factory 18 and 14), the power stroke's
+    // duty in 32nds, read by the flipper descriptors in ROM (1.04: 0x10ce8de4 solenoid 9 left, 0x10ce8e00 10 right,
+    // 0x10ce8df2 11 upper left, 0x10ce8e0e 12 upper right); each version keeps them at another address
     if (strcmp(set, "ffv104") == 0)
       cc_set_flip_strength(CC_FLIP_BYTE32, 0x40458, 0x40459, 0x4045a, 0x4045b);
+    else if (strcmp(set, "ffv103") == 0)
+      cc_set_flip_strength(CC_FLIP_BYTE32, 0x4045c, 0x4045d, 0x4045e, 0x4045f);
+    else if (strcmp(set, "ffv101") == 0)
+      cc_set_flip_strength(CC_FLIP_BYTE32, 0x4141e, 0x4141f, 0x41420, 0x41421);
     // 11 is the upper left flipper, 12 the upper right
     locals.flipMirror[2] = CAPCOM_LEGACY_FLIPPER_SWAP ? sURFlipPow : sULFlipPow;
     locals.flipMirror[3] = CAPCOM_LEGACY_FLIPPER_SWAP ? sULFlipPow : sURFlipPow;
@@ -839,10 +849,13 @@ static MACHINE_INIT(cc) {
   }
   else if (strncasecmp(gn, "pmv", 3) == 0) { // Pinball Magic
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 12, CORE_MODOUT_BULB_89_20V_DC_WPC);
-    // "FLIPPER STRENGTH" (2..16, factory 10) as the power pattern of the left and right flipper descriptors; 1.12 only
-    if (strcmp(set, "pmv112") == 0)
-      cc_set_flip_strength(CC_FLIP_PATTERN16, 0x3958, 0x3970, 0, 0);
+    // "FLIPPER STRENGTH" (2..16, factory 10) as the power pattern of the left and right flipper descriptors
+    cc_set_flip_strength(CC_FLIP_PATTERN16, 0x3958, 0x3970, 0, 0);
   }
+  // No mirror to an upper flipper the game doesn't declare (capgames.c): 11/12 drive other devices there
+  for (int i = 2; i < 4; i++)
+    if (!(core_gameData->hw.flippers & FLIP_SOL(locals.flipMirror[i] == sURFlipPow ? FLIP_UR : FLIP_UL)))
+      locals.flipMirror[i] = 0;
   // Defaults to 2 state legacy integrator for better backward compatibility, but keep the
   // per-game #89 flasher bulbs on the bulb integrator so they don't strobe
   if ((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) == 0)
