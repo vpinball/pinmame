@@ -691,6 +691,11 @@ static void slice_write(int dev, int offset, UINT8 data) {
   /   Measured pulse widths agree: of all 33 ports only $200A, $200B and
   /   $210A ever go high for under a dozen frames, and $200B bit 1 -- the ball
   /   feed -- fires exactly once, at the start of a game. --*/
+  /*-- $2600-$260F is the POKEY.  The CPU board carries a CO12294 at position
+  /   C, and the game drives its frequency and control registers through the
+  /   same ramp engine that fades the lamps. --*/
+  if (dev == 5) { atari4snd_w(offset & 0x0f, data); return; }
+
   /*-- $2604 is the tone.  It is slot 4 of a sixteen-channel ramp engine: the
   /   game programs a value, a delta and a count into three parallel arrays at
   /   $31A6, $31B6 and $31C6, $9588 steps them every tick into an image at
@@ -892,4 +897,5 @@ MACHINE_DRIVER_START(ATARI4)
   MDRV_SWITCH_UPDATE(ATARI4)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_SWITCH_CONV(ATARI_sw2m,ATARI_m2sw)
+  MDRV_IMPORT_FROM(atari4s)
 MACHINE_DRIVER_END

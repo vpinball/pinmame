@@ -229,3 +229,137 @@ static WRITE_HANDLER(atari_data_w) {
   }
   playSound();
 }
+
+/*----------------------------------------------------------------------------
+/  4x4: POKEY
+/
+/  The CPU board carries an Atari CO12294 -- POKEY -- at position C, date code
+/  8151, and the game writes its first eight registers at $2600-$2607 through
+/  the same sixteen-channel ramp engine that fades the lamps.  That is why the
+/  sound looked like a lamp to a pulse-width test: the CPU writes a divisor and
+/  a volume a few times a second, and the audio itself is made inside the chip.
+/
+/  Only the audio half of POKEY is modelled -- four channels, the frequency and
+/  control registers and AUDCTL.  The potentiometer, keyboard and serial halves
+/  are not wired to anything on this board.  The polynomial counters and the
+/  dividers are clocked at the chip clock, which is the same 12.096 MHz / 8 as
+/  the CPU.
+/
+/  $2700 is left alone.  The blit writes eight more bytes there and only one
+/  CO12294 is visible in the board photograph, so it is either a mirror of the
+/  same chip with A8 undecoded -- this board leaves address lines undecoded
+/  elsewhere -- or a second POKEY that the photograph does not show.  Driving a
+/  second chip on a guess would invent sound that may not exist.
+/---------------------------------------------------------------------------*/
+
+#define ATARI4_POKEY_CLK 1512000
+#define ATARI4_POKEY_RATE 44100
+
+static struct {
+  UINT8  audf[4], audc[4], audctl;
+  UINT32 div[4];        /* divider countdown, in chip clocks */
+  UINT8  ff[4];         /* channel output, 0 or 1 */
+  UINT32 p4, p5, p17;   /* polynomial counters */
+  int    channel;
+  double acc;           /* chip clocks owed to the current output sample */
+} pk;
+
+/*-- Divisor in chip clocks.  A channel normally counts the 64 kHz or 15 kHz
+/   base clock, which is the chip clock divided by 28 or 114; AUDCTL can clock
+/   channels 1 and 3 directly instead, and can join 1+2 and 3+4 into sixteen
+/   bit counters whose output comes out of the higher channel. --*/
+static UINT32 pokey_divisor(int ch) {
+  const UINT32 base = (pk.audctl & 0x01) ? 114 : 28;
+  if (ch == 1 && (pk.audctl & 0x10))        /* 1+2 joined, output on 2 */
+    return ((pk.audc[0] & 0x00) + pk.audf[0] + 256 * pk.audf[1] + ((pk.audctl & 0x40) ? 7 : 1))
+           * ((pk.audctl & 0x40) ? 1 : base);
+  if (ch == 3 && (pk.audctl & 0x08))        /* 3+4 joined, output on 4 */
+    return (pk.audf[2] + 256 * pk.audf[3] + ((pk.audctl & 0x20) ? 7 : 1))
+           * ((pk.audctl & 0x20) ? 1 : base);
+  if (ch == 0 && (pk.audctl & 0x40)) return pk.audf[0] + 4;
+  if (ch == 2 && (pk.audctl & 0x20)) return pk.audf[2] + 4;
+  return (pk.audf[ch] + 1) * base;
+}
+
+static int pokey_silenced(int ch) {
+  /* the low half of a joined pair makes no sound of its own */
+  if (ch == 0 && (pk.audctl & 0x10)) return 1;
+  if (ch == 2 && (pk.audctl & 0x08)) return 1;
+  return 0;
+}
+
+static void pokey_tick(void) {
+  int ch;
+  /*-- 4, 5 and 17 bit maximal length shift registers, taps as in the part --*/
+  pk.p4  = (pk.p4  >> 1) | ((((pk.p4  ^ (pk.p4  >> 1)) & 1) ^ 1) << 3);
+  pk.p5  = (pk.p5  >> 1) | ((((pk.p5  ^ (pk.p5  >> 2)) & 1) ^ 1) << 4);
+  if (pk.audctl & 0x80)   /* nine bit poly instead of seventeen */
+    pk.p17 = (pk.p17 >> 1) | (((pk.p17 ^ (pk.p17 >> 5)) & 1) << 8);
+  else
+    pk.p17 = (pk.p17 >> 1) | (((pk.p17 ^ (pk.p17 >> 5)) & 1) << 16);
+
+  for (ch = 0; ch < 4; ch++) {
+    if (pk.div[ch] == 0) pk.div[ch] = pokey_divisor(ch);
+    if (--pk.div[ch]) continue;
+    pk.div[ch] = pokey_divisor(ch);
+    /*-- the five bit poly gates whether the channel changes at all --*/
+    if (!(pk.audc[ch] & 0x20) && !(pk.p5 & 1)) continue;
+    if      (pk.audc[ch] & 0x80) pk.ff[ch] ^= 1;          /* pure tone */
+    else if (pk.audc[ch] & 0x40) pk.ff[ch] = pk.p4 & 1;   /* four bit poly */
+    else                         pk.ff[ch] = pk.p17 & 1;  /* long poly */
+  }
+}
+
+static void pokey_update(int num, INT16 *buffer, int length) {
+  const double step = (double)ATARI4_POKEY_CLK / (double)ATARI4_POKEY_RATE;
+  int i, ch;
+  for (i = 0; i < length; i++) {
+    int sample = 0;
+    pk.acc += step;
+    while (pk.acc >= 1.0) { pk.acc -= 1.0; pokey_tick(); }
+    for (ch = 0; ch < 4; ch++) {
+      const int vol = pk.audc[ch] & 0x0f;
+      if (pokey_silenced(ch) || !vol) continue;
+      /*-- bit 4 forces the output high so the volume itself is the signal,
+      /   which is how POKEY plays sampled sound --*/
+      if ((pk.audc[ch] & 0x10) || pk.ff[ch]) sample += vol;
+    }
+    buffer[i] = (INT16)(sample * 480);   /* 4 channels * 15 * 480 fits */
+  }
+}
+
+static int atari4_sh_start(const struct MachineSound *msound) {
+  if (Machine->gamedrv->flags & GAME_NO_SOUND) return -1;
+  memset(&pk, 0, sizeof(pk));
+  pk.p4 = pk.p5 = pk.p17 = 1;
+  pk.channel = stream_init("POKEY", 100, ATARI4_POKEY_RATE, 0, pokey_update);
+  return pk.channel < 0;
+}
+
+static void atari4_sh_stop(void) { }
+
+static void atari4_sh_reset(void) {
+  memset(pk.audf, 0, sizeof(pk.audf));
+  memset(pk.audc, 0, sizeof(pk.audc));
+  pk.audctl = 0;
+}
+
+/*-- Called from the 4x4 driver for every write in $2600-$260F. --*/
+void atari4snd_w(int offset, int data) {
+  if (pk.channel >= 0) stream_update(pk.channel, 0);
+  switch (offset & 0x0f) {
+    case 0x00: case 0x02: case 0x04: case 0x06:
+      pk.audf[(offset & 0x0f) >> 1] = data; break;
+    case 0x01: case 0x03: case 0x05: case 0x07:
+      pk.audc[(offset & 0x0f) >> 1] = data; break;
+    case 0x08: pk.audctl = data; break;
+    default: break;   /* STIMER, SKRES, POTGO, SEROUT, IRQEN, SKCTL: unused here */
+  }
+}
+
+static struct CustomSound_interface atari4s_custInt =
+  {atari4_sh_start, atari4_sh_stop, NULL, atari4_sh_reset};
+
+MACHINE_DRIVER_START(atari4s)
+  MDRV_SOUND_ADD(CUSTOM, atari4s_custInt)
+MACHINE_DRIVER_END

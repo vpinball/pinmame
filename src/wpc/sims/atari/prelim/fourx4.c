@@ -263,4 +263,4 @@ static void init_fourx4(void) {
   core_gameData = &fourx4GameData;
 }
 
-CORE_GAMEDEFNV(fourx4,"4x4 (Prototype)",1982,"Atari",gl_mATARI4,GAME_NO_SOUND)
+CORE_GAMEDEFNV(fourx4,"4x4 (Prototype)",1982,"Atari",gl_mATARI4,GAME_IMPERFECT_SOUND)
