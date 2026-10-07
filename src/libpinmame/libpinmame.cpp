@@ -2186,13 +2186,20 @@ static void SetupMsgApiGameStates()
             for (uint16_t i = 33; i <= 36; i++)
                addPhysSol(fmtString("Whitestar Ext Sol #%02d", i - 32), nullptr, nullptr, i, GetSolenoid2State, GetSolenoid2VPMState, 1 << (i - 33 + 4), i - 1);
          }
-         // 33..36: pinHeck upper flipper solenoids, mirrored from the coils the game declares (FLIP_SOL)
-         else if ((core_gameData->gen & GEN_PINHECK) && coreGlobals.hasModulatedFlippers)
+         // 33..36: upper flippers pinHeck and Capcom mirror from the game's coils (where FLIP_SOL declares them); read from
+         // the integrated outputs like 45..48, so they switch with the coils and carry Capcom's flipper strength
+         else if ((core_gameData->gen & (GEN_PINHECK | GEN_CAPCOM)) && coreGlobals.hasModulatedFlippers)
          {
             for (uint16_t i = 33; i < 37; i++)
                if (core_gameData->hw.flippers & FLIP_SOL((i < 35) ? FLIP_UR : FLIP_UL))
-                  addPhysSol(fmtString("Upper %s Flipper: %s solenoid (CPU controlled)", (i < 35) ? "Right" : "Left", (i & 1) ? "Power" : "Hold"),
-                     nullptr, nullptr, i, GetSolenoid2State, GetSolenoid2VPMState, 1 << (i - 33 + 4), i - 1);
+               {
+                  const char* label = (core_gameData->gen & GEN_CAPCOM)
+                     ? fmtString("Upper %s Flipper: %s solenoid (mirrored from solenoids 11/12)", (i < 35) ? "Right" : "Left", (i & 1) ? "Power" : "Hold")
+                     : fmtString("Upper %s Flipper: %s solenoid (CPU controlled)", (i < 35) ? "Right" : "Left", (i & 1) ? "Power" : "Hold");
+                  const int type = core_get_pwm_output_type(CORE_MODOUT_SOL0 + i - 1) == 1 ? CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS : CTLPI_STATE_TYPE_CUSTOM;
+                  addDevice(PMPI_GROUP_SOLENOID, label, nullptr, i, CTLPI_STATE_FORMAT_FLOAT, type, GetPhysOutState, nullptr, CORE_MODOUT_SOL0 + i - 1);
+                  addDevice(PMPI_GROUP_VPM_SOLENOID, fmtString("%s", label), nullptr, i, CTLPI_STATE_FORMAT_UINT8, type, GetPhysOutVPMState, nullptr, CORE_MODOUT_SOL0 + i - 1);
+               }
          }
          // 33..36, WPC fliptronic board: upper flipper solenoids that may also be used as generic modulated outputs (Solenoids 29..32 in schematics)
          // Note: core_getSol returns each coil state while core_getAllSol will set hold coil if either of Hold/Power is set

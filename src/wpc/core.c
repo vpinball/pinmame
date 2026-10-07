@@ -2319,7 +2319,22 @@ int core_getPulsedSol(int solNo) {
 /*-------------------------------------------------
 /  Get the value of all solenoids in one variable
 /--------------------------------------------------*/
+/*-- Flipper solenoid bits in solenoids2's layout (LR, LL, UR, UL power/hold). Drivers forcing the PWM integration of
+     their flipper outputs (pinHeck, Capcom) take them from those outputs instead of the bits set once a frame, so a
+     coil and its flipper output switch together --*/
+static UINT8 core_getFlipSolBits(void) {
+  static const UINT8 slot[8] = { 44, 45, 46, 47, 32, 33, 34, 35 }; // solenoids 45-48, 33-36
+  UINT8 bits = 0;
+  if (!coreGlobals.hasModulatedFlippers || !(options.usemodsol & CORE_MODOUT_FORCE_ON))
+    return (UINT8)coreGlobals.solenoids2;
+  for (int i = 0; i < 8; i++)
+    if (coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + slot[i]].value > 0.f)
+      bits |= (UINT8)(1u << i);
+  return bits;
+}
+
 UINT64 core_getAllSol(void) {
+  const UINT8 flipBits = core_getFlipSolBits();
   UINT64 sol = coreGlobals.solenoids;
   if (core_gameData->gen & GEN_ALLWPC) // 29-32 GameOn
     sol = (sol & 0x0fffffffull) | ((coreGlobals.solenoids2 & 0x0f00ull)<<20);
@@ -2328,7 +2343,7 @@ UINT64 core_getAllSol(void) {
     sol |= (tmp<<12)|(tmp<<8);
   }
   if (core_gameData->gen & GEN_ALLWPC) { // 33-36 WPC upper flipper solenoids (hold coil is set if either coil is set)
-    UINT8 uFlip = (coreGlobals.solenoids2 & (CORE_URFLIPSOLBITS|CORE_ULFLIPSOLBITS));
+    UINT8 uFlip = (flipBits & (CORE_URFLIPSOLBITS|CORE_ULFLIPSOLBITS));
     if (core_gameData->hw.flippers & FLIP_SOL(FLIP_UR))
       uFlip |= (uFlip & 0x10)<<1;
     if (core_gameData->hw.flippers & FLIP_SOL(FLIP_UL))
@@ -2339,15 +2354,15 @@ UINT64 core_getAllSol(void) {
      sol |= (((UINT64)(coreGlobals.solenoids2 & 0x10)) << 28);
   else if (core_gameData->gen & GEN_ALLWS) // 33..36 various aux board outputs
      sol |= ((UINT64)(coreGlobals.solenoids2 & 0x00f0)) << 28;
-  else if (core_gameData->gen & GEN_PINHECK) { // 33-36 pinHeck upper flipper solenoids (hold coil is set if either coil is set)
-    UINT8 uFlip = (coreGlobals.solenoids2 & (CORE_URFLIPSOLBITS|CORE_ULFLIPSOLBITS));
+  else if ((core_gameData->gen & (GEN_PINHECK | GEN_CAPCOM)) && coreGlobals.hasModulatedFlippers) { // 33-36 mirrored upper flippers (hold set if either coil is); not P2K: bits 4-7 are its drivers 37-40
+    UINT8 uFlip = (flipBits & (CORE_URFLIPSOLBITS|CORE_ULFLIPSOLBITS));
     uFlip |= (uFlip & 0x50)<<1;
     sol |= (((UINT64)uFlip)<<28);
   }
   if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA | GEN_PINHECK)) // 37-44 S11, SAM extra, pinHeck GI 8-15
      sol |= ((UINT64)(coreGlobals.solenoids2 & 0xff00)) << 28;
   { // 45-48 flipper solenoids (hold coil is set if either coil is set)
-    UINT8 lFlip = (coreGlobals.solenoids2 & (CORE_LRFLIPSOLBITS|CORE_LLFLIPSOLBITS));
+    UINT8 lFlip = (flipBits & (CORE_LRFLIPSOLBITS|CORE_LLFLIPSOLBITS));
     lFlip |= (lFlip & 0x05)<<1;
     sol |= (((UINT64)lFlip)<<44);
   }
@@ -2375,7 +2390,7 @@ void core_getAllPhysicSols(float* const state)
   // 1..32 solenoids (for WPC also GameOn and J111 GPIO)
   for (int i = 0; i < 32; i++)
     state[i] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;
-  /*-- 33..36 [WPC & Capcom only] upper flipper solenoids --*/
+  /*-- 33..36 upper flipper solenoids (integrated for WPC Fliptronics, pinHeck, Capcom) --*/
   if (coreGlobals.hasModulatedFlippers && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
     for (int i = 32; i < 36; i++)
       state[i] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].value;

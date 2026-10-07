@@ -60,7 +60,11 @@ Fixed some potential general solenoid issues with physical/PWM
 Fixed PWM solenoid issues for WPC fliptronics and SE aux boards
 Improved physical/PWM bulb integration
 Improved handling of fast switching PWM outputs
-Implemented varying power flippers for Capcom (for now only for sets abv106, bbb109, bsv103, ffv104, kpb, pmv112) via PWM
+Implemented varying power flippers for Capcom (all games/sets) via PWM: the flipper coils (9-12) and the
+ flipper outputs (33-36, 45-48) report the operator's and/or gameplay's flipper strength setting while on (any value above 0 means on)
+Fixed Capcom flipper outputs: 45-48 now follow the lower flipper coils (before, other coils could also show up there),
+ and 33-36 now report the upper flippers, only in the games that feature them (Breakshot, Pool Player, Big Bang Bar, Flipper Football)
+Fixed the 'force PWM on' state of SAM/Capcom/PinHeck games carrying over to the next game run in the same session (e.g. when playing several tables one after another in VPX)
 Improved BY6803 emulation, and add dimmed segments support, and bright physical/PWM lights
 Improved Alvin G. first generation DMD simulation
 In general, (almost) all DMD/mini-DMD outputs have been moved to the proper physical/PWM pipeline, allowing for more subtle effects

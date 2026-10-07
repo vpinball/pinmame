@@ -493,6 +493,8 @@ PINMAMEAPI PINMAME_MOD_OUTPUT_TYPE PinmameGetModOutputType(const int output, con
 PINMAMEAPI void PinmameSetModOutputType(const int output, const int no, const PINMAME_MOD_OUTPUT_TYPE type);
 PINMAMEAPI void PinmameSetTimeFence(const double timeInS);
 PINMAMEAPI int PinmameGetMaxSolenoids();
+// With modulated or physical outputs (PinmameSetSolenoidMask(2, ...)) a solenoid's state is a level; a coil may report
+// less than full while on (Capcom's flippers report their strength setting), so treat any state above 0 as on
 PINMAMEAPI int PinmameGetSolenoid(const int solNo);
 PINMAMEAPI int PinmameGetChangedSolenoids(PinmameSolenoidState* const p_changedStates);
 PINMAMEAPI int PinmameGetMaxLamps();
