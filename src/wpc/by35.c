@@ -7,6 +7,7 @@
 #include "machine/6821pia.h"
 #include "core.h"
 #include "sndbrd.h"
+#include "snd_cmd.h"
 #include "by35snd.h"
 #include "stsnd.h"
 #include "hnks.h"
@@ -80,6 +81,7 @@ static struct {
   int counter;
   int pos0;
   int pos1;
+  int sndCmdLen, sndCmdWait, sndCmdLow, sndCtrl; // sound commands on the solenoid lines, see by35_sndCmd
 } locals;
 
 static void piaIrq(int num, int state) {
@@ -169,7 +171,7 @@ static WRITE_HANDLER(pia0a_w) {
 static WRITE_HANDLER(pia1a_w) {
   if (locals.hw & BY35HW_SOUNDE)
   {
-    sndbrd_0_ctrl_w(0, (locals.cb21 ? 1 : 0) | (data & 0x02));
+    sndbrd_0_ctrl_w(0, locals.sndCtrl = (locals.cb21 ? 1 : 0) | (data & 0x02));
 #ifdef LISY_SUPPORT
     lisy35_sound_handler( LISY35_SOUND_HANDLER_IS_CTRL, (locals.cb21 ? 1 : 0) | (data & 0x02));
 #endif
@@ -298,6 +300,24 @@ static WRITE_HANDLER(pia0ca2_w) {
   if (data && !(core_gameData->hw.gameSpecific1 & BY35GD_ALPHA)) by35_dispStrobe(0x0f);
 }
 
+/* The sound commands share the solenoid lines (PB0-3): every write of these lines reaches the
+   sound board, but only what follows a rise of the sound strobe (CB2) is a command. The -32/-50
+   and the -51 take it from one write, with Sound E as bit 4; the -56, the Squawk & Talk and the
+   Cheap Squeak read it as two nibbles, the low one first. Log that command (sound command log,
+   AltSound), not the writes of the lines. */
+static void by35_sndCmd(int data) {
+  if (locals.sndCmdWait == 2) { // low nibble, the high one follows
+    locals.sndCmdLow = data;
+    locals.sndCmdWait = 1;
+    return;
+  }
+  locals.sndCmdWait = 0;
+  if (locals.sndCmdLen == 2)
+    snd_cmd_log(0, (data << 4) | locals.sndCmdLow);
+  else
+    snd_cmd_log(0, ((locals.sndCtrl & 0x02) << 3) | data);
+}
+
 /* PIA1:B-W Solenoid/Sound output */
 static WRITE_HANDLER(pia1b_w) {
   int sb = core_gameData->hw.soundBoard;		// ok
@@ -313,6 +333,7 @@ static WRITE_HANDLER(pia1b_w) {
   if ((sb & 0xff00) != SNDBRD_ST300 && sb != SNDBRD_ASTRO && (sb & 0xff00) != SNDBRD_ST100 && sb != SNDBRD_GRAND)
   {
     sndbrd_0_data_w(0, data & 0x0f); 	// ok
+    if (locals.sndCmdWait) by35_sndCmd(data & 0x0f);
 #ifdef LISY_SUPPORT
     if (locals.cb21) lisy35_sound_handler( LISY35_SOUND_HANDLER_IS_DATA, data & 0x0f );
 #endif
@@ -336,10 +357,11 @@ static READ_HANDLER(pia1ca1_r) {
 /* PIA1:CB2-W Solenoid/Sound select */
 static WRITE_HANDLER(pia1cb2_w) {
   int sb = core_gameData->hw.soundBoard;		// ok
+  if (data && !locals.cb21) locals.sndCmdWait = locals.sndCmdLen;
   locals.cb21 = data;
   if (((locals.hw & BY35HW_SCTRL) == 0) && ((sb & 0xff00) != SNDBRD_ST300) && (sb != SNDBRD_ASTRO) && (sb & 0xff00) != SNDBRD_ST100)
    	// ok
-    sndbrd_0_ctrl_w(0, (data ? 1 : 0) | (locals.a1 & 0x02));
+    sndbrd_0_ctrl_w(0, locals.sndCtrl = (data ? 1 : 0) | (locals.a1 & 0x02));
 #ifdef LISY_SUPPORT
     lisy35_sound_handler( LISY35_SOUND_HANDLER_IS_CTRL, (data ? 1 : 0) | (locals.a1 & 0x02));
 #endif
@@ -576,6 +598,14 @@ static MACHINE_INIT(by35) {
     locals.hw = BY35HW_REVSW|BY35HW_SCTRL|BY35HW_INVDISP4;
     locals.bcd2seg = core_bcd2seg9;
   }
+
+  switch (sb) { // see by35_sndCmd
+    case SNDBRD_BY32: case SNDBRD_BY51:
+      locals.sndCmdLen = 1; break;
+    case SNDBRD_BY56: case SNDBRD_BY61: case SNDBRD_BY61B: case SNDBRD_BY61B2: case SNDBRD_BY45:
+      locals.sndCmdLen = 2; break;
+  }
+  if (locals.sndCmdLen) sndbrd_logData(0, 0);
 
   if ((sb & 0xff00) == SNDBRD_ST300 || sb == SNDBRD_ASTRO) {
     install_mem_write_handler(0,0x00a0, 0x00a7, snd300_w);  // ok
