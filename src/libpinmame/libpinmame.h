@@ -59,6 +59,16 @@ typedef enum {
 	PINMAME_STATUS_MECH_NO_INVALID = 6
 } PINMAME_STATUS;
 
+// Why a PinmameSaveNVRAM() call did or did not write.
+typedef enum {
+	PINMAME_NVRAM_SAVED = 0,         // Written
+	PINMAME_NVRAM_UNCHANGED = 1,     // Identical to what is already on disk
+	PINMAME_NVRAM_NOT_SETTLED = 2,   // Changed more recently than minIdleMs
+	PINMAME_NVRAM_NOT_RUNNING = 3,   // No machine running, or this machine has no NVRAM
+	PINMAME_NVRAM_TIMEOUT = 4,       // The emulation thread did not reach the request in time
+	PINMAME_NVRAM_WRITE_FAILED = 5   // Nothing was written; what is on disk is still intact
+} PINMAME_NVRAM_SAVE_RESULT;
+
 typedef enum {
 	PINMAME_FILE_TYPE_ROMS = 0,
 	PINMAME_FILE_TYPE_NVRAM = 1,
@@ -513,6 +523,27 @@ PINMAMEAPI void PinmameSetDIP(const int dipBank, const int value);
 PINMAMEAPI int PinmameGetMaxNVRAM();
 PINMAMEAPI int PinmameGetNVRAM(PinmameNVRAMState* const p_nvramStates);
 PINMAMEAPI int PinmameGetChangedNVRAM(PinmameNVRAMState* const p_nvramStates);
+
+/* Persist NVRAM without stopping the machine.
+ *
+ * MAME writes NVRAM once, after cpu_run() returns, so a host that is killed or
+ * powered off loses the whole session. This writes it while the machine runs.
+ *
+ * The work happens on the emulation thread, between frames, because producing the
+ * image means calling the driver's own nvram_handler and the emulated CPU must
+ * not be part way through writing NVRAM when it does. This call posts a request
+ * and waits for that thread, so it must not be made from the emulation thread
+ * itself. timeoutMs bounds the wait; 0 picks a default.
+ *
+ * minIdleMs makes it safe to call on a timer: nothing is written unless NVRAM has
+ * been unchanged for that long, which is false for as long as a game is being
+ * played. Pass 0 to write whatever the current state is, as a host should before
+ * exiting.
+ *
+ * The file is replaced atomically, so an interrupted save leaves either the old
+ * contents or the new ones.
+ */
+PINMAMEAPI PINMAME_NVRAM_SAVE_RESULT PinmameSaveNVRAM(const uint32_t minIdleMs, const uint32_t timeoutMs);
 PINMAMEAPI int PinmameReadMainCPUByte(uint32_t address, uint8_t* const p_value);
 PINMAMEAPI int PinmameReadMainCPUMemory(uint32_t address, uint8_t* const p_buffer, int size);
 PINMAMEAPI const uint8_t* PinmameGetRawMemoryRegion(const int region);
