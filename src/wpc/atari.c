@@ -691,6 +691,23 @@ static void slice_write(int dev, int offset, UINT8 data) {
   /   Measured pulse widths agree: of all 33 ports only $200A, $200B and
   /   $210A ever go high for under a dozen frames, and $200B bit 1 -- the ball
   /   feed -- fires exactly once, at the start of a game. --*/
+  /*-- $2604 is the tone.  It is slot 4 of a sixteen-channel ramp engine: the
+  /   game programs a value, a delta and a count into three parallel arrays at
+  /   $31A6, $31B6 and $31C6, $9588 steps them every tick into an image at
+  /   $31D6, and $961E blits that image to $2600-$2607 and $2700-$2707.
+  /
+  /   Of all 33 ports it is the only one that behaves like a frequency rather
+  /   than a lamp: 148 writes in one game took 142 distinct values.  During
+  /   attract its low nibble stays 0 and only the high nibble moves; when a
+  /   sound plays, the low nibble sweeps -- F, D, B, 9, 7, 5, 3, 1 -- every two
+  /   frames while the high nibble ramps slowly underneath, which is the
+  /   nibble pairing doing its usual job of putting one slice's four tone bits
+  /   and the other slice's four lamp bits in one byte.
+  /
+  /   It is not emulated.  Turning that four-bit value into a pitch needs the
+  /   divider's clock, and the sheet carrying it is one of the ones missing
+  /   from the schematic set -- the slice pages we have are sheet 4 of 7. --*/
+
   /*-- Devices 2, 3 and 4 appear in the blit table only at registers 0, 1, $0A
   /   and $0B -- the four output groups of a nibble-paired slice, with nothing
   /   driving a segment bus.  Every bit of them measures as a lamp: the
