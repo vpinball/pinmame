@@ -21,6 +21,7 @@
 #include "driver.h"
 #include "cpu/m6800/m6800.h"
 #include "core.h"
+#include "cpu/m6502/m6502.h"
 #include "sndbrd.h"
 #include "atari.h"
 
@@ -589,10 +590,14 @@ MACHINE_DRIVER_END
 #define SLICE_LOG(...) ((void)0)
 #endif
 
-static UINT8 *atari4_lowram;
-static UINT8 *atari4_hiram;
+static UINT8 *atari4_taskram;   /* $1000-$17FF: eight 256-byte task pages */
+static UINT8 *atari4_CMOS;
 #if ATARI4_TEST_HOOKS
-static void thread_dump(void);
+static int atari4_frame;
+#endif
+static int atari4_taskbank;
+static void atari4_setbank(int bank);
+#if ATARI4_TEST_HOOKS
 #endif
 
 /*-- [dev][reg-0x0e] -> switch matrix column, or 0 for "not a switch port".
@@ -652,46 +657,26 @@ static void slice_write(int dev, int offset, UINT8 data) {
   int reg = offset & 0x0f;
   if (offset & 0xf0)
     SLICE_LOG("4x4 slice W dev=%d OFFPAGE off=%02X data=%02X\n", dev, offset & 0xff, data);
-#if ATARI4_TEST_HOOKS
-  /*-- RESUME-TASK ($96B9/$96E8) writes the incoming task number here just
-  /   before it copies that task's context into zero page, so this catches
-  /   every switch with both contexts still intact. --*/
-  if (dev == 3 && reg == 0x0f && atari4_hiram) {
-    int k, next = atari4_hiram[0x16], prev = atari4_hiram[0x18];
-    int src = ((prev | 0x10) << 8) | 0xef;
-    logerror("4x4 RESUME $3016=%02X $3018=%02X src=$%04X ipnow=$%02X%02X block=",
-             next, prev, src, atari4_lowram[0xf9], atari4_lowram[0xf8]);
-    for (k = 0; k <= 0x10; k++)
-      logerror("%02X", atari4_lowram[(src + k) & 0x7ff]);
-    logerror(" -> ip=$%02X%02X\n", atari4_lowram[(src + 10) & 0x7ff],
-             atari4_lowram[(src + 9) & 0x7ff]);
-  }
-#endif
+  if (dev == 3 && reg == 0x0f && ((data >> 4) & 7) != 7
+      && ((data >> 4) & 7) != atari4_taskbank)
+    atari4_setbank((data >> 4) & 7);     /* all ones = hold */
   if (reg == 0x0c) {
     if (dev == 2) cpu_set_irq_line(ATARI_CPU, 0, CLEAR_LINE);  /* $220C: IRQ ack */
     if (dev == 3) { slice.wdog = 0; SLICE_LOG("4x4 watchdog kick\n"); }  /* $230C */
-#if ATARI4_TEST_HOOKS
-    if (dev == 3 && atari4_hiram) {
-      int c;
-      logerror("4x4 SWSTATE enable=");
-      for (c = 0; c < 7; c++) logerror("%02X ", atari4_hiram[0x61 + c]);
-      logerror("cur=");
-      for (c = 0; c < 7; c++) logerror("%02X ", atari4_hiram[0x68 + c]);
-      logerror("pend=");
-      for (c = 0; c < 7; c++) logerror("%02X ", atari4_hiram[0x7b + c]);
-      logerror("req=%02X timers=", atari4_hiram[0x2a]);
-      for (c = 0; c < 7; c++)
-        logerror("%04X ", atari4_lowram[(c << 8) | 0xed]
-                          | (atari4_lowram[(c << 8) | 0xee] << 8));
-      logerror("matrix=");
-      for (c = 1; c <= 7; c++) logerror("%02X ", coreGlobals.swMatrix[c]);
-      logerror("\n");
-      thread_dump();
-    }
-#endif
   }
   /*-- $91B9 blits all 33 output ports every second interrupt, so logging every
   /   write floods the trace.  Only transitions carry information. --*/
+#if ATARI4_TEST_HOOKS
+  if (slice.reg[dev][reg] != data) {
+    static UINT32 trans = 0; static int last = -1;
+    trans++;
+    if ((int)(trans / 200) != last) { last = trans / 200;
+      logerror("4x4 OUT transitions=%u frame=%d nvram0-7=%X%X%X%X%X%X%X%X\n",
+               trans, atari4_frame,
+               atari4_CMOS[0]&15, atari4_CMOS[1]&15, atari4_CMOS[2]&15, atari4_CMOS[3]&15,
+               atari4_CMOS[4]&15, atari4_CMOS[5]&15, atari4_CMOS[6]&15, atari4_CMOS[7]&15); }
+  }
+#endif
   if (slice.reg[dev][reg] != data)
     SLICE_LOG("4x4 out dev=%d reg=%X %02X -> %02X\n", dev, reg, slice.reg[dev][reg], data);
   slice.reg[dev][reg] = data;
@@ -720,75 +705,54 @@ static WRITE_HANDLER(slice2_w) { slice_write(5 + (offset >> 8), offset, data); }
 /   A read/write handler is enough here because the stub region is copied as
 /   data and never executed -- unlike $1000-$1041, which the test at $DF10 runs
 /   from, and which is why the mirror itself has to be a bank. --*/
-/* offset is relative to $1100, so the mirrored address is offset + 0x100 */
-static READ_HANDLER(taskrec_r) {
-  int addr = offset + 0x100;
-  if ((addr & 0xff) >= 0xef) {              /* context block of a task record */
-    int base = addr & 0x700, k, blank = 1;
-    for (k = 0xef; k <= 0xff; k++) if (atari4_lowram[base | k]) { blank = 0; break; }
-    if (blank)                              /* never started: inherit the live context */
-      for (k = 0xef; k <= 0xff; k++) atari4_lowram[base | k] = atari4_lowram[k];
-  }
-  return atari4_lowram[addr];
+/*-- Zero page $E0-$FF is the current task's working context, banked.
+/
+/   Each task owns a 23-byte record at TASK-SLOT(i) = $1iE9:
+/
+/       +$00  $1iE9  parameter stack base      (S0 = $DE)
+/       +$01  $1iEA  parameter stack pointer   (the stack itself is in zero page, indexed by X)
+/       +$02  $1iEB  return stack base         (R0 = $6F, the 6502 hardware stack)
+/       +$03  $1iEC  return stack pointer
+/       +$04  $1iED  sleep timer, 2 bytes, decremented by 8 per tick at $9541
+/       +$06  $1iEF  17-byte interpreter context: IP at $F8/$F9, and $FA-$FC
+/
+/   No instruction anywhere in the ROM writes that context -- verified by an
+/   exhaustive opcode scan, by an exhaustive search for the 17-byte copy loop
+/   shape, and by watching every write at runtime.  The save is not missing: it
+/   is free, because zero page IS the current task's record.  Simply running a
+/   task writes that task's state, and $96B9 (the variant START-TASK uses) reads
+/   $E9 and $EB to start the incoming task on its own stack bases -- reads that
+/   only make sense through the bank.
+/
+/   The task number is latched from $230F bits 4-6.  The switcher computes
+/   task*16 | (image & $8F) and stores it there immediately before it touches
+/   the record, which is the only reason that store sits at that point in the
+/   routine.  All ones means "hold", which is why the display refresh at $8FDC
+/   writes (image & $0F) | $70 instead of the image: it has to drive the low
+/   nibble without disturbing the task selection.  The other two writers, $9064
+/   and $91DF, write the image back unchanged and so preserve it.
+/
+/   This has to be a bank rather than a read/write handler.  NEXT ends with
+/   "jmp $00FA", and $00FA-$00FC hold a self-modifying JMP (cfa) whose operand
+/   bytes ARE the code field address the inner interpreter just fetched.  MAME
+/   reads those operand bytes with cpu_readop_arg, which bypasses memory
+/   handlers, so a handler-based window would run every task through whatever
+/   code field page zero happened to hold.
+/
+/   The eight pages live in the 2K at $1000-$17FF, which the ROM also addresses
+/   directly: that is how the scheduler reads another task's sleep timer at
+/   $1iED and how the switcher reads the outgoing task's context at $1iEF. --*/
+static void atari4_setbank(int bank) {
+  atari4_taskbank = bank;
+  cpu_setbank(2, atari4_taskram + (bank << 8));   /* $0000-$00FF */
+  cpu_setbank(3, atari4_taskram + (bank << 8));   /* $0100-$01FF, the same page */
 }
-static WRITE_HANDLER(taskrec_w) { atari4_lowram[offset + 0x100] = data; }
 
-#if ATARI4_TEST_HOOKS
-/*-- Measurement only.  The Forth inner interpreter fetches each thread cell
-/   with lda ($f8),y, which is a data read and therefore visible to a read
-/   handler.  Counting reads of the main loop's cells gives the exact path the
-/   scheduler takes without any CPU-core instrumentation. --*/
-static UINT32 thread_hits[0x80];
-static READ_HANDLER(threadprobe_r) {
-  thread_hits[offset & 0x7f]++;
-  return memory_region(ATARI_MEMREG_CPU)[0x9f80 + offset];
-}
-static UINT32 coin_hits;
-static READ_HANDLER(coinprobe_r) {
-  coin_hits++;
-  return memory_region(ATARI_MEMREG_CPU)[0xbee0 + offset];
-}
-static void thread_dump(void) {
-  static const struct { int addr; const char *what; } k[] = {
-    {0x9f8a,"loop top (#TASKS)"}, {0x9f98,"run-if-due"}, {0x9fa8,"dispatch task"},
-    {0x9fae,"find free slot"},    {0x9fb2,"0BRANCH no-slot"},
-    {0x9fb6,"read request"},      {0x9fc1,"0BRANCH req==FF"},
-    {0x9fea,"START-TASK"},        {0x9ff0,"abandon (DROP DROP)"}, {0,0}};
-  int i;
-  logerror("4x4 PATH");
-  for (i = 0; k[i].addr; i++)
-    logerror(" %s=%u", k[i].what, thread_hits[k[i].addr - 0x9f80]);
-  logerror(" coin-handler-reads=%u\n", coin_hits);
-}
-
-/*-- Measurement only.  $302A is the pending task-start code that the main loop
-/   at $9F86 polls; $FF means "no switch event".  $3061-$3067 is the per-column
-/   switch enable mask that cold start writes.  Log a transition of either. --*/
-static WRITE_HANDLER(hiprobe_w) {
-  int addr = 0x3000 + offset;
-  if (addr == 0x3026 || addr == 0x3027)
-    logerror("4x4 HANDLER $%04X = %02X pc=$%04X\n", addr, data, activecpu_get_pc());
-  if (addr >= 0x3061 && addr <= 0x3067)
-    logerror("4x4 ENW $%04X = %02X pc=$%04X\n", addr, data, activecpu_get_pc());
-  if (addr == 0x302a && data != 0xff && atari4_hiram[0x2a] != data)
-    logerror("4x4 REQ $302A = %02X (switch event)\n", data);
-  atari4_hiram[offset] = data;
-}
-#endif
-
-#if ATARI4_TEST_HOOKS
-/*-- Measurement only.  RESUME-TASK reads a 17-byte context out of $1nEF-$1nFF
-/   on every task switch, and an exhaustive opcode scan finds no instruction
-/   that writes that region.  Log every write to any page's $EF-$FF so the
-/   claim is settled by observation rather than by the scan. --*/
-static WRITE_HANDLER(ctxprobe_w) {
-  if (offset >= 0x100 && (offset & 0xff) >= 0xef)
-    logerror("4x4 CTXW $%04X = %02X  pc=$%04X\n", offset, data, activecpu_get_pc());
-  atari4_lowram[offset + 0x100] = data;
-}
-#endif
-
-static UINT8 *atari4_CMOS;
+/*-- 4x4 stores scores and audits in a 256x4 CMOS at $2500.  Every read site in
+/   the ROM normalises with ORA #$F0 and masks back with AND #$0F, which is the
+/   idiom for a nibble-wide part whose upper bits float high, and the arithmetic
+/   on it runs in decimal mode.  Only the low nibble is real, so only it is
+/   kept. --*/
 static NVRAM_HANDLER(ATARI4) {
   core_nvram(file, read_or_write, atari4_CMOS, 0x100, 0x00);
 }
@@ -799,41 +763,26 @@ static WRITE_HANDLER(nvram4_w) { atari4_CMOS[offset] = data & 0x0f; }
 /  Memory map for 4x4
 /------------------------------------------*/
 static MEMORY_READ_START(ATARI4_readmem)
-  {0x0000,0x07ff,	MRA_RAM},
-  {0x1000,0x10ff,	MRA_BANK1},	/* mirror of $0000-$07FF: A12 is not decoded */
-  {0x1100,0x17ff,	taskrec_r},
+  {0x0000,0x00ff,	MRA_BANK2},	/* the current task's page */
+  {0x0100,0x01ff,	MRA_BANK3},	/* the same page again: A8 is not decoded */
+  {0x0200,0x07ff,	MRA_RAM},
+  {0x1000,0x17ff,	MRA_RAM},	/* the eight task pages, addressed directly */
   {0x2000,0x24ff,	slice_r},	/* five Pinball Slice pairs */
   {0x2500,0x25ff,	nvram4_r},	/* 256x4 CMOS */
   {0x2600,0x27ff,	slice2_r},	/* two further 16-register devices */
   {0x3000,0x37ff,	MRA_RAM},
-#if ATARI4_TEST_HOOKS
-  {0x8000,0x9f7f,	MRA_ROM},
-  {0x9f80,0x9fff,	threadprobe_r},
-  {0xa000,0xbedf,	MRA_ROM},
-  {0xbee0,0xbeff,	coinprobe_r},	/* the right-coin handler thread */
-  {0xbf00,0xffff,	MRA_ROM},
-#else
   {0x8000,0xffff,	MRA_ROM},
-#endif
 MEMORY_END
 
 static MEMORY_WRITE_START(ATARI4_writemem)
-#if ATARI4_TEST_HOOKS
-  {0x0000,0x00ff,	MWA_RAM, &atari4_lowram},
-  {0x0100,0x07ff,	ctxprobe_w},
-#else
-  {0x0000,0x07ff,	MWA_RAM, &atari4_lowram},
-#endif
-  {0x1000,0x10ff,	MWA_BANK1},
-  {0x1100,0x17ff,	taskrec_w},
+  {0x0000,0x00ff,	MWA_BANK2},
+  {0x0100,0x01ff,	MWA_BANK3},
+  {0x0200,0x07ff,	MWA_RAM},
+  {0x1000,0x17ff,	MWA_RAM, &atari4_taskram},
   {0x2000,0x24ff,	slice_w},
   {0x2500,0x25ff,	nvram4_w, &atari4_CMOS},
   {0x2600,0x27ff,	slice2_w},
-#if ATARI4_TEST_HOOKS
-  {0x3000,0x37ff,	hiprobe_w},
-#else
   {0x3000,0x37ff,	MWA_RAM},
-#endif
   /*-- Writes above $8000 hit ROM and do nothing on the real board.  They must
   /   be mapped: MAME's unmapped-write handler stores into the region for a
   /   16-bit address bus, so a stray write would silently patch the loaded ROM
@@ -866,8 +815,8 @@ static MACHINE_INIT(ATARI4) {
   /   decode A12.  It has to be a bank rather than a read/write handler: the
   /   power-up RAM test at $DF10 copies self-modifying code into $1000 and
   /   does JMP $1000, and an opcode fetch bypasses memory handlers. --*/
-  cpu_setbank(1, memory_region(ATARI_MEMREG_CPU));
-  atari4_hiram = memory_region(ATARI_MEMREG_CPU) + 0x3000;
+  atari4_taskram = memory_region(ATARI_MEMREG_CPU) + 0x1000;
+  atari4_setbank(0);
 }
 
 /*-- The cabinet switches are SW28 start, SW29 tilt, SW2A left coin, SW2B right
@@ -878,18 +827,17 @@ static MACHINE_INIT(ATARI4) {
 /   Tilt has no key assigned, so bit 1 is preserved along with SW2D-SW2F. --*/
 static SWITCH_UPDATE(ATARI4) {
 #if ATARI4_TEST_HOOKS
-	/*-- Measurement only: pulse the right-coin bit for 16 frames starting at
-	/   frame 120, so the column mapping can be tested without depending on
-	/   the host input plumbing. --*/
-	static int frame = 0;
-	frame++;
-	if (frame == 300) logerror("4x4 PROBE coin pressed\n");
-	if (frame == 316) logerror("4x4 PROBE coin released\n");
-	coreGlobals.swMatrix[6] = (coreGlobals.swMatrix[6] & ~0x08)
-	                        | ((frame >= 300 && frame < 316) ? 0x08 : 0);
+	atari4_frame++;
+	coreGlobals.swMatrix[6] =
+		  ((atari4_frame >= 200 && atari4_frame < 216) ? 0x08 : 0)   /* right coin */
+		| ((atari4_frame >= 260 && atari4_frame < 276) ? 0x08 : 0)
+		| ((atari4_frame >= 340 && atari4_frame < 356) ? 0x01 : 0);  /* start */
+	if (atari4_frame == 200 || atari4_frame == 260) logerror("4x4 TEST coin\n");
+	if (atari4_frame == 340) logerror("4x4 TEST start\n");
+	return;
 #endif
 	if (inports) {
-		coreGlobals.swMatrix[6] = (coreGlobals.swMatrix[6] & 0xea)
+		coreGlobals.swMatrix[6] = (coreGlobals.swMatrix[6] & 0xe2)
 			| ((inports[ATARI_COMINPORT] & 0x0004) ? 0x01 : 0)   /* Game       -> SW28 */
 			| ((inports[ATARI_COMINPORT] & 0x0008) ? 0x04 : 0)   /* Left coin  -> SW2A */
 			| ((inports[ATARI_COMINPORT] & 0x0010) ? 0x08 : 0)   /* Right coin -> SW2B */
