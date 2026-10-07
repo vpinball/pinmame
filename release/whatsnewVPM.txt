@@ -7,6 +7,8 @@ Version 3.7 (XX XXth, 2026) - ""
 ------------------------------------------------------------------------------
 - Add windows COM-API method 'PMBuildVersion' returning e.g. 30700.4711 with build number (e.g. 4711) as decimal
 
+- AltSound: Bally MPU-17/MPU-35 machines send one byte per sound command (packs keyed by the command the game sends now play)
+
 - Fix script dialog API/UI for non-standard DPI values
 
 - Fix some longstanding issues with the DMD/Segment/Video output window (output window should now be less buggy/blurry in some cases, and potentially a bit faster)
