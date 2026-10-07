@@ -29,12 +29,12 @@ onwards** is listed separately below as not expected rather than as missing.
 
 | Status                           | Machines | Share |
 | -------------------------------- | -------: | ----: |
-| Fully working                    |      571 | 68.9% |
+| Fully working                    |      571 | 68.7% |
 | Partially working                |       34 |  4.1% |
 | Emulated but not working         |        1 |  0.1% |
 | Not emulated                     |       97 | 11.7% |
-| Not emulated — released recently |      126 | 15.2% |
-| **Total**                        |  **829** |       |
+| Not emulated — released recently |      128 | 15.4% |
+| **Total**                        |  **831** |       |
 
 ### By decade
 
@@ -45,7 +45,7 @@ onwards** is listed separately below as not expected rather than as missing.
 | 1990s  |   148 |           142 |       3 |           0 |            3 |
 | 2000s  |    25 |            24 |       0 |           0 |            1 |
 | 2010s  |    73 |            18 |       0 |           0 |           55 |
-| 2020s  |    85 |             0 |       0 |           0 |           85 |
+| 2020s  |    87 |             0 |       0 |           0 |           87 |
 
 ## Fully working (571)
 
@@ -783,7 +783,7 @@ future work.
 | Wrath of Olympus                            | 2015 | Riot Pinball              | DMD          |
 | WrestleMania                                | 2015 | Stern                     | DMD          |
 
-## Not emulated — released recently (126)
+## Not emulated — released recently (128)
 
 No driver, and not expected to get one soon: see the note on end-of-life machines above.
 
@@ -899,6 +899,7 @@ No driver, and not expected to get one soon: see the note on end-of-life machine
 | Harry Potter                            | 2025 | Jersey Jack Pinball      | LCD          |
 | King Kong: Myth of Terror Island        | 2025 | Stern                    | LCD          |
 | Merlin's Arcade                         | 2025 | Turner Pinball           | LCD          |
+| Nezzex City                             | 2025 | Deluxia Studios          | LCD          |
 | Peter Brock / Holden                    | 2025 | Vector Pinball           | Alphanumeric |
 | Portal                                  | 2025 | Multimorphic             | LCD          |
 | Predator                                | 2025 | Pinball Brothers         | LCD          |
@@ -907,6 +908,7 @@ No driver, and not expected to get one soon: see the note on end-of-life machine
 | The Walking Dead Remastered             | 2025 | Stern                    | LCD          |
 | Winchester Mystery House                | 2025 | Barrels of Fun           | LCD          |
 | Bon Jovi                                | 2026 | Barrels of Fun           | LCD          |
+| Carni-Ball Night                        | 2026 | Deluxia Studios          | LCD          |
 | Dungeon Crawler Carl                    | 2026 | Multimorphic             | LCD          |
 | Ender's Game                            | 2026 | Multimorphic             | LCD          |
 | Fallout                                 | 2026 | Stern                    | LCD          |
@@ -1143,8 +1145,8 @@ scripts/gen_supported_machines.py
 
 The script reads a cached copy of OPDB and re-downloads only with `--refresh`; `--check`
 fails if this file is out of date. Machine data comes from the OPDB snapshot of
-**2026-10-06**; driver data from `src/wpc` at the commit this file was generated from, on
-**2026-10-06**.
+**2026-10-07**; driver data from `src/wpc` at the commit this file was generated from, on
+**2026-10-07**.
 
 A machine is one OPDB *group*, so a title and its remakes are one row, dated and credited
 to the original. Its status is that of the *worst* of its ROM sets, so "fully working"
