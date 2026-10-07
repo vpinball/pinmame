@@ -697,6 +697,11 @@ static void slice_write(int dev, int offset, UINT8 data) {
   if (dev <= 1 && reg <= 7)
     coreGlobals.segments[dev * 8 + reg].w = core_bcd2seg7a[data & 0x0f];
 
+#if ATARI4_TEST_HOOKS
+  if (slice.reg[dev][reg] != data)
+    logerror("4x4 TR f=%d $%04X %02X %02X\n", atari4_frame,
+             0x2000 + (dev < 5 ? dev : dev + 1) * 0x100 + reg, slice.reg[dev][reg], data);
+#endif
   if (slice.reg[dev][reg] != data)
     SLICE_LOG("4x4 out dev=%d reg=%X %02X -> %02X\n", dev, reg, slice.reg[dev][reg], data);
   slice.reg[dev][reg] = data;
