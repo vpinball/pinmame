@@ -689,6 +689,7 @@ add_executable(sdl3pinmame
    src/wpc/sims/se/prelim/harley.c
    src/wpc/sims/s11/full/dd.c
    src/wpc/sims/s11/full/milln.c
+   src/wpc/sims/atari/prelim/fourx4.c
    src/wpc/sims/s11/prelim/eatpm.c
    src/wpc/sims/s7/full/bk.c
    src/wpc/sims/s7/full/tmfnt.c

@@ -721,6 +721,14 @@ static void slice_write(int dev, int offset, UINT8 data) {
   /   Measured pulse widths agree: of all 33 ports only $200A, $200B and
   /   $210A ever go high for under a dozen frames, and $200B bit 1 -- the ball
   /   feed -- fires exactly once, at the start of a game. --*/
+  /*-- Devices 2, 3 and 4 appear in the blit table only at registers 0, 1, $0A
+  /   and $0B -- the four output groups of a nibble-paired slice, with nothing
+  /   driving a segment bus.  Every bit of them measures as a lamp: the
+  /   shortest median on-time among them is 32 frames, against under a dozen
+  /   for the solenoids on $200A/$200B.  Twelve columns, 96 lamps. --*/
+  if (dev >= 2 && dev <= 4 && (reg <= 1 || reg == 0x0a || reg == 0x0b))
+    coreGlobals.lampMatrix[(dev - 2) * 4 + (reg <= 1 ? reg : 2 + (reg - 0x0a))] = data;
+
   if (dev == 0 && (reg == 0x0a || reg == 0x0b)) {
     int shift = (reg == 0x0a) ? 0 : 8;
     coreGlobals.solenoids = (coreGlobals.solenoids & ~(0xff << shift))
@@ -892,10 +900,10 @@ static SWITCH_UPDATE(ATARI4) {
 	/* after the game has started, pulse one playfield switch every 80 frames
 	   so the score displays can be identified by what moves */
 	if (atari4_frame >= 700) {
-		int n = (atari4_frame - 700) / 60, phase = (atari4_frame - 700) % 60;
+		int n = (atari4_frame - 700) / 120, phase = (atari4_frame - 700) % 120;
 		int col = 1 + (n / 8) % 7, bit = n % 8;
 		memset(&coreGlobals.swMatrix[1], 0, 7);
-		if (n < 56 && phase < 8) {
+		if (n < 56 && phase < 10) {
 			coreGlobals.swMatrix[col] = 1 << bit;
 			if (phase == 0) logerror("4x4 SWEEP sw=%02X\n", (col - 1) * 8 + bit);
 		}

@@ -157,6 +157,7 @@ PINGAMES += $(PINOBJ)/playgames.o
 #
 PINGAMES += $(PINOBJ)/sims/s7/full/bk.o
 PINGAMES += $(PINOBJ)/sims/s7/full/tmfnt.o
+PINGAMES += $(PINOBJ)/sims/atari/prelim/fourx4.o
 PINGAMES += $(PINOBJ)/sims/s11/prelim/eatpm.o
 PINGAMES += $(PINOBJ)/sims/s11/full/milln.o
 PINGAMES += $(PINOBJ)/sims/s11/full/dd.o
