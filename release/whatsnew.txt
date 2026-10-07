@@ -79,7 +79,7 @@ Improved MSM6585 sound emulation (accurate sample rate/prescale mapping)
 Wired up sample rate selection for Verne's World and Jolly Park (potentially fixes some samples played)
 Fixed sound problems if a OKI6295 game is used after a OKI6376 game (e.g. GTS3 after Sleic)
 Added manual sound commands (sound commander) for the Bally Cheap Squeak and Turbo Cheap Squeak sound boards
-Fixed the sound command log (sound commander, AltSound, libPinMAME) for Bally MPU-17/MPU-35 machines: it now gets the commands the game sends to the -32/-50, -51, -56, Squawk & Talk and Cheap Squeak boards, not every write of the lines shared with the solenoids
+Fixed the sound command logging and altsound handling for Bally MPU-17/MPU-35 machines: it now filters only the commands the game sends to the -32/-50, -51, -56, Squawk & Talk and Cheap Squeak boards
 Improved BSMT2000 sound emulation speed a bit
 Fixed VGM recording for machines using OKI6295 sound
 Added VGM recording for machines using BSMT2000 sound
