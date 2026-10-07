@@ -697,6 +697,26 @@ static void slice_write(int dev, int offset, UINT8 data) {
   if (dev <= 1 && reg <= 7)
     coreGlobals.segments[dev * 8 + reg].w = core_bcd2seg7a[data & 0x0f];
 
+  /*-- Registers $0A and $0B of device 0 are the solenoids.  The slices are
+  /   nibble-paired: two four-bit parts share each address, one wired to
+  /   BD0-BD3 and the other to BD4-BD7, so one byte drives both.  Each part
+  /   sends OUT00-OUT03 and OUT10-OUT13 into a UDN2981, and the schematic
+  /   names all sixteen drivers:
+  /
+  /     $200A low  OUT00-03 (13E -> 13EA)  right flipper, upper/mid/lower pop
+  /     $200A high OUT00-03 (12E -> 12E/A) left flipper, SOL 5, SOL 6, SOL 7
+  /     $200B low  OUT10-13 (13E -> 13EA)  hole, ball feed, reset L/R bank
+  /     $200B high OUT10-13 (12E -> 12E/A) extra game, SOL D, SOL E, SOL F
+  /
+  /   Measured pulse widths agree: of all 33 ports only $200A, $200B and
+  /   $210A ever go high for under a dozen frames, and $200B bit 1 -- the ball
+  /   feed -- fires exactly once, at the start of a game. --*/
+  if (dev == 0 && (reg == 0x0a || reg == 0x0b)) {
+    int shift = (reg == 0x0a) ? 0 : 8;
+    coreGlobals.solenoids = (coreGlobals.solenoids & ~(0xff << shift))
+                          | ((UINT32)data << shift);
+  }
+
 #if ATARI4_TEST_HOOKS
   if (slice.reg[dev][reg] != data)
     logerror("4x4 TR f=%d $%04X %02X %02X\n", atari4_frame,
@@ -860,13 +880,12 @@ static SWITCH_UPDATE(ATARI4) {
 	/* after the game has started, pulse one playfield switch every 80 frames
 	   so the score displays can be identified by what moves */
 	if (atari4_frame >= 600) {
-		int n = (atari4_frame - 600) / 80, phase = (atari4_frame - 600) % 80;
-		int col = 1 + (n / 8) % 5, bit = n % 8;
-		memset(&coreGlobals.swMatrix[1], 0, 5);
-		if (phase < 10) {
+		int n = (atari4_frame - 600) / 60, phase = (atari4_frame - 600) % 60;
+		int col = 1 + (n / 8) % 7, bit = n % 8;
+		memset(&coreGlobals.swMatrix[1], 0, 7);
+		if (n < 56 && phase < 8) {
 			coreGlobals.swMatrix[col] = 1 << bit;
-			if (phase == 0) logerror("4x4 TEST switch col%d bit%d (event $%02X)\n",
-			                         col, bit, (col - 1) * 8 + bit);
+			if (phase == 0) logerror("4x4 SWEEP sw=%02X\n", (col - 1) * 8 + bit);
 		}
 	}
 	if (atari4_frame == 200 || atari4_frame == 260) logerror("4x4 TEST coin\n");
