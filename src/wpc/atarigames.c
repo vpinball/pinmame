@@ -213,8 +213,8 @@ CORE_GAMEDEFNV(roadrunr,"Road Runner (Prototype)",1979,"Atari",gl_mATARI3,0)
 / 4x4 (10/1982)
 /-------------------------------------------------------------------*/
 static core_tLCDLayout atari_disp4[] = {
-  { 0, 0, 0,16, CORE_SEG87 },
-  { 2, 0,16,16, CORE_SEG87 },
+  { 0, 0, 0, 8, CORE_SEG7 },
+  { 2, 0, 8, 8, CORE_SEG7 },
   { 0 }
 };
 ATARI2_INPUT_PORTS_START(fourx4, 3) ATARI_INPUT_PORTS_END

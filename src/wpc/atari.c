@@ -658,8 +658,13 @@ static void slice_write(int dev, int offset, UINT8 data) {
   if (offset & 0xf0)
     SLICE_LOG("4x4 slice W dev=%d OFFPAGE off=%02X data=%02X\n", dev, offset & 0xff, data);
   if (dev == 3 && reg == 0x0f && ((data >> 4) & 7) != 7
-      && ((data >> 4) & 7) != atari4_taskbank)
+      && ((data >> 4) & 7) != atari4_taskbank) {
+#if ATARI4_TEST_HOOKS
+    logerror("4x4 TASK %d -> %d  f=%d req=%02X\n", atari4_taskbank, (data >> 4) & 7,
+             atari4_frame, memory_region(ATARI_MEMREG_CPU)[0x302a]);
+#endif
     atari4_setbank((data >> 4) & 7);     /* all ones = hold */
+  }
   if (reg == 0x0c) {
     if (dev == 2) cpu_set_irq_line(ATARI_CPU, 0, CLEAR_LINE);  /* $220C: IRQ ack */
     if (dev == 3) { slice.wdog = 0; SLICE_LOG("4x4 watchdog kick\n"); }  /* $230C */
@@ -667,16 +672,31 @@ static void slice_write(int dev, int offset, UINT8 data) {
   /*-- $91B9 blits all 33 output ports every second interrupt, so logging every
   /   write floods the trace.  Only transitions carry information. --*/
 #if ATARI4_TEST_HOOKS
-  if (slice.reg[dev][reg] != data) {
-    static UINT32 trans = 0; static int last = -1;
-    trans++;
-    if ((int)(trans / 200) != last) { last = trans / 200;
-      logerror("4x4 OUT transitions=%u frame=%d nvram0-7=%X%X%X%X%X%X%X%X\n",
-               trans, atari4_frame,
-               atari4_CMOS[0]&15, atari4_CMOS[1]&15, atari4_CMOS[2]&15, atari4_CMOS[3]&15,
-               atari4_CMOS[4]&15, atari4_CMOS[5]&15, atari4_CMOS[6]&15, atari4_CMOS[7]&15); }
+  /*-- Dump the 33-byte output image once every 60 frames.  The blit at $91B9
+  /   copies $3082-$30A2 to the ports listed at $8844, so watching the image
+  /   shows which port answers which input without needing the schematic. --*/
+  if (dev == 3 && reg == 0x0c) {
+    static int n = 0;
+    if (++n % 40 == 0) {
+      int k;
+      logerror("4x4 DISP f=%4d [", atari4_frame);
+      for (k = 0; k < 16; k++) {
+        int d = slice.reg[k / 8][k % 8] & 0x0f;
+        logerror("%c", d <= 9 ? '0' + d : '.');
+        if (k == 7) logerror("][");
+      }
+      logerror("]\n");
+    }
   }
 #endif
+  /*-- Registers 0-7 of the first two devices are the score displays: sixteen
+  /   BCD digits, decoded to segments in hardware (the schematic runs the
+  /   slice's OUT2x/OUT3x lines straight into a ULN2803 and on to SEG1/SEG2, and
+  /   there is no font table anywhere in the ROM).  $F in a digit blanks it,
+  /   which is what an unused player's display is filled with. --*/
+  if (dev <= 1 && reg <= 7)
+    coreGlobals.segments[dev * 8 + reg].w = core_bcd2seg7a[data & 0x0f];
+
   if (slice.reg[dev][reg] != data)
     SLICE_LOG("4x4 out dev=%d reg=%X %02X -> %02X\n", dev, reg, slice.reg[dev][reg], data);
   slice.reg[dev][reg] = data;
@@ -829,9 +849,21 @@ static SWITCH_UPDATE(ATARI4) {
 #if ATARI4_TEST_HOOKS
 	atari4_frame++;
 	coreGlobals.swMatrix[6] =
-		  ((atari4_frame >= 200 && atari4_frame < 216) ? 0x08 : 0)   /* right coin */
-		| ((atari4_frame >= 260 && atari4_frame < 276) ? 0x08 : 0)
-		| ((atari4_frame >= 340 && atari4_frame < 356) ? 0x01 : 0);  /* start */
+		  (((atari4_frame >= 200 && atari4_frame < 216) ||
+		    (atari4_frame >= 260 && atari4_frame < 276)) ? 0x08 : 0)  /* right coin */
+		| ((atari4_frame >= 340 && atari4_frame < 356) ? 0x01 : 0);   /* start */
+	/* after the game has started, pulse one playfield switch every 80 frames
+	   so the score displays can be identified by what moves */
+	if (atari4_frame >= 600) {
+		int n = (atari4_frame - 600) / 80, phase = (atari4_frame - 600) % 80;
+		int col = 1 + (n / 8) % 5, bit = n % 8;
+		memset(&coreGlobals.swMatrix[1], 0, 5);
+		if (phase < 10) {
+			coreGlobals.swMatrix[col] = 1 << bit;
+			if (phase == 0) logerror("4x4 TEST switch col%d bit%d (event $%02X)\n",
+			                         col, bit, (col - 1) * 8 + bit);
+		}
+	}
 	if (atari4_frame == 200 || atari4_frame == 260) logerror("4x4 TEST coin\n");
 	if (atari4_frame == 340) logerror("4x4 TEST start\n");
 	return;
