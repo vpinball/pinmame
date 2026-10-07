@@ -73,7 +73,7 @@
 /* per-game data; core_gameData points at its core member */
 typedef struct {
   core_tGameData core;
-  int width, height;      /* display module in dots: 128 x 32 (drawn in its look) or 128 x 64 (round dots) */
+  int width, height;      /* display module in dots: 128 x 32 or 128 x 64, drawn in the look its config packet sets */
   int aligned;            /* the POSITION the look draws unshifted: the game's factory POSITION */
   int servoMin, servoMax; /* servo pulse widths in us drawn as servo levels 0 and 255 */
   int rgbInverted;        /* WS2801 lines inverted on the board; the driver supports 0 */

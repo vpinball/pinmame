@@ -9,12 +9,12 @@
 extern "C" {
 #endif
 
-#define DISPLAY_W       128
-#define DISPLAY_H       32
-#define DISPLAY_FRAME   (DISPLAY_W * DISPLAY_H)
-#define DISPLAY_FRAME_MAX (DISPLAY_W * 2 * DISPLAY_H) /* the 128 x 64 module */
+#define DISPLAY_W          128
+#define DISPLAY_H          32
+#define DISPLAY_FRAME      (DISPLAY_W * DISPLAY_H)
+#define DISPLAY_FRAME_MAX  (DISPLAY_W * 2 * DISPLAY_H) /* the 128 x 64 module */
 #define DISPLAY_SIZE_OK(w, h) ((w) == DISPLAY_W && ((h) == DISPLAY_H || (h) == 2 * DISPLAY_H))
-#define DISPLAY_CFG_MAX 64
+#define DISPLAY_CFG_MAX    64
 #define DISPLAY_LOG_FRAMES 16 /* discarded frames logged one by one */
 
 #define DISPLAY_P17 (1u << 17)
@@ -22,14 +22,14 @@ extern "C" {
 #define DISPLAY_P21 (1u << 21)
 #define DISPLAY_P22 (1u << 22)
 
-/* the look: the module's service-menu settings, from its 14-byte config packet */
-#define DISPLAY_LOOK_W  (2 * DISPLAY_W)
-#define DISPLAY_LOOK_H  (2 * DISPLAY_H)
-#define DISPLAY_LOOK_MAX (DISPLAY_LOOK_W * 2 * DISPLAY_LOOK_H * 3) /* bytes of the 128 x 64 module's look */
-#define DISPLAY_ROUND   0
-#define DISPLAY_SQUARE  1
-#define DISPLAY_HIGHREZ 2
-#define DISPLAY_ALIGNED 340 /* the POSITION drawn unshifted */
+/* the look: the module's settings from its config packet (14 bytes from the 128x32 module's service menu, 12 for the 128x64 module) */
+#define DISPLAY_LOOK_W   (2 * DISPLAY_W)
+#define DISPLAY_LOOK_H   (2 * DISPLAY_H)
+#define DISPLAY_LOOK_MAX (DISPLAY_LOOK_W * 2 * DISPLAY_LOOK_H * 3) /* bytes of the 128x64 module's look */
+#define DISPLAY_ROUND    0
+#define DISPLAY_SQUARE   1
+#define DISPLAY_HIGHREZ  2
+#define DISPLAY_ALIGNED  340 /* the POSITION drawn unshifted */
 
 typedef struct display_look {
 	int shape;      /* PIXEL SHAPE: DISPLAY_ROUND, DISPLAY_SQUARE or DISPLAY_HIGHREZ */

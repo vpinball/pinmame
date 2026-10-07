@@ -90,7 +90,8 @@ static struct {
      lamps 11-88      the lamp matrix, lamp 91 the start button
      switches 11-88   the switch matrix, 1-8 and 91-98 the cabinet inputs */
 #define PINHECK_SOL_GI0 24  /* GI 0-7: solenoids 25-32 */
-#define PINHECK_SOL_GI8 36  /* GI 8-15: solenoids 37-44 (core.c reads pinHeck's 37-44 from slots 36-43) */
+#define PINHECK_SOL_GI8 36  /* GI 8-15: solenoids 37-44 (core.c reads pinHeck's 37-44 from slots 36-43). Not 8-aligned:
+                               written with core_write_pwm_output, as the _8b one would mix them up with slots 32-35 */
 #define PINHECK_SOL_RGB 50  /* on-board RGB left R,G,B, right R,G,B: 51-56 */
 #define PINHECK_SOL_SRV 56  /* servos 0-4: 57-61 */
 #define PINHECK_SOL_EXT 61  /* external WS2801 LED 0 R,G,B, or on-board LED 2 R,G,B: 62-64 */
@@ -190,7 +191,7 @@ static void pinheck_brd_gi(void *ctx, uint64_t t, uint16_t gi)
 {
 	(void)ctx; (void)t;
 	core_write_pwm_output_8b(CORE_MODOUT_SOL0 + PINHECK_SOL_GI0, (UINT8)gi);
-	core_write_pwm_output_8b(CORE_MODOUT_SOL0 + PINHECK_SOL_GI8, (UINT8)(gi >> 8));
+	core_write_pwm_output(CORE_MODOUT_SOL0 + PINHECK_SOL_GI8, 8, (UINT8)(gi >> 8));
 	coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00FFFFFFu) | ((UINT32)(gi & 0xFF) << 24);
 	brd_sols_seen |= (UINT32)(gi & 0xFF) << 24;
 	brd_gi8_seen |= (UINT16)(gi & 0xFF00);
@@ -343,7 +344,7 @@ static void pinheck_brd_reset(void)
 	core_write_pwm_output(CORE_MODOUT_LAMP0 + PINHECK_LAMP_ST, 1, 0);
 	for (i = 0; i < 3; i++) core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 8 * i, 0);
 	core_write_pwm_output_8b(CORE_MODOUT_SOL0 + PINHECK_SOL_GI0, 0);
-	core_write_pwm_output_8b(CORE_MODOUT_SOL0 + PINHECK_SOL_GI8, 0);
+	core_write_pwm_output(CORE_MODOUT_SOL0 + PINHECK_SOL_GI8, 8, 0);
 	for (i = PINHECK_SOL_RGB; i < PINHECK_NSOLS; i++) pinheck_brd_level(i, 0);
 	memset(brd_servo_us, 0, sizeof(brd_servo_us));
 	for (i = 0; i < 8; i++)
@@ -917,11 +918,9 @@ PINMAME_VIDEO_UPDATE(pinheck_video)
 	prop_sync(&prop);
 	(void)cliprect;
 #if !defined(LIBPINMAME) && PINHECK_VIDEO_SCALE == 2
-	/* the module's look: the 128x32 one's from its config packet, round dots for the 128x64 one (libpinmame: below).
-	   TODO: find out if The Jetsons sends the 128x64 module config packets (pinheck_disp_config logs any) and has
-	   display settings (PIXEL SHAPE, BRIGHTNESS, POSITION, BAR BRIGHT); if so, use them instead of the fixed look */
-	static const display_look round64 = { DISPLAY_ROUND, 255, DISPLAY_ALIGNED, 62 };
-	if (disp_dirty) pinheck_display_render(h == DISPLAY_H ? &disp_look : &round64, disp_shown, h, disp_img);
+	/* the module's look; from its config packet (libpinmame: below). Jetsons sends its 128x64 module fixed settings
+	   (round dots, full brightness, factory POSITION), BUT no bar brightness, which keeps it default/guessed (firmware (not dumped yet) would decide what the real value is) */
+	if (disp_dirty) pinheck_display_render(&disp_look, disp_shown, h, disp_img);
 	disp_dirty = 0;
 	for (y = 0; y < 2 * h && y0 + y < bitmap->height; y++)
 		for (x = 0; x < DISPLAY_LOOK_W && x0 + x < bitmap->width; x++) {

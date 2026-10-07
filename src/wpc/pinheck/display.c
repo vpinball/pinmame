@@ -85,19 +85,22 @@ static int word(const uint8_t *b, int i)
 	return b[2 * i] << 8 | b[2 * i + 1];
 }
 
-/* 7 big-endian words: ?, POSITION, PIXEL SHAPE, BRIGHTNESS, width, height, BAR BRIGHT.
-   Anything else keeps the exact look (square dots, as sent) and returns 0. */
+/* Big-endian words: ?, POSITION, PIXEL SHAPE, BRIGHTNESS, width, height, then BAR BRIGHT in the 128 x 32 module's 14
+   bytes; the 128 x 64 module's 12 bytes end after the height (The Jetsons: 1, 55, 0, 255, 128, 64), so its bar brightness
+   keeps the default/guess. Anything else keeps the exact look (square dots, as sent) and returns 0 */
 int pinheck_display_look(display_look *look, const uint8_t *cfg, int n)
 {
 	look->shape = DISPLAY_SQUARE;
 	look->brightness = 255;
 	look->position = DISPLAY_ALIGNED;
 	look->bar = 62;
-	if (!cfg || n != 14 || word(cfg, 4) != DISPLAY_W || word(cfg, 5) != DISPLAY_H) return 0;
+	if (!cfg || (n != 14 && n != 12) || word(cfg, 4) != DISPLAY_W || word(cfg, 5) != (n == 14 ? DISPLAY_H : 2 * DISPLAY_H))
+		return 0;
 	look->position = word(cfg, 1);
 	look->shape = word(cfg, 2) <= DISPLAY_HIGHREZ ? word(cfg, 2) : DISPLAY_SQUARE;
 	look->brightness = word(cfg, 3) < 255 ? word(cfg, 3) : 255;
-	look->bar = word(cfg, 6) < 62 ? word(cfg, 6) : 62;
+	if (n == 14)
+		look->bar = word(cfg, 6) < 62 ? word(cfg, 6) : 62;
 	return 1;
 }
 

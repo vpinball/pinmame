@@ -7,6 +7,14 @@
  plunger), left scoop, kickout hole, orbits with the up-post, Elroy loop, flipper
  end-of-stroke switches, pops, slings and the drain; the Orbitty topper (servo 0)
  is tracked. Coils read as "on during the last frame".
+
+ Outputs beyond the coils (see pinheck.c for the numbering):
+   solenoids 37/38  ramp / scoop flasher (GI strings 8/9, by the wiring list);
+                    seen at run time: 38 flashes while a ball sits in the scoop,
+                    both flash in the show after a captive ball hit
+   solenoids 39/40  left / right GI; 41-44 dim along with them
+   solenoid 57      the Orbitty topper (servo 0), sweeping as a game starts;
+                    58 (servo 1) rests centred
  ******************************************************************************/
 
 /*------------------------------------------------------------------------------
