@@ -686,10 +686,20 @@ static WRITE_HANDLER(cs_cmd_w);
 static WRITE_HANDLER(cs_ctrl_w);
 static READ_HANDLER(cs_port2_r);
 static WRITE_HANDLER(cs_port2_w);
+static WRITE_HANDLER(cs_manCmd_w);
 
 const struct sndbrdIntf by45Intf = {
-  "BY45", cs_init, NULL, cs_diag, NULL, cs_cmd_w, NULL, cs_ctrl_w, NULL, 0
+  "BY45", cs_init, NULL, cs_diag, cs_manCmd_w, cs_cmd_w, NULL, cs_ctrl_w, NULL, 0
 };
+
+/* Manual sound command (sound commander, sndbrd_manCmd), Cheap Squeak and Turbo Cheap Squeak:
+   the game sends a command byte as two 4-bit nibbles with a single strobe. It puts the low nibble
+   on the bus and raises the sound interrupt line (0->1, where it stays); the sound CPU reads the
+   nibble at once in its interrupt handler, the game then puts the high nibble on the bus, and the
+   handler reads it some 70-130 us after the first one (traced on spyhuntr, motrdome, cityslck).
+   The manual command hands the high nibble over right after the first read instead.
+   Note: after a sound CPU reset the Turbo Cheap Squeak program runs a ROM and RAM self-test
+   (about 5 s on cityslck) before it enables its command interrupt. */
 static struct DACinterface cs_dacInt = { 1, { 20 }};
 static MEMORY_READ_START(cs_readmem)
   { 0x0000, 0x001f, m6803_internal_registers_r },
@@ -721,10 +731,12 @@ MACHINE_DRIVER_END
 static struct {
   struct sndbrdData brdData;
   int cmd, ctrl, p21;
+  int manHi; // manual command: 0x10 | the high nibble, still to hand over
 } cslocals;
 
 static void cs_init(struct sndbrdData *brdData) {
   cslocals.brdData = *brdData;
+  cslocals.manHi = 0;
 }
 
 static void cs_diag(int button) {
@@ -732,6 +744,11 @@ static void cs_diag(int button) {
 }
 
 static WRITE_HANDLER(cs_cmd_w) { cslocals.cmd = data; }
+static WRITE_HANDLER(cs_manCmd_w) {
+  cslocals.manHi = 0x10 | ((data >> 4) & 0x0f); // given on the next port 2 read, see cs_port2_r
+  cs_cmd_w(0, data & 0x0f);
+  cs_ctrl_w(0, 0); cs_ctrl_w(0, 1);
+}
 static WRITE_HANDLER(cs_ctrl_w) {
   cslocals.ctrl = ((data & 1) == cslocals.brdData.subType);
   cpu_set_irq_line(cslocals.brdData.cpuNo, M6803_TIN_LINE, (data & 1) ? ASSERT_LINE : CLEAR_LINE);
@@ -746,6 +763,10 @@ static READ_HANDLER(cs_port2_r) {
 	//static int last = 0xff;
 	int data = cslocals.ctrl | (cslocals.cmd << 1);
 	if (cslocals.p21) data |= 0x02;
+	if (cslocals.manHi) { // manual command: the interrupt handler read the low nibble, the high one comes next
+		cslocals.cmd = cslocals.manHi & 0x0f;
+		cslocals.manHi = 0;
+	}
 #if 0
 	if(last != data)
 		printf("cs_port2_r = %x\n",data);
@@ -768,9 +789,10 @@ static void tcs_diag(int button);
 static WRITE_HANDLER(tcs_cmd_w);
 static WRITE_HANDLER(tcs_ctrl_w);
 static READ_HANDLER(tcs_status_r);
+static WRITE_HANDLER(tcs_manCmd_w);
 
 const struct sndbrdIntf byTCSIntf = {
-  "BYTCS", tcs_init, NULL, tcs_diag, NULL, tcs_cmd_w, tcs_status_r, tcs_ctrl_w, NULL, SNDBRD_NOCBSYNC
+  "BYTCS", tcs_init, NULL, tcs_diag, tcs_manCmd_w, tcs_cmd_w, tcs_status_r, tcs_ctrl_w, NULL, SNDBRD_NOCBSYNC
 };
 static struct DACinterface tcs_dacInt = { 1, { 20 }};
 static MEMORY_READ_START(tcs_readmem)
@@ -832,6 +854,11 @@ static void tcs_diag(int button) { cpu_set_nmi_line(tcslocals.brdData.cpuNo, but
 static WRITE_HANDLER(tcs_cmd_w) { tcslocals.cmd = data; }
 static WRITE_HANDLER(tcs_ctrl_w) { pia_set_input_ca1(TCS_PIA0, data & 0x01); }
 static READ_HANDLER(tcs_status_r) { return tcslocals.status; }
+static WRITE_HANDLER(tcs_manCmd_w) {
+  // the whole byte: tcs_pia0b_r gives the low nibble on the first read and the high one on the next
+  tcs_cmd_w(0, data & 0xff);
+  tcs_ctrl_w(0, 0); tcs_ctrl_w(0, 1);
+}
 static READ_HANDLER(tcs_pia0b_r) {
   int ret = tcslocals.cmd & 0x0f;
   tcslocals.cmd >>= 4;

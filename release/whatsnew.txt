@@ -78,6 +78,7 @@ Improved (slightly) the SN76496/SN76489(A)/SN76494 sound emulation (more accurat
 Improved MSM6585 sound emulation (accurate sample rate/prescale mapping)
 Wired up sample rate selection for Verne's World and Jolly Park (potentially fixes some samples played)
 Fixed sound problems if a OKI6295 game is used after a OKI6376 game (e.g. GTS3 after Sleic)
+Added manual sound commands (sound commander) for the Bally Cheap Squeak and Turbo Cheap Squeak sound boards
 Improved BSMT2000 sound emulation speed a bit
 Fixed VGM recording for machines using OKI6295 sound
 Added VGM recording for machines using BSMT2000 sound
