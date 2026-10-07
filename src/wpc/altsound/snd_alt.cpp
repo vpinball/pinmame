@@ -681,6 +681,16 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 		}
 	}
 
+	if ((hardware_gen == GEN_BY17) || // Bally MPU-17 and MPU-35: PinMAME logs one byte per sound command
+		(hardware_gen == GEN_BY35))
+	{
+		ALT_DEBUG(0, "Hardware Generation: GEN_BY17, GEN_BY35");
+
+		*stored_command = 0;
+		*cmd_counter = 0;
+		*cmd_filter = 0;
+	}
+
 	OUTDENT;
 	ALT_DEBUG(0, "END preprocess_commands()");
 }
