@@ -679,13 +679,15 @@ static void slice_write(int dev, int offset, UINT8 data) {
     static int n = 0;
     if (++n % 40 == 0) {
       int k;
-      logerror("4x4 DISP f=%4d [", atari4_frame);
-      for (k = 0; k < 16; k++) {
-        int d = slice.reg[k / 8][k % 8] & 0x0f;
+      logerror("4x4 DISP f=%4d ", atari4_frame);
+      for (k = 0; k < 32; k++) {
+        int b = slice.reg[k / 16][k % 8];
+        int d = ((k / 8) & 1) ? (b & 0x0f) : (b >> 4);
+        if (k % 8 == 0) logerror("[");
         logerror("%c", d <= 9 ? '0' + d : '.');
-        if (k == 7) logerror("][");
+        if (k % 8 == 7) logerror("]");
       }
-      logerror("]\n");
+      logerror("\n");
     }
   }
 #endif
@@ -694,8 +696,16 @@ static void slice_write(int dev, int offset, UINT8 data) {
   /   slice's OUT2x/OUT3x lines straight into a ULN2803 and on to SEG1/SEG2, and
   /   there is no font table anywhere in the ROM).  $F in a digit blanks it,
   /   which is what an unused player's display is filled with. --*/
-  if (dev <= 1 && reg <= 7)
-    coreGlobals.segments[dev * 8 + reg].w = core_bcd2seg7a[data & 0x0f];
+  /*-- Displays.  Registers 0-7 of the first two devices hold BCD, decoded to
+  /   segments inside the slice -- there is no font table anywhere in the ROM.
+  /   Each device is a nibble-paired slice: 12E takes BD4-BD7 and drives SEG1
+  /   through ULN2803A 12D/A, 13E takes BD0-BD3 and drives SEG2 through 13D.
+  /   So one register byte carries two digits, one per segment bus, and the
+  /   register index is the digit position: four buses of eight. --*/
+  if (dev <= 1 && reg <= 7) {
+    coreGlobals.segments[dev * 16 + reg].w     = core_bcd2seg7a[data >> 4];
+    coreGlobals.segments[dev * 16 + 8 + reg].w = core_bcd2seg7a[data & 0x0f];
+  }
 
   /*-- Registers $0A and $0B of device 0 are the solenoids.  The slices are
   /   nibble-paired: two four-bit parts share each address, one wired to
@@ -875,12 +885,14 @@ static SWITCH_UPDATE(ATARI4) {
 	atari4_frame++;
 	coreGlobals.swMatrix[6] =
 		  (((atari4_frame >= 200 && atari4_frame < 216) ||
-		    (atari4_frame >= 260 && atari4_frame < 276)) ? 0x08 : 0)  /* right coin */
-		| ((atari4_frame >= 340 && atari4_frame < 356) ? 0x01 : 0);   /* start */
+		    (atari4_frame >= 260 && atari4_frame < 276) ||
+		    (atari4_frame >= 320 && atari4_frame < 336) ||
+		    (atari4_frame >= 380 && atari4_frame < 396)) ? 0x08 : 0)  /* right coin */
+		| ((atari4_frame >= 500 && atari4_frame < 516) ? 0x01 : 0);   /* start */
 	/* after the game has started, pulse one playfield switch every 80 frames
 	   so the score displays can be identified by what moves */
-	if (atari4_frame >= 600) {
-		int n = (atari4_frame - 600) / 60, phase = (atari4_frame - 600) % 60;
+	if (atari4_frame >= 700) {
+		int n = (atari4_frame - 700) / 60, phase = (atari4_frame - 700) % 60;
 		int col = 1 + (n / 8) % 7, bit = n % 8;
 		memset(&coreGlobals.swMatrix[1], 0, 7);
 		if (n < 56 && phase < 8) {
