@@ -584,7 +584,7 @@ MACHINE_DRIVER_END
 #define ATARI4_WDOG_IRQS (ATARI4_IRQFREQ)  /* ~1 s without a kick */
 #define ATARI4_TEST_HOOKS 0  /* 1 = log every slice access */
 
-#if ATARI4_TEST_HOOKS && 0
+#if ATARI4_TEST_HOOKS
 #define SLICE_LOG logerror
 #else
 #define SLICE_LOG(...) ((void)0)
@@ -592,13 +592,8 @@ MACHINE_DRIVER_END
 
 static UINT8 *atari4_taskram;   /* $1000-$17FF: eight 256-byte task pages */
 static UINT8 *atari4_CMOS;
-#if ATARI4_TEST_HOOKS
-static int atari4_frame;
-#endif
 static int atari4_taskbank;
 static void atari4_setbank(int bank);
-#if ATARI4_TEST_HOOKS
-#endif
 
 /*-- [dev][reg-0x0e] -> switch matrix column, or 0 for "not a switch port".
 /   Matrix columns are 1-based, so column n here is the game's column n-1. --*/
@@ -658,39 +653,14 @@ static void slice_write(int dev, int offset, UINT8 data) {
   if (offset & 0xf0)
     SLICE_LOG("4x4 slice W dev=%d OFFPAGE off=%02X data=%02X\n", dev, offset & 0xff, data);
   if (dev == 3 && reg == 0x0f && ((data >> 4) & 7) != 7
-      && ((data >> 4) & 7) != atari4_taskbank) {
-#if ATARI4_TEST_HOOKS
-    logerror("4x4 TASK %d -> %d  f=%d req=%02X\n", atari4_taskbank, (data >> 4) & 7,
-             atari4_frame, memory_region(ATARI_MEMREG_CPU)[0x302a]);
-#endif
+      && ((data >> 4) & 7) != atari4_taskbank)
     atari4_setbank((data >> 4) & 7);     /* all ones = hold */
-  }
   if (reg == 0x0c) {
     if (dev == 2) cpu_set_irq_line(ATARI_CPU, 0, CLEAR_LINE);  /* $220C: IRQ ack */
     if (dev == 3) { slice.wdog = 0; SLICE_LOG("4x4 watchdog kick\n"); }  /* $230C */
   }
   /*-- $91B9 blits all 33 output ports every second interrupt, so logging every
   /   write floods the trace.  Only transitions carry information. --*/
-#if ATARI4_TEST_HOOKS
-  /*-- Dump the 33-byte output image once every 60 frames.  The blit at $91B9
-  /   copies $3082-$30A2 to the ports listed at $8844, so watching the image
-  /   shows which port answers which input without needing the schematic. --*/
-  if (dev == 3 && reg == 0x0c) {
-    static int n = 0;
-    if (++n % 30 == 0) {
-      int k;
-      logerror("4x4 DISP f=%4d ", atari4_frame);
-      for (k = 0; k < 32; k++) {
-        int b = slice.reg[k / 16][k % 8];
-        int d = ((k / 8) & 1) ? (b & 0x0f) : (b >> 4);
-        if (k % 8 == 0) logerror("[");
-        logerror("%c", d <= 9 ? '0' + d : '.');
-        if (k % 8 == 7) logerror("]");
-      }
-      logerror("\n");
-    }
-  }
-#endif
   /*-- Registers 0-7 of the first two devices are the score displays: sixteen
   /   BCD digits, decoded to segments in hardware (the schematic runs the
   /   slice's OUT2x/OUT3x lines straight into a ULN2803 and on to SEG1/SEG2, and
@@ -735,11 +705,6 @@ static void slice_write(int dev, int offset, UINT8 data) {
                           | ((UINT32)data << shift);
   }
 
-#if ATARI4_TEST_HOOKS
-  if (slice.reg[dev][reg] != data)
-    logerror("4x4 TR f=%d $%04X %02X %02X\n", atari4_frame,
-             0x2000 + (dev < 5 ? dev : dev + 1) * 0x100 + reg, slice.reg[dev][reg], data);
-#endif
   if (slice.reg[dev][reg] != data)
     SLICE_LOG("4x4 out dev=%d reg=%X %02X -> %02X\n", dev, reg, slice.reg[dev][reg], data);
   slice.reg[dev][reg] = data;
@@ -889,30 +854,6 @@ static MACHINE_INIT(ATARI4) {
 /   playfield switches, and the 0x62 mask forced five of them open every frame.
 /   Tilt has no key assigned, so bit 1 is preserved along with SW2D-SW2F. --*/
 static SWITCH_UPDATE(ATARI4) {
-#if ATARI4_TEST_HOOKS
-	atari4_frame++;
-	coreGlobals.swMatrix[6] =
-		  (((atari4_frame >= 200 && atari4_frame < 216) ||
-		    (atari4_frame >= 260 && atari4_frame < 276) ||
-		    (atari4_frame >= 320 && atari4_frame < 336) ||
-		    (atari4_frame >= 380 && atari4_frame < 396)) ? 0x08 : 0)  /* right coin */
-		| ((atari4_frame >= 500 && atari4_frame < 516) ? 0x01 : 0);   /* start */
-	/* after the game has started, pulse one playfield switch every 80 frames
-	   so the score displays can be identified by what moves */
-	/* after the game is under way, hit the mid pop bumper every 60 frames so
-	   the scoring display can be identified by what moves */
-	if (atari4_frame >= 700) {
-		int phase = (atari4_frame - 700) % 60;
-		memset(&coreGlobals.swMatrix[1], 0, 7);
-		if (phase < 10) {
-			coreGlobals.swMatrix[1] = 0x04;    /* switch $02, the mid pop */
-			if (phase == 0) logerror("4x4 HIT mid pop\n");
-		}
-	}
-	if (atari4_frame == 200 || atari4_frame == 260) logerror("4x4 TEST coin\n");
-	if (atari4_frame == 340) logerror("4x4 TEST start\n");
-	return;
-#endif
 	if (inports) {
 		coreGlobals.swMatrix[6] = (coreGlobals.swMatrix[6] & 0xe2)
 			| ((inports[ATARI_COMINPORT] & 0x0004) ? 0x01 : 0)   /* Game       -> SW28 */
