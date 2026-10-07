@@ -583,11 +583,29 @@ MACHINE_DRIVER_END
 #define ATARI4_WDOG_IRQS (ATARI4_IRQFREQ)  /* ~1 s without a kick */
 #define ATARI4_TEST_HOOKS 0  /* 1 = log every slice access */
 
-#if ATARI4_TEST_HOOKS
+#if ATARI4_TEST_HOOKS && 0
 #define SLICE_LOG logerror
 #else
 #define SLICE_LOG(...) ((void)0)
 #endif
+
+static UINT8 *atari4_lowram;
+static UINT8 *atari4_hiram;
+#if ATARI4_TEST_HOOKS
+static void thread_dump(void);
+#endif
+
+/*-- [dev][reg-0x0e] -> switch matrix column, or 0 for "not a switch port".
+/   Matrix columns are 1-based, so column n here is the game's column n-1. --*/
+static const UINT8 atari4_swcol[ATARI4_SLICE_DEVS][2] = {
+  /* $200E, $200F */ { 2, 1 },
+  /* $210E, $210F */ { 4, 3 },
+  /* $220E, $220F */ { 6, 5 },
+  /* $230E, $230F */ { 7, 0 },
+  /* $240E, $240F */ { 0, 0 },
+  /* $260E, $260F */ { 0, 0 },
+  /* $270E, $270F */ { 0, 0 },
+};
 
 static struct {
   UINT8 reg[ATARI4_SLICE_DEVS][16];
@@ -599,12 +617,27 @@ static UINT8 slice_read(int dev, int offset) {
   UINT8 data;
   if (offset & 0xf0)
     SLICE_LOG("4x4 slice R dev=%d OFFPAGE off=%02X\n", dev, offset & 0xff);
-  /*-- Registers E and F of the first three pairs read the switch columns, six
-  /   ports of eight giving the 48 switches SW00-SW2F.  The inputs have 470R
-  /   pull-ups to +5V and the switches pull to switch ground, so a closed
-  /   switch reads low; $9248 inverts with EOR #$FF before storing. --*/
-  if (dev <= 2 && reg >= 0x0e) {
-    int col = 1 + dev * 2 + (reg - 0x0e);
+  /*-- The debounce routine at $9248 does not scan the switch columns in device
+  /   order.  It reads their addresses from a pointer table at $8834, and that
+  /   table is
+  /
+  /       col 0  $200F    col 1  $200E
+  /       col 2  $210F    col 3  $210E
+  /       col 4  $220F    col 5  $220E
+  /       col 6  $230E
+  /
+  /   -- register F before register E within each device, and a seventh column
+  /   on device 3.  Seven ports of eight give the 56 switches SW00-SW37, and
+  /   the switch number the game dispatches on is col*8+bit (the identity table
+  /   at $875F).  Deriving the column arithmetically from dev and reg gets the
+  /   order wrong and loses $230E altogether, which leaves column 6 returning
+  /   an output latch: the debounce inverts it with EOR #$FF and every switch in
+  /   that column reads permanently closed.
+  /
+  /   The inputs have 470R pull-ups to +5V and the switches pull to switch
+  /   ground, so a closed switch reads low and $9248 inverts before storing. --*/
+  if (reg >= 0x0e && atari4_swcol[dev][reg - 0x0e]) {
+    int col = atari4_swcol[dev][reg - 0x0e];
     data = ~coreGlobals.swMatrix[col];
     SLICE_LOG("4x4 switchmap dev=%d reg=%X -> col=%d matrix=%02X data=%02X\n",
               dev, reg, col, coreGlobals.swMatrix[col], data);
@@ -619,9 +652,43 @@ static void slice_write(int dev, int offset, UINT8 data) {
   int reg = offset & 0x0f;
   if (offset & 0xf0)
     SLICE_LOG("4x4 slice W dev=%d OFFPAGE off=%02X data=%02X\n", dev, offset & 0xff, data);
+#if ATARI4_TEST_HOOKS
+  /*-- RESUME-TASK ($96B9/$96E8) writes the incoming task number here just
+  /   before it copies that task's context into zero page, so this catches
+  /   every switch with both contexts still intact. --*/
+  if (dev == 3 && reg == 0x0f && atari4_hiram) {
+    int k, next = atari4_hiram[0x16], prev = atari4_hiram[0x18];
+    int src = ((prev | 0x10) << 8) | 0xef;
+    logerror("4x4 RESUME $3016=%02X $3018=%02X src=$%04X ipnow=$%02X%02X block=",
+             next, prev, src, atari4_lowram[0xf9], atari4_lowram[0xf8]);
+    for (k = 0; k <= 0x10; k++)
+      logerror("%02X", atari4_lowram[(src + k) & 0x7ff]);
+    logerror(" -> ip=$%02X%02X\n", atari4_lowram[(src + 10) & 0x7ff],
+             atari4_lowram[(src + 9) & 0x7ff]);
+  }
+#endif
   if (reg == 0x0c) {
     if (dev == 2) cpu_set_irq_line(ATARI_CPU, 0, CLEAR_LINE);  /* $220C: IRQ ack */
     if (dev == 3) { slice.wdog = 0; SLICE_LOG("4x4 watchdog kick\n"); }  /* $230C */
+#if ATARI4_TEST_HOOKS
+    if (dev == 3 && atari4_hiram) {
+      int c;
+      logerror("4x4 SWSTATE enable=");
+      for (c = 0; c < 7; c++) logerror("%02X ", atari4_hiram[0x61 + c]);
+      logerror("cur=");
+      for (c = 0; c < 7; c++) logerror("%02X ", atari4_hiram[0x68 + c]);
+      logerror("pend=");
+      for (c = 0; c < 7; c++) logerror("%02X ", atari4_hiram[0x7b + c]);
+      logerror("req=%02X timers=", atari4_hiram[0x2a]);
+      for (c = 0; c < 7; c++)
+        logerror("%04X ", atari4_lowram[(c << 8) | 0xed]
+                          | (atari4_lowram[(c << 8) | 0xee] << 8));
+      logerror("matrix=");
+      for (c = 1; c <= 7; c++) logerror("%02X ", coreGlobals.swMatrix[c]);
+      logerror("\n");
+      thread_dump();
+    }
+#endif
   }
   /*-- $91B9 blits all 33 output ports every second interrupt, so logging every
   /   write floods the trace.  Only transitions carry information. --*/
@@ -653,12 +720,10 @@ static WRITE_HANDLER(slice2_w) { slice_write(5 + (offset >> 8), offset, data); }
 /   A read/write handler is enough here because the stub region is copied as
 /   data and never executed -- unlike $1000-$1041, which the test at $DF10 runs
 /   from, and which is why the mirror itself has to be a bank. --*/
-static UINT8 *atari4_lowram;
-
 /* offset is relative to $1100, so the mirrored address is offset + 0x100 */
 static READ_HANDLER(taskrec_r) {
   int addr = offset + 0x100;
-  if ((addr & 0xff) >= 0xef) {              /* dispatch stub of a task record */
+  if ((addr & 0xff) >= 0xef) {              /* context block of a task record */
     int base = addr & 0x700, k, blank = 1;
     for (k = 0xef; k <= 0xff; k++) if (atari4_lowram[base | k]) { blank = 0; break; }
     if (blank)                              /* never started: inherit the live context */
@@ -667,6 +732,61 @@ static READ_HANDLER(taskrec_r) {
   return atari4_lowram[addr];
 }
 static WRITE_HANDLER(taskrec_w) { atari4_lowram[offset + 0x100] = data; }
+
+#if ATARI4_TEST_HOOKS
+/*-- Measurement only.  The Forth inner interpreter fetches each thread cell
+/   with lda ($f8),y, which is a data read and therefore visible to a read
+/   handler.  Counting reads of the main loop's cells gives the exact path the
+/   scheduler takes without any CPU-core instrumentation. --*/
+static UINT32 thread_hits[0x80];
+static READ_HANDLER(threadprobe_r) {
+  thread_hits[offset & 0x7f]++;
+  return memory_region(ATARI_MEMREG_CPU)[0x9f80 + offset];
+}
+static UINT32 coin_hits;
+static READ_HANDLER(coinprobe_r) {
+  coin_hits++;
+  return memory_region(ATARI_MEMREG_CPU)[0xbee0 + offset];
+}
+static void thread_dump(void) {
+  static const struct { int addr; const char *what; } k[] = {
+    {0x9f8a,"loop top (#TASKS)"}, {0x9f98,"run-if-due"}, {0x9fa8,"dispatch task"},
+    {0x9fae,"find free slot"},    {0x9fb2,"0BRANCH no-slot"},
+    {0x9fb6,"read request"},      {0x9fc1,"0BRANCH req==FF"},
+    {0x9fea,"START-TASK"},        {0x9ff0,"abandon (DROP DROP)"}, {0,0}};
+  int i;
+  logerror("4x4 PATH");
+  for (i = 0; k[i].addr; i++)
+    logerror(" %s=%u", k[i].what, thread_hits[k[i].addr - 0x9f80]);
+  logerror(" coin-handler-reads=%u\n", coin_hits);
+}
+
+/*-- Measurement only.  $302A is the pending task-start code that the main loop
+/   at $9F86 polls; $FF means "no switch event".  $3061-$3067 is the per-column
+/   switch enable mask that cold start writes.  Log a transition of either. --*/
+static WRITE_HANDLER(hiprobe_w) {
+  int addr = 0x3000 + offset;
+  if (addr == 0x3026 || addr == 0x3027)
+    logerror("4x4 HANDLER $%04X = %02X pc=$%04X\n", addr, data, activecpu_get_pc());
+  if (addr >= 0x3061 && addr <= 0x3067)
+    logerror("4x4 ENW $%04X = %02X pc=$%04X\n", addr, data, activecpu_get_pc());
+  if (addr == 0x302a && data != 0xff && atari4_hiram[0x2a] != data)
+    logerror("4x4 REQ $302A = %02X (switch event)\n", data);
+  atari4_hiram[offset] = data;
+}
+#endif
+
+#if ATARI4_TEST_HOOKS
+/*-- Measurement only.  RESUME-TASK reads a 17-byte context out of $1nEF-$1nFF
+/   on every task switch, and an exhaustive opcode scan finds no instruction
+/   that writes that region.  Log every write to any page's $EF-$FF so the
+/   claim is settled by observation rather than by the scan. --*/
+static WRITE_HANDLER(ctxprobe_w) {
+  if (offset >= 0x100 && (offset & 0xff) >= 0xef)
+    logerror("4x4 CTXW $%04X = %02X  pc=$%04X\n", offset, data, activecpu_get_pc());
+  atari4_lowram[offset + 0x100] = data;
+}
+#endif
 
 static UINT8 *atari4_CMOS;
 static NVRAM_HANDLER(ATARI4) {
@@ -686,17 +806,34 @@ static MEMORY_READ_START(ATARI4_readmem)
   {0x2500,0x25ff,	nvram4_r},	/* 256x4 CMOS */
   {0x2600,0x27ff,	slice2_r},	/* two further 16-register devices */
   {0x3000,0x37ff,	MRA_RAM},
+#if ATARI4_TEST_HOOKS
+  {0x8000,0x9f7f,	MRA_ROM},
+  {0x9f80,0x9fff,	threadprobe_r},
+  {0xa000,0xbedf,	MRA_ROM},
+  {0xbee0,0xbeff,	coinprobe_r},	/* the right-coin handler thread */
+  {0xbf00,0xffff,	MRA_ROM},
+#else
   {0x8000,0xffff,	MRA_ROM},
+#endif
 MEMORY_END
 
 static MEMORY_WRITE_START(ATARI4_writemem)
+#if ATARI4_TEST_HOOKS
+  {0x0000,0x00ff,	MWA_RAM, &atari4_lowram},
+  {0x0100,0x07ff,	ctxprobe_w},
+#else
   {0x0000,0x07ff,	MWA_RAM, &atari4_lowram},
+#endif
   {0x1000,0x10ff,	MWA_BANK1},
   {0x1100,0x17ff,	taskrec_w},
   {0x2000,0x24ff,	slice_w},
   {0x2500,0x25ff,	nvram4_w, &atari4_CMOS},
   {0x2600,0x27ff,	slice2_w},
+#if ATARI4_TEST_HOOKS
+  {0x3000,0x37ff,	hiprobe_w},
+#else
   {0x3000,0x37ff,	MWA_RAM},
+#endif
   /*-- Writes above $8000 hit ROM and do nothing on the real board.  They must
   /   be mapped: MAME's unmapped-write handler stores into the region for a
   /   16-bit address bus, so a stray write would silently patch the loaded ROM
@@ -730,6 +867,7 @@ static MACHINE_INIT(ATARI4) {
   /   power-up RAM test at $DF10 copies self-modifying code into $1000 and
   /   does JMP $1000, and an opcode fetch bypasses memory handlers. --*/
   cpu_setbank(1, memory_region(ATARI_MEMREG_CPU));
+  atari4_hiram = memory_region(ATARI_MEMREG_CPU) + 0x3000;
 }
 
 /*-- The cabinet switches are SW28 start, SW29 tilt, SW2A left coin, SW2B right
@@ -739,8 +877,19 @@ static MACHINE_INIT(ATARI4) {
 /   playfield switches, and the 0x62 mask forced five of them open every frame.
 /   Tilt has no key assigned, so bit 1 is preserved along with SW2D-SW2F. --*/
 static SWITCH_UPDATE(ATARI4) {
+#if ATARI4_TEST_HOOKS
+	/*-- Measurement only: pulse the right-coin bit for 16 frames starting at
+	/   frame 120, so the column mapping can be tested without depending on
+	/   the host input plumbing. --*/
+	static int frame = 0;
+	frame++;
+	if (frame == 300) logerror("4x4 PROBE coin pressed\n");
+	if (frame == 316) logerror("4x4 PROBE coin released\n");
+	coreGlobals.swMatrix[6] = (coreGlobals.swMatrix[6] & ~0x08)
+	                        | ((frame >= 300 && frame < 316) ? 0x08 : 0);
+#endif
 	if (inports) {
-		coreGlobals.swMatrix[6] = (coreGlobals.swMatrix[6] & 0xe2)
+		coreGlobals.swMatrix[6] = (coreGlobals.swMatrix[6] & 0xea)
 			| ((inports[ATARI_COMINPORT] & 0x0004) ? 0x01 : 0)   /* Game       -> SW28 */
 			| ((inports[ATARI_COMINPORT] & 0x0008) ? 0x04 : 0)   /* Left coin  -> SW2A */
 			| ((inports[ATARI_COMINPORT] & 0x0010) ? 0x08 : 0)   /* Right coin -> SW2B */
