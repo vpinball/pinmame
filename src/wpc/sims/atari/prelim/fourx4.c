@@ -14,8 +14,15 @@
  outhole), and switches $17 and $1F -- eight apart -- reset the left and right
  drop target banks, which is the two four-bank sets IPDB lists.
 
- Still unknown: the left flipper button, the rollunder spinner, the inlanes
- and outlanes, and which of the four segment buses is which physical display.
+ The displays are named by the schematics: the backbox sheet puts PLAYER 1 and
+ LAP (HEAT) on SEG1 and PLAYER 2 and CREDIT on SEG2, and the playfield diagram
+ marks the middle-of-playfield display as ANTE, SEG 3.
+
+ The playfield diagram also shows the lamps as a four-by-four grid, L1 through
+ L10, which is what the machine is named after.
+
+ Still unknown: the left flipper button, the rollunder spinner, the inlanes and
+ outlanes.
 
  There is no sound.  The 82S130 PROM that circulates with this ROM set was
  dumped from a Superman (see the note in atarigames.c) and is not 4x4's, and
@@ -212,14 +219,24 @@ static sim_tSimData fourx4SimData = {
 /*----------------------
 / Game Data Information
 /----------------------*/
-/*-- Four segment buses of eight digits.  12E drives SEG1 and 13E drives SEG2
-/   from the two halves of each register byte; devices 0 and 1 give four
-/   buses.  Which bus is which physical display is not settled yet. --*/
+/*-- The schematics name every bus.  On the backbox sheet PLAYER 1 and LAP
+/   (HEAT) both hang off segments 1A-1G and PLAYER 2 and CREDIT both off
+/   2A-2G, so each bus carries a six-digit score and a two-character display --
+/   eight digits, which is exactly the eight registers.  The playfield diagram
+/   marks the display in the middle of the playfield as ANTE, SEG 3.
+/
+/   The slices are nibble-paired: 12E takes BD4-BD7 and drives SEG1 (sheet
+/   4936), 13E takes BD0-BD3 and drives SEG2 (sheet 4933).  So the high nibble
+/   of each register byte is SEG1 and the low nibble SEG2, and the same for
+/   SEG3/SEG4 on the second device.
+/
+/   The emulation agrees: in a one-player game the SEG1 bus reads a score plus
+/   a heat of 1 while the SEG2 bus reads a blank score -- player 2 is not
+/   playing -- plus the credit count. --*/
 static core_tLCDLayout fourx4_disp[] = {
-  { 0, 0, 0, 8, CORE_SEG7 },
-  { 2, 0, 8, 8, CORE_SEG7 },
-  { 4, 0,16, 8, CORE_SEG7 },
-  { 6, 0,24, 8, CORE_SEG7 },
+  { 0, 0, 0, 6, CORE_SEG7 }, { 0,16, 6, 2, CORE_SEG7 },   /* SEG1: player 1, lap (heat) */
+  { 2, 0, 8, 6, CORE_SEG7 }, { 2,16,14, 2, CORE_SEG7 },   /* SEG2: player 2, credit */
+  { 5, 0,24, 6, CORE_SEG7 },                              /* SEG3: ante, on the playfield */
   { 0 }
 };
 
