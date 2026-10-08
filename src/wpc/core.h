@@ -657,6 +657,7 @@ INLINE void core_zero_cross(void) { coreGlobals.lastACPositiveZeroCrossTimeStamp
 
 #define CORE_DMD_PWM_PREINTEGRATED_LINEAR_4  0x100
 #define CORE_DMD_PWM_PREINTEGRATED_SAM       0x101
+#define CORE_DMD_PWM_PREINTEGRATED_LINEAR_16 0x102
 
 extern void core_dmd_pwm_init(const core_tLCDLayout* layout, const int filter, const int raw_combiner, const int isReversedByte);
 extern void core_dmd_submit_frame(const core_tLCDLayout* layout, const UINT8* frame, const int ntimes);
