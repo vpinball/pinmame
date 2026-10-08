@@ -20,7 +20,7 @@ namespace {
 enum : int32_t {
 	E_PERM = 1, E_NOENT = 2, E_INTR = 4, E_IO = 5, E_BADF = 9, E_AGAIN = 11, E_NOMEM = 12,
 	E_ACCES = 13, E_FAULT = 14, E_EXIST = 17, E_NOTDIR = 20, E_ISDIR = 21, E_INVAL = 22,
-	E_MFILE = 24, E_NOTTY = 25, E_SPIPE = 29, E_ROFS = 30, E_RANGE = 34, E_NOSYS = 38,
+	E_SRCH = 3, E_MFILE = 24, E_NOTTY = 25, E_SPIPE = 29, E_ROFS = 30, E_RANGE = 34, E_NOSYS = 38,
 	E_NOTEMPTY = 39, E_AFNOSUPPORT = 97, E_TIMEDOUT = 110
 };
 
@@ -370,6 +370,18 @@ bool spike1_linux::start(const config &cfg, std::string &error)
 	return true;
 }
 
+bool spike1_linux::power_down(uint64_t max_ns, int slice_cycles)
+{
+	const uint64_t start = now_ns();
+	const uint32_t syncs = m_syncs;
+	m_devices.power_off();
+	while (m_status == status::running && m_syncs == syncs && now_ns() - start < max_ns) run(slice_cycles);
+	const bool synced = m_syncs != syncs;
+	log("nvram: power down - " + std::string(synced ? "the game committed its NVRAM after " : "no NVRAM commit within ") +
+		std::to_string((now_ns() - start) / 1000000) + " ms");
+	return synced;
+}
+
 spike1_linux::status spike1_linux::run(int cycles)
 {
 	// a thread keeps the CPU for at most this long before the next runnable one gets it
@@ -424,6 +436,52 @@ void spike1_linux::switch_to(thread &t)
 	m_current = &t;
 	m_cpu.load_context(t.ctx);
 	m_mem.write32(0xffff0ff0, t.tls); // what __kuser_get_tls returns
+	deliver_signal();
+}
+
+// Runs the handler of the current thread's lowest pending, unmasked signal, the way ARM Linux does:
+// a frame below the stack with a siginfo, a ucontext holding the interrupted registers and a return
+// trampoline (mov r7, #173; svc 0 - rt_sigreturn) for a handler without SA_RESTORER; r0 = the
+// signal, r1 = the siginfo, r2 = the ucontext. The interrupted registers also stay on the host side,
+// which is where rt_sigreturn takes them from
+void spike1_linux::deliver_signal()
+{
+	thread &t = *m_current;
+	const uint64_t ready = t.sig_pending & ~t.sigmask;
+	if (!ready || t.st != thread::state::runnable) return;
+	uint32_t sig = 1;
+	while (!((ready >> (sig - 1)) & 1)) sig++;
+	t.sig_pending &= ~(1ull << (sig - 1));
+	const sigaction_entry sa = m_sigactions[sig];
+	if (sa.handler <= 1) return; // default or ignored: nothing runs
+	constexpr uint32_t SA_RESTORER = 0x04000000, SA_NODEFER = 0x40000000, SA_RESETHAND = 0x80000000;
+	constexpr uint32_t SIGINFO = 128, UCONTEXT = 512, TRAMPOLINE = 8, CPSR_T = 0x20;
+	spike1_cpu_device::context ctx;
+	m_cpu.save_context(ctx);
+	t.sig_frames.push_back({ ctx, t.sigmask });
+	const uint32_t sp = (ctx.r[13] - SIGINFO - UCONTEXT - TRAMPOLINE) & ~7u;
+	const uint32_t info = sp, uc = sp + SIGINFO, tramp = uc + UCONTEXT;
+	const uint8_t zero[SIGINFO + UCONTEXT] = {};
+	m_mem.write(sp, zero, sizeof(zero));
+	m_mem.write32(info, sig);                              // si_signo; si_errno and si_code (SI_USER) 0
+	m_mem.write32(uc + 20 + 8, uint32_t(t.sigmask));       // uc_mcontext.oldmask
+	for (int i = 0; i < 16; i++) m_mem.write32(uc + 20 + 12 + 4 * i, ctx.r[i]); // arm_r0 .. arm_pc
+	m_mem.write32(uc + 20 + 76, ctx.cpsr);                 // arm_cpsr
+	m_mem.write64(uc + 104, t.sigmask);                    // uc_sigmask
+	m_mem.write32(tramp, 0xe3a070ad);
+	m_mem.write32(tramp + 4, 0xef000000);
+	spike1_cpu_device::context h = ctx;
+	h.r[0] = sig;
+	h.r[1] = info;
+	h.r[2] = uc;
+	h.r[13] = sp;
+	h.r[14] = (sa.flags & SA_RESTORER) && sa.restorer ? sa.restorer : tramp;
+	h.r[15] = sa.handler & ~1u;
+	h.cpsr = (sa.handler & 1) ? (ctx.cpsr | CPSR_T) : (ctx.cpsr & ~CPSR_T);
+	m_cpu.load_context(h);
+	t.sigmask |= sa.mask | ((sa.flags & SA_NODEFER) ? 0 : 1ull << (sig - 1));
+	if (sa.flags & SA_RESETHAND) m_sigactions[sig].handler = 0;
+	log("signal " + std::to_string(sig) + " handled by thread " + std::to_string(t.tid) + " (" + t.name + ")");
 }
 
 void spike1_linux::block(uint64_t wake_ns, bool retry, int32_t timeout_result)
@@ -526,6 +584,7 @@ void spike1_linux::on_swi(uint32_t comment)
 	bool handled = true;
 	std::string note;
 	m_block = block_kind::none;
+	m_sigreturned = false;
 	const int32_t result = syscall(nr, a, handled, note);
 	if (!handled) {
 		const char *n = name_of(nr);
@@ -535,8 +594,9 @@ void spike1_linux::on_swi(uint32_t comment)
 	}
 	if (m_block == block_kind::retry) // back to the SWI, so it runs again when the thread wakes
 		m_cpu.set_reg(15, m_cpu.pc() - (m_cpu.thumb() ? 2 : 4));
-	else if (m_block == block_kind::none && m_current->st != thread::state::done)
+	else if (m_block == block_kind::none && m_current->st != thread::state::done && !m_sigreturned)
 		m_cpu.set_reg(0, uint32_t(result));
+	if (m_block == block_kind::none) deliver_signal(); // a signal the call sent to its own thread, say
 	if (!note.empty() || (m_cfg.trace && m_block != block_kind::retry)) {
 		const char *n = name_of(nr);
 		char t[64];
@@ -597,9 +657,31 @@ int32_t spike1_linux::syscall(uint32_t nr, const uint32_t a[7], bool &handled, s
 		}
 		return sys_clone(a, note);
 	case 190: note = "vfork refused"; return -E_NOSYS;
-	case 37: case 238: case 268: // kill, tkill, tgkill
-		note = "signal " + std::to_string(nr == 268 ? a[2] : a[1]) + " ignored";
+	case 37: case 238: case 268: { // kill, tkill, tgkill
+		const uint32_t sig = nr == 268 ? a[2] : a[1];
+		if (sig == 0) return 0;  // only asks whether the target exists
+		if (sig > 64) return -E_INVAL;
+		if (m_sigactions[sig].handler <= 1) { note = "signal " + std::to_string(sig) + " ignored"; return 0; }
+		thread *target = m_current; // one process: a signal to it goes to the thread that sends it
+		if (nr != 37) {
+			const uint32_t tid = nr == 268 ? a[1] : a[0];
+			target = nullptr;
+			for (auto &t : m_threads) if (t->tid == tid && t->st != thread::state::done) target = t.get();
+			if (!target) return -E_SRCH;
+		}
+		target->sig_pending |= 1ull << (sig - 1);
+		note = "signal " + std::to_string(sig) + " to thread " + std::to_string(target->tid);
 		return 0;
+	}
+	case 119: case 173: { // sigreturn, rt_sigreturn: back to what the handler interrupted
+		thread &t = *m_current;
+		if (t.sig_frames.empty()) return -E_INVAL;
+		m_cpu.load_context(t.sig_frames.back().first);
+		t.sigmask = t.sig_frames.back().second;
+		t.sig_frames.pop_back();
+		m_sigreturned = true;
+		return 0;
+	}
 
 	// ---- signals
 	case 174: { // rt_sigaction
@@ -809,7 +891,8 @@ int32_t spike1_linux::syscall(uint32_t nr, const uint32_t a[7], bool &handled, s
 		if ((t == spike1_vfs::type::directory) != (nr == 40)) return nr == 40 ? -E_NOTDIR : -E_ISDIR;
 		return m_vfs.remove(g) ? 0 : -E_NOTEMPTY;
 	}
-	case 118: case 148: case 36: return 0; // fsync, fdatasync, sync
+	case 36: m_syncs++; return 0;          // sync
+	case 118: case 148: return 0;          // fsync, fdatasync
 	case 143: return 0; // flock
 	case 15: return 0;  // chmod
 	case 41: case 63: { // dup, dup2

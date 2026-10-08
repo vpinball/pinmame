@@ -74,7 +74,7 @@ static const spike1_tGameData *spike1_game(void) { return (const spike1_tGameDat
 
 /* SPIKE1_LOG set in the environment: once every five seconds, what the sound stream asked for and
    got, and the switch changes passed to the machine */
-static struct { int on; unsigned frames, asked, got, switches, calls, peak; double cycles, run_s; cycles_t since; } diag;
+static struct { int on; unsigned frames, asked, got, switches, calls, peak, late, shortfalls; double cycles, run_s; cycles_t since; } diag;
 
 static struct {
   int running, warned;
@@ -311,10 +311,10 @@ static INTERRUPT_GEN(spike1_vblank)
       const cycles_t now = osd_cycles();
       const double wall = diag.since ? (double)(now - diag.since) / (double)osd_cycles_per_second() : 0.;
       fprintf(stderr, "[spike1 driver] %.1f s wall: CPU %u slices of %.0f cycles on average, %.1f s in the machine; "
-              "sound: stream asked %u frames, got %u, peak %u; the game's rate %u Hz; %u switch changes\n",
+              "sound: stream asked %u frames, got %u, late %u times, short %u, peak %u; the game's rate %u Hz; %u switch changes\n",
               wall, diag.calls, diag.calls ? diag.cycles / diag.calls : 0., diag.run_s,
-              diag.asked, diag.got, diag.peak, spike1_pinmame_audio_rate(), diag.switches);
-      diag.asked = diag.got = diag.calls = diag.peak = 0;
+              diag.asked, diag.got, diag.late, diag.shortfalls, diag.peak, spike1_pinmame_audio_rate(), diag.switches);
+      diag.asked = diag.got = diag.calls = diag.peak = diag.late = diag.shortfalls = 0;
       diag.cycles = diag.run_s = 0.;
       diag.since = now;
     }
@@ -381,27 +381,48 @@ static core_tLCDLayout spike1_dmd_insert[] = {
 /  Whoa Nellie 24 kHz): spike1_sync_io() moves the stream to it, the mixer resamples
 /-------------------------------------------------*/
 
+/* The machine makes its samples in time slices, and the stream can ask for a frame's worth before
+   the slice that makes them has run. So the samples pass through a FIFO that starts playing only
+   once 1/30 s is waiting; should it run dry anyway, the last sample is held - a gap of zeros would
+   click - and the FIFO fills to its mark again */
+#define SPIKE1_FIFO 16384 /* stereo frames */
+static struct { INT16 s[2 * SPIKE1_FIFO]; int head, count, primed; INT16 last[2]; } fifo;
+
 static void spike1_snd_update(int num, INT16 **buffer, int length)
 {
   static INT16 tmp[2 * 1024];
-  int done = 0;
+  const int mark = (int)(locals.audioRate ? locals.audioRate : SPIKE1_AUDIO_RATE) / 30;
+  int i, got = 0;
   (void)num;
-  while (done < length) {
-    const int want = length - done > 1024 ? 1024 : length - done;
-    const int n = locals.running ? (int)spike1_pinmame_audio(tmp, want) : 0;
-    int i;
-    diag.asked += want;
-    diag.got += n;
-    for (i = 0; i < 2 * n; i++) { const unsigned a = (unsigned)(tmp[i] < 0 ? -tmp[i] : tmp[i]); if (a > diag.peak) diag.peak = a; }
+  while (locals.running && fifo.count < SPIKE1_FIFO) {
+    const int room = SPIKE1_FIFO - fifo.count, want = room > 1024 ? 1024 : room;
+    const int n = (int)spike1_pinmame_audio(tmp, want);
     for (i = 0; i < n; i++) {
-      buffer[0][done + i] = tmp[2 * i];
-      buffer[1][done + i] = tmp[2 * i + 1];
+      const int at = (fifo.head + fifo.count + i) % SPIKE1_FIFO;
+      fifo.s[2 * at] = tmp[2 * i];
+      fifo.s[2 * at + 1] = tmp[2 * i + 1];
     }
-    if (n < want) { /* the machine is behind: silence for the rest of this buffer */
-      for (i = done + n; i < length; i++) buffer[0][i] = buffer[1][i] = 0;
-      return;
+    for (i = 0; i < 2 * n; i++) { const unsigned a = (unsigned)(tmp[i] < 0 ? -tmp[i] : tmp[i]); if (a > diag.peak) diag.peak = a; }
+    fifo.count += n;
+    got += n;
+    if (n < want) break;
+  }
+  diag.got += got;
+  diag.asked += length;
+  if (got < length) diag.late++; /* the machine had less ready than the stream asked: without the FIFO, a gap */
+  if (!fifo.primed && fifo.count >= length + mark) fifo.primed = 1;
+  for (i = 0; i < length; i++) {
+    if (fifo.primed && fifo.count) {
+      fifo.last[0] = fifo.s[2 * fifo.head];
+      fifo.last[1] = fifo.s[2 * fifo.head + 1];
+      fifo.head = (fifo.head + 1) % SPIKE1_FIFO;
+      fifo.count--;
+    } else if (fifo.primed) { /* ran dry: hold, and wait for the mark again */
+      fifo.primed = 0;
+      diag.shortfalls++;
     }
-    done += n;
+    buffer[0][i] = fifo.last[0];
+    buffer[1][i] = fifo.last[1];
   }
 }
 
@@ -479,6 +500,7 @@ static MACHINE_INIT(spike1)
   int c;
 
   memset(&locals, 0, sizeof(locals));
+  memset(&fifo, 0, sizeof(fifo));
   memset(&diag, 0, sizeof(diag));
   diag.on = getenv("SPIKE1_LOG") != NULL;
   locals.startSw = -1;
@@ -509,6 +531,9 @@ static MACHINE_INIT(spike1)
 static MACHINE_STOP(spike1)
 {
   if (locals.running) {
+    /* switched off like the machine: the game commits what it keeps in memory (settings, audits,
+       high scores) to its NVRAM files when the power fails, and only then is the block complete */
+    spike1_pinmame_power_down(5000);
     /* the NVRAM handler saves after the machine is gone: take its block now */
     const unsigned size = spike1_pinmame_nvram(NULL, 0);
     UINT8 *block = (UINT8 *)malloc(size ? size : 1);
