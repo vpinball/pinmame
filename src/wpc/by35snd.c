@@ -316,6 +316,7 @@ static struct {
   struct sndbrdData brdData;
   int pia0a, pia0b;
   UINT8 lastcmd, /*cmd[2],*/ lastctrl;
+  UINT8 manCtrl; // -51N manual command: the control line state to restore afterwards
 } splocals;
 
 static void sp_init(struct sndbrdData *brdData) {
@@ -373,11 +374,29 @@ static WRITE_HANDLER(sp51_ctrl_w) {
   pia_set_input_ca1(SP_PIA0, data & 0x01);
   splocals.lastctrl = data;
 }
+/* -51N manual command, sent as the game sends it (suprbowl, every command): strobe, the low nibble, the
+   high one 146 us later, then the idle 0x0f. Each nibble written while the strobe is high interrupts the
+   sound CPU, whose handler reads the low one until some 105 us after it was written. A nibble of 0x0f
+   can't be sent, just as from the game. The strobe returns to what the main CPU set. */
+#define SP51N_MANCMD_HI TIME_IN_USEC(146)
+static void sp51n_manCmdEnd(int data) {
+  sp51_data_w(0, 0x0f);
+  sp51_ctrl_w(0, splocals.manCtrl);
+}
+static void sp51n_manCmdHi(int data) {
+  sp51_data_w(0, data);
+  timer_set(SP51N_MANCMD_HI, 0, sp51n_manCmdEnd);
+}
 static WRITE_HANDLER(sp51_manCmd_w) {
-  splocals.lastcmd = data;  pia_set_input_ca1(SP_PIA0, 1); pia_set_input_ca1(SP_PIA0, 0);
   if (splocals.brdData.subType == 2) { // -51N
-    sp_irq(1); sp_irq(0);
+    splocals.manCtrl = splocals.lastctrl;
+    sp51_ctrl_w(0, 0); sp51_ctrl_w(0, 1);
+    sp51_data_w(0, data & 0x0f);
+    cpu_boost_interleave(TIME_IN_USEC(5), TIME_IN_USEC(400)); // keep the sound CPU in step with the timers
+    timer_set(SP51N_MANCMD_HI, (data >> 4) & 0x0f, sp51n_manCmdHi);
+    return;
   }
+  splocals.lastcmd = data;  pia_set_input_ca1(SP_PIA0, 1); pia_set_input_ca1(SP_PIA0, 0);
 }
 
 static READ_HANDLER(sp_8910a_r) {
@@ -695,9 +714,11 @@ const struct sndbrdIntf by45Intf = {
 /* Manual sound command (sound commander, sndbrd_manCmd), Cheap Squeak and Turbo Cheap Squeak:
    the game sends a command byte as two 4-bit nibbles with a single strobe. It puts the low nibble
    on the bus and raises the sound interrupt line (0->1, where it stays); the sound CPU reads the
-   nibble at once in its interrupt handler, the game then puts the high nibble on the bus, and the
-   handler reads it some 70-130 us after the first one (traced on spyhuntr, motrdome, cityslck).
-   The manual command hands the high nibble over right after the first read instead.
+   nibble in its interrupt handler (some 120 us after the strobe on spyhuntr), the game then puts
+   the high nibble on the bus, and the handler reads it some 70-130 us after the first one (traced
+   on spyhuntr, motrdome, cityslck).
+   Cheap Squeak: the manual command does the same, putting the high nibble on the bus CS_MANCMD_HI
+   after the strobe, so it does not depend on which code reads port 2 in between.
    Note: after a sound CPU reset the Turbo Cheap Squeak program runs a ROM and RAM self-test
    (about 5 s on cityslck) before it enables its command interrupt. */
 static struct DACinterface cs_dacInt = { 1, { 20 }};
@@ -731,12 +752,10 @@ MACHINE_DRIVER_END
 static struct {
   struct sndbrdData brdData;
   int cmd, ctrl, p21;
-  int manHi; // manual command: 0x10 | the high nibble, still to hand over
 } cslocals;
 
 static void cs_init(struct sndbrdData *brdData) {
   cslocals.brdData = *brdData;
-  cslocals.manHi = 0;
 }
 
 static void cs_diag(int button) {
@@ -744,10 +763,16 @@ static void cs_diag(int button) {
 }
 
 static WRITE_HANDLER(cs_cmd_w) { cslocals.cmd = data; }
+/* when the manual command's high nibble goes on the bus: when the game puts it there (spyhuntr, every
+   command: low nibble 22 us after the strobe, high one 146 us after that), between the interrupt
+   handler's reads some 120 and 195 us after the strobe */
+#define CS_MANCMD_HI TIME_IN_USEC(22 + 146)
+static void cs_manCmdHi(int data) { cs_cmd_w(0, data); }
 static WRITE_HANDLER(cs_manCmd_w) {
-  cslocals.manHi = 0x10 | ((data >> 4) & 0x0f); // given on the next port 2 read, see cs_port2_r
   cs_cmd_w(0, data & 0x0f);
   cs_ctrl_w(0, 0); cs_ctrl_w(0, 1);
+  cpu_boost_interleave(TIME_IN_USEC(5), TIME_IN_USEC(200)); // keep the sound CPU in step with the timer
+  timer_set(CS_MANCMD_HI, (data >> 4) & 0x0f, cs_manCmdHi);
 }
 static WRITE_HANDLER(cs_ctrl_w) {
   cslocals.ctrl = ((data & 1) == cslocals.brdData.subType);
@@ -763,10 +788,6 @@ static READ_HANDLER(cs_port2_r) {
 	//static int last = 0xff;
 	int data = cslocals.ctrl | (cslocals.cmd << 1);
 	if (cslocals.p21) data |= 0x02;
-	if (cslocals.manHi) { // manual command: the interrupt handler read the low nibble, the high one comes next
-		cslocals.cmd = cslocals.manHi & 0x0f;
-		cslocals.manHi = 0;
-	}
 #if 0
 	if(last != data)
 		printf("cs_port2_r = %x\n",data);

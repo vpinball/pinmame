@@ -267,7 +267,7 @@
 #define MIN(x,y) ((x)<(y)?(x):(y))
 #endif
 
-// The 8-bit sound DACs of the System 9/11 and WPC89 boards are unipolar (code 0 = 0V) and the
+// The 8-bit sound DACs of the System 3-7, 9/11 and WPC89 boards are unipolar (code 0 = 0V) and the
 // sound programs play around the middle code, then leave the DAC on the last value written.
 // The real boards are AC-coupled in front of the power amp, so none of that DC reached the
 // speaker. Mixed as-is, it adds up to half the 16-bit range of DC, which eats the headroom
@@ -355,7 +355,7 @@ static const struct pia6821_interface s67s_pia = {
     CA2    Speech data
     CA1    NC */
  /* in  : A/B,CA/B1,CA/B2 */ 0, snd_r, 0, 0, 0, 0,
- /* out : A/B,CA/B2       */ DAC_0_data_w, 0, hc55516_0_digit_w, hc55516_0_clock_w,
+ /* out : A/B,CA/B2       */ wmssnd_dac0_w, 0, hc55516_0_digit_w, hc55516_0_clock_w,
  /* irq : A/B             */ s67s_piaIrq, s67s_piaIrq
 };
 
@@ -593,6 +593,10 @@ static void s11s_diag(int button) {
 / Thanks to Destruk for
 / buying the schematics! :)
 /---------------------------*/
+/* Note: only the machine driver below (wmssnd_s9ps: the sound CPU's memory map and DAC) is used.
+   s9psIntf is not a registered sound board type, and Pennant Fever's MACHINE_INIT(s9pf) (s11.c)
+   starts the System 9 board (SNDBRD_S9S) instead, whose PIA config (S11S_PIA0, also PIA 6) is
+   what drives this hardware. So s9psIntf, s9p_init, s9p_pia and its handlers are unused. */
 #define S9P_PIA0    6
 
 static struct {
@@ -612,7 +616,7 @@ static const struct pia6821_interface s9p_pia = {
  /* in  : A/B,CA/B1,CA/B2 */
   soundlatch_r, 0, 0, 0, 0, 0,
  /* out : A/B,CA/B2       */
-  0, DAC_0_data_w, s9p_hs_w, 0,
+  0, wmssnd_dac0_w, s9p_hs_w, 0,
  /* irq : A/B             */
   s9p_piaIrq, s9p_piaIrq
 };

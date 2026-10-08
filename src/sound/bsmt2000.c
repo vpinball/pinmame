@@ -201,7 +201,7 @@ static void set_mode(struct BSMT2000Chip * const chip, int i)
         chip->mode = 5;
         break;
 
-        /* mode 6: 34kHz, 8 channel PCM, stereo */
+        /* mode 6: 34kHz (actually more like 31kHz), 8 channel PCM, stereo */
     case 6:
         chip->sample_rate = chip->clock / 4. / 193.;
         chip->stereo = 1;
@@ -210,7 +210,7 @@ static void set_mode(struct BSMT2000Chip * const chip, int i)
         chip->mode = 6;
         break;
 
-        /* mode 7: 32kHz, 9 channel PCM, stereo */
+        /* mode 7: 32kHz (actually more like 29kHz), 9 channel PCM, stereo */
     case 7:
         chip->sample_rate = chip->clock / 4. / 208.;
         chip->stereo = 1;
@@ -502,11 +502,11 @@ int BSMT2000_sh_start(const struct MachineSound *msound)
 		vol[1] = MIXER(intf->mixing_level[i], MIXER_PAN_RIGHT);
 #endif /* PINMAME */
 
-		bsmt2000[i].sample_rate = intf->baseclock[i] / 1000.;
 		bsmt2000[i].clock = intf->baseclock[i];
 
-		// guess initial mode from the parameters, should be not necessary, but e.g. Alvin G. reset is not wired/emulated yet, thus also no mode set!
-		bsmt2000[i].last_register = (bsmt2000[i].voices == 11) ? 1 : 5;
+		// guess initial mode/sample_rate from the parameters, should be not necessary, but e.g. Alvin G. reset is not wired/emulated yet, thus also no mode set!
+		bsmt2000[i].last_register = (bsmt2000[i].voices == 11) ? 1                                : 5;
+		bsmt2000[i].sample_rate   = (bsmt2000[i].voices == 11) ? (bsmt2000[i].clock / 4. / 250.5) : (bsmt2000[i].clock / 4. / 254.);
 		bsmt2000[i].mode = bsmt2000[i].last_register;
 
 		/* create the stream */
