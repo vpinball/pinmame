@@ -267,6 +267,15 @@
 #define MIN(x,y) ((x)<(y)?(x):(y))
 #endif
 
+// The 8-bit sound DACs of the System 9/11 and WPC89 boards are unipolar (code 0 = 0V) and the
+// sound programs play around the middle code, then leave the DAC on the last value written.
+// The real boards are AC-coupled in front of the power amp, so none of that DC reached the
+// speaker. Mixed as-is, it adds up to half the 16-bit range of DC, which eats the headroom
+// shared with the YM2151 and HC55516 and clips the loud sounds. So route these DACs through
+// the DC offset correction (10Hz high-pass) instead, same input scale as DAC_data_w().
+static WRITE_HANDLER(wmssnd_dac0_w) { DAC_DC_offset_correction_data_16_w(0, data * 0x101 / 2); }
+static WRITE_HANDLER(wmssnd_dac1_w) { DAC_DC_offset_correction_data_16_w(1, data * 0x101 / 2); }
+
 /*----------------------
 /    System 3 - 7
 /-----------------------*/
@@ -523,17 +532,17 @@ static const struct pia6821_interface s11s_pia[] = {{
  /* CB2       55516 Dig */
  /* subType 0 and 4 for S9 and S11S */
  /* in  : A/B,CA/B1,CA/B2 */ soundlatch_r, 0, PIA_UNUSED_VAL(0), 0, 0, 0,
- /* out : A/B,CA/B2       */ 0, DAC_0_data_w, hc55516_0_clock_w, hc55516_0_digit_w,
+ /* out : A/B,CA/B2       */ 0, wmssnd_dac0_w, hc55516_0_clock_w, hc55516_0_digit_w,
  /* irq : A/B             */ s11s_piaIrq, s11s_piaIrq
 },{
  /* subType 1 for S11X */
  /* in  : A/B,CA/B1,CA/B2 */ soundlatch_r, 0, 0, 0, 0, 0,
- /* out : A/B,CA/B2       */ 0, DAC_1_data_w, hc55516_1_clock_w, hc55516_1_digit_w,
+ /* out : A/B,CA/B2       */ 0, wmssnd_dac1_w, hc55516_1_clock_w, hc55516_1_digit_w,
  /* irq : A/B             */ s11s_piaIrq, s11s_piaIrq
 },{
  /* subType 2 for S11B2 */
  /* in  : A/B,CA/B1,CA/B2 */ soundlatch_r, 0, 0, 0, 0, 0,
- /* out : A/B,CA/B2       */ 0, DAC_1_data_w, hc55516_0_clock_w, hc55516_0_digit_w,
+ /* out : A/B,CA/B2       */ 0, wmssnd_dac1_w, hc55516_0_clock_w, hc55516_0_digit_w,
  /* irq : A/B             */ s11s_piaIrq, s11s_piaIrq
 }};
 
@@ -758,7 +767,7 @@ static const struct pia6821_interface s11cs_pia = {
  /* in  : A/B,CA/B1,CA/B2 */
   0, soundlatch2_r, 0, 0, 0, 0,
  /* out : A/B,CA/B2       */
-  DAC_0_data_w, soundlatch3_w, s11cs_pia0ca2_w, s11cs_pia0cb2_w,
+  wmssnd_dac0_w, soundlatch3_w, s11cs_pia0ca2_w, s11cs_pia0cb2_w,
  /* irq : A/B             */
   s11cs_piaIrqA, s11cs_piaIrqB
 };
@@ -1073,7 +1082,7 @@ static MEMORY_WRITE_START(wpcs_writemem)
   { 0x0000, 0x1fff, MWA_RAM },
   { 0x2000, 0x2000, wpcs_rombank_w }, /* 2000-23ff */
   { 0x2400, 0x2401, DCS89_YM2151_word_0_w }, /* 2400-27fe even *//* 2401-27ff odd */
-  { 0x2800, 0x2800, DAC_0_data_w }, /* 2800-2bff */
+  { 0x2800, 0x2800, wmssnd_dac0_w }, /* 2800-2bff */
   { 0x2c00, 0x2c00, hc55516_0_clock_set_w },  /* 2c00-2fff */
   { 0x3400, 0x3400, hc55516_0_digit_clock_clear_w }, /* 3400-37ff */
   { 0x3800, 0x3800, wpcs_volume_w }, /* 3800-3bff */
@@ -1095,7 +1104,7 @@ static MEMORY_WRITE_START(wpcs_writemem)
   { 0x0000, 0x1fff, MWA_RAM },
   { 0x2000, 0x2000, wpcs_rombank_w }, /* 2000-23ff */
   { 0x2400, 0x2401, YM2151_word_0_w }, /* 2400-27fe even *//* 2401-27ff odd */
-  { 0x2800, 0x2800, DAC_0_data_w }, /* 2800-2bff */
+  { 0x2800, 0x2800, wmssnd_dac0_w }, /* 2800-2bff */
   { 0x2c00, 0x2c00, hc55516_0_clock_set_w },  /* 2c00-2fff */
   { 0x3400, 0x3400, hc55516_0_digit_clock_clear_w }, /* 3400-37ff */
   { 0x3800, 0x3800, wpcs_volume_w }, /* 3800-3bff */
