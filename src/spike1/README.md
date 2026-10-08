@@ -131,9 +131,20 @@ code (its symbols are in the program) rather than from any other emulator:
 - **LEDs** (type 4, up to 96 channels a board, three for an RGB LED): `NODEBUS_SetLEDMultiple2`'s
   packed updates (command 0x80-0xBF: an index, a list or a bitmap of channels, then levels and fade
   times in compact forms; see `led_update()`). Every update in a full attract-and-play run decodes to
-  exactly its length. `led_level()` gives a channel's level (0-255); the LED mask applies.
+  exactly its length. `led_level()` gives a channel's level (0-255); the LED mask applies. The
+  older SDK (Whoa Nellie: `NODEBUS_SetLED` with an 8-bit channel) sends runs of channels instead,
+  on the same command bytes - `0x80 | first`, then a fade time and a level per channel, or 0xff and
+  a time and level per channel (`led_update_run()`); the model picks the form by that symbol.
 - **Motors**: home, go, stop and status, the move taking emulated time, so the game's encoder-motor
   code (Slimer) finds the motor homed and ready instead of re-configuring it in a loop.
+- **Steppers** (Whoa Nellie's score and credit reels, `NODEBUS_Stepper*`): configure (0x32: steps
+  a turn, home switch input), go (0x31: a target, forward or with bit 15 backward, at a time per
+  step), home (0x34) and status (0x38 + stepper: step, target, bit 1 moving, bit 2 in place). A
+  reel's home switch is closed while the reel stands within two steps of step 0.
+- **Board blocks**: the game keeps a block a board; `sys_node_board_get_next_block_ptr` gives its
+  base and size, which differ between SDK versions (a loaded constant in Ghostbusters, a computed
+  one in Whoa Nellie) - the model reads both forms, as the firmware image a board must report
+  hangs off its block.
 - **Sound** (`/dev/i2s`): the game's DAC handler writes 200 stereo frames of 16-bit samples at a
   time, at the rate it sets with a code from its own table (44.1 kHz). A write waits while the DAC
   still has more than the driver's buffer (2940 bytes) to play, so the sound thread runs at the
@@ -164,12 +175,15 @@ code (its symbols are in the program) rather than from any other emulator:
 - **The CPU** (`CPU_SPIKE1`, `src/cpuintrf.c`) runs the machine for the cycles PinMAME gives it,
   at 400 MHz; once a frame the driver passes switch changes in and takes coils, LEDs and the DMD out.
 - **Numbers** are the factory manual's: switches by their Switch Reference numbers (the flipper
-  buttons 9 and 10 and EOS switches 11 and 12 in PinMAME's flipper column; the CPU board's C1-C16
-  as 101-116, its DIP switches 101-108 from the DIP settings); coils 1-32 as solenoids 1-32 by their
-  Driver Reference numbers, other coils from solenoid 51, and the coils the game names LEFT FLIPPER
-  and RIGHT FLIPPER also as the flipper outputs 48 and 46; LED channels as lamps by their Light
-  Reference numbers (a motor drive is no lamp); a motor the boards run on their own as mech 0
-  (`GetMech(0)`, Ghostbusters' Slimer). Coil and LED levels are modulated outputs.
+  buttons and EOS switches in PinMAME's flipper column - each title's numbers, with its coin, tilt
+  and slam switches, are in its `SPIKE1_SWITCHES`; the CPU board's C1-C16 as 101-116, its DIP
+  switches 101-108 from the DIP settings); coils 1-32 as solenoids 1-32 by their Driver Reference
+  numbers, other coils from solenoid 51, and the coils the game names LEFT FLIPPER and RIGHT FLIPPER
+  (with their HOLD coils) also as the flipper outputs 48 and 46; LED channels as lamps by their
+  Light Reference numbers (a motor drive is no lamp); the motors the boards run on their own, then
+  their steppers, as mechs (`GetMech(n)`: Ghostbusters' Slimer is mech 0, Whoa Nellie's 1000s,
+  100s, 10s, 1s and credit reels mechs 0-4, as steps 0-199). Coil and LED levels are modulated
+  outputs.
   The keys: coins 5, 6, 3 and 4, start 1, the service buttons 7-0 (back, minus, plus, select), tilt
   Insert, slam Home, coin door End.
 - **Displays**: the DMD as a core DMD (`CORE_DMD_PWM_PREINTEGRATED_LINEAR_16`: the device model

@@ -11,19 +11,21 @@
   and connects switches, coils, LEDs, displays, sound and NVRAM to PinMAME.
 
   PinMAME numbers are the factory manual's, which the game's own tables give:
-    switches 1-95           the Switch Reference numbers. 9-12 (flipper buttons and EOS switches)
-                            sit in PinMAME's flipper column, so the flipper keys reach them
+    switches 1-95           the Switch Reference numbers. The flipper buttons and EOS switches
+                            (each title's own numbers, spike1_tSwitches) sit in PinMAME's flipper
+                            column, so the flipper keys reach them
     switches 101-116        the CPU board's C1-C16: 101-108 its DIP switches, set from the DIP
                             settings, 109-112 the service buttons, 116 the door's power sense
     solenoids 1-32          the coils by their Driver Reference number
     solenoids 51-72         a coil numbered 0 or above 32, in number order
     solenoids 46, 48        the flipper outputs: the coils the game names RIGHT FLIPPER and
-                            LEFT FLIPPER, which the node board fires on its own when the button
-                            closes
+                            LEFT FLIPPER (and their HOLD coils where a title has them), which the
+                            node board fires on its own when the button closes
     lamps 1-n               the LED channels by their Light Reference number (an RGB LED is three;
                             GI strings and flashers are LED channels too)
-    mech 0                  a motor the boards run on their own (Ghostbusters' Slimer): its
-                            position in the game's units, through Controller.GetMech(0)
+    mech 0-n                the motors the boards run on their own (Ghostbusters' Slimer), then
+                            their steppers (Whoa Nellie's reels): a motor's position in the game's
+                            units, a stepper's step within its turn, through Controller.GetMech(n)
   Coils and LEDs are levels (a coil driver's PWM duty, an LED channel's brightness): modulated
   outputs hold them as 0-1, the solenoid and lamp bits say whether they are on at all.
 
@@ -51,10 +53,21 @@
 #define SPIKE1_FIRSTCUSTSOL CORE_FIRSTCUSTSOL /* solenoid 51 */
 #define SPIKE1_NCUSTSOLS  (CORE_MODOUT_SOL_MAX - SPIKE1_FIRSTCUSTSOL + 1)
 
-/* What a title adds to core_tGameData: its game folder's name (the program runs as /games/<folder>/game) */
+/* The numbers a title's manual gives the switches PinMAME's keys reach; they differ between titles */
+typedef struct {
+  int flip[4];   /* left button, right button, left EOS, right EOS */
+  int coin[4];   /* left, right, center, fourth */
+  int tilt, slam;
+} spike1_tSwitches;
+#define SPIKE1_SWITCHES(lbutton, rbutton, leos, reos, coin1, coin2, coin3, coin4, tilt, slam) \
+  { { lbutton, rbutton, leos, reos }, { coin1, coin2, coin3, coin4 }, tilt, slam }
+
+/* What a title adds to core_tGameData: its game folder's name (the program runs as
+   /games/<folder>/game) and its switch numbers */
 typedef struct {
   core_tGameData core;
   const char *folder;
+  spike1_tSwitches sw;
 } spike1_tGameData;
 
 static const spike1_tGameData *spike1_game(void) { return (const spike1_tGameData *)core_gameData; }
@@ -70,7 +83,7 @@ static struct {
   UINT8 swState[256];     /* each switch as last handed to the machine */
   int coilSol[SPIKE1_MAXCOILS]; /* the PinMAME solenoid of coil k, 0 if the game has no coil k */
   int coilOf[CORE_MODOUT_SOL_MAX + 1]; /* and back: the coil of solenoid s, -1 for none */
-  int leftFlipCoil, rightFlipCoil;
+  int flipCoil[2][2];     /* left, right: the flipper's coil and its separate hold coil (Whoa Nellie), -1 for none */
   int startSw;
   unsigned dmdFrames;
   unsigned nLeds;
@@ -136,21 +149,33 @@ MEMORY_END
 
 /*-------------------------------------------------
 /  switch numbers <-> PinMAME's matrix (16 columns of 8)
-/    0-8, 13-95  matrix entries 0-8, 13-95
-/    9-12        column 11, PinMAME's flipper column: 12 right EOS, 10 right button, 11 left EOS,
-/                9 left button, as the core's CORE_SW*FLIP* bits lay them out
-/    88-91       matrix entries 9-12, which the flipper switches leave free
-/    101-132     columns 12-15: the CPU board's C1-C16 as 101-116, then numbers no title uses;
-/                132 also takes any number the game does not have
+/    0-95     matrix entries 0-95, except that the title's four flipper switches and the numbers
+/             88-91 trade places: the flipper switches go to column 11, PinMAME's flipper column
+/             (88 right EOS, 89 right button, 90 left EOS, 91 left button, as the core's
+/             CORE_SW*FLIP* bits lay them out), 88-91 to the entries they leave free
+/    101-132  columns 12-15: the CPU board's C1-C16 as 101-116, then numbers no title uses;
+/             132 also takes any number the game does not have
 /-------------------------------------------------*/
-static const int spike1_flipSw[4] = { 12, 10, 11, 9 }; /* matrix entries 88-91 */
+static int spike1_flipSlot(int k)
+{
+  const int *flip = spike1_game()->sw.flip;
+  static const int slot[4] = { 3, 1, 2, 0 }; /* entry 88 + k holds flip[slot[k]] */
+  return flip[slot[k]];
+}
+
+static int spike1_swap(int n)
+{
+  int k;
+  for (k = 0; k < 4; k++) {
+    if (n == spike1_flipSlot(k)) return 88 + k;
+    if (n == 88 + k) return spike1_flipSlot(k);
+  }
+  return n;
+}
 
 static int spike1_sw2m(int no)
 {
-  int i;
-  for (i = 0; i < 4; i++) if (no == spike1_flipSw[i]) return 88 + i;
-  if (no >= 88 && no <= 91) return 9 + (no - 88);
-  if (no >= 0 && no <= 95) return no;
+  if (no >= 0 && no <= 95) return spike1_swap(no);
   if (no >= 101 && no <= 132) return 96 + (no - 101);
   return 127;
 }
@@ -158,10 +183,7 @@ static int spike1_sw2m(int no)
 static int spike1_m2sw(int col, int row)
 {
   const int m = col * 8 + row;
-  if (m >= 88 && m <= 91) return spike1_flipSw[m - 88];
-  if (m >= 9 && m <= 12) return 88 + (m - 9);
-  if (m < 96) return m;
-  return 101 + (m - 96);
+  return m < 96 ? spike1_swap(m) : 101 + (m - 96);
 }
 
 /* lamp n <-> matrix entry n - 1; the core passes and expects matrix columns counted from 1 */
@@ -195,26 +217,22 @@ static int spike1_m2lamp(int col, int row) { return (col - 1) * 8 + row + 1; }
     COREPORT_DIPNAME( 0x0040, 0x0000, "DIP 7") COREPORT_DIPSET(0x0000, DEF_STR(Off)) COREPORT_DIPSET(0x0040, DEF_STR(On)) \
     COREPORT_DIPNAME( 0x0080, 0x0000, "DIP 8") COREPORT_DIPSET(0x0000, DEF_STR(Off)) COREPORT_DIPSET(0x0080, DEF_STR(On))
 
-/* the cabinet and CPU-board switches, by the numbers Ghostbusters' switch table gives them */
-#define SPIKE1_SW_LFLIP   9
-#define SPIKE1_SW_RFLIP   10
-#define SPIKE1_SW_TILT    86
-#define SPIKE1_SW_SLAM    89
+/* the CPU board's own switches, which every title numbers alike (the cabinet's are in spike1_tSwitches) */
 #define SPIKE1_SW_DIP1    101 /* C1-C8 */
 #define SPIKE1_SW_BACK    112 /* C12, then MINUS C11, PLUS C10, SELECT C9 */
 #define SPIKE1_SW_DCSENSE 116 /* C16, the coin door's power sense: closed while the door is shut */
-static const int spike1_coinSw[4] = { 81, 82, 83, 84 }; /* left, right, center, fourth */
 
 static SWITCH_UPDATE(spike1)
 {
+  const spike1_tSwitches *sw = &spike1_game()->sw;
   int i;
   if (!inports) return;
-  for (i = 0; i < 4; i++) core_setSw(spike1_coinSw[i], inports[CORE_COREINPORT] & (0x0001 << i));
+  for (i = 0; i < 4; i++) core_setSw(sw->coin[i], inports[CORE_COREINPORT] & (0x0001 << i));
   for (i = 0; i < 4; i++) core_setSw(SPIKE1_SW_BACK - i, inports[CORE_COREINPORT] & (0x0010 << i)); /* back, minus, plus, select */
   core_setSw(SPIKE1_SW_DCSENSE, !(inports[CORE_COREINPORT] & 0x0100));
   if (locals.startSw >= 0) core_setSw(locals.startSw, inports[CORE_COREINPORT] & 0x0200);
-  core_setSw(SPIKE1_SW_TILT, inports[CORE_COREINPORT] & 0x0400);
-  core_setSw(SPIKE1_SW_SLAM, inports[CORE_COREINPORT] & 0x0800);
+  core_setSw(sw->tilt, inports[CORE_COREINPORT] & 0x0400);
+  core_setSw(sw->slam, inports[CORE_COREINPORT] & 0x0800);
 }
 
 /*-------------------------------------------------
@@ -247,8 +265,10 @@ static void spike1_sync_io(void)
   }
   coreGlobals.solenoids = coreGlobals.pulsedSolState = sols;
   coreGlobals.solenoids2 &= ~(UINT32)(CORE_LLFLIPSOLBITS | CORE_LRFLIPSOLBITS);
-  if (locals.leftFlipCoil >= 0 && spike1_pinmame_coil_level(locals.leftFlipCoil)) coreGlobals.solenoids2 |= CORE_LLFLIPSOLBITS;
-  if (locals.rightFlipCoil >= 0 && spike1_pinmame_coil_level(locals.rightFlipCoil)) coreGlobals.solenoids2 |= CORE_LRFLIPSOLBITS;
+  for (i = 0; i < 4; i++) {
+    const int coil = locals.flipCoil[i >> 1][i & 1];
+    if (coil >= 0 && spike1_pinmame_coil_level(coil)) coreGlobals.solenoids2 |= (i >> 1) ? CORE_LRFLIPSOLBITS : CORE_LLFLIPSOLBITS;
+  }
   /* LEDs */
   memset((void *)coreGlobals.lampMatrix, 0, sizeof(coreGlobals.lampMatrix));
   for (i = 0; i < (int)locals.nLeds; i++) {
@@ -395,7 +415,7 @@ static void spike1_map_outputs(void)
   const char *name;
   for (i = 0; i < SPIKE1_MAXCOILS; i++) locals.coilSol[i] = 0;
   for (i = 0; i <= CORE_MODOUT_SOL_MAX; i++) locals.coilOf[i] = -1;
-  locals.leftFlipCoil = locals.rightFlipCoil = -1;
+  locals.flipCoil[0][0] = locals.flipCoil[0][1] = locals.flipCoil[1][0] = locals.flipCoil[1][1] = -1;
   for (i = 0; spike1_pinmame_coil(i, &number, &name); i++) {
     int sol;
     if (number < 0 || number >= SPIKE1_MAXCOILS) continue;
@@ -404,8 +424,10 @@ static void spike1_map_outputs(void)
     else continue;
     locals.coilSol[number] = sol;
     locals.coilOf[sol] = number;
-    if (!strcmp(name, "LEFT FLIPPER")) locals.leftFlipCoil = number;
-    if (!strcmp(name, "RIGHT FLIPPER")) locals.rightFlipCoil = number;
+    if (!strcmp(name, "LEFT FLIPPER")) locals.flipCoil[0][0] = number;
+    if (!strcmp(name, "LEFT FLIPPER HOLD")) locals.flipCoil[0][1] = number;
+    if (!strcmp(name, "RIGHT FLIPPER")) locals.flipCoil[1][0] = number;
+    if (!strcmp(name, "RIGHT FLIPPER HOLD")) locals.flipCoil[1][1] = number;
   }
   /* the core counts lamps in whole columns, up to the highest Light Reference number of the title;
      a motor drive is no lamp, and Light Reference 0 has no PinMAME number */
@@ -532,20 +554,22 @@ MACHINE_DRIVER_END
   INPUT_PORTS_END
 
 /* layout: spike1_dmd, or spike1_dmd_insert for a title with an LCD insert; lamps: its highest Light
-   Reference number - the lamps take the 8 standard lamp columns and as many custom ones as they need */
+   Reference number - the lamps take the 8 standard lamp columns and as many custom ones as they need;
+   switches: SPIKE1_SWITCHES(...) with the manual's numbers. The flipper switches need no FLIP_SWNO:
+   spike1_sw2m() puts them in the flipper column */
 #define SPIKE1_LAMPCOLS(lamps) (((lamps) + 7) / 8 > CORE_CUSTLAMPCOL ? ((lamps) + 7) / 8 - CORE_CUSTLAMPCOL : 0)
-#define SPIKE1_INIT(name, folder, layout, lamps) \
+#define SPIKE1_INIT(name, folder, layout, lamps, switches) \
   SPIKE1_INPUT_PORTS(name) \
   static spike1_tGameData name##GameData = { \
     { GEN_SPIKE1, layout, \
-      { FLIP_SWNO(SPIKE1_SW_LFLIP, SPIKE1_SW_RFLIP) | FLIP_SOL(FLIP_L), 4, SPIKE1_LAMPCOLS(lamps), SPIKE1_NCUSTSOLS, 0, 0, 0, 0, spike1_getSol, NULL, spike1_getMech } }, \
-    folder }; \
+      { FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L), 4, SPIKE1_LAMPCOLS(lamps), SPIKE1_NCUSTSOLS, 0, 0, 0, 0, spike1_getSol, NULL, spike1_getMech } }, \
+    folder, switches }; \
   static void init_##name(void) { core_gameData = &name##GameData.core; }
 
 /*-------------------------------------------------------------------
 / Ghostbusters (Stern, 2016) - Limited Edition
 /-------------------------------------------------------------------*/
-SPIKE1_INIT(gbust, "ghostbusters_le", spike1_dmd_insert, 165)
+SPIKE1_INIT(gbust, "ghostbusters_le", spike1_dmd_insert, 165, SPIKE1_SWITCHES(9, 10, 11, 12, 81, 82, 83, 84, 86, 89))
 ROM_START(gbust_117h)
   ROM_REGION(0x47c44000, SPIKE1_REGION, 0)
     ROM_LOAD("game", 0x00000000, 0x006c311a, CRC(0b6958ba) SHA1(6f94dbcdaa85e95073534032d74a2dab390b7a4a))
@@ -565,5 +589,28 @@ ROM_START(gbust_117h)
     ROM_LOAD("ws2812node-LPC1313-0_52_0.hex", 0x47c3b000, 0x00008676, CRC(d0008f92) SHA1(ea5d965703e4244399d3f6012ddfc7b358654d80))
 ROM_END
 CORE_GAMEDEF(gbust, 117h, "Ghostbusters (Limited Edition 1.17.0)", 2016, "Stern", spike1, 0)
+
+/*-------------------------------------------------------------------
+/ Whoa Nellie! Big Juicy Melons (Stern, 2015)
+/ The DMD output drives the small LCD in the apron. The score and credit reels in the backbox are
+/ steppers the node board runs: mech 0-4 are the 1000s, 100s, 10s and 1s reels and the credit reel,
+/ each as its step (0-199, 20 steps a digit; the credit reel 10 a step). The bells and the knocker
+/ are coils
+/-------------------------------------------------------------------*/
+SPIKE1_INIT(wnbjm, "WN", spike1_dmd, 76, SPIKE1_SWITCHES(3, 4, 1, 2, 53, 54, 55, 56, 58, 60))
+ROM_START(wnbjm_155)
+  ROM_REGION(0x10bb7000, SPIKE1_REGION, 0)
+    ROM_LOAD("game", 0x00000000, 0x004115ac, CRC(67df0775) SHA1(fe018c240e4834abd07b3efed1d47d67017910c5))
+    ROM_LOAD("image.bin", 0x00412000, 0x10756444, CRC(9c10415b) SHA1(74fc69297540ae4a49e90663293c9c867150eea3))
+    ROM_LOAD("coil4node-LPC1112_101-0_28_0.hex", 0x10b69000, 0x00008487, CRC(29d48577) SHA1(2cef71c04de9d2ff8c4664fafaeab077532f6178))
+    ROM_LOAD("coil4node-LPC1112_201-0_28_0.hex", 0x10b72000, 0x00008487, CRC(19aac926) SHA1(c53e6f2fe65d68a841b23a79ad35dc3422da3e6b))
+    ROM_LOAD("coil4node-LPC1313-0_28_0.hex", 0x10b7b000, 0x0000c23a, CRC(e019995b) SHA1(7d09cd36e12e79c9545e8f32e94f738951e45468))
+    ROM_LOAD("lcdnode-LPC1113_302-0_28_0.hex", 0x10b88000, 0x0000b484, CRC(d139cac7) SHA1(e4a57e712a599041f7ba7dfcf08f07a724ccbd9f))
+    ROM_LOAD("pinnode-LPC1112_101-0_28_0.hex", 0x10b94000, 0x00007f1c, CRC(83ca12dc) SHA1(2ac8f8c9384e8c5e0bbc1ca2d9f2ddd8bb831d3d))
+    ROM_LOAD("pinnode-LPC1112_201-0_28_0.hex", 0x10b9c000, 0x00007f66, CRC(cee92fdc) SHA1(048abb5d42962204595d7c311dd351c9cb25fd6c))
+    ROM_LOAD("pinnode-LPC1313-0_28_0.hex", 0x10ba4000, 0x0000c859, CRC(18c17d1d) SHA1(6b2f232c0b6c2389c59f998d0487081491e9d177))
+    ROM_LOAD("ws2812node-LPC1313-0_28_0.hex", 0x10bb1000, 0x00005590, CRC(921dc0f7) SHA1(2c49842bb5163b75a19ebac37f0379ef72c64d4a))
+ROM_END
+CORE_GAMEDEF(wnbjm, 155, "Whoa Nellie! Big Juicy Melons (1.55.0)", 2015, "Stern", spike1, 0)
 
 #endif /* HAS_SPIKE1 */
