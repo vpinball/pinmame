@@ -262,7 +262,8 @@ static core_tLCDLayout rzspook_disp[] = {
 };
 
 /* factory POSITION 460 (the Propeller's defaults); servo levels 0-255 = 0-180 degrees (0.544-2.4 ms).
-   The ROM fires the upper flipper from the right button, so it is PinMAME's upper right flipper (33/34) */
+   The upper flipper (coils 3/8) is PinMAME's upper right flipper (33/34), confirmed with the coil test (serial command
+   [MXXzzz]). Not confirmed yet: that the ROM fires it from the right button, as no test game reached the upper playfield */
 static pinheck_tGameData rzspookGameData = {
   { GEN_PINHECK, rzspook_disp,
     { FLIP_SWNO(PINHECK_SWLFLIP, PINHECK_SWRFLIP) | FLIP_SOL(FLIP_L) | FLIP_SOL(FLIP_UR), 0, 1, PINHECK_CUSTSOLS, SNDBRD_NONE, 0, 26, 0,

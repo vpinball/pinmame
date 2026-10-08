@@ -106,13 +106,14 @@
 // Breakshot has a modified hardware with a single lamp matrix (B), the hardware of the other lamp matrix being used as a switch matrix, allowing to spare the switch board
 #define HAS_SWITCH_BOARD (core_gameData->hw.lampCol > 1)
 
-// Mirror of the flipper coils to PinMAME's flipper outputs (see io_w): 1 keeps the legacy mapping, solenoids 9/10/11/12 to
-// the lower right/lower left/upper right/upper left outputs, as existing DOF configs expect; 0 mirrors them to the matching
-// side. In all Capcom games 9 is the left flipper and 10 the right (the solenoid tests' names); 11 is the upper right
-// flipper in Breakshot, Pool Player and Big Bang Bar, while in Flipper Football 11 is the upper left and 12 the upper right
-// (its flipper descriptors in ROM), see MACHINE_INIT(cc). 11/12 are only mirrored where capgames.c declares the upper flipper
+// Mirror of the flipper coils to PinMAME's flipper outputs (see io_w): 0 (default) mirrors them to the matching side, as
+// tables expect (SolCallback(sLRFlipper) is the right flipper); 1 restores the mapping of the 3.7 development builds,
+// solenoids 9/10/11/12 to the lower right/lower left/upper right/upper left outputs (PinMAME 3.6 reported none of them).
+// In all Capcom games 9 is the left flipper and 10 the right (the solenoid tests' names); 11 is the upper right flipper
+// in Breakshot, Pool Player and Big Bang Bar, while in Flipper Football 11 is the upper left and 12 the upper right (its
+// flipper descriptors in ROM), see MACHINE_INIT(cc). 11/12 are only mirrored where capgames.c declares the upper flipper
 #ifndef CAPCOM_LEGACY_FLIPPER_SWAP
-#define CAPCOM_LEGACY_FLIPPER_SWAP 1
+#define CAPCOM_LEGACY_FLIPPER_SWAP 0
 #endif
 
 // Flipper strength, the duty of the power stroke, reported as the flipper outputs' value while on. Newer firmware (Kingpin,
@@ -709,10 +710,9 @@ static WRITE16_HANDLER(io_w) {
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00FF00FFu) | ((UINT32)(soldata & 0x00ff)<<24) | (soldata & 0xff00);
       core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 24,  soldata       & 0xFF);
       core_write_pwm_output_8b(CORE_MODOUT_SOL0 +  8, (soldata >> 8) & 0xFF);
-      // Mirror solenoids 8..11 to PinMAME standard flipper solenoids outputs (8/9 are used for lower flippers and 10/11 are either used for flippers or modulated lights)
-      // This should be removed as this push the legacy PinMAME specific mapping forward while it does not correspond to manuals or any other reference
-      // System using this driver must use the native output 8..11. But as it breaks existing DOF config, we still maintain this hack for the sake of backward compatibility.
-      // Each goes to the power output locals.flipMirror (0: none) and the hold output after it, as binary mode reports the hold coil on with either coil
+      // Mirror the flipper coils (solenoids 9..12) to PinMAME's flipper outputs, which tables (sLRFlipper etc.) and DOF use;
+      // the coils stay on 9..12 too. Each goes to the power output locals.flipMirror (0: none, see CAPCOM_LEGACY_FLIPPER_SWAP)
+      // and the hold output after it, as binary mode reports the hold coil on with either coil
       for (int i = 0; i < 4; i++)
         if (locals.flipMirror[i]) {
           core_write_pwm_output(CORE_MODOUT_SOL0 + locals.flipMirror[i] - 1, 1, (soldata >> (8 + i)) & 0x01);
