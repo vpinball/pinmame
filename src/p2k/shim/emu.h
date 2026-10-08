@@ -52,6 +52,7 @@ enum { CLEAR_LINE = 0, ASSERT_LINE, HOLD_LINE };
 
 // ---------------------------------------------------------------- fwd decls
 class device_t;
+class device_execute_interface;
 class device_memory_interface;
 class machine_config;
 class running_machine;
@@ -64,6 +65,15 @@ class memory_region;
 using device_timer_id = int;
 
 namespace util { class disasm_interface; }
+
+// Modern MAME helpers the Spike 1 arm7 import (src/spike1/mame/cpu/arm7) uses
+class address_map;
+using address_map_constructor = std::function<void (address_map &)>;
+enum { TR_READ = TRANSLATE_READ, TR_WRITE = TRANSLATE_WRITE, TR_FETCH = TRANSLATE_FETCH };
+namespace util {
+template <typename T, typename U> constexpr T sext(T value, U width)
+{ using S = std::make_signed_t<T>; return T(S(value << (8 * sizeof(T) - width)) >> (8 * sizeof(T) - width)); }
+}
 
 // ---------------------------------------------------------------- disasm stub
 namespace util {
@@ -144,6 +154,9 @@ class address_space final
 {
 public:
 	explicit address_space(const p2k_bus_callbacks &cb) : m_cb(cb) {}
+	endianness_t endianness() const { return ENDIANNESS_LITTLE; }
+	// the host address behind `a` when a fast window holds it, else null
+	const void *read_ptr(offs_t a) const { return fast(a); }
 
 	// Hotspot for Pin2K emu, so the fast window lookup happens up front and on the byte
 	// address itself: a hit is one load, with no dword to assemble, mask or shift back down.
@@ -398,6 +411,7 @@ struct memory_access
 		ATTR_FORCE_INLINE u8  read_byte (offs_t a) { return m_space->read_byte(a); }
 		ATTR_FORCE_INLINE u16 read_word (offs_t a) { return m_space->read_word(a); }
 		ATTR_FORCE_INLINE u32 read_dword(offs_t a) { return m_space->read_dword(a); }
+		const void *read_ptr(offs_t a) { return m_space->read_ptr(a); }
 	private:
 		address_space *m_space = nullptr;
 	};
@@ -493,6 +507,9 @@ public:
 
 class device_scheduler final
 {
+public:
+	// a shim CPU runs only inside its own execute call, so nothing is "currently executing" to ask about
+	device_execute_interface *currently_executing() const { return nullptr; }
 public:
 	attotime time() const { return m_time; }
 
@@ -1202,6 +1219,7 @@ public:
 	void set_input_line_and_vector(int line, int state, int vector) { execute_set_input(line, state); }
 
 	void set_icountptr(int &icount) { m_icountptr = &icount; }
+	u64 total_cycles() const { return 0; }
 	void eat_cycles(int c) { if (m_icountptr) *m_icountptr -= c; }
 	template <typename T> void pulse_input_line(int line, T &&)
 	{ execute_set_input(line, ASSERT_LINE); execute_set_input(line, CLEAR_LINE); }
@@ -1244,6 +1262,9 @@ public:
 
 	virtual space_config_vector memory_space_config() const = 0;
 	virtual bool memory_translate(int spacenum, int intention, offs_t &address) { return true; }
+	// modern MAME's form, which also names the space the address lands in
+	virtual bool memory_translate(int spacenum, int intention, offs_t &address, address_space *&target_space)
+	{ target_space = has_space(spacenum) ? &space(spacenum) : nullptr; return memory_translate(spacenum, intention, address); }
 
 	const address_space_config *space_config(int index = 0) const
 	{

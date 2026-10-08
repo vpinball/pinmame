@@ -42,3 +42,15 @@ static ATTR_FORCE_INLINE u8 count_leading_zeros_32(u32 v)
 #endif
 }
 static ATTR_FORCE_INLINE u8 count_leading_ones_32(u32 v) { return count_leading_zeros_32(~v); }
+
+// used by the Spike 1 arm7 import (src/spike1/mame/cpu/arm7)
+static ATTR_FORCE_INLINE s32 mul_32x32_shift(s32 a, s32 b, u8 shift) { return s32((s64(a) * s64(b)) >> shift); }
+static ATTR_FORCE_INLINE u32 rotr_32(u32 val, int shift) { shift &= 31; return shift ? (val >> shift) | (val << (32 - shift)) : val; }
+static ATTR_FORCE_INLINE unsigned population_count_32(u32 val)
+{
+#if defined(_MSC_VER)
+	return __popcnt(val);
+#else
+	return unsigned(__builtin_popcount(val));
+#endif
+}
