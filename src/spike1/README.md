@@ -156,6 +156,11 @@ code (its symbols are in the program) rather than from any other emulator:
   and audited like any other set's ROMs. The region is over 1 GB, so the games need a 64-bit
   build. `MACHINE_INIT` hands the files to the subsystem, which runs the program as
   `/games/<folder>/game`; `image.bin` is mapped from the region, not copied.
+  `scripts/spike1/Build-Spike1RomSet.ps1` (or `Build ROM set.cmd` beside it, which opens a window)
+  makes the set from Stern's SD-card image, `<title>-<version>.iso.zip`: it finds the game folder
+  on the image's ext3 partitions, reads it straight out of the zip in a few forward passes, writes
+  `<set>.zip` stored, and checks every file against the set's CRCs - a new set needs its files
+  added to the script's `KnownSet` table. Stern's `.spk` update packages are not read yet.
 - **The CPU** (`CPU_SPIKE1`, `src/cpuintrf.c`) runs the machine for the cycles PinMAME gives it,
   at 400 MHz; once a frame the driver passes switch changes in and takes coils, LEDs and the DMD out.
 - **Numbers** are the factory manual's: switches by their Switch Reference numbers (the flipper
