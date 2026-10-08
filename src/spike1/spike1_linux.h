@@ -58,6 +58,11 @@ public:
 	// One time slice of `cycles` CPU cycles
 	status run(int cycles);
 
+	// Switches the machine off the way the mains would: the game sees the power fail, commits
+	// what it keeps in memory to its NVRAM files and syncs them. Runs the machine until that
+	// sync, or for at most max_ns of emulated time; true when the game synced
+	bool power_down(uint64_t max_ns, int slice_cycles);
+
 	status state() const { return m_status; }
 	const std::string &stop_reason() const { return m_stop_reason; }
 	uint64_t cycles() const { return m_cycles; }
@@ -91,6 +96,9 @@ private:
 		uint32_t tls = 0;
 		uint32_t clear_tid = 0;      // CLONE_CHILD_CLEARTID / set_tid_address: zeroed and woken at exit
 		uint64_t sigmask = 0;
+		uint64_t sig_pending = 0;    // signals sent to the thread, delivered when it next runs unmasked
+		// for each handler running: the registers and signal mask it interrupted
+		std::vector<std::pair<spike1_cpu_device::context, uint64_t>> sig_frames;
 		std::string name;
 		// while blocked
 		uint64_t wake_ns = 0;        // 0: no timeout
@@ -116,11 +124,13 @@ private:
 	uint64_t m_idle_cycles = 0;     // of those, the ones that passed with every thread blocked
 	uint64_t m_wall_base_ns = 0;    // host wall clock at start, for CLOCK_REALTIME
 	uint64_t m_syscalls = 0;
+	uint32_t m_syncs = 0;           // sync() calls: the game ends an NVRAM commit with one
 
 	std::vector<std::unique_ptr<thread>> m_threads;
 	thread *m_current = nullptr;
 	uint32_t m_next_tid = 101;
 	block_kind m_block = block_kind::none;
+	bool m_sigreturned = false;     // the system call was a sigreturn: the registers are restored, not a result
 
 	std::map<int, std::shared_ptr<file>> m_fds;
 	std::map<std::string, uint32_t> m_symbols;
@@ -136,6 +146,7 @@ private:
 	// scheduling
 	thread *pick_next();
 	void switch_to(thread &t);
+	void deliver_signal();
 	void wake_due();
 	uint64_t next_wake_ns() const;
 	// Blocks the running thread until `wake_ns` (0: until woken). With `retry` the system call runs

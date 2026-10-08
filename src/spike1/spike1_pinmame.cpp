@@ -125,6 +125,12 @@ unsigned spike1_pinmame_nvram(unsigned char *dst, unsigned capacity)
 	return unsigned(block.size());
 }
 
+int spike1_pinmame_power_down(unsigned max_ms)
+{
+	if (!g_machine || g_machine->os->state() != spike1_linux::status::running) return 0;
+	return g_machine->os->power_down(uint64_t(max_ms) * 1000000ull, SPIKE1_CPU_HZ / 100) ? 1 : 0;
+}
+
 int spike1_pinmame_switch(unsigned index, int *number, int *closed_at_rest, const char **name)
 {
 	const spike1_devices *d = devices();

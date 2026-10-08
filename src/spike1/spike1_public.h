@@ -48,6 +48,11 @@ int spike1_pinmame_run(int cycles);
 /* Everything the machine keeps across power cycles, as one block: the size it needs, copied into
    dst when it fits in capacity */
 unsigned spike1_pinmame_nvram(unsigned char *dst, unsigned capacity);
+/* Switches the machine off as the mains would. A game keeps settings, audits and the like in
+   memory and commits them to its NVRAM files when it sees the power fail, so a host calls this
+   before taking the block: it runs the machine until the game has committed, for at most max_ms
+   of emulated time. 1 when the game committed */
+int spike1_pinmame_power_down(unsigned max_ms);
 
 /* Switches: their numbers and names, the state they rest in, and a change */
 int spike1_pinmame_switch(unsigned index, int *number, int *closed_at_rest, const char **name); /* 0 past the last */

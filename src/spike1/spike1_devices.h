@@ -137,6 +137,10 @@ public:
 	using frame_observer = std::function<void (uint64_t now_ns, const uint8_t *frame, uint32_t len)>;
 	void set_frame_observer(frame_observer observer) { m_frame_observer = std::move(observer); }
 
+	// The mains go away: the line sense reads 0 V from now on, which the game takes as a power
+	// failure - the moment it commits what it keeps in memory to its NVRAM files
+	void power_off() { m_power_off = true; }
+
 private:
 	// A 24xx-series serial EEPROM: a two-byte word address, then sequential bytes from there
 	struct eeprom
@@ -160,9 +164,10 @@ private:
 	std::vector<eeprom> m_eeproms;
 	std::vector<digipot> m_digipots;
 
-	// AC line sense: a sampled, rectified mains waveform
+	// AC line sense: a sampled, rectified mains waveform - flat 0 V once the power goes off
 	uint64_t m_adc_next_ns = 0;   // when the buffer being sampled is complete
 	uint32_t m_adc_phase = 0;
+	bool m_power_off = false;
 
 	// Node bus: the RS-485 link to the playfield and cabinet node boards
 	std::deque<uint8_t> m_nb_reply;          // reply bytes waiting for the game's read

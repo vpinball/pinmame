@@ -401,7 +401,7 @@ int32_t spike1_devices::adc_read(uint32_t buf, uint32_t len, uint64_t now_ns, ui
 	uint8_t *p = m_mem.host(buf, samples * 2);
 	if (!p) return -E_FAULT;
 	for (uint32_t i = 0; i < samples; i++) {
-		const uint16_t v = adc_sample((m_adc_phase + i) % ADC_CYCLE);
+		const uint16_t v = m_power_off ? 0 : adc_sample((m_adc_phase + i) % ADC_CYCLE);
 		p[2 * i] = uint8_t(v);
 		p[2 * i + 1] = uint8_t(v >> 8);
 	}

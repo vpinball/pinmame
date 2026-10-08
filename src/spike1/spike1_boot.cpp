@@ -241,6 +241,8 @@ int main(int argc, char **argv)
 		std::printf("\n");
 	}
 	{
+		// switched off like a machine: the game commits what it keeps in memory first
+		if (linux_os.state() == spike1_linux::status::running) linux_os.power_down(5000000000ull, int(cfg.clock_hz / 100));
 		std::error_code ec;
 		std::filesystem::create_directories(std::filesystem::u8path(state_dir), ec);
 		const std::vector<uint8_t> nv = linux_os.nvram();

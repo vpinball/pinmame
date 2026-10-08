@@ -191,9 +191,18 @@ code (its symbols are in the program) rather than from any other emulator:
   drawn through 32768 palette pens after the core's. libpinmame reads a video display at its
   layout position, so the two are separate displays there.
 - **Sound**: a stereo stream from the device model's samples, at the rate the game sets on
-  `/dev/i2s` (Ghostbusters 44.1 kHz, Whoa Nellie 24 kHz); the mixer resamples it.
+  `/dev/i2s` (Ghostbusters 44.1 kHz, Whoa Nellie 24 kHz); the mixer resamples it. The machine makes
+  samples in time slices, and in about half of the stream's updates it had fewer ready than the
+  stream asked for - each a gap of silence, heard as crackle - so the samples pass through a FIFO
+  that plays once 1/30 s is waiting (`SPIKE1_LOG` reports how often the machine was late and
+  whether the FIFO ran dry).
 - **NVRAM**: the subsystem's block (see `spike1_linux::nvram()`) as `nvram/<set>.nv`, taken in
-  `MACHINE_STOP` because PinMAME saves after the machine is gone.
+  `MACHINE_STOP` because PinMAME saves after the machine is gone. A game keeps its settings, audits
+  and high scores in memory and commits them to its NVRAM files only when it sees the power fail
+  (or, during play, when the machine falls silent), so `MACHINE_STOP` first switches the machine
+  off the way the mains would (`spike1_pinmame_power_down()`): the line sense reads 0 V, the game's
+  line-sense thread sends itself SIGPWR, its handler wakes the power-loss thread, which commits and
+  syncs - about 170 ms of emulated time.
 - **Diagnostics**: with `SPIKE1_LOG` set in the environment, the subsystem's log goes to stderr,
   and every 300 frames the driver reports the CPU slices, the time spent in the machine, what the
   sound stream asked for and got (with the peak sample), and the switch changes it passed on.
@@ -237,7 +246,9 @@ insert, lamps and GI, coils, switches, sound and Slimer's motor.
    Coils are sampled once a frame: the game's own fires last 30 ms or more, but the 1 ms pulses of
    its start-up driver check are sometimes seen, so a table can twitch a flipper or a post at
    power-on, and a flipper's coil reaches the table up to a frame late.
-5. Signals are recorded but never delivered (the power-fail NVRAM commit needs SIGPWR).
+5. Signals: kill, tkill and tgkill deliver to a handler (a frame with siginfo and ucontext,
+   rt_sigreturn back), but a signal to a thread blocked in a system call waits until the thread
+   wakes instead of interrupting the call.
 6. `/proc` and `/sys` entries the game reads (`/proc/self/task/<tid>/comm`, `/proc/cpuinfo`).
 7. Sharing `src/p2k/shim`: `cmake/spike1.cmake` takes its sources from the Pinball 2000 library
    when there is one; a common library for both would be cleaner.
