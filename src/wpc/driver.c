@@ -3519,6 +3519,7 @@ DRIVER(swep1,040)       //          06/99   Pinball 2000: Star Wars Episode I (0
 
 #if HAS_SPIKE1
 DRIVER(gbust,117h)      //Spike 1:  2016    Ghostbusters (Limited Edition 1.17.0)
+DRIVER(wnbjm,155)       //Spike 1:  2015    Whoa Nellie! Big Juicy Melons (1.55.0)
 #endif
 
 #ifdef PIN2K_SOUND_TEST

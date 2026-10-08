@@ -509,8 +509,10 @@ int32_t spike1_devices::node_bus_write(uint32_t buf, uint32_t len, uint64_t now_
 }
 
 // The board block array: sys_node_board_get_next_block_ptr(node) is base + node * stride, the base
-// loaded from its literal pool (ldr r1, [pc, #imm]) and the stride an immediate (mov r3, #imm)
-// - both differ between SDK versions, so read them from the function itself
+// loaded from its literal pool (ldr r1, [pc, #imm]) and the stride an immediate - both differ
+// between SDK versions, so read them from the function itself. Newer SDKs load the stride
+// (mov r3, #imm); older ones (Whoa Nellie) compute the address with shifts and step the scan loop
+// by it (add r3, r3, #imm)
 spike1_devices::node_image spike1_devices::node_image_for(uint8_t node)
 {
 	node_image img;
@@ -522,7 +524,7 @@ spike1_devices::node_image spike1_devices::node_image_for(uint8_t node)
 			if ((insn & 0xfffff000) == 0xe59f1000 && !m_block_base) {
 				uint32_t base = 0;
 				if (guest_read(a + 8 + (insn & 0xfff), &base, 4)) m_block_base = base;
-			} else if ((insn & 0xfffff000) == 0xe3a03000 && (insn & 0xff) >= 100) {
+			} else if (((insn & 0xfffff000) == 0xe3a03000 || (insn & 0xffffff00) == 0xe2833000) && (insn & 0xff) >= 100) {
 				m_block_stride = insn & 0xff;
 			}
 		}
@@ -567,7 +569,8 @@ void spike1_devices::node_bus_frame(const uint8_t *frame, uint32_t len, uint64_t
 	const uint8_t *data = frame + 3;     // the command's own bytes, between cmd and checksum
 	const uint32_t n = len - 5;
 	if (cmd >= 0x80 && cmd <= 0xbf) {    // LED update
-		if (led_update(node, cmd, data, n)) return;
+		if (m_led_form < 0) m_led_form = m_cfg.symbol && m_cfg.symbol("_Z14NODEBUS_SetLEDhhhh") ? 1 : 0;
+		if (m_led_form ? led_update_run(node, cmd, data, n) : led_update(node, cmd, data, n)) return;
 		const uint32_t key = (uint32_t(node) << 8) | cmd;
 		if (m_nb_logged.insert(key).second) note = "node bus: node " + std::to_string(node) + " LED update not understood: " + bytes_hex(frame, len, 32);
 		return;
@@ -589,6 +592,50 @@ void spike1_devices::node_bus_frame(const uint8_t *frame, uint32_t len, uint64_t
 	// input debounce, the motor's input mask
 	case 0x14: case 0x44: case 0x48: case 0x70: case 0x71:
 		return;
+	// Steppers (the game's StepperMotor, NODEBUS_Stepper*): a board drives up to five
+	case 0x32: // configure: [stepper][steps per turn][u16][a driver index][home switch input, s8]
+		if (n >= 6 && data[0] <= 4) {
+			stepper &s = m_steppers[(uint32_t(node) << 8) | data[0]];
+			if (data[1]) s.steps = data[1];
+			s.home_input = int8_t(data[5]);
+		}
+		return;
+	case 0x31: { // go: [stepper][target, u16: bit 15 backward][ms per step]
+		if (n < 4 || data[0] > 4) break;
+		stepper &s = m_steppers[(uint32_t(node) << 8) | data[0]];
+		const uint16_t raw = uint16_t(data[1] | (data[2] << 8));
+		s.from = stepper_position(s, now_ns);
+		s.backward = (raw & 0x8000) != 0;
+		s.target = uint16_t((raw & 0x7fff) % s.steps);
+		s.distance = uint16_t((s.backward ? s.from + s.steps - s.target : s.target + s.steps - s.from) % s.steps);
+		s.start_ns = now_ns;
+		s.end_ns = now_ns + uint64_t(s.distance) * std::max<uint8_t>(data[3], 1) * 1000000ull;
+		if (m_cfg.trace) note = "node bus: node " + std::to_string(node) + " stepper " + std::to_string(data[0]) + " to " + std::to_string(s.target) + (s.backward ? " backward" : "");
+		return;
+	}
+	case 0x34: { // home - the stepper sits where the reply length goes: to step 0, forward
+		stepper &s = m_steppers[(uint32_t(node) << 8) | (reply_len & 7)];
+		s.from = stepper_position(s, now_ns);
+		s.backward = false;
+		s.target = 0;
+		s.distance = uint16_t((s.steps - s.from) % s.steps);
+		s.start_ns = now_ns;
+		s.end_ns = now_ns + uint64_t(s.distance) * 6000000ull;
+		if (data_len) { std::vector<uint8_t> zeros(data_len, 0); node_bus_reply(zeros.data(), data_len); }
+		return;
+	}
+	case 0x38: case 0x39: case 0x3a: case 0x3b: case 0x3c: { // status of stepper cmd - 0x38: [step, u16][target, u16][bits]
+		const auto it = m_steppers.find((uint32_t(node) << 8) | (cmd - 0x38));
+		uint8_t r[5] = {};
+		if (it != m_steppers.end()) {
+			const uint16_t at = stepper_position(it->second, now_ns);
+			r[0] = uint8_t(at); r[1] = uint8_t(at >> 8);
+			r[2] = uint8_t(it->second.target); r[3] = uint8_t(it->second.target >> 8);
+			r[4] = it->second.end_ns > now_ns ? 0x02 : 0x04; // bit 1 moving; bit 2 in place (bits 3-4 would be faults)
+		}
+		if (data_len == sizeof(r)) { node_bus_reply(r, sizeof(r)); return; }
+		break;
+	}
 	// Motors (the game's EncoderMotor): status bit 3 = at rest and ready (homed after a home),
 	// bit 0 = moving, bit 6 = fault
 	case 0x51: case 0x57: // configure, configure update: [motor][configuration]
@@ -670,6 +717,7 @@ void spike1_devices::node_bus_frame(const uint8_t *frame, uint32_t len, uint64_t
 	}
 	case 0x11: { // GetInputState: eight switch bytes (position p = byte p/8, bit p%8), then a u16 the game ignores
 		uint8_t r[10];
+		stepper_home_switches(node, now_ns);
 		wire_bytes(node, r, 8);
 		r[8] = r[9] = 0;
 		if (data_len == sizeof(r)) { node_bus_reply(r, sizeof(r)); return; }
@@ -894,6 +942,25 @@ int16_t spike1_devices::motor_position(const motor &m, uint64_t now_ns) const
 	return int16_t(m.from + std::lround((m.target - m.from) * f));
 }
 
+uint16_t spike1_devices::stepper_position(const stepper &s, uint64_t now_ns) const
+{
+	if (now_ns >= s.end_ns || s.end_ns <= s.start_ns) return s.target;
+	const uint32_t done = uint32_t(uint64_t(s.distance) * (now_ns - s.start_ns) / (s.end_ns - s.start_ns));
+	return uint16_t((s.backward ? s.from + s.steps - done % s.steps : s.from + done) % s.steps);
+}
+
+// A reel's home switch is closed while the reel stands within two steps of step 0
+void spike1_devices::stepper_home_switches(uint8_t node, uint64_t now_ns)
+{
+	for (auto it = m_steppers.lower_bound(uint32_t(node) << 8); it != m_steppers.end() && (it->first >> 8) == node; ++it) {
+		const stepper &s = it->second;
+		if (s.home_input < 0) continue;
+		const uint16_t at = stepper_position(s, now_ns);
+		const bool home = at < 2 || at + 2 > s.steps;
+		if (switch_closed(node, uint8_t(s.home_input)) != home) set_switch(node, uint8_t(s.home_input), home, now_ns);
+	}
+}
+
 bool spike1_devices::motor_state(uint8_t node, uint8_t index, int16_t &position, bool &moving, uint64_t now_ns) const
 {
 	auto it = m_motors.find((uint32_t(node) << 8) | index);
@@ -1056,6 +1123,23 @@ bool spike1_devices::led_update(uint8_t node, uint8_t cmd, const uint8_t *data, 
 	return true;
 }
 
+// The older SDK (Whoa Nellie: NODEBUS_SetLED with an 8-bit channel, NODEBUS_SetLEDMultiple and
+// NODEBUS_SetLEDMultipleTime) sets a run of channels, at most up to channel 63:
+//   command   0x80 | the first channel
+//   [time][level, one per channel]          one fade time for all (0xff never: the game sends 0xfe)
+//   [0xff][time][level] for each channel    a fade time each
+bool spike1_devices::led_update_run(uint8_t node, uint8_t cmd, const uint8_t *data, uint32_t len)
+{
+	const uint32_t first = cmd & 0x7f;
+	if (len < 2) return false;
+	const bool pairs = data[0] == 0xff;
+	if (pairs && (len - 1) % 2) return false;
+	const uint32_t count = pairs ? (len - 1) / 2 : len - 1;
+	if (first + count > 64 || first + count > LED_CHANNELS) return false;
+	for (uint32_t i = 0; i < count; i++) m_led[node][first + i] = pairs ? data[2 + 2 * i] : data[1 + i];
+	return true;
+}
+
 uint8_t spike1_devices::led_level(uint8_t node, uint8_t position) const
 {
 	if (node > 127 || position >= LED_CHANNELS || (m_led_mask[node][position >> 3] >> (position & 7)) & 1) return 0;
@@ -1201,9 +1285,10 @@ size_t spike1_devices::audio_take(int16_t *out, size_t frames)
 //   node_board_device_led_table       {entries, count, size}, 24-byte entries: +12 the Light
 //                                     Reference number in the low half, the device's index in the
 //                                     high half; +16 the class bits
-//   node_board_device_sw_table        {entries, count, size}, 52-byte entries: +32 the Switch
-//                                     Reference number in the low half, the device's index in the
-//                                     high half
+//   node_board_device_sw_table        {entries, count, size}: 20 bytes before an entry's end the
+//                                     Switch Reference number in the low half, the device's index in
+//                                     the high half (+32 of 52 bytes in Ghostbusters, +44 of 64 in
+//                                     Whoa Nellie, whose entries carry three more pointers)
 // The manual numbers the CPU board's own switches (DIP switches, service buttons, the door's power
 // sense) apart, as C1-C16: they become 101-116 here, so that every switch has one number
 // Entry 0 of each is a blank. An entry that names no device of the right type is skipped
@@ -1241,10 +1326,10 @@ void spike1_devices::apply_manual_numbers(const std::vector<std::pair<int, size_
 	unsigned switches = 0;
 	uint32_t st[3] = {};
 	const uint32_t st_at = m_cfg.symbol("node_board_device_sw_table");
-	if (st_at && guest_read(st_at, st, 12) && st[0] && st[2] >= 36) {
+	if (st_at && guest_read(st_at, st, 12) && st[0] && st[2] >= 36 && st[2] <= 256) {
 		for (uint32_t i = 1; i < st[1]; i++) {
 			uint32_t w = 0;
-			if (!guest_read(st[0] + i * st[2] + 32, &w, 4)) continue;
+			if (!guest_read(st[0] + i * st[2] + st[2] - 20, &w, 4)) continue;
 			const uint32_t index = w >> 16;
 			if (index >= device.size() || device[index].first != 7 || device[index].second >= m_switches.size()) continue;
 			switch_info &sw = m_switches[device[index].second];
@@ -1259,10 +1344,18 @@ void spike1_devices::apply_manual_numbers(const std::vector<std::pair<int, size_
 
 bool spike1_devices::motor_at(size_t i, int16_t &position, bool &moving, uint64_t now_ns) const
 {
-	if (i >= m_motors.size()) return false;
-	auto it = m_motors.begin();
+	if (i < m_motors.size()) {
+		auto it = m_motors.begin();
+		std::advance(it, i);
+		position = motor_position(it->second, now_ns);
+		moving = it->second.end_ns > now_ns;
+		return true;
+	}
+	i -= m_motors.size();
+	if (i >= m_steppers.size()) return false;
+	auto it = m_steppers.begin();
 	std::advance(it, i);
-	position = motor_position(it->second, now_ns);
+	position = int16_t(stepper_position(it->second, now_ns));
 	moving = it->second.end_ns > now_ns;
 	return true;
 }

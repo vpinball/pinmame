@@ -109,7 +109,8 @@ public:
 	uint8_t led_level(uint8_t node, uint8_t position) const;
 	// For a host that animates a mechanism: the position of a board's motor
 	bool motor_state(uint8_t node, uint8_t index, int16_t &position, bool &moving, uint64_t now_ns) const;
-	// The same for the i-th motor the game has configured, in board and motor order
+	// The same for the i-th motor the game has configured, in board and motor order, then its
+	// steppers (a stepper's position is its step within the turn)
 	bool motor_at(size_t i, int16_t &position, bool &moving, uint64_t now_ns) const;
 
 	// Sound: what the game sends its DAC, 16-bit stereo at audio_rate() Hz. The device takes the
@@ -189,6 +190,21 @@ private:
 	void motor_move(motor &m, int16_t target, uint64_t now_ns, uint64_t duration_ns);
 	int16_t motor_position(const motor &m, uint64_t now_ns) const;
 
+	// A stepper a board runs on its own (Whoa Nellie's score and credit reels): the game sets its
+	// steps per turn and home switch input, then sends targets - the shorter way round never, but
+	// forward, or backward when the target has bit 15
+	struct stepper
+	{
+		uint16_t steps = 200;                // per turn
+		int8_t home_input = -1;              // the board's switch input that is closed at step 0
+		uint16_t from = 0, target = 0, distance = 0;
+		bool backward = false;
+		uint64_t start_ns = 0, end_ns = 0;   // the move under way, if end_ns > now
+	};
+	std::map<uint32_t, stepper> m_steppers;  // (node << 8 | stepper)
+	uint16_t stepper_position(const stepper &s, uint64_t now_ns) const;
+	void stepper_home_switches(uint8_t node, uint64_t now_ns);
+
 	// Coils. A board drives a coil on the game's command - a pulse at one power, then optionally a
 	// second phase at another - or on its own when a switch it watches closes (a reflex), so
 	// flippers, pops and slings do not wait for the game
@@ -217,6 +233,8 @@ private:
 	uint8_t m_led[128][LED_CHANNELS] = {};
 	uint8_t m_led_mask[128][LED_CHANNELS / 8] = {};   // set bits: channels the game has switched off
 	bool led_update(uint8_t node, uint8_t cmd, const uint8_t *data, uint32_t len);
+	bool led_update_run(uint8_t node, uint8_t cmd, const uint8_t *data, uint32_t len);
+	int m_led_form = -1;   // 1: the older SDK's runs of channels (led_update_run), 0: packed, -1: not known yet
 
 	std::vector<output_info> m_coils, m_leds;
 

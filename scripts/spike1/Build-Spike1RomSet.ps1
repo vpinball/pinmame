@@ -76,6 +76,17 @@ namespace Spike1Rom
 				new KnownFile("pinnode-LPC1112_201-0_52_0.hex", 0x00008005, 0xa2bc8685),
 				new KnownFile("pinnode-LPC1313-0_52_0.hex", 0x0000ea4e, 0xac00f191),
 				new KnownFile("ws2812node-LPC1313-0_52_0.hex", 0x00008676, 0xd0008f92) } },
+			new KnownSet { Set = "wnbjm_155", Folder = "WN", Title = "Whoa Nellie! Big Juicy Melons 1.55.0", Files = new KnownFile[] {
+				new KnownFile("game", 0x004115ac, 0x67df0775),
+				new KnownFile("image.bin", 0x10756444, 0x9c10415b),
+				new KnownFile("coil4node-LPC1112_101-0_28_0.hex", 0x00008487, 0x29d48577),
+				new KnownFile("coil4node-LPC1112_201-0_28_0.hex", 0x00008487, 0x19aac926),
+				new KnownFile("coil4node-LPC1313-0_28_0.hex", 0x0000c23a, 0xe019995b),
+				new KnownFile("lcdnode-LPC1113_302-0_28_0.hex", 0x0000b484, 0xd139cac7),
+				new KnownFile("pinnode-LPC1112_101-0_28_0.hex", 0x00007f1c, 0x83ca12dc),
+				new KnownFile("pinnode-LPC1112_201-0_28_0.hex", 0x00007f66, 0xcee92fdc),
+				new KnownFile("pinnode-LPC1313-0_28_0.hex", 0x0000c859, 0x18c17d1d),
+				new KnownFile("ws2812node-LPC1313-0_28_0.hex", 0x00005590, 0x921dc0f7) } },
 		};
 	}
 
