@@ -45,7 +45,7 @@ The table below gives the main information (PWM FPS / Display FPS / PWM pattern)
 |Spinball                                                     | **132.9**              | ?           |Review in progress                                              |
 |[Capcom](#capcom)                                            | **508.7** / 127.2-42.4 | 3/6/9u frames |                                                              |
 |[Stern SAM](#stern-sam)                                      | 751.2 / **62.6**       | 4u row      |Needs overall emulation timing fixes, interframe emulation, shade validation, back/front mix validation|
-|[Stern Spike 1](#stern-spike-1)                              | 952.4 / **63.5**       | 4u frames   |Unsupported hardware                                            |
+|[Stern Spike 1](#stern-spike-1)                              | 952.4 / **63.5**       | 4u frames   |Pre-integrated: the driver sums the 4 bitplanes to 16 shades    |
 
 - 'u' stands for 'unbalanced': each row/frame has a different display length.
 - All FPS are expressed in Hz (same as frame per second), the ones in **bold** have been verified on real hardware.
@@ -154,3 +154,5 @@ The mapping between these is guessed by the emulation and maybe incorrect.
 Precise signal recordings are available from [RGB DMD project](https://github.com/ecurtz/RGB_DMD/tree/master/recordings). They show that 
 the Spike 1 system uses a PWM pattern made of 4 frames with different lengths: 1 / 2 / 4 / 8 times 1.05ms. These timings lead to 15.75ms for 
 a complete PWM pattern, that is to say 63.5 FPS, and allows to create 16 regularly spread shades.
+The driver decodes each pattern the game sends to 16 shades and submits it pre-integrated
+(`CORE_DMD_PWM_PREINTEGRATED_LINEAR_16`).

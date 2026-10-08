@@ -3517,6 +3517,10 @@ DRIVER(swep1,040)       //          06/99   Pinball 2000: Star Wars Episode I (0
 // 0.1  (03/99, XINA 1.02) - a cleaned up version of what was demo'd for Lucas
 #endif
 
+#if HAS_SPIKE1
+DRIVER(gbust,117h)      //Spike 1:  2016    Ghostbusters (Limited Edition 1.17.0)
+#endif
+
 #ifdef PIN2K_SOUND_TEST
 DRIVERNV(pin2ksnd)      //                  Pinball 2000 PinMAME DCS2 sound board test harness, RFM  (see docs/pin2k_sound.md)
 DRIVERNV(pin2ksw1)      //                  Pinball 2000 PinMAME DCS2 sound board test harness, SWEP1

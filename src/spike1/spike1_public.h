@@ -1,0 +1,87 @@
+// license:BSD-3-Clause
+
+/* PinMAME Spike 1 subsystem - the contract with PinMAME's half of the build
+
+   The subsystem includes no PinMAME headers: those belong to the other half, built with different
+   settings (see cmake/spike1.cmake). This header is the one crossing between them - owned by the
+   subsystem, included by src/wpc/spike1.c - so it is plain C. src/spike1/spike1_pinmame.cpp
+   implements the functions. Numbers are the factory manual's, from the title's own tables: Switch,
+   Driver and Light Reference numbers, with the CPU board's switches C1-C16 as 101-116 */
+
+#pragma once
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* The emulated CPU's clock: PinMAME's MDRV_CPU_ADD and the subsystem's time base both use it */
+#define SPIKE1_CPU_HZ 400000000
+
+#define SPIKE1_DMD_WIDTH  128
+#define SPIKE1_DMD_HEIGHT 32
+/* The LCD insert, as the player sees it (Ghostbusters' Ecto goggles) */
+#define SPIKE1_INSERT_WIDTH  160
+#define SPIKE1_INSERT_HEIGHT 128
+
+/* One of the title's files, by its name in the game folder; the caller keeps the bytes alive
+   until spike1_pinmame_stop() */
+typedef struct spike1_file
+{
+	const char *name;
+	const unsigned char *data;
+	unsigned size;
+} spike1_file;
+
+/* Starts the machine from the title's files. game is the game folder's name (the program runs as
+   /games/<game>/game); nvram is the block spike1_pinmame_nvram() gave the last time, or NULL for a
+   new machine. 0 on failure, with the reason in error */
+int spike1_pinmame_start(const char *game, const spike1_file *files, unsigned count,
+                         const unsigned char *nvram, unsigned nvram_size, char *error, unsigned error_size);
+void spike1_pinmame_stop(void);
+/* 1 while the game program runs; when it has stopped, why, in reason */
+int spike1_pinmame_running(char *reason, unsigned reason_size);
+
+/* Runs the machine for `cycles` CPU cycles and returns the cycles used: all of them, also while
+   every guest thread waits, so emulated time keeps PinMAME's pace */
+int spike1_pinmame_run(int cycles);
+
+/* Everything the machine keeps across power cycles, as one block: the size it needs, copied into
+   dst when it fits in capacity */
+unsigned spike1_pinmame_nvram(unsigned char *dst, unsigned capacity);
+
+/* Switches: their numbers and names, the state they rest in, and a change */
+int spike1_pinmame_switch(unsigned index, int *number, int *closed_at_rest, const char **name); /* 0 past the last */
+int spike1_pinmame_find_switch(const char *name); /* the number of the switch so named, -1 if none */
+void spike1_pinmame_set_switch(int number, int closed);
+
+/* Coils: their factory-manual Driver Reference numbers and names, and a driver's PWM duty now (0-255) */
+int spike1_pinmame_coil(unsigned index, int *number, const char **name); /* 0 past the last */
+unsigned spike1_pinmame_coil_level(int number);
+
+/* LED channels (an RGB LED is three): each one's factory-manual Light Reference number, its class
+   bits (1 lamp, 2 GI string, 4 flasher, 8 motor drive, 0x10 and 0x20 cabinet) and name, and its
+   level now (0-255) */
+#define SPIKE1_LED_MOTOR 0x08
+unsigned spike1_pinmame_led_count(void);
+int spike1_pinmame_led(unsigned index, int *number, int *kind, const char **name); /* 0 past the last */
+unsigned spike1_pinmame_led_level(unsigned index);
+
+/* A motor the boards run on their own (Ghostbusters' Slimer), in the order the game configures
+   them: its position now, in the game's units, and whether it moves */
+int spike1_pinmame_motor(unsigned index, int *position, int *moving); /* 0 when there is none */
+
+/* The DMD: 128x32 dots of 0-15 into dots; returns the count of frames the game has sent */
+unsigned spike1_pinmame_dmd(unsigned char *dots);
+/* The LCD insert, when the title has one: 1 and its picture as RGB565 (160x128) and backlight
+   (0-255) while it shows a frame, 0 otherwise */
+int spike1_pinmame_insert_present(void);
+int spike1_pinmame_insert(unsigned short *rgb565, unsigned *backlight);
+
+/* Sound: 16-bit stereo at spike1_pinmame_audio_rate(); takes up to frames frames, interleaved
+   left/right, and returns how many it took */
+unsigned spike1_pinmame_audio_rate(void);
+unsigned spike1_pinmame_audio(short *dst, unsigned frames);
+
+#ifdef __cplusplus
+}
+#endif

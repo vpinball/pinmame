@@ -1077,7 +1077,7 @@ static void core_dmd_send_vpm(const int width, const int height, const float* co
   const float perc33 = hasPercents ? (float)pmoptions.dmd_perc33 : 33.f;
   const float perc66 = hasPercents ? (float)pmoptions.dmd_perc66 : 67.f;
 
-  if ((core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2 | GEN_PINHECK)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0)) { // pinHeck: the raw DMD's 16 levels
+  if ((core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2 | GEN_PINHECK | GEN_SPIKE1)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0)) { // pinHeck: the raw DMD's 16 levels
     // Backward compatibility: 16 shades mode has no colorization and fixed lighting levels ranging from 0 to 100
     //static const UINT8 levelgts3[16] = {0/*5*/, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100}; // GTS3 and AlvinG brightness seems okay
     //static const UINT8 levelsam[16]  = {0/*5*/, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 90, 100}; // SAM brightness seems okay
@@ -2254,7 +2254,7 @@ int core_getSol(int solNo) {
   if (solNo <= 28)
     return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value) : coreGlobals.solenoids & CORE_SOLBIT(solNo);
   else if (solNo <= 32) { // 29-32
-    if (core_gameData->gen & (GEN_ALLS11 | GEN_PINHECK))
+    if (core_gameData->gen & (GEN_ALLS11 | GEN_PINHECK | GEN_SPIKE1))
       return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value) : coreGlobals.solenoids & CORE_SOLBIT(solNo);
     else if (core_gameData->gen & GEN_ALLWPC) // Remap WPC GameOn/J111 GPIO (hacky)
       return coreGlobals.solenoids2 & (1<<(solNo-29+8));
@@ -3697,6 +3697,7 @@ void core_dmd_pwm_init(const core_tLCDLayout* layout, const int filter, const in
   {
   case CORE_DMD_PWM_PREINTEGRATED_LINEAR_4: // Pre-integrated PWM frames
   case CORE_DMD_PWM_PREINTEGRATED_SAM:
+  case CORE_DMD_PWM_PREINTEGRATED_LINEAR_16:
      dmd_state->rawFrameSize = dmd_state->frameSize; // Raw frame is already preintegrated, one byte per pixel
      dmd_state->fir_weights = NULL;
      dmd_state->fir_size = 0;
@@ -3831,6 +3832,18 @@ float* core_dmd_update_pwm(const core_tLCDLayout* layout, unsigned int * lumFram
       break;
    }
 
+   case CORE_DMD_PWM_PREINTEGRATED_LINEAR_16: // Stern Spike 1: 16 regularly spread shades (bitplanes shown 1/2/4/8 periods)
+   {
+      const UINT8* frameData = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      if (memcmp(dmd_state->dmdFIRBuffer, frameData, dmd_state->frameSize * sizeof(UINT8)) != 0) {
+         memcpy(dmd_state->dmdFIRBuffer, frameData, dmd_state->frameSize * sizeof(UINT8));
+         dmd_state->lumFrameId++;
+         for (int jj = 0; jj < dmd_state->frameSize; jj++)
+            dmd_state->luminanceFrame[jj] = (float)(frameData[jj] & 15) * (float)(1. / 15.);
+      }
+      break;
+   }
+
    case CORE_DMD_PWM_PREINTEGRATED_SAM:
    {
       const UINT8* frameData = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
@@ -3935,6 +3948,7 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
   switch (dmd_state->raw_combiner) {
   case CORE_DMD_PWM_PREINTEGRATED_LINEAR_4: // Pre-integrated PWM frames, nothing to do beside a copy (could be optimized to avoid the copy but kept for simplicity)
   case CORE_DMD_PWM_PREINTEGRATED_SAM:
+  case CORE_DMD_PWM_PREINTEGRATED_LINEAR_16:
      assert(dmd_state->rawFrameSize == dmd_state->frameSize);
      memcpy(dmd_state->tempRawFrame, dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize, dmd_state->rawFrameSize);
      break;
