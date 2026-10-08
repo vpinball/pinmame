@@ -46,7 +46,7 @@
 #if HAS_SPIKE1
 
 #define SPIKE1_REGION     REGION_USER1   /* the game folder's files, one after another */
-#define SPIKE1_AUDIO_RATE 44100          /* what the games set /dev/i2s to */
+#define SPIKE1_AUDIO_RATE 44100          /* the stream's rate until the game sets /dev/i2s to its own */
 #define SPIKE1_PEN0       (COL_COUNT + 48 + 48 + 48) /* the core's palette, then 32768 pens of RGB555 */
 #define SPIKE1_MAXCOILS   64
 #define SPIKE1_MAXLEDS    256
@@ -87,8 +87,11 @@ static struct {
   int startSw;
   unsigned dmdFrames;
   unsigned nLeds;
+  unsigned audioRate;     /* the sound stream's rate: the game's, once it has set one */
   int ledLamp[SPIKE1_MAXLEDS]; /* the lamp number of LED channel k, 0 for none */
 } locals;
+
+static int spike1_stream = -1; /* the sound stream's first channel, the left; the right follows */
 
 /* The machine's NVRAM block between the NVRAM handler and the machine: PinMAME reads the file
    before MACHINE_INIT and writes it after MACHINE_STOP, when the machine is gone */
@@ -279,6 +282,15 @@ static void spike1_sync_io(void)
       if (level) coreGlobals.lampMatrix[lamp / 8] |= 1 << (lamp % 8);
     }
   }
+  /* the sound stream at the game's rate */
+  {
+    const unsigned rate = spike1_pinmame_audio_rate();
+    if (spike1_stream >= 0 && rate && rate != locals.audioRate) {
+      stream_set_sample_rate(spike1_stream, rate);
+      stream_set_sample_rate(spike1_stream + 1, rate);
+      locals.audioRate = rate;
+    }
+  }
   /* the DMD: a new frame when the game has sent one */
   {
     static UINT8 dots[SPIKE1_DMD_WIDTH * SPIKE1_DMD_HEIGHT];
@@ -365,9 +377,9 @@ static core_tLCDLayout spike1_dmd_insert[] = {
 };
 
 /*-------------------------------------------------
-/  sound: the game's DAC, 16-bit stereo
+/  sound: the game's DAC, 16-bit stereo, at the rate the game sets (Ghostbusters 44.1 kHz,
+/  Whoa Nellie 24 kHz): spike1_sync_io() moves the stream to it, the mixer resamples
 /-------------------------------------------------*/
-static int spike1_sound_started;
 
 static void spike1_snd_update(int num, INT16 **buffer, int length)
 {
@@ -398,11 +410,11 @@ static int spike1_sh_start(const struct MachineSound *msound)
   const char *names[] = { "Spike 1 Left", "Spike 1 Right" };
   const int vol[2] = { MIXER(100, MIXER_PAN_LEFT), MIXER(100, MIXER_PAN_RIGHT) };
   (void)msound;
-  spike1_sound_started = 1;
-  return stream_init_multi(2, names, vol, SPIKE1_AUDIO_RATE, 0, spike1_snd_update) < 0;
+  spike1_stream = stream_init_multi(2, names, vol, SPIKE1_AUDIO_RATE, 0, spike1_snd_update);
+  return spike1_stream < 0;
 }
 
-static void spike1_sh_stop(void) { spike1_sound_started = 0; }
+static void spike1_sh_stop(void) { spike1_stream = -1; }
 
 static struct CustomSound_interface spike1_sndInt = { spike1_sh_start, spike1_sh_stop, 0 };
 

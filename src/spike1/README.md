@@ -190,7 +190,8 @@ code (its symbols are in the program) rather than from any other emulator:
   already sums the four bitplanes to 16 even shades); the LCD insert below it as a video display,
   drawn through 32768 palette pens after the core's. libpinmame reads a video display at its
   layout position, so the two are separate displays there.
-- **Sound**: a stereo stream at 44.1 kHz from the device model's samples.
+- **Sound**: a stereo stream from the device model's samples, at the rate the game sets on
+  `/dev/i2s` (Ghostbusters 44.1 kHz, Whoa Nellie 24 kHz); the mixer resamples it.
 - **NVRAM**: the subsystem's block (see `spike1_linux::nvram()`) as `nvram/<set>.nv`, taken in
   `MACHINE_STOP` because PinMAME saves after the machine is gone.
 - **Diagnostics**: with `SPIKE1_LOG` set in the environment, the subsystem's log goes to stderr,
@@ -229,8 +230,7 @@ insert, lamps and GI, coils, switches, sound and Slimer's motor.
    (coil priority, a query answered with zeros); the LCD insert's fill command, the meaning of
    its animation-status reply (answered with zeros) and of a run's loop count.
 3. Sound, what is left: the amplifier's gain steps (set through `/dev/amp`) and the center and
-   headphone volumes are not applied; a title that sets a rate other than 44.1 kHz would play at
-   the wrong pitch.
+   headphone volumes are not applied.
 4. PinMAME, what is left: VPinMAME (the COM controller) has not been checked; only CMake builds
    the subsystem (not the makefiles or the Visual Studio projects); the game lists do not name the
    set yet. A Visual Studio build of the subsystem runs at about half the speed of a GCC one.
