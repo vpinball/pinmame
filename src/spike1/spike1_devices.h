@@ -218,6 +218,7 @@ private:
 	uint8_t m_bridge_version[3] = {};        // of the title's netbridge firmware; zero when it has none
 	std::vector<uint32_t> m_chip_part;       // [proc key - 1]: NXP part ID of the title's node chips, in the game's order
 	uint32_t m_block_base = 0, m_block_stride = 0, m_block_type_at = 88;
+	uint32_t m_image_next_at = 28;           // the firmware image list's next pointer: 28, or 56 from node firmware 0.67
 	uint32_t m_nb_received[128] = {};        // frames each board has taken, as its GetStatus counts them
 	uint32_t m_lcd_image_id = 0;             // the LCD insert holds the title's lcdinsert.bin: its ID word
 	frame_observer m_frame_observer;

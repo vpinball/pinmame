@@ -27,15 +27,14 @@ public:
 	static constexpr uint32_t KUSER_BASE  = 0xffff0000;
 	static constexpr uint32_t KUSER_SIZE  = 0x00001000;
 	static constexpr uint32_t PAGE_SIZE   = 0x1000;
-	// A large file the game maps read-only (a Spike 1 game's asset image is over 1 GB) is mapped
-	// by the host straight into this range, so it is paged in on demand rather than copied
-	static constexpr uint32_t FILE_BASE   = 0x40000000;
-	static constexpr uint32_t FILE_LIMIT  = 0xa0000000;
-	// Further read-only views (WWE's LCD clips, mapped one by one as they play) go where the
-	// address space is free, below and above the file range. The CPU has no fast window left for
-	// them: its reads there come through read_view()
-	static constexpr uint32_t VIEW_LOW_BASE  = 0x20000000;
-	static constexpr uint32_t VIEW_HIGH_BASE = 0xa0000000;
+	// A large file the game maps read-only (a Spike 1 game's asset image: 1.9 GB for Heavy Metal)
+	// is mapped by the host straight into the space between the low block and the stack, from its
+	// start, so it is paged in on demand rather than copied
+	static constexpr uint32_t FILE_BASE   = LOW_SIZE;
+	static constexpr uint32_t FILE_LIMIT  = STACK_TOP - STACK_SIZE;
+	// Further read-only views (WWE's LCD clips, mapped one by one as they play) take that space
+	// from its top down. The CPU has no fast window left for them: its reads there come through
+	// read_view()
 
 	spike1_memory();
 	~spike1_memory();
@@ -91,6 +90,8 @@ private:
 	std::vector<block> m_views;
 	std::vector<span> m_view_free; // free address space for views, sorted by address
 	static void release_span(std::vector<span> &list, uint32_t addr, uint32_t length);
+	static bool take_span(std::vector<span> &list, uint32_t addr, uint32_t length);
+	bool place_file(uint32_t length);
 
 	static uint8_t *allocate(size_t size);
 	static void release(uint8_t *mem, size_t size);

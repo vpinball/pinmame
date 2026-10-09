@@ -60,7 +60,7 @@ uint64_t now_ns() { return g_machine && g_machine->os ? g_machine->os->now_ns() 
 
 extern "C" {
 
-int spike1_pinmame_start(const char *game, const spike1_file *files, unsigned count,
+int spike1_pinmame_start(const char *game, const spike1_file *files, unsigned count, const spike1_symbol *symbols,
                          const unsigned char *nvram, unsigned nvram_size, char *error, unsigned error_size)
 {
 	g_machine.reset();
@@ -88,6 +88,7 @@ int spike1_pinmame_start(const char *game, const spike1_file *files, unsigned co
 			cfg.files.push_back({ dir + (clip ? "/video/" : "/") + name, files[i].data, files[i].size });
 		}
 	cfg.executable = dir + "/game";
+	for (const spike1_symbol *s = symbols; s && s->name; s++) cfg.symbols.push_back({ s->name, s->address, s->size });
 	cfg.environment = { "HOME=/root", "PATH=/bin:/usr/bin:/usr/local/bin", "LANG=C", "LC_ALL=C", "GAMES_PATH=/games" };
 	cfg.clock_hz = SPIKE1_CPU_HZ;
 	if (nvram && nvram_size) cfg.nvram.assign(nvram, nvram + nvram_size);

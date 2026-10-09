@@ -134,6 +134,17 @@ int main(int argc, char **argv)
 			for (size_t k = 0; k + 1 < v.size() && video_key.size() < 16; k += 2) video_key.push_back(uint8_t(std::strtoul(v.substr(k, 2).c_str(), nullptr, 16)));
 			if (video_key.size() != 16) { std::fprintf(stderr, "--video-key takes 32 hex digits\n"); return 2; }
 		}
+		else if (arg == "--symbols") { // a file of "<hex address> <size> <name>" lines, for a program without a symbol table
+			std::ifstream in(std::filesystem::u8path(next()));
+			std::string line;
+			while (std::getline(in, line)) {
+				char name[256] = {};
+				unsigned address = 0, size = 0;
+				if (line.empty() || line[0] == '#' || std::sscanf(line.c_str(), "%x %u %255s", &address, &size, name) != 3) continue;
+				cfg.symbols.push_back({ name, address, size });
+			}
+			if (cfg.symbols.empty()) { std::fprintf(stderr, "--symbols: no \"<hex address> <size> <name>\" lines\n"); return 2; }
+		}
 		else if (arg == "--list-switches") list_switches = true;
 		else if (arg == "--outputs") show_outputs = true; // coil changes as they happen, lit LEDs at the end
 		else if (arg == "--node-dump") node_dump = next(); // every node-bus frame except switch reads, to a file

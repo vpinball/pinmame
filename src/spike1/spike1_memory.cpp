@@ -47,8 +47,7 @@ spike1_memory::spike1_memory()
 	m_stack = { STACK_TOP - STACK_SIZE, STACK_SIZE, allocate(STACK_SIZE) };
 	m_kuser = { KUSER_BASE, KUSER_SIZE, allocate(KUSER_SIZE) };
 	m_free.push_back({ MMAP_BASE, LOW_SIZE - MMAP_BASE });
-	m_view_free.push_back({ VIEW_LOW_BASE, FILE_BASE - VIEW_LOW_BASE });
-	m_view_free.push_back({ VIEW_HIGH_BASE, STACK_TOP - STACK_SIZE - VIEW_HIGH_BASE });
+	m_view_free.push_back({ FILE_BASE, FILE_LIMIT - FILE_BASE });
 }
 
 spike1_memory::~spike1_memory()
@@ -101,9 +100,17 @@ bool spike1_memory::read_view(uint32_t addr, uint32_t &value) const
 	return false;
 }
 
+// Whether the asset image can go at FILE_BASE: the views are kept to the top of the space
+bool spike1_memory::place_file(uint32_t length)
+{
+	if (m_file.mem || !length || length > FILE_LIMIT - FILE_BASE) return false;
+	const uint32_t pages = uint32_t((uint64_t(length) + PAGE_SIZE - 1) & ~uint64_t(PAGE_SIZE - 1));
+	return !m_view_free.empty() && m_view_free.front().base == FILE_BASE && m_view_free.front().size >= pages;
+}
+
 uint32_t spike1_memory::map_file(const std::string &host_path, uint64_t offset, uint32_t length)
 {
-	if (m_file.mem || !length || length > FILE_LIMIT - FILE_BASE) return 0;
+	if (!place_file(length)) return 0;
 #if defined(_WIN32)
 	SYSTEM_INFO si;
 	GetSystemInfo(&si);
@@ -133,6 +140,7 @@ uint32_t spike1_memory::map_file(const std::string &host_path, uint64_t offset, 
 	m_file_view = view;
 	m_file_view_size = view_size;
 	m_file = { FILE_BASE, length, static_cast<uint8_t *>(view) + (offset - start) };
+	take_span(m_view_free, FILE_BASE, uint32_t((uint64_t(length) + PAGE_SIZE - 1) & ~uint64_t(PAGE_SIZE - 1)));
 	if (m_space) m_space->add_fast_window(m_file.base, m_file.mem, m_file.size);
 	return m_file.base;
 }
@@ -140,18 +148,17 @@ uint32_t spike1_memory::map_file(const std::string &host_path, uint64_t offset, 
 uint32_t spike1_memory::map_view(const uint8_t *data, uint32_t length)
 {
 	if (!data || !length) return 0;
-	if (!m_file.mem && length <= FILE_LIMIT - FILE_BASE) {
+	if (place_file(length)) {
 		m_file = { FILE_BASE, length, const_cast<uint8_t *>(data) }; // host() never hands it out for writing
+		take_span(m_view_free, FILE_BASE, uint32_t((uint64_t(length) + PAGE_SIZE - 1) & ~uint64_t(PAGE_SIZE - 1)));
 		if (m_space) m_space->add_fast_window(m_file.base, m_file.mem, m_file.size);
 		return m_file.base;
 	}
-	const uint32_t pages = (length + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
-	for (auto it = m_view_free.begin(); pages && it != m_view_free.end(); ++it) {
+	const uint32_t pages = uint32_t((uint64_t(length) + PAGE_SIZE - 1) & ~uint64_t(PAGE_SIZE - 1));
+	for (auto it = m_view_free.rbegin(); pages && it != m_view_free.rend(); ++it) {
 		if (it->size < pages) continue;
-		const uint32_t base = it->base;
-		it->base += pages;
-		it->size -= pages;
-		if (!it->size) m_view_free.erase(it);
+		const uint32_t base = it->base + it->size - pages; // from the top, clear of the asset image's place
+		take_span(m_view_free, base, pages);
 		m_views.push_back({ base, length, const_cast<uint8_t *>(data) });
 		return base;
 	}
@@ -229,6 +236,21 @@ void spike1_memory::unmap(uint32_t addr, uint32_t length)
 	if (addr < MMAP_BASE || addr >= LOW_SIZE || !length || length > LOW_SIZE - addr)
 		return;
 	release_span(m_free, addr, length);
+}
+
+// Removes [addr, addr + length) from the span that holds it, if one does
+bool spike1_memory::take_span(std::vector<span> &list, uint32_t addr, uint32_t length)
+{
+	for (auto it = list.begin(); it != list.end(); ++it) {
+		if (addr < it->base || addr - it->base > it->size || length > it->size - (addr - it->base)) continue;
+		const span after = { addr + length, it->base + it->size - (addr + length) };
+		it->size = addr - it->base;
+		if (!it->size) it = list.erase(it);
+		else ++it;
+		if (after.size) list.insert(it, after);
+		return true;
+	}
+	return false;
 }
 
 void spike1_memory::release_span(std::vector<span> &list, uint32_t addr, uint32_t length)

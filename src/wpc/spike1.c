@@ -85,14 +85,16 @@ typedef struct { int forward, backward, home, away, travelMs; } spike1_tLimitMot
 #define SPIKE1_LIMIT_MOTOR(forward, backward, home, away, travelMs) { forward, backward, home, away, travelMs }
 
 /* What a title adds to core_tGameData: its game folder's name (the program runs as
-   /games/<folder>/game), its switch numbers, its steppers' home switches on other boards and its
-   limit motor */
+   /games/<folder>/game), its switch numbers, its steppers' home switches on other boards, its
+   limit motor, and for a game program shipped without its symbol table the addresses of the
+   tables the subsystem reads (NULL when the program has its own) */
 typedef struct {
   core_tGameData core;
   const char *folder;
   spike1_tSwitches sw;
   spike1_tHome home[2];
   spike1_tLimitMotor limit;
+  const spike1_symbol *symbols;
 } spike1_tGameData;
 
 static const spike1_tGameData *spike1_game(void) { return (const spike1_tGameData *)core_gameData; }
@@ -582,7 +584,7 @@ static MACHINE_INIT(spike1)
       count++;
     }
   }
-  if (!spike1_pinmame_start(spike1_game()->folder, files, count, nvBlock, nvSize, error, sizeof(error))) {
+  if (!spike1_pinmame_start(spike1_game()->folder, files, count, spike1_game()->symbols, nvBlock, nvSize, error, sizeof(error))) {
     usrintf_showmessage_secs(30, "Spike 1: the game program does not start: %s", error);
     return;
   }
@@ -689,6 +691,11 @@ MACHINE_DRIVER_END
 #define SPIKE1_INIT_EX(name, folder, layout, lamps, flippers, switches, homes, limit) \
   SPIKE1_INPUT_PORTS(name) \
   static spike1_tGameData name##GameData = { SPIKE1_CORE(layout, lamps, flippers), folder, switches, homes, limit }; \
+  static void init_##name(void) { core_gameData = &name##GameData.core; }
+/* the same as SPIKE1_INIT for a game program without a symbol table: symbols lists the addresses */
+#define SPIKE1_INIT_SYMBOLS(name, folder, layout, lamps, switches, symbols) \
+  SPIKE1_INPUT_PORTS(name) \
+  static spike1_tGameData name##GameData = { SPIKE1_CORE(layout, lamps, FLIP_L), folder, switches, SPIKE1_NOHOMES, SPIKE1_NOLIMIT, symbols }; \
   static void init_##name(void) { core_gameData = &name##GameData.core; }
 
 /*-------------------------------------------------------------------
@@ -877,5 +884,49 @@ ROM_START(wwe_135h)
     ROM_LOAD("WWELOGO_FPS20.spv", 0xaa557000, 0x008efa04, CRC(0b72c2aa) SHA1(031082beaae636e21e5adb69fa642b9a7ec27bcf))
 ROM_END
 CORE_GAMEDEF(wwe, 135h, "WWE WrestleMania (Limited Edition 1.35.0)", 2015, "Stern", spike1_lcd, 0)
+
+/*-------------------------------------------------------------------
+/ Heavy Metal (Stern, 2020)
+/ The newest Spike 1 SDK (node firmware 0.67.0, its images encrypted; the game decrypts them).
+/ Stern ships it only as an update package (heavy_metal-1_02_0.spk), whose game group the ROM set
+/ builder reads, and its game program without a symbol table: the addresses below were found by
+/ matching its code and data against Ghostbusters 1.17.0's (the same compiler and libraries) and
+/ checked in a running machine. The PinMAME name heavymtl is taken (Heavy Metal, 198?), and
+/ hvymetal is Bally's Heavy Metal Meltdown
+/-------------------------------------------------------------------*/
+static const spike1_symbol heavym20_102Symbols[] = {
+  { "node_board_table",                                         0x00205d20, 12 },
+  { "node_board_device_table",                                  0x00205d74, 12 },
+  { "node_board_device_led_table",                              0x00205d44, 12 },
+  { "node_board_device_sw_table",                               0x00205d68, 12 },
+  { "node_board_device_cl_table_data",                          0x002289ec, 14 * 56 },
+  { "NODE_BOARD_DEVICE_CL_TABLE_DATA_ENTRY_COUNT",              0x00205d3c, 4 }, /* the count in the coil table's descriptor */
+  { "switch_dedicated_table",                                   0x00205e04, 12 },
+  { "switch_table",                                             0x00205e10, 12 },
+  { "hook_balls_installed_in_game",                             0x0020620c, 1 },
+  { "node_board_runtime_hex_image_list_head",                   0x0037b298, 4 },
+  { "_Z33sys_node_board_get_next_block_ptrh",                   0x00035984, 88 },
+  { "_Z32node_update_runtime_hex_image_idP18node_board_block_s", 0x0004ccb4, 112 },
+  { "_Z50node_board_runtime_hex_image_manager_get_image_pdijj", 0x0004573c, 64 },
+  { "_Z23NODEBUS_SetLEDMultiple2hhPhS_S_",                      0x000c145c, 0 },
+  { NULL }
+};
+SPIKE1_INIT_SYMBOLS(heavym20, "heavy_metal", spike1_dmd, 105, SPIKE1_SWITCHES(8, 10, 9, 11, 76, 77, 78, 79, 81, 84), heavym20_102Symbols)
+ROM_START(heavym20_102)
+  ROM_REGION(0x71fdb000, SPIKE1_REGION, 0)
+    ROM_LOAD("game", 0x00000000, 0x00364e7c, CRC(89dcf06c) SHA1(84e70db1ae9bdb54541c19afbcd960665af13b8a))
+    ROM_LOAD("image.bin", 0x00365000, 0x71c08cbc, CRC(378ea9e2) SHA1(488d399d0d16fde42701014952ff5dbc9ea4c150))
+    ROM_LOAD("coil4node-LPC1112_101-0_67_0.hex", 0x71f6e000, 0x00008784, CRC(3694f8a6) SHA1(056276be4ce185c4cfaf1dfcfe6b3adf028632af))
+    ROM_LOAD("coil4node-LPC1112_201-0_67_0.hex", 0x71f77000, 0x00008784, CRC(9760b3eb) SHA1(0af9c5a27ca63641f9b5db6b90622e153d8c6fb1))
+    ROM_LOAD("coil4node-LPC1313-0_67_0.hex", 0x71f80000, 0x0000ecf5, CRC(0795b75b) SHA1(927b5b4a74c727ac71230502e6c4dc0383b865d6))
+    ROM_LOAD("lcdnode-LPC1113_302-0_67_0.hex", 0x71f8f000, 0x0000b494, CRC(5486eb88) SHA1(09a9f3a07094c01b91cfe0ecb177aa111af8b6d9))
+    ROM_LOAD("node4-LPC1124_303-0_67_0.hex", 0x71f9b000, 0x00009e0c, CRC(219e0f03) SHA1(ef3d00758269197f9b2388d314f8552fa4face7a))
+    ROM_LOAD("pinnode-LPC1112_101-0_67_0.hex", 0x71fa5000, 0x00008784, CRC(6c0eadc3) SHA1(af04b077a2df3aaa5b7a2963d14bb897822c082c))
+    ROM_LOAD("pinnode-LPC1112_201-0_67_0.hex", 0x71fae000, 0x00008784, CRC(7b8accae) SHA1(ff4fc9fdc8fcf21ec45b4594e5e8b5b40bd284b8))
+    ROM_LOAD("pinnode-LPC1313-0_67_0.hex", 0x71fb7000, 0x0000f839, CRC(0ee1afa2) SHA1(c30a73ef171732f33fda0b3685e1832fb2bfa3cb))
+    ROM_LOAD("tmc2590node-LPC1313-0_67_0.hex", 0x71fc7000, 0x0000bfe5, CRC(a48f352c) SHA1(01527df261b74753ac2e1fc57b976e0c87be06c0))
+    ROM_LOAD("ws2812node-LPC1313-0_67_0.hex", 0x71fd3000, 0x00007c40, CRC(514046cf) SHA1(a3a595cef1bf9058bba46d8d61eb5bc6b43e790f))
+ROM_END
+CORE_GAMEDEF(heavym20, 102, "Heavy Metal (1.02.0)", 2020, "Stern", spike1, 0)
 
 #endif /* HAS_SPIKE1 */
