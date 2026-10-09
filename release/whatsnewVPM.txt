@@ -9,6 +9,8 @@ Version 3.7 (XX XXth, 2026) - ""
 
 - AltSound: Properly handle Bally MPU-17/MPU-35 machines (these send just one byte per sound command)
 
+- AltSound: Same for all the other machines without a handling of their own (e.g. Williams System 3-9, Bally 6803, Stern MPU-100/200, Gottlieb System 1/80B/3, Zaccaria, Hankin, Alvin G., Mr. Game, Taito, Atari, ...)
+
 - Fix script dialog API/UI for non-standard DPI values
 
 - Fix some longstanding issues with the DMD/Segment/Video output window (output window should now be less buggy/blurry in some cases, and potentially a bit faster)

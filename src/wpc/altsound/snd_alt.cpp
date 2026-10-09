@@ -681,10 +681,11 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 		}
 	}
 
-	if ((hardware_gen == GEN_BY17) || // Bally MPU-17 and MPU-35: PinMAME logs one byte per sound command
-		(hardware_gen == GEN_BY35))
+	// Bally MPU-17 and MPU-35, and every generation without a case above: PinMAME logs one byte per sound command
+	if (!(hardware_gen & (GEN_ALLWPC | GEN_S11 | GEN_S11X | GEN_S11B2 | GEN_S11C |
+		GEN_DE | GEN_DEDMD16 | GEN_DEDMD32 | GEN_DEDMD64 | GEN_ALLWS | GEN_GTS80A)))
 	{
-		ALT_DEBUG(0, "Hardware Generation: GEN_BY17, GEN_BY35");
+		ALT_DEBUG(0, "Hardware Generation: GEN_BY17, GEN_BY35 or other (one byte per command)");
 
 		*stored_command = 0;
 		*cmd_counter = 0;
