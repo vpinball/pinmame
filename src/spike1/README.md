@@ -154,7 +154,11 @@ code (its symbols are in the program) rather than from any other emulator:
 - **LEDs** (type 4, up to 96 channels a board, three for an RGB LED): `NODEBUS_SetLEDMultiple2`'s
   packed updates (command 0x80-0xBF: an index, a list or a bitmap of channels, then levels and fade
   times in compact forms; see `led_update()`). Every update in a full attract-and-play run decodes to
-  exactly its length. `led_level()` gives a channel's level (0-255); the LED mask applies. A
+  exactly its length. A channel ramps in a straight line from where it is to the new level over the
+  fade time, in units of 16 ms (`led_set()`: the node boards' firmware steps each channel 1280
+  times a second, a unit taking 20.48 steps; 0 and 1 set the level at once). `led_level()` gives a
+  channel's level (0-255) at a given time; the LED mask applies. A limit motor's drive takes the
+  level an update set, not the ramp. A
   title without `NODEBUS_SetLEDMultiple2` (Whoa Nellie, Primus, Pabst Can Crusher, Game of
   Thrones, KISS) sends runs of channels instead, on the same command bytes - `0x80 | first`, then a fade
   time and a level per channel, or 0xff and a time and level per channel (`led_update_run()`) -
@@ -325,8 +329,7 @@ attract video nudge above. BACK in attract mode adds a service credit, as the ga
 ## Open items
 
 1. Ball physics are the table's job (PinMAME/VPX); the harness has none, so a game stops at ball 1.
-2. Outputs, what is left: the fade time of an LED update (its unit is not established, so levels
-   change at once); the extra time and switch condition some coil fires carry; command 0x43
+2. Outputs, what is left: the extra time and switch condition some coil fires carry; command 0x43
    (coil priority, a query answered with zeros); the LCD insert's fill command, the meaning of
    its animation-status reply (answered with zeros) and of a run's loop count.
 3. Sound, what is left: the amplifier's gain steps (set through `/dev/amp`) and the center and

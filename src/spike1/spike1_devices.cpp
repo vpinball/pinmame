@@ -144,7 +144,7 @@ void spike1_devices::start(const config &cfg)
 	m_motors.clear();
 	for (auto &node : m_coil) for (auto &c : node) c = coil();
 	std::memset(m_coil_mask, 0, sizeof(m_coil_mask));
-	std::memset(m_led, 0, sizeof(m_led));
+	std::fill(m_led.begin(), m_led.end(), led_channel());
 	std::memset(m_led_mask, 0, sizeof(m_led_mask));
 	// An LCD insert (a node board with its own display) holds the title's image already; the game
 	// identifies an image by the word at offset 8 of lcdinsert.bin. The file: [header size, u8]
@@ -585,7 +585,7 @@ void spike1_devices::node_bus_frame(const uint8_t *frame, uint32_t len, uint64_t
 	const uint32_t n = len - 5;
 	if (m_led_form < 0) m_led_form = m_cfg.symbol && m_cfg.symbol("_Z23NODEBUS_SetLEDMultiple2hhPhS_S_") ? 0 : 1;
 	if ((cmd >= 0x80 && cmd <= 0xbf) || (cmd == 0xc0 && m_led_form)) { // LED update
-		if (m_led_form ? led_update_run(node, cmd, data, n) : led_update(node, cmd, data, n)) {
+		if (m_led_form ? led_update_run(node, cmd, data, n, now_ns) : led_update(node, cmd, data, n, now_ns)) {
 			if (!m_limit_motors.empty()) limit_motors_run(now_ns);
 			return;
 		}
@@ -1048,7 +1048,7 @@ void spike1_devices::limit_motors_run(uint64_t now_ns)
 	for (limit_motor &m : m_limit_motors) {
 		m.at_ns = limit_motor_position(m, now_ns);
 		m.since_ns = now_ns;
-		m.drive = (led_level(m.forward[0], m.forward[1]) ? 1 : 0) - (led_level(m.backward[0], m.backward[1]) ? 1 : 0);
+		m.drive = (led_target(m.forward[0], m.forward[1]) ? 1 : 0) - (led_target(m.backward[0], m.backward[1]) ? 1 : 0);
 		const int64_t zone = m.travel_ns / 50;
 		const bool home = m.at_ns <= zone, away = m.at_ns >= m.travel_ns - zone;
 		if (switch_closed(m.home[0], m.home[1]) != home) set_switch(m.home[0], m.home[1], home, now_ns);
@@ -1159,8 +1159,8 @@ uint8_t spike1_devices::coil_level(uint8_t node, uint8_t position, uint64_t now_
 //             0x0c field: 4 all common, 8 a second time for the channels a selection bitmap
 //             marks, 12 one time for each marked channel. The selection bitmap (a bit per
 //             channel in order) follows the channel bitmap
-// The time is the channel's fade time; its unit is not established, so levels change at once
-bool spike1_devices::led_update(uint8_t node, uint8_t cmd, const uint8_t *data, uint32_t len)
+// The time is the channel's fade time (led_set())
+bool spike1_devices::led_update(uint8_t node, uint8_t cmd, const uint8_t *data, uint32_t len, uint64_t now_ns)
 {
 	const uint8_t list = cmd & 0x20, times = cmd & 0x1c, levels = cmd & 0x03;
 	uint32_t p = 0;
@@ -1203,18 +1203,22 @@ bool spike1_devices::led_update(uint8_t node, uint8_t cmd, const uint8_t *data, 
 		else if (levels == 3) { if (i == 0 && !next(level[0])) return false; level[i] = level[0]; }
 		else level[i] = levels ? 0xff : 0x00;
 	}
-	// times: read past them, so the length check below still proves the decoding
-	uint8_t t;
-	if (!times) { for (uint32_t i = 0; i < count; i++) if (!next(t)) return false; }
+	uint8_t time[LED_CHANNELS];
+	if (!times) { for (uint32_t i = 0; i < count; i++) if (!next(time[i])) return false; }
 	else {
-		if ((times & 0x10) && !next(t)) return false;
-		if ((times & 0x0c) == 0x08 && !next(t)) return false;
-		if ((times & 0x0c) == 0x0c)
-			for (uint32_t i = 0; i < count; i++) if (((select[i >> 3] >> (i & 7)) & 1) && !next(t)) return false;
+		uint8_t common = 0, second = 0;
+		if ((times & 0x10) && !next(common)) return false;
+		if ((times & 0x0c) == 0x08 && !next(second)) return false;
+		for (uint32_t i = 0; i < count; i++) {
+			time[i] = common;
+			if (!((select[i >> 3] >> (i & 7)) & 1)) continue;
+			if ((times & 0x0c) == 0x08) time[i] = second;
+			else if ((times & 0x0c) == 0x0c && !next(time[i])) return false;
+		}
 	}
 	if (p != len) return false;
 	for (uint32_t i = 0; i < count; i++)
-		if (index[i] < LED_CHANNELS) m_led[node][index[i]] = level[i];
+		if (index[i] < LED_CHANNELS) led_set(node, index[i], level[i], time[i], now_ns);
 	return true;
 }
 
@@ -1227,7 +1231,7 @@ bool spike1_devices::led_update(uint8_t node, uint8_t cmd, const uint8_t *data, 
 //   [0xff][time][level] for each channel    a fade time each
 // The packed SDK's own command bytes overlap these, so the form is the program's: the packed one
 // where it has NODEBUS_SetLEDMultiple2
-bool spike1_devices::led_update_run(uint8_t node, uint8_t cmd, const uint8_t *data, uint32_t len)
+bool spike1_devices::led_update_run(uint8_t node, uint8_t cmd, const uint8_t *data, uint32_t len, uint64_t now_ns)
 {
 	uint32_t first = cmd & 0x3f, limit = 64;
 	if (cmd == 0xc0) {
@@ -1242,14 +1246,45 @@ bool spike1_devices::led_update_run(uint8_t node, uint8_t cmd, const uint8_t *da
 	if (pairs && (len - 1) % 2) return false;
 	const uint32_t count = pairs ? (len - 1) / 2 : len - 1;
 	if (first + count > limit || first + count > LED_CHANNELS) return false;
-	for (uint32_t i = 0; i < count; i++) m_led[node][first + i] = pairs ? data[2 + 2 * i] : data[1 + i];
+	for (uint32_t i = 0; i < count; i++)
+		led_set(node, uint8_t(first + i), pairs ? data[2 + 2 * i] : data[1 + i], pairs ? data[1 + 2 * i] : data[0], now_ns);
 	return true;
 }
 
-uint8_t spike1_devices::led_level(uint8_t node, uint8_t position) const
+// The node boards' firmware (every version the titles carry, 0.18.4 to 0.52.0) steps each channel
+// 1280 times a second (SysTick: 37500 clocks at 48 MHz on the LPC1112s, 56250 at 72 MHz on the
+// LPC1313s), each step (target - level) * (51200 / time) / 2^20 of the way the update set out
+// with - so a fade takes 20.48 steps a unit: 16 ms. It starts from where the channel is, a fade
+// in progress included. Time 0 sets the level at once, and so in effect does 1: its table entry
+// (51200) overflows 16 bits, the step points away from the target, and the firmware then sets
+// the target at the first step
+void spike1_devices::led_set(uint8_t node, uint8_t position, uint8_t level, uint8_t fade, uint64_t now_ns)
+{
+	led_channel &c = m_led[size_t(node & 127) * LED_CHANNELS + position];
+	c.from = c.at(now_ns);
+	c.to = level;
+	c.start_ns = now_ns;
+	c.end_ns = fade > 1 ? now_ns + fade * LED_FADE_UNIT_NS : now_ns;
+}
+
+uint8_t spike1_devices::led_channel::at(uint64_t now_ns) const
+{
+	if (now_ns >= end_ns) return to;
+	if (now_ns <= start_ns) return from;
+	return uint8_t(from + (int64_t(to) - from) * int64_t(now_ns - start_ns) / int64_t(end_ns - start_ns));
+}
+
+uint8_t spike1_devices::led_level(uint8_t node, uint8_t position, uint64_t now_ns) const
 {
 	if (node > 127 || position >= LED_CHANNELS || (m_led_mask[node][position >> 3] >> (position & 7)) & 1) return 0;
-	return m_led[node][position];
+	return m_led[size_t(node) * LED_CHANNELS + position].at(now_ns);
+}
+
+// The level an update last set, whatever its fade: a motor's H-bridge drive
+uint8_t spike1_devices::led_target(uint8_t node, uint8_t position) const
+{
+	if (node > 127 || position >= LED_CHANNELS || (m_led_mask[node][position >> 3] >> (position & 7)) & 1) return 0;
+	return m_led[size_t(node) * LED_CHANNELS + position].to;
 }
 
 // ---------------------------------------------------------------- LCD insert
