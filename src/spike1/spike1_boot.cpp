@@ -318,7 +318,7 @@ int main(int argc, char **argv)
 	if (show_outputs) {
 		std::string lit;
 		for (const auto &l : linux_os.devices().leds())
-			if (const uint8_t level = linux_os.devices().led_level(l.node, l.position))
+			if (const uint8_t level = linux_os.devices().led_level(l.node, l.position, linux_os.now_ns()))
 				lit += " " + l.name + (level < 255 ? " (" + std::to_string(level * 100 / 255) + "%)" : "") + ",";
 		std::printf("LEDs lit at the end:%s\n", lit.empty() ? " none" : lit.substr(0, lit.size() - 1).c_str());
 	}

@@ -109,8 +109,9 @@ public:
 	const std::vector<output_info> &leds() const { return m_leds; }
 	// What a coil driver puts out at now_ns, 0 (off) to 255 (full on): the board's PWM duty
 	uint8_t coil_level(uint8_t node, uint8_t position, uint64_t now_ns) const;
-	// An LED channel's level, 0-255, as the game last set it
-	uint8_t led_level(uint8_t node, uint8_t position) const;
+	// An LED channel's level at now_ns, 0-255: on its way to the level the game last set, over that
+	// update's fade time
+	uint8_t led_level(uint8_t node, uint8_t position, uint64_t now_ns) const;
 	// For a host that animates a mechanism: the position of a board's motor
 	bool motor_state(uint8_t node, uint8_t index, int16_t &position, bool &moving, uint64_t now_ns) const;
 	// The same for the i-th motor the game has configured, in board and motor order, then its
@@ -286,12 +287,22 @@ private:
 	void run_reflexes(uint8_t node, uint64_t now_ns);
 	bool reflex_switch_active(uint8_t node, uint8_t sw) const;
 
-	// LEDs: up to 96 channels a board, an RGB LED taking three
+	// LEDs: up to 96 channels a board, an RGB LED taking three. An update gives each channel a level
+	// and a fade time; the board ramps the channel from where it is to the level in a straight line
+	// (led_set())
 	static constexpr uint32_t LED_CHANNELS = 96;
-	uint8_t m_led[128][LED_CHANNELS] = {};
+	static constexpr uint64_t LED_FADE_UNIT_NS = 16000000;
+	struct led_channel {
+		uint8_t from = 0, to = 0;      // the ramp's ends
+		uint64_t start_ns = 0, end_ns = 0;
+		uint8_t at(uint64_t now_ns) const;
+	};
+	std::vector<led_channel> m_led = std::vector<led_channel>(128 * LED_CHANNELS); // board-major
 	uint8_t m_led_mask[128][LED_CHANNELS / 8] = {};   // set bits: channels the game has switched off
-	bool led_update(uint8_t node, uint8_t cmd, const uint8_t *data, uint32_t len);
-	bool led_update_run(uint8_t node, uint8_t cmd, const uint8_t *data, uint32_t len);
+	bool led_update(uint8_t node, uint8_t cmd, const uint8_t *data, uint32_t len, uint64_t now_ns);
+	bool led_update_run(uint8_t node, uint8_t cmd, const uint8_t *data, uint32_t len, uint64_t now_ns);
+	void led_set(uint8_t node, uint8_t position, uint8_t level, uint8_t fade, uint64_t now_ns);
+	uint8_t led_target(uint8_t node, uint8_t position) const;
 	int m_led_form = -1;   // 1: the older SDK's runs of channels (led_update_run), 0: packed, -1: not known yet
 
 	std::vector<output_info> m_coils, m_leds;

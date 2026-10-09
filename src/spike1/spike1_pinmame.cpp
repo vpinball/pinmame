@@ -233,7 +233,7 @@ unsigned spike1_pinmame_led_level(unsigned index)
 {
 	const spike1_devices *d = devices();
 	if (!d || index >= d->leds().size()) return 0;
-	return d->led_level(d->leds()[index].node, d->leds()[index].position);
+	return d->led_level(d->leds()[index].node, d->leds()[index].position, now_ns());
 }
 
 unsigned spike1_pinmame_dmd(unsigned char *dots)
