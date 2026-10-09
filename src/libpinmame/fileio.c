@@ -500,6 +500,115 @@ static void compose_path(TCHAR *output, int pathtype, int pathindex, const char 
 
 
 //============================================================
+//	libpinmame_write_file_atomically
+//============================================================
+
+// Replace a file of this type with these bytes, or leave it exactly as it was.
+//
+// mame_fopen is all the rest of MAME needs, and it cannot express this: a write
+// through it leaves a window in which the real file is open, truncated and half
+// written. A machine that loses power there comes up with a corrupt file rather
+// than a stale one, which is worse than never having written at all -- and
+// PinmameSaveNVRAM exists precisely for hosts that lose power without warning.
+// So the bytes go to a temporary beside the real file and are renamed over it,
+// which is atomic on both platforms: a reader sees one file or the other.
+//
+// It lives here rather than beside its caller because everything about where
+// files live is private to this file, and because this is where the platform
+// already has its headers -- pulling Windows.h into a C++ translation unit for
+// MoveFileEx would drag the min/max macros in with it.
+//
+// Returns 1 when the file now holds these bytes.
+int libpinmame_write_file_atomically(int filetype, const char *filename, const void *data, size_t size)
+{
+	TCHAR finalpath[1024];
+	TCHAR temppath[1024];
+	char tempname[256];
+
+	if (!filename || !data)
+		return 0;
+
+	snprintf(tempname, sizeof(tempname), "%s.tmp", filename);
+	compose_path(finalpath, filetype, 0, filename);
+	compose_path(temppath, filetype, 0, tempname);
+
+#if defined(_WIN32) || defined(_WIN64)
+	{
+		HANDLE handle;
+		DWORD written = 0;
+		BOOL ok;
+
+		handle = CreateFile(temppath, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, NULL);
+		if (handle == INVALID_HANDLE_VALUE)
+			return 0;
+
+		ok = WriteFile(handle, data, (DWORD)size, &written, NULL) && written == (DWORD)size;
+		if (ok)
+			ok = FlushFileBuffers(handle);
+		CloseHandle(handle);
+
+		if (!ok) {
+			DeleteFile(temppath);
+			return 0;
+		}
+
+		// NTFS journals its metadata, so there is no directory to flush here the
+		// way there is below.
+		if (!MoveFileEx(temppath, finalpath, MOVEFILE_REPLACE_EXISTING)) {
+			DeleteFile(temppath);
+			return 0;
+		}
+		return 1;
+	}
+#else
+	{
+		FILE *file;
+		int ok;
+		int dirfd;
+		const char *dir;
+
+		file = fopen(temppath, "wb");
+		if (!file)
+			return 0;
+
+		ok = fwrite(data, 1, size, file) == size;
+		if (ok)
+			ok = fflush(file) == 0;
+		// Without this the bytes are only in the page cache, which on a machine
+		// about to lose power is the same as not having written them.
+		if (ok)
+			ok = fsync(fileno(file)) == 0;
+		if (fclose(file) != 0)
+			ok = 0;
+
+		if (!ok) {
+			remove(temppath);
+			return 0;
+		}
+
+		if (rename(temppath, finalpath) != 0) {
+			remove(temppath);
+			return 0;
+		}
+
+		// And without this the directory entry pointing at those bytes may not be
+		// on the medium yet. Best effort: the data is already durable, and a
+		// directory that will not open is no reason to report a write that
+		// happened as a failure.
+		dir = get_path_for_filetype(filetype, 0, NULL);
+		dirfd = open((dir && *dir) ? dir : ".", O_RDONLY);
+		if (dirfd >= 0) {
+			fsync(dirfd);
+			close(dirfd);
+		}
+		return 1;
+	}
+#endif
+}
+
+
+
+//============================================================
 //	osd_get_path_count
 //============================================================
 

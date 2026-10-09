@@ -5,7 +5,11 @@
 #include "../../ext/libsamplerate/samplerate.h"
 
 #include <atomic>
+#include <chrono>
+#include <condition_variable>
+#include <mutex>
 #include <shared_mutex>
+#include <string>
 #include <thread>
 #include <vector>
 #include <algorithm>
@@ -223,6 +227,7 @@ static struct MsgLocals
    MsgPluginAPI* msgApi;
    unsigned int endpointId;
    bool registered;
+   unsigned int onSaveNVRAMId;
 
    std::string gameId;
    std::unique_ptr<PinballPlugin::Controller::CtrlItemProvider<ControllerDef>> controllerProvider;
@@ -768,6 +773,244 @@ extern "C" void libpinmame_forward_console_data(void* p_data, int size)
    }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// NVRAM autosave
+//
+// MAME writes NVRAM exactly once: mame.c loads it before cpu_run() and writes it
+// after cpu_run() returns. A host that ends without unwinding -- an appliance
+// switched off at the mains, a crash, a session killed by the window manager --
+// therefore loses the entire session, which on a pinball machine means the high
+// scores, the audits, and whatever the operator just changed in the service menu.
+//
+// This writes it while the machine runs, and it does so on the emulation thread.
+// That is not a precaution, it is the whole difficulty: producing the image means
+// calling the driver's own nvram_handler, and the emulated CPU must not be part
+// way through writing NVRAM when that happens. So PinmameSaveNVRAM() posts a
+// request and waits, and the emulation thread serves it from
+// libpinmame_nvram_tick() between frames.
+//
+// The same reasoning is why change detection lives here rather than in the host.
+// Noticing a change also means running the handler, so a host polling
+// PinmameGetChangedNVRAM() for it would reintroduce exactly the race this avoids.
+// Instead the host states a policy -- do not write unless NVRAM has been still
+// for this long -- and this side decides whether it is met. A host can then ask
+// on a plain timer: nothing is written while a game is being played, because
+// NVRAM does not go quiet for long enough, and nothing is written at all when
+// nothing has changed.
+
+// Defined further down, with the other logging shims.
+extern "C" void libpinmame_log_error(const char* format, ...);
+
+namespace {
+
+// Long enough that a frame or two of jitter never costs a save, short enough that
+// a host asking on its way out is not left hanging on a wedged emulation thread.
+constexpr uint32_t NVRAM_SAVE_DEFAULT_TIMEOUT_MS = 2000;
+
+// How often the emulation thread looks at NVRAM. Each look runs the driver's
+// nvram_handler, so it is not free; half a second is finer than any idle window a
+// host will ask about and small enough to disappear beside a frame.
+constexpr int NVRAM_SAMPLE_INTERVAL_FRAMES = 30;
+
+struct NvramSaveState
+{
+   std::mutex mutex;
+   std::condition_variable done;
+
+   // The pending request, and the answer to it.
+   bool requested = false;
+   uint32_t minIdleMs = 0;
+   bool completed = false;
+   PINMAME_NVRAM_SAVE_RESULT result = PINMAME_NVRAM_NOT_RUNNING;
+
+   // Emulation thread only, so deliberately unguarded.
+   int framesUntilSample = 0;
+   std::vector<uint8_t> lastSeen;
+   std::vector<uint8_t> lastSaved;
+   uint64_t changedAtMs = 0;
+   bool haveSeen = false;
+   bool haveSaved = false;
+};
+
+NvramSaveState _nvramSave;
+
+uint64_t NvramNowMs()
+{
+   using namespace std::chrono;
+   return (uint64_t)duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
+}
+
+// The NVRAM image, exactly as the driver would have written it on exit.
+//
+// The handler is given a RAM_FILE, so it writes into memory instead of to disk
+// through the same mame_fwrite calls it would use either way. The bytes are
+// therefore identical to what mame.c's on-exit save produces, which is what lets
+// the write below bypass mame_fopen without changing the file's format.
+bool ReadNvramImage(std::vector<uint8_t>& out)
+{
+   if (!(Machine && Machine->drv && Machine->drv->nvram_handler))
+      return false;
+
+   mame_file* nvram_file = (mame_file*)malloc(sizeof(mame_file));
+   if (!nvram_file)
+      return false;
+   memset(nvram_file, 0, sizeof(mame_file));
+   nvram_file->type = RAM_FILE;
+   (*Machine->drv->nvram_handler)(nvram_file, 1);
+
+   if (nvram_file->offset == 0 || nvram_file->data == NULL) {
+      mame_fclose(nvram_file);
+      return false;
+   }
+
+   out.assign(nvram_file->data, nvram_file->data + nvram_file->offset);
+   mame_fclose(nvram_file);
+   return true;
+}
+
+// Replace <nvram dir>/<game>.nv with these bytes, or leave it as it was.
+//
+// The replacing is fileio.c's job: it owns where files live, and it already has
+// the platform's headers. All that is decided here is the name.
+bool WriteNvramImage(const std::vector<uint8_t>& image)
+{
+   if (!(Machine && Machine->gamedrv && Machine->gamedrv->name))
+      return false;
+
+   const std::string name = std::string(Machine->gamedrv->name) + ".nv";
+   if (libpinmame_write_file_atomically(FILETYPE_NVRAM, name.c_str(), image.data(), image.size()))
+      return true;
+
+   libpinmame_log_error("NVRAM save: could not write %s", name.c_str());
+   return false;
+}
+
+// Emulation thread. Sample NVRAM, note when it last moved, and answer a caller.
+void ServiceNvramSave()
+{
+   if (_nvramSave.framesUntilSample > 0)
+      _nvramSave.framesUntilSample--;
+
+   bool wanted;
+   uint32_t minIdleMs;
+   {
+      const std::lock_guard lock(_nvramSave.mutex);
+      wanted = _nvramSave.requested && !_nvramSave.completed;
+      minIdleMs = _nvramSave.minIdleMs;
+   }
+
+   // Nothing to answer and not yet time to look: the common case, and it has to
+   // cost nothing, because this runs on every frame of every game.
+   if (!wanted && _nvramSave.framesUntilSample > 0)
+      return;
+
+   std::vector<uint8_t> image;
+   const bool haveImage = ReadNvramImage(image);
+   const uint64_t nowMs = NvramNowMs();
+
+   if (haveImage) {
+      _nvramSave.framesUntilSample = NVRAM_SAMPLE_INTERVAL_FRAMES;
+      if (!_nvramSave.haveSeen || _nvramSave.lastSeen != image) {
+         _nvramSave.lastSeen = image;
+         _nvramSave.haveSeen = true;
+         _nvramSave.changedAtMs = nowMs;
+      }
+   }
+
+   if (!wanted)
+      return;
+
+   PINMAME_NVRAM_SAVE_RESULT result;
+   if (!haveImage)
+      result = PINMAME_NVRAM_NOT_RUNNING;
+   else if (_nvramSave.haveSaved && _nvramSave.lastSaved == image)
+      result = PINMAME_NVRAM_UNCHANGED;
+   else if (minIdleMs != 0 && nowMs - _nvramSave.changedAtMs < minIdleMs)
+      result = PINMAME_NVRAM_NOT_SETTLED;
+   else if (!WriteNvramImage(image))
+      result = PINMAME_NVRAM_WRITE_FAILED;
+   else {
+      _nvramSave.lastSaved = image;
+      _nvramSave.haveSaved = true;
+      result = PINMAME_NVRAM_SAVED;
+   }
+
+   {
+      const std::lock_guard lock(_nvramSave.mutex);
+      _nvramSave.completed = true;
+      _nvramSave.result = result;
+   }
+   _nvramSave.done.notify_all();
+}
+
+// A machine is starting or stopping. Forget everything about the last one, and
+// let go of anyone waiting -- after state 3 no frame will serve them.
+void ResetNvramSave(bool cancelPending)
+{
+   {
+      const std::lock_guard lock(_nvramSave.mutex);
+      if (cancelPending && _nvramSave.requested && !_nvramSave.completed) {
+         _nvramSave.completed = true;
+         _nvramSave.result = PINMAME_NVRAM_NOT_RUNNING;
+      }
+   }
+   _nvramSave.done.notify_all();
+
+   _nvramSave.framesUntilSample = 0;
+   _nvramSave.lastSeen.clear();
+   _nvramSave.lastSaved.clear();
+   _nvramSave.haveSeen = false;
+   _nvramSave.haveSaved = false;
+   _nvramSave.changedAtMs = 0;
+}
+
+}
+
+// Called once per frame from osd_update_video_and_audio, on the emulation thread,
+// which the pause loop in usrintrf.c keeps calling while paused -- so a request
+// that arrives while an operator has the machine paused is served straight away,
+// and with the CPU stopped that is the safest moment there is.
+extern "C" void libpinmame_nvram_tick(void)
+{
+   ServiceNvramSave();
+}
+
+/******************************************************
+ * PinmameSaveNVRAM
+ ******************************************************/
+
+PINMAMEAPI PINMAME_NVRAM_SAVE_RESULT PinmameSaveNVRAM(const uint32_t minIdleMs, const uint32_t timeoutMs)
+{
+   // The shared lock keeps the machine from tearing down underneath the request,
+   // as every other API call does. The cost is that a stop arriving now waits for
+   // this call to return, which is why the wait is bounded and why state 3
+   // answers anyone still waiting rather than leaving them to time out.
+   const std::shared_lock stateLock(_stateMutex);
+   if (!IsEmulationRunning())
+      return PINMAME_NVRAM_NOT_RUNNING;
+   if (!(Machine && Machine->drv && Machine->drv->nvram_handler))
+      return PINMAME_NVRAM_NOT_RUNNING;
+
+   std::unique_lock lock(_nvramSave.mutex);
+   // One at a time. A second caller would otherwise overwrite the first's policy
+   // and both would read the same answer, which is not the answer either asked for.
+   if (_nvramSave.requested)
+      return PINMAME_NVRAM_TIMEOUT;
+
+   _nvramSave.requested = true;
+   _nvramSave.completed = false;
+   _nvramSave.minIdleMs = minIdleMs;
+   _nvramSave.result = PINMAME_NVRAM_TIMEOUT;
+
+   const uint32_t waitMs = timeoutMs != 0 ? timeoutMs : NVRAM_SAVE_DEFAULT_TIMEOUT_MS;
+   _nvramSave.done.wait_for(lock, std::chrono::milliseconds(waitMs), [] { return _nvramSave.completed; });
+
+   const PINMAME_NVRAM_SAVE_RESULT result = _nvramSave.completed ? _nvramSave.result : PINMAME_NVRAM_TIMEOUT;
+   _nvramSave.requested = false;
+   _nvramSave.completed = false;
+   return result;
+}
+
 /******************************************************
  * OnStateChange
  ******************************************************/
@@ -783,6 +1026,12 @@ extern "C" void OnStateChange(const int state)
       const std::unique_lock lock(_stateMutex);
       _isRunning = state;
    }
+
+   // A new machine must not inherit the last one's NVRAM baseline, or its first
+   // save would be judged against another game's bytes. Stopping also answers
+   // anyone waiting on a save: no further frame will come to serve them.
+   if (state == 1 || state == 3)
+      ResetNvramSave(state == 3);
 
    if (msgLocals.msgApi != NULL)
    {
@@ -1737,6 +1986,8 @@ PINMAMEAPI int PinmameGetNVRAM(PinmameNVRAMState* const p_nvramStates)
 		p_nvramStates[i].oldStat = 0;
 	}
 
+	mame_fclose(nvram_file);
+
 	return size;
 }
 
@@ -1904,6 +2155,18 @@ static void OnReadMemory(const unsigned int eventId, void* userData, void* msgDa
       return;
 
    msg->read = PinmameReadMainCPUMemory(msg->address, msg->data, (int)msg->size);
+}
+
+static void OnSaveNVRAM(const unsigned int eventId, void* userData, void* msgData)
+{
+   auto msg = static_cast<PinMAMESaveNVRAMMsg*>(msgData);
+   if (msg->version != 1)
+      return;
+
+   // Runs on the sender's thread, like every other message handler here. That is
+   // exactly why it cannot write anything itself: PinmameSaveNVRAM hands the work
+   // to the emulation thread and waits for it.
+   msg->result = PinmameSaveNVRAM(msg->minIdleMs, msg->timeoutMs);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2764,6 +3027,8 @@ static void SetupMsgApi()
    msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.onGetMachineStateId, OnGetMachineState, nullptr);
    msgLocals.onReadMemoryId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_READ_MEMORY);
    msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.onReadMemoryId, OnReadMemory, nullptr);
+   msgLocals.onSaveNVRAMId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_SAVE_NVRAM);
+   msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.onSaveNVRAMId, OnSaveNVRAM, nullptr);
 
    msgLocals.controllerProvider = std::make_unique<PinballPlugin::Controller::CtrlItemProvider<ControllerDef>>(msgLocals.msgApi, msgLocals.endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG);
 
@@ -2784,10 +3049,12 @@ static void ReleaseMsgApi()
 
    msgLocals.msgApi->UnsubscribeMsg(msgLocals.onGetMachineStateId, OnGetMachineState, nullptr);
    msgLocals.msgApi->UnsubscribeMsg(msgLocals.onReadMemoryId, OnReadMemory, nullptr);
+   msgLocals.msgApi->UnsubscribeMsg(msgLocals.onSaveNVRAMId, OnSaveNVRAM, nullptr);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onDmdCmdId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onConsoleDataId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onGetMachineStateId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onReadMemoryId);
+   msgLocals.msgApi->ReleaseMsgID(msgLocals.onSaveNVRAMId);
 
    msgLocals.controllerProvider = nullptr;
 

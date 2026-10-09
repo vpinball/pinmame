@@ -20,6 +20,7 @@
 #endif
 
 extern void libpinmame_log_info(const char* format, ...);
+extern void libpinmame_nvram_tick(void);
 
 //============================================================
 //	IMPORTS
@@ -706,6 +707,10 @@ void osd_update_video_and_audio(struct mame_display *display)
 
 	// increment the frameskip counter
 	frameskip_counter = (frameskip_counter + 1) % FRAMESKIP_LEVELS;
+
+	// give the NVRAM autosave its slot on this thread, between frames, where the
+	// emulated CPU is not part way through writing NVRAM
+	libpinmame_nvram_tick();
 
 	// check for inputs
 	check_inputs();
