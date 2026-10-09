@@ -109,6 +109,20 @@ namespace Spike1Rom
 				new KnownFile("pinnode-LPC1112_201-0_28_0.hex", 0x00007f66, 0xcee92fdc),
 				new KnownFile("pinnode-LPC1313-0_28_0.hex", 0x0000c859, 0x18c17d1d),
 				new KnownFile("ws2812node-LPC1313-0_28_0.hex", 0x00005590, 0x921dc0f7) } },
+			new KnownSet { Set = "got_137h", Folder = "GOT_LE", Title = "Game of Thrones LE 1.37.0", Files = new KnownFile[] {
+				new KnownFile("game", 0x005fa263, 0xbd9d74e9),
+				new KnownFile("image.bin", 0x2ec129dc, 0x8dbe0aa4),
+				new KnownFile("accbridgenode-LPC1313-0_49_0.hex", 0x0000529b, 0x5f3ae3d6),
+				new KnownFile("coil4node-LPC1112_101-0_49_0.hex", 0x00008595, 0x6f4a25ae),
+				new KnownFile("coil4node-LPC1112_201-0_49_0.hex", 0x00008595, 0x43f9bc24),
+				new KnownFile("coil4node-LPC1313-0_49_0.hex", 0x0000d28b, 0x551c8bb3),
+				new KnownFile("lcdnode-LPC1113_302-0_49_0.hex", 0x0000b70a, 0x762a4010),
+				new KnownFile("netbridge-LPC1313-0_49_0.hex", 0x0000e89c, 0x0179e13b),
+				new KnownFile("nodebusanalyzer-LPC1313-0_49_0.hex", 0x0000548a, 0x7925a13c),
+				new KnownFile("pinnode-LPC1112_101-0_49_0.hex", 0x0000801a, 0x66b91e74),
+				new KnownFile("pinnode-LPC1112_201-0_49_0.hex", 0x00008057, 0x42ca3b82),
+				new KnownFile("pinnode-LPC1313-0_49_0.hex", 0x0000ddae, 0xa31b7afa),
+				new KnownFile("ws2812node-LPC1313-0_49_0.hex", 0x0000777d, 0x00f38c82) } },
 		};
 	}
 

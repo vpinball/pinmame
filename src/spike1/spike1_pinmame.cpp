@@ -204,6 +204,13 @@ int spike1_pinmame_motor(unsigned index, int *position, int *moving)
 	return 1;
 }
 
+int spike1_pinmame_stepper_home(unsigned node, unsigned stepper, int switch_number)
+{
+	spike1_devices *d = devices();
+	return d && node < 128 && stepper <= 4 && switch_number >= 0 &&
+		d->link_stepper_home(uint8_t(node), uint8_t(stepper), uint16_t(switch_number));
+}
+
 unsigned spike1_pinmame_led_level(unsigned index)
 {
 	const spike1_devices *d = devices();
