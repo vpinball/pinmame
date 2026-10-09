@@ -697,6 +697,11 @@ MACHINE_DRIVER_END
   SPIKE1_INPUT_PORTS(name) \
   static spike1_tGameData name##GameData = { SPIKE1_CORE(layout, lamps, FLIP_L), folder, switches, SPIKE1_NOHOMES, SPIKE1_NOLIMIT, symbols }; \
   static void init_##name(void) { core_gameData = &name##GameData.core; }
+/* Another edition of a title (a Pro beside its LE): the set name_ver, a clone of the set parent,
+   with its own game data from SPIKE1_INIT*(data, ...). Its files are the edition's own; those it
+   shares with the parent (the asset image, the node firmware) can come from the parent's ROM set */
+#define SPIKE1_CLONEDEF(name, ver, parent, data, longname, year, machine) \
+  GAMEX(year, name##_##ver, parent, machine, data, data, ROT0, "Stern", longname, 0)
 
 /*-------------------------------------------------------------------
 / Ghostbusters (Stern, 2016) - Limited Edition
@@ -806,6 +811,32 @@ ROM_START(got_137h)
     ROM_LOAD("ws2812node-LPC1313-0_49_0.hex", 0x2f275000, 0x0000777d, CRC(00f38c82) SHA1(77dcfd9bc27a86458ce275ec79ccac69c4ba72ff))
 ROM_END
 CORE_GAMEDEF(got, 137h, "Game of Thrones (Limited Edition 1.37.0)", 2015, "Stern", spike1, 0)
+
+/*-------------------------------------------------------------------
+/ Game of Thrones (Stern, 2015) - Pro
+/ The same asset image and node firmware as the Limited Edition, its own game program (folder
+/ GOT). No upper playfield: no upper flippers, the right flipper's EOS is 17, and the dragon is a
+/ coil (solenoid 18) instead of a stepper. The optional topper dragon is the only stepper: mech 0,
+/ homing through switch 121
+/-------------------------------------------------------------------*/
+SPIKE1_INIT_EX(gotp, "GOT", spike1_dmd, 265, FLIP_L, SPIKE1_SWITCHES(10, 11, 16, 17, 66, 67, 68, 69, 71, 75), SPIKE1_HOMES(12, 0, 121, 0, 0, 0), SPIKE1_NOLIMIT)
+ROM_START(got_137)
+  ROM_REGION(0x2f269000, SPIKE1_REGION, 0)
+    ROM_LOAD("game", 0x00000000, 0x005e6954, CRC(8e5d0f49) SHA1(3b9f9d429b0406fb6488a5bcc3e47092c340768a))
+    ROM_LOAD("image.bin", 0x005e7000, 0x2ec129dc, CRC(8dbe0aa4) SHA1(ca03000c6a53cf9980774e2739c0277ab12b74b0))
+    ROM_LOAD("accbridgenode-LPC1313-0_49_0.hex", 0x2f1fa000, 0x0000529b, CRC(5f3ae3d6) SHA1(24a00f23fa0fbee9cf38ddf50e4cede0c96b4137))
+    ROM_LOAD("coil4node-LPC1112_101-0_49_0.hex", 0x2f200000, 0x00008595, CRC(6f4a25ae) SHA1(a7f49114a399e96879d5e58e3137c89243385287))
+    ROM_LOAD("coil4node-LPC1112_201-0_49_0.hex", 0x2f209000, 0x00008595, CRC(43f9bc24) SHA1(b921dc5082b87828fdb376ec183caa08f41816bf))
+    ROM_LOAD("coil4node-LPC1313-0_49_0.hex", 0x2f212000, 0x0000d28b, CRC(551c8bb3) SHA1(7baef81e9d8157fbea84bbfcebd835731dbbd021))
+    ROM_LOAD("lcdnode-LPC1113_302-0_49_0.hex", 0x2f220000, 0x0000b70a, CRC(762a4010) SHA1(d76aa881edf11f9820590ee2eccabe171c45f566))
+    ROM_LOAD("netbridge-LPC1313-0_49_0.hex", 0x2f22c000, 0x0000e89c, CRC(0179e13b) SHA1(e1f0768ae71b8e723d3cf567a0aa29a6230d3ce6))
+    ROM_LOAD("nodebusanalyzer-LPC1313-0_49_0.hex", 0x2f23b000, 0x0000548a, CRC(7925a13c) SHA1(9a6171b0dc26e49496366b8043a420f16c6e3b70))
+    ROM_LOAD("pinnode-LPC1112_101-0_49_0.hex", 0x2f241000, 0x0000801a, CRC(66b91e74) SHA1(0f0025758753b046b6e0a117a9668dab51d66180))
+    ROM_LOAD("pinnode-LPC1112_201-0_49_0.hex", 0x2f24a000, 0x00008057, CRC(42ca3b82) SHA1(32c08bf5e2aee47ab875e91abc3ee9a1fedeb4ec))
+    ROM_LOAD("pinnode-LPC1313-0_49_0.hex", 0x2f253000, 0x0000ddae, CRC(a31b7afa) SHA1(23670fe8e7f3d469a84fa74750c35b15deed7b7b))
+    ROM_LOAD("ws2812node-LPC1313-0_49_0.hex", 0x2f261000, 0x0000777d, CRC(00f38c82) SHA1(77dcfd9bc27a86458ce275ec79ccac69c4ba72ff))
+ROM_END
+SPIKE1_CLONEDEF(got, 137, got_137h, gotp, "Game of Thrones (Pro 1.37.0)", 2015, spike1)
 
 /*-------------------------------------------------------------------
 / KISS (Stern, 2015) - Limited Edition (kiss15: PinMAME's kiss is Bally's of 1979)

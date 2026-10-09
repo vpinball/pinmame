@@ -3523,6 +3523,7 @@ DRIVER(wnbjm,155)       //Spike 1:  2015    Whoa Nellie! Big Juicy Melons (1.55.
 DRIVER(pabst,101)       //Spike 1:  2016    Pabst Can Crusher (1.01.0)
 DRIVER(primus,103)      //Spike 1:  2018    Primus (1.03.0)
 DRIVER(got,137h)        //Spike 1:  2015    Game of Thrones (Limited Edition 1.37.0)
+DRIVER(got,137)         //Spike 1:  2015    Game of Thrones (Pro 1.37.0)
 DRIVER(kiss15,141h)     //Spike 1:  2015    KISS (Limited Edition 1.41.0)
 DRIVER(wwe,135h)        //Spike 1:  2015    WWE WrestleMania (Limited Edition 1.35.0)
 DRIVER(heavym20,102)    //Spike 1:  2020    Heavy Metal (1.02.0)

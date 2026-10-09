@@ -240,6 +240,12 @@ code (its symbols are in the program) rather than from any other emulator:
   `.spk` update package too (Heavy Metal comes only as one): `SPKS`, then groups (`SPK0`), each an
   index (`SIDX`: the group's name, a path table `STRS` and a `FINF` record per file) and the files'
   bytes (`SDAT`), stored; the game folder is the group holding `<name>/game` and `<name>/image.bin`.
+- **Editions**: Stern's Pro is a lesser-featured edition of a title. Its set is a clone of the
+  Limited Edition's, named as PinMAME names Stern's SAM sets (`got_137` beside `got_137h`), with
+  its own game data (`SPIKE1_CLONEDEF`: its folder, switch numbers and steppers). The files it
+  shares with the parent - Game of Thrones Pro shares all but the game program - can come from the
+  parent's ROM set, so a Pro set's zip can hold its game program alone; the builder writes the
+  whole folder.
 - **A program without a symbol table** (Heavy Metal): the set's `SPIKE1_INIT_SYMBOLS` lists the
   addresses of the tables and functions the subsystem reads by name, which `spike1_pinmame_start()`
   adds to the program's (empty) symbol table; `spike1boot --symbols <file>` takes the same list as
@@ -316,6 +322,11 @@ attract mode, takes coins (four to a credit at its default pricing) and starts a
 harness and through libpinmame; its dragon homes on its switch and stands at step 23, the upper
 and lower flippers fire from their buttons. The topper's home switch has no handler in the game
 (`swdf_dragon_topper_motor_home` is in no switch table), so the topper homes by its time-out.
+
+Game of Thrones Pro 1.37.0 (folder `GOT`; five boards, 71 switches, 18 coils, 108 LED channels)
+boots to attract mode, takes coins and starts a game in the harness and through libpinmame. It
+needed no change to the subsystem: it is the same machine without the upper playfield (no upper
+flippers, a coil for the dragon, the topper dragon its only stepper).
 
 KISS LE 1.41.0 (Whoa Nellie's SDK, five boards, 158 LED channels) boots to attract mode, takes
 coins and starts a game. Its Starchild stands on its home switch; the game's
