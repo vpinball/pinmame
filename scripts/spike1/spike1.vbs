@@ -94,6 +94,10 @@ Private Sub spike1Cabinet(ByVal aGame)
 			swCoin1 = 76 : swCoin2 = 77 : swCoin3 = 78 : swCoin4 = 79
 			swStartButton = 73 : swTournament = 74 : swLaunch = 70 : swTilt = 81 : swSlamTilt = 84
 			swLLFlip = 8 : swLRFlip = 10
+		Case "supreme"                  ' Supreme: its START BUTTON is 13 (the coin door's own is 73)
+			swCoin1 = 76 : swCoin2 = 77 : swCoin3 = 78 : swCoin4 = 79
+			swStartButton = 13 : swTournament = 74 : swLaunch = 15 : swTilt = 14 : swSlamTilt = 84
+			swLLFlip = 8 : swLRFlip = 10
 		Case Else
 			MsgBox "spike1.vbs does not know the set """ & aGame & """."
 	End Select

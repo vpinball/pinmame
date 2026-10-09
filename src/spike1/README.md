@@ -150,8 +150,11 @@ code (its symbols are in the program) rather than from any other emulator:
   first power and time, then a second; a reflex configuration makes the board fire the coil on its
   own when a switch it watches closes - flippers pulse at full power, then hold at the second power
   while the button stays closed (the end-of-stroke switch ends the pulse early); pops and slings
-  pulse once per closure and wait out a hold-off time. `coil_level()` gives a driver's PWM duty
-  (0-255) at a given time; the coil mask (a set bit switches a driver off) applies.
+  pulse once per closure and wait out a hold-off time. Where the reflex frame keeps its switches
+  depends on the SDK, which its length tells (see `coil_reflex()`: 23 bytes in WWE, 28 in Supreme,
+  34 from node firmware 0.28 to 0.52, 43 in Heavy Metal); up to three switches can trigger one
+  coil (Heavy Metal's slings have two). `coil_level()` gives a driver's PWM duty (0-255) at a
+  given time; the coil mask (a set bit switches a driver off) applies.
 - **LEDs** (type 4, up to 96 channels a board, three for an RGB LED): `NODEBUS_SetLEDMultiple2`'s
   packed updates (command 0x80-0xBF: an index, a list or a bitmap of channels, then levels and fade
   times in compact forms; see `led_update()`). Every update in a full attract-and-play run decodes to
@@ -234,8 +237,10 @@ code (its symbols are in the program) rather than from any other emulator:
   PinMAME matches a ROM by its name alone); `image.bin` and the clips are mapped from the region,
   not copied. `scripts/spike1/Build-Spike1RomSet.ps1` (or `Build ROM set.cmd` beside it, which
   opens a window) makes the set from Stern's SD-card image, `<title>-<version>.iso.zip` or the
-  `.iso` inside it: it finds the game folder on the image's ext3 partitions, reads it straight out
-  of the zip in a few forward passes, writes `<set>.zip` stored, and checks every file against the
+  `.iso` inside it, or a card dump in a zip (Supreme's `.img`): it finds the game folder on the
+  image's ext3 partitions, reads it straight out of the zip in a few forward passes (its own zip
+  reader: .NET's refuses Supreme's zip, whose ZIP64 extra field carries fields its header does not
+  call for), writes `<set>.zip` stored, and checks every file against the
   set's CRCs - a new set needs its files added to the script's `KnownSet` table. It reads Stern's
   `.spk` update package too (Heavy Metal comes only as one): `SPKS`, then groups (`SPK0`), each an
   index (`SIDX`: the group's name, a path table `STRS` and a `FINF` record per file) and the files'
@@ -361,6 +366,14 @@ running machine. It also needed a larger range for its asset image (1.9 GB), the
 field order and the coil table's index flags of its SDK, and its firmware image records: the
 images are encrypted, the game decrypts them into the content buffer, and an image with its own
 header gives its version there.
+
+Supreme 1.01.0 (node firmware 0.22.0, two boards, four balls; set `supreme_101`, from a dump of its
+card in `supremexstern-001.zip`) boots to attract mode, takes coins and starts a game, and its
+flippers fire from their buttons. It showed that the reflex frame that arms the flippers, pops and
+slings differs between SDKs: the model had read the 34-byte form only, so WWE's flippers, pops and
+slings (23 bytes) and Heavy Metal's (43 bytes) did not fire on their own either until
+`coil_reflex()` read each form. Its right flipper coil is named RT FLIPPER POWER, which the driver
+now takes as RIGHT FLIPPER POWER.
 
 ## Open items
 

@@ -1110,9 +1110,15 @@ bool spike1_devices::motor_state(uint8_t node, uint8_t index, int16_t &position,
 // powers a PWM duty out of 255.
 //   fire     [coil][power 1][time 1, u16][power 2][time 2, u16][ramp, u16]
 //            ([u16][switch condition, 3] follow on some fires - not modelled yet)
-//   reflex   the same seven, five u16 times, eight switch bytes, four bytes, three bytes. The
-//            board fires the coil when the switch in byte 0 closes; byte 3 is the end-of-stroke
-//            switch, and the second time keeps the coil from firing again too soon
+//   reflex   the same seven, five u16 times (the second keeps the coil from firing again too
+//            soon), then a list of switches whose place and form the SDK sets, told apart by
+//            the frame's length: the trigger switches - the board fires the coil when any of
+//            them closes - and after them the end-of-stroke switch
+//              23 bytes (WWE, node firmware 0.18.4): one trigger at 17, the EOS at 18
+//              28 bytes (Supreme, 0.22):             two at 17, the EOS at 19
+//              34 bytes (0.28 to 0.52):              two bytes, then three at 19, the EOS at 22
+//              43 bytes (Heavy Metal, 0.67):         four bytes, then three at 21, the EOS at 24
+//            (Heavy Metal's slings fire on either of two switches)
 // What the traffic shows: flippers pulse at full power, then hold at power 2 while the button
 // stays closed; pops and slings pulse once per closure; one-shot coils pulse at power 1 for time 1
 
@@ -1135,18 +1141,32 @@ void spike1_devices::coil_fire(uint8_t node, const uint8_t *data, uint32_t len, 
 
 void spike1_devices::coil_reflex(uint8_t node, const uint8_t *data, uint32_t len, std::string &note)
 {
-	if (len < 27 || data[0] >= COILS_PER_NODE) { note = "node bus: node " + std::to_string(node) + " coil reflex not understood: " + bytes_hex(data, len); return; }
+	uint32_t first = 0, triggers = 0;
+	switch (len) {
+	case 23: first = 17; triggers = 1; break;
+	case 28: first = 17; triggers = 2; break;
+	case 34: first = 19; triggers = 3; break;
+	case 43: first = 21; triggers = 3; break;
+	}
+	if (!first || data[0] >= COILS_PER_NODE) { note = "node bus: node " + std::to_string(node) + " coil reflex not understood: " + bytes_hex(data, len); return; }
 	coil &c = m_coil[node][data[0]];
-	c.trigger = data[19];
-	c.eos = data[22];
-	c.reflex = (c.trigger & REFLEX_USED) != 0;
+	c.reflex = false;
+	for (uint32_t i = 0; i < 3; i++) {
+		c.trigger[i] = i < triggers ? data[first + i] : 0;
+		if (c.trigger[i] & REFLEX_USED) c.reflex = true;
+	}
+	c.eos = data[first + triggers];
 	c.reflex_power1 = data[1];
 	c.reflex_power2 = data[4];
 	c.reflex_pulse_ms = ticks_ms(data + 2);
 	c.reflex_holdoff_ms = ticks_ms(data + 11);
-	c.trigger_was_active = c.reflex && reflex_switch_active(node, c.trigger);
+	c.trigger_was_active = c.reflex && reflex_triggered(node, c);
 	if (!c.reflex) c.holding = false;
-	if (m_cfg.trace) note = "node bus: node " + std::to_string(node) + " coil " + std::to_string(data[0]) + (c.reflex ? " reflex on switch " + std::to_string(c.trigger & REFLEX_POSITION) : " reflex off");
+	if (m_cfg.trace) {
+		std::string on;
+		for (uint8_t t : c.trigger) if (t & REFLEX_USED) on += (on.empty() ? " reflex on switch " : " or ") + std::to_string(t & REFLEX_POSITION);
+		note = "node bus: node " + std::to_string(node) + " coil " + std::to_string(data[0]) + (c.reflex ? on : " reflex off");
+	}
 }
 
 bool spike1_devices::reflex_switch_active(uint8_t node, uint8_t sw) const
@@ -1154,11 +1174,17 @@ bool spike1_devices::reflex_switch_active(uint8_t node, uint8_t sw) const
 	return (sw & REFLEX_USED) && (switch_closed(node, sw & REFLEX_POSITION) != ((sw & REFLEX_INVERT) != 0));
 }
 
+bool spike1_devices::reflex_triggered(uint8_t node, const coil &c) const
+{
+	for (uint8_t t : c.trigger) if (reflex_switch_active(node, t)) return true;
+	return false;
+}
+
 void spike1_devices::run_reflexes(uint8_t node, uint64_t now_ns)
 {
 	for (coil &c : m_coil[node]) {
 		if (!c.reflex) continue;
-		const bool active = reflex_switch_active(node, c.trigger);
+		const bool active = reflex_triggered(node, c);
 		if (active && !c.trigger_was_active && now_ns >= c.holdoff_end_ns) {
 			c.power1 = c.reflex_power1;
 			c.power2 = c.reflex_power2;

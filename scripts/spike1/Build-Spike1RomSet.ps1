@@ -206,37 +206,98 @@ namespace Spike1Rom
 				new KnownFile("pinnode-LPC1313-0_67_0.hex", 0x0000f839, 0x0ee1afa2),
 				new KnownFile("tmc2590node-LPC1313-0_67_0.hex", 0x0000bfe5, 0xa48f352c),
 				new KnownFile("ws2812node-LPC1313-0_67_0.hex", 0x00007c40, 0x514046cf) } },
+			new KnownSet { Set = "supreme_101", Folder = "supreme", Title = "Supreme 1.01.0", Files = new KnownFile[] {
+				new KnownFile("game", 0x00462e0b, 0x681a3c00),
+				new KnownFile("image.bin", 0x06fa11ec, 0x3eb2c19d),
+				new KnownFile("coil4node-LPC1112_101-0_22_0.hex", 0x000082cd, 0x22c8518e),
+				new KnownFile("coil4node-LPC1112_201-0_22_0.hex", 0x000082cd, 0x01d69520),
+				new KnownFile("coil4node-LPC1313-0_22_0.hex", 0x0000bcec, 0x290c5e17),
+				new KnownFile("lcdnode-LPC1113_302-0_22_0.hex", 0x0000b484, 0x0e222d2c),
+				new KnownFile("pinnode-LPC1112_101-0_22_0.hex", 0x000080fb, 0x0be8403d),
+				new KnownFile("pinnode-LPC1112_201-0_22_0.hex", 0x00008138, 0xb3646ae2),
+				new KnownFile("pinnode-LPC1313-0_22_0.hex", 0x0000c313, 0xf6416a86),
+				new KnownFile("ws2812node-LPC1313-0_22_0.hex", 0x00005590, 0x9a090388) } },
 		};
 	}
 
-	// The disk image as a stream read front to back; a pass opens it anew
+	// The disk image as a stream read front to back; a pass opens it anew. In a zip, the largest
+	// entry is the image. The zip is read here rather than through .NET's ZipArchive, which refuses
+	// some cards' zips: Supreme's lists offset and disk fields in its ZIP64 extra field that its
+	// header does not call for. Only the fields the header marks 0xFFFFFFFF are taken from it
 	public class ImageSource
 	{
 		readonly string m_path;
 		readonly bool m_zipped;
+		long m_dataAt;      // where the entry's data starts in the zip
+		int m_method;       // 0 stored, 8 deflated
 		public long Length;
 		public string EntryName;
+
+		static uint U32(byte[] d, int o) { return BitConverter.ToUInt32(d, o); }
+		static ushort U16(byte[] d, int o) { return BitConverter.ToUInt16(d, o); }
+		static byte[] ReadAt(Stream s, long at, int count)
+		{
+			var b = new byte[count];
+			s.Seek(at, SeekOrigin.Begin);
+			for (int o = 0; o < count; ) { int n = s.Read(b, o, count - o); if (n <= 0) throw new EndOfStreamException("The zip ends early."); o += n; }
+			return b;
+		}
 
 		public ImageSource(string path)
 		{
 			m_path = path;
 			m_zipped = path.EndsWith(".zip", StringComparison.OrdinalIgnoreCase);
 			if (!m_zipped) { Length = new FileInfo(path).Length; EntryName = Path.GetFileName(path); return; }
-			using (var zip = new ZipArchive(File.OpenRead(path), ZipArchiveMode.Read))
+			using (var s = File.OpenRead(path))
 			{
-				ZipArchiveEntry best = null;
-				foreach (var e in zip.Entries) if (best == null || e.Length > best.Length) best = e;
-				if (best == null) throw new Exception("The zip file is empty.");
-				Length = best.Length;
-				EntryName = best.FullName;
+				// the end of central directory record, and the ZIP64 one where its fields are full
+				int tail = (int)Math.Min(s.Length, 22 + 65535);
+				byte[] t = ReadAt(s, s.Length - tail, tail);
+				int e = -1;
+				for (int i = tail - 22; i >= 0 && e < 0; i--) if (U32(t, i) == 0x06054b50) e = i;
+				if (e < 0) throw new Exception("This is not a zip file.");
+				long count = U16(t, e + 10), dirAt = U32(t, e + 16);
+				if ((count == 0xffff || dirAt == 0xffffffff) && e >= 20 && U32(t, e - 20) == 0x07064b50)
+				{
+					byte[] z = ReadAt(s, (long)BitConverter.ToUInt64(t, e - 20 + 8), 56);
+					count = (long)BitConverter.ToUInt64(z, 32);
+					dirAt = (long)BitConverter.ToUInt64(z, 48);
+				}
+				long bestSize = -1, bestHeader = 0;
+				for (long k = 0, at = dirAt; k < count; k++)
+				{
+					byte[] head = ReadAt(s, at, 46);
+					if (U32(head, 0) != 0x02014b50) throw new Exception("The zip's directory is damaged.");
+					int nameLen = U16(head, 28), extraLen = U16(head, 30), commentLen = U16(head, 32);
+					byte[] rest = ReadAt(s, at + 46, nameLen + extraLen);
+					long size = U32(head, 24), packed = U32(head, 20), header = U32(head, 42);
+					for (int x = nameLen; x + 4 <= rest.Length; x += 4 + U16(rest, x + 2))
+					{
+						if (U16(rest, x) != 1) continue; // ZIP64: the full fields, in order, for those the header marks
+						int f = x + 4;
+						if (size == 0xffffffff) { size = (long)BitConverter.ToUInt64(rest, f); f += 8; }
+						if (packed == 0xffffffff) { packed = (long)BitConverter.ToUInt64(rest, f); f += 8; }
+						if (header == 0xffffffff) { header = (long)BitConverter.ToUInt64(rest, f); }
+					}
+					if (size > bestSize) { bestSize = size; bestHeader = header; EntryName = Encoding.UTF8.GetString(rest, 0, nameLen); m_method = U16(head, 10); }
+					at += 46 + nameLen + extraLen + commentLen;
+				}
+				if (bestSize < 0) throw new Exception("The zip file is empty.");
+				if (m_method != 0 && m_method != 8) throw new Exception(EntryName + " is compressed in a way this builder does not read (method " + m_method + ").");
+				byte[] local = ReadAt(s, bestHeader, 30);
+				if (U32(local, 0) != 0x04034b50) throw new Exception("The zip's entry header is damaged.");
+				m_dataAt = bestHeader + 30 + U16(local, 26) + U16(local, 28);
+				Length = bestSize;
 			}
 		}
 
 		public ForwardReader Open()
 		{
 			if (!m_zipped) return new ForwardReader(File.OpenRead(m_path), null, true);
-			var zip = new ZipArchive(File.OpenRead(m_path), ZipArchiveMode.Read);
-			return new ForwardReader(zip.GetEntry(EntryName).Open(), zip, false);
+			var file = File.OpenRead(m_path);
+			file.Seek(m_dataAt, SeekOrigin.Begin);
+			if (m_method == 0) return new ForwardReader(file, null, false);
+			return new ForwardReader(new DeflateStream(file, CompressionMode.Decompress), file, false);
 		}
 	}
 

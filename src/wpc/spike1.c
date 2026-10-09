@@ -522,10 +522,17 @@ static void spike1_map_outputs(void)
     else continue;
     locals.coilSol[number] = sol;
     locals.coilOf[sol] = number;
-    if (!strcmp(name, "LEFT FLIPPER") || !strcmp(name, "LEFT FLIPPER POWER")) locals.flipCoil[0][0] = number;
-    if (!strcmp(name, "LEFT FLIPPER HOLD")) locals.flipCoil[0][1] = number;
-    if (!strcmp(name, "RIGHT FLIPPER") || !strcmp(name, "RIGHT FLIPPER POWER")) locals.flipCoil[1][0] = number;
-    if (!strcmp(name, "RIGHT FLIPPER HOLD")) locals.flipCoil[1][1] = number;
+    {
+      /* Supreme writes LT and RT (RT FLIPPER POWER) */
+      char full[64];
+      if (!strncmp(name, "LT ", 3)) snprintf(full, sizeof(full), "LEFT %s", name + 3);
+      else if (!strncmp(name, "RT ", 3)) snprintf(full, sizeof(full), "RIGHT %s", name + 3);
+      else snprintf(full, sizeof(full), "%s", name);
+      if (!strcmp(full, "LEFT FLIPPER") || !strcmp(full, "LEFT FLIPPER POWER")) locals.flipCoil[0][0] = number;
+      if (!strcmp(full, "LEFT FLIPPER HOLD")) locals.flipCoil[0][1] = number;
+      if (!strcmp(full, "RIGHT FLIPPER") || !strcmp(full, "RIGHT FLIPPER POWER")) locals.flipCoil[1][0] = number;
+      if (!strcmp(full, "RIGHT FLIPPER HOLD")) locals.flipCoil[1][1] = number;
+    }
   }
   /* the core counts lamps in whole columns, up to the highest Light Reference number of the title;
      a motor drive is no lamp, and Light Reference 0 has no PinMAME number */
@@ -959,5 +966,27 @@ ROM_START(heavym20_102)
     ROM_LOAD("ws2812node-LPC1313-0_67_0.hex", 0x71fd3000, 0x00007c40, CRC(514046cf) SHA1(a3a595cef1bf9058bba46d8d61eb5bc6b43e790f))
 ROM_END
 CORE_GAMEDEF(heavym20, 102, "Heavy Metal (1.02.0)", 2020, "Stern", spike1, 0)
+
+/*-------------------------------------------------------------------
+/ Supreme (Stern, 2018)
+/ Node firmware 0.22.0: two boards, four balls. The set comes from a card image (the game folder
+/ "supreme"). Its start button is the switch the game names START BUTTON (13); the coin door has
+/ another, COINDOOR START B. (73). The coils name the right flipper RT FLIPPER POWER
+/-------------------------------------------------------------------*/
+SPIKE1_INIT(supreme, "supreme", spike1_dmd, 130, SPIKE1_SWITCHES(8, 10, 9, 11, 76, 77, 78, 79, 14, 84))
+ROM_START(supreme_101)
+  ROM_REGION(0x07454000, SPIKE1_REGION, 0)
+    ROM_LOAD("game", 0x00000000, 0x00462e0b, CRC(681a3c00) SHA1(dc9cbf0a4204a3bbaecede3a5f5f9b1f9a2269c2))
+    ROM_LOAD("image.bin", 0x00463000, 0x06fa11ec, CRC(3eb2c19d) SHA1(23cf9140f30c15367c214503025962619a5937f6))
+    ROM_LOAD("coil4node-LPC1112_101-0_22_0.hex", 0x07405000, 0x000082cd, CRC(22c8518e) SHA1(3961762f04c7ac0d5dfa12eb8e5f2a5c75a05bef))
+    ROM_LOAD("coil4node-LPC1112_201-0_22_0.hex", 0x0740e000, 0x000082cd, CRC(01d69520) SHA1(f1b2f65b19ff88fd9fa3874b8373a1fc30fd8f88))
+    ROM_LOAD("coil4node-LPC1313-0_22_0.hex", 0x07417000, 0x0000bcec, CRC(290c5e17) SHA1(ace1e1a6e37f370f4f49aa61624a95215566843a))
+    ROM_LOAD("lcdnode-LPC1113_302-0_22_0.hex", 0x07423000, 0x0000b484, CRC(0e222d2c) SHA1(ae62c5331e7393b80e1ff0f946c41652f7d20a25))
+    ROM_LOAD("pinnode-LPC1112_101-0_22_0.hex", 0x0742f000, 0x000080fb, CRC(0be8403d) SHA1(ff3f421ad4fcd06cdbc22936f378e3df123977cc))
+    ROM_LOAD("pinnode-LPC1112_201-0_22_0.hex", 0x07438000, 0x00008138, CRC(b3646ae2) SHA1(1f5bda3ebbe5b8e2699f30bf946ea19e6a2ac6c0))
+    ROM_LOAD("pinnode-LPC1313-0_22_0.hex", 0x07441000, 0x0000c313, CRC(f6416a86) SHA1(17a26b7800fba83936314fde8cac2191de4042c7))
+    ROM_LOAD("ws2812node-LPC1313-0_22_0.hex", 0x0744e000, 0x00005590, CRC(9a090388) SHA1(2f92d8c86bb2c86026cda36ff256b2fcd813cf0e))
+ROM_END
+CORE_GAMEDEF(supreme, 101, "Supreme (1.01.0)", 2018, "Stern", spike1, 0)
 
 #endif /* HAS_SPIKE1 */
