@@ -83,9 +83,11 @@ public:
 #define ALLOW_SAVE_TYPE_AND_ARRAY(TYPE)
 
 namespace util {
+template <typename T> inline const T &format_arg(const T &arg) { return arg; }
+inline const char *format_arg(const std::string &arg) { return arg.c_str(); }
 template <typename... T> inline std::string string_format(const char *fmt, T &&... args)
 {
-	char buf[1024]; snprintf(buf, sizeof(buf), fmt, args...); return std::string(buf);
+	char buf[1024]; snprintf(buf, sizeof(buf), fmt, format_arg(args)...); return std::string(buf);
 }
 template <typename... T> inline std::string string_format(const std::string &fmt, T &&... args)
 {
@@ -93,7 +95,7 @@ template <typename... T> inline std::string string_format(const std::string &fmt
 }
 template <typename... T> inline void stream_format(std::ostream &os, const char *fmt, T &&... args)
 {
-	char buf[1024]; snprintf(buf, sizeof(buf), fmt, args...); os << buf;
+	char buf[1024]; snprintf(buf, sizeof(buf), fmt, format_arg(args)...); os << buf;
 }
 }
 using util::string_format;

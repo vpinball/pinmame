@@ -298,7 +298,7 @@ bool spike1_linux::build_stack(uint32_t entry, uint32_t phdr, uint32_t phnum, ui
 	for (uint32_t e : env) v.push_back(e);
 	v.push_back(0);
 	const uint32_t aux[][2] = {
-		{3, phdr}, {4, 32}, {5, phnum}, {6, spike1_memory::PAGE_SIZE}, {7, 0}, {8, 0}, {9, entry},
+		{3, phdr}, {4, 32}, {5, phnum}, {6, spike1_memory::GUEST_PAGE_SIZE}, {7, 0}, {8, 0}, {9, entry},
 		{11, 0}, {12, 0}, {13, 0}, {14, 0}, {23, 0}, {17, 100}, {16, PROGRAM_HWCAP}, {26, 0},
 		{25, random}, {15, platform}, {31, execfn}, {0, 0} };
 	for (const auto &a : aux) { v.push_back(a[0]); v.push_back(a[1]); }
@@ -458,14 +458,14 @@ void spike1_linux::deliver_signal()
 	t.sig_pending &= ~(1ull << (sig - 1));
 	const sigaction_entry sa = m_sigactions[sig];
 	if (sa.handler <= 1) return; // default or ignored: nothing runs
-	constexpr uint32_t SA_RESTORER = 0x04000000, SA_NODEFER = 0x40000000, SA_RESETHAND = 0x80000000;
-	constexpr uint32_t SIGINFO = 128, UCONTEXT = 512, TRAMPOLINE = 8, CPSR_T = 0x20;
+	constexpr uint32_t GUEST_SA_RESTORER = 0x04000000, GUEST_SA_NODEFER = 0x40000000, GUEST_SA_RESETHAND = 0x80000000;
+	constexpr uint32_t SIGINFO_SIZE = 128, UCONTEXT_SIZE = 512, TRAMPOLINE_SIZE = 8, CPSR_T = 0x20;
 	spike1_cpu_device::context ctx;
 	m_cpu.save_context(ctx);
 	t.sig_frames.push_back({ ctx, t.sigmask });
-	const uint32_t sp = (ctx.r[13] - SIGINFO - UCONTEXT - TRAMPOLINE) & ~7u;
-	const uint32_t info = sp, uc = sp + SIGINFO, tramp = uc + UCONTEXT;
-	const uint8_t zero[SIGINFO + UCONTEXT] = {};
+	const uint32_t sp = (ctx.r[13] - SIGINFO_SIZE - UCONTEXT_SIZE - TRAMPOLINE_SIZE) & ~7u;
+	const uint32_t info = sp, uc = sp + SIGINFO_SIZE, tramp = uc + UCONTEXT_SIZE;
+	const uint8_t zero[SIGINFO_SIZE + UCONTEXT_SIZE] = {};
 	m_mem.write(sp, zero, sizeof(zero));
 	m_mem.write32(info, sig);                              // si_signo; si_errno and si_code (SI_USER) 0
 	m_mem.write32(uc + 20 + 8, uint32_t(t.sigmask));       // uc_mcontext.oldmask
@@ -479,12 +479,12 @@ void spike1_linux::deliver_signal()
 	h.r[1] = info;
 	h.r[2] = uc;
 	h.r[13] = sp;
-	h.r[14] = (sa.flags & SA_RESTORER) && sa.restorer ? sa.restorer : tramp;
+	h.r[14] = (sa.flags & GUEST_SA_RESTORER) && sa.restorer ? sa.restorer : tramp;
 	h.r[15] = sa.handler & ~1u;
 	h.cpsr = (sa.handler & 1) ? (ctx.cpsr | CPSR_T) : (ctx.cpsr & ~CPSR_T);
 	m_cpu.load_context(h);
-	t.sigmask |= sa.mask | ((sa.flags & SA_NODEFER) ? 0 : 1ull << (sig - 1));
-	if (sa.flags & SA_RESETHAND) m_sigactions[sig].handler = 0;
+	t.sigmask |= sa.mask | ((sa.flags & GUEST_SA_NODEFER) ? 0 : 1ull << (sig - 1));
+	if (sa.flags & GUEST_SA_RESETHAND) m_sigactions[sig].handler = 0;
 	log("signal " + std::to_string(sig) + " handled by thread " + std::to_string(t.tid) + " (" + t.name + ")");
 }
 
