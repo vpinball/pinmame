@@ -94,6 +94,7 @@ typedef struct {
 #endif /* PROC_SUPPORT */
   int vgmwrite; // bool
   int force_mono_to_stereo; // bool
+  int bsmt2000_lle; // bool: BSMT2000 sound runs the chip's own program (needs bsmt2000.bin) instead of the high level emulation
 #ifdef PINMAME_HOST_UART
   char *serial_device;         /* COM or /dev/tty mapped to WPC95 UART */
 #endif

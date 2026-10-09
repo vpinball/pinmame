@@ -265,7 +265,9 @@ static WRITE_HANDLER(bsmt_write)
 	}
 }
 //RDSTATE line looks to D6&D7 for a busy from BSMT
-static READ_HANDLER(bsmtready_r) { return 0xc0; }
+//The HLE is always ready (0xc0); with the LLE both bits drop while a write is pending (polarity
+//inferred from the always-ready value the HLE needs, not checked against the sound program)
+static READ_HANDLER(bsmtready_r) { return BSMT2000_status_0_r() ? 0xc0 : 0x00; }
 
 static MEMORY_READ_START(alvgs_readmem)
   { 0x0100, 0x0100, bsmtready_r },
