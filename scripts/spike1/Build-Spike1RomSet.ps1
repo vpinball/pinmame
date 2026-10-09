@@ -3,20 +3,22 @@
   Builds a PinMAME Stern Spike 1 ROM set from Stern's own download.
 
 .DESCRIPTION
-  Stern publishes each Spike 1 code version as an SD-card image, <title>-<version>.iso.zip. The
-  image holds an MBR with an extended partition; one of its ext3 partitions carries the game
-  folder (the program, image.bin, lcdinsert.bin when the title has an LCD insert, and the node
-  board firmware). PinMAME's ROM set is that folder as a zip, named after the set.
+  Stern publishes each Spike 1 code version as an SD-card image, <title>-<version>.iso.zip, or
+  for some titles (Heavy Metal) only as an update package, <title>-<version>.spk. The image holds
+  an MBR with an extended partition; one of its ext3 partitions carries the game folder (the
+  program, image.bin, lcdinsert.bin when the title has an LCD insert, and the node board
+  firmware). The package holds the same folder as one of its groups. PinMAME's ROM set is that
+  folder as a zip, named after the set.
 
   This script reads the image straight out of the .iso.zip - no 3.7 GB temporary copy - in a few
-  forward passes, writes <set>.zip (stored, not compressed, so PinMAME maps image.bin quickly)
-  and checks every file against the set's CRCs.
+  forward passes, or the files straight out of the .spk, writes <set>.zip (stored, not
+  compressed, so PinMAME maps image.bin quickly) and checks every file against the set's CRCs.
 
-  Without -Image it opens a window. Start it with "Build ROM set.cmd", or drop the .iso.zip onto
-  that file.
+  Without -Image it opens a window. Start it with "Build ROM set.cmd", or drop the .iso.zip or
+  .spk onto that file.
 
 .PARAMETER Image
-  Stern's .iso.zip, or the .iso inside it.
+  Stern's .iso.zip, the .iso inside it, or Stern's .spk.
 
 .PARAMETER OutDir
   Where <set>.zip goes. Default: the roms folder of VPX's PinMAME plugin (PinMAMEPath in
@@ -177,6 +179,19 @@ namespace Spike1Rom
 				new KnownFile("WRESTLEMANIALOGO.spv", 0x00d2f2ec, 0xe387938a),
 				new KnownFile("WWE_SHATTERLOGO_FPS20.spv", 0x015f94cc, 0x8be9e928),
 				new KnownFile("WWELOGO_FPS20.spv", 0x008efa04, 0x0b72c2aa) } },
+			new KnownSet { Set = "heavym20_102", Folder = "heavy_metal", Title = "Heavy Metal 1.02.0", Files = new KnownFile[] {
+				new KnownFile("game", 0x00364e7c, 0x89dcf06c),
+				new KnownFile("image.bin", 0x71c08cbc, 0x378ea9e2),
+				new KnownFile("coil4node-LPC1112_101-0_67_0.hex", 0x00008784, 0x3694f8a6),
+				new KnownFile("coil4node-LPC1112_201-0_67_0.hex", 0x00008784, 0x9760b3eb),
+				new KnownFile("coil4node-LPC1313-0_67_0.hex", 0x0000ecf5, 0x0795b75b),
+				new KnownFile("lcdnode-LPC1113_302-0_67_0.hex", 0x0000b494, 0x5486eb88),
+				new KnownFile("node4-LPC1124_303-0_67_0.hex", 0x00009e0c, 0x219e0f03),
+				new KnownFile("pinnode-LPC1112_101-0_67_0.hex", 0x00008784, 0x6c0eadc3),
+				new KnownFile("pinnode-LPC1112_201-0_67_0.hex", 0x00008784, 0x7b8accae),
+				new KnownFile("pinnode-LPC1313-0_67_0.hex", 0x0000f839, 0x0ee1afa2),
+				new KnownFile("tmc2590node-LPC1313-0_67_0.hex", 0x0000bfe5, 0xa48f352c),
+				new KnownFile("ws2812node-LPC1313-0_67_0.hex", 0x00007c40, 0x514046cf) } },
 		};
 	}
 
@@ -247,7 +262,8 @@ namespace Spike1Rom
 		public byte[] ReadAt(long offset, int count) { SkipTo(offset); var b = new byte[count]; ReadExactly(b, 0, count); return b; }
 	}
 
-	public class FoundFile { public string Name; public long Size; public uint[] Blocks; public long DataOffset; public uint Crc; }
+	// A file of the game folder: on an image, its ext3 blocks; in a .spk, one stored run at Source
+	public class FoundFile { public string Name; public long Size; public uint[] Blocks; public long Source = -1; public long DataOffset; public uint Crc; }
 
 	public class Builder
 	{
@@ -506,6 +522,65 @@ namespace Spike1Rom
 			}
 		}
 
+		// ---------------------------------------------------------------- a .spk package
+		// 'SPKS', a CRC and a version, then groups, each 'SPK0' and its size: an index ('SIDX' and its
+		// size: the group's name in 16 bytes, at 0x28 the file count, at 0x30 'STRS', its size and
+		// the path table, then per file 'FINF', the record's size, and the path's offset, the size,
+		// the data offset, the stored size and the mode), then 'SDAT', a size and the files' bytes.
+		// The game's group is the one holding <name>/game and <name>/image.bin
+		static void ReadFull(Stream s, byte[] b) { for (int o = 0; o < b.Length; ) { int n = s.Read(b, o, b.Length - o); if (n <= 0) throw new EndOfStreamException("The package ends early"); o += n; } }
+
+		void ReadSpk(string path)
+		{
+			using (var s = File.OpenRead(path))
+			{
+				var head = new byte[12];
+				ReadFull(s, head);
+				if (Encoding.ASCII.GetString(head, 0, 4) != "SPKS") throw new Exception("This is not a Stern .spk package.");
+				for (long pos = 12; pos + 16 <= s.Length && m_folder == null; )
+				{
+					s.Seek(pos, SeekOrigin.Begin);
+					var g = new byte[16];
+					ReadFull(s, g);
+					if (Encoding.ASCII.GetString(g, 0, 4) != "SPK0" || Encoding.ASCII.GetString(g, 8, 4) != "SIDX") break;
+					long start = pos + 8, next = start + U32(g, 4);
+					var sidx = new byte[U32(g, 12)];
+					ReadFull(s, sidx);
+					string name = Encoding.ASCII.GetString(sidx, 0, 16).Split('\0')[0];
+					if (Encoding.ASCII.GetString(sidx, 0x30, 4) != "STRS") throw new Exception("The package's index is not as expected.");
+					int count = (int)U32(sidx, 0x28), strsAt = 0x38, strsSize = (int)U32(sidx, 0x34);
+					long data = start + 8 + sidx.Length + 8; // past 'SDAT' and its size
+					var files = new List<FoundFile>();
+					bool hasGame = false, hasImage = false;
+					for (int i = 0, fo = strsAt + strsSize; i < count; i++)
+					{
+						if (Encoding.ASCII.GetString(sidx, fo, 4) != "FINF") throw new Exception("The package's index is not as expected.");
+						int p = fo + 8, nameAt = strsAt + (int)U32(sidx, p);
+						long size = U32(sidx, p + 4), offset = U32(sidx, p + 8), stored = U32(sidx, p + 12);
+						int nameEnd = Array.IndexOf(sidx, (byte)0, nameAt);
+						string file = Encoding.UTF8.GetString(sidx, nameAt, nameEnd - nameAt);
+						fo += 8 + (int)U32(sidx, fo + 4);
+						if (!file.StartsWith(name + "/")) continue;
+						string rel = file.Substring(name.Length + 1);
+						if (rel == "game") hasGame = true;
+						if (rel == "image.bin") hasImage = true;
+						if (rel.StartsWith("video/")) rel = rel.Substring(6); // LCD clips, under their own names
+						if (rel.Contains("/")) continue;
+						if (stored != size) throw new Exception(rel + " is compressed in the package, which this builder does not read.");
+						files.Add(new FoundFile { Name = rel, Size = size, Source = data + offset });
+					}
+					if (hasGame && hasImage)
+					{
+						m_folder = name;
+						m_files.AddRange(files);
+						Log("Game folder: /" + name + " (" + files.Count + " files)");
+					}
+					if (next <= pos) break;
+					pos = next;
+				}
+			}
+		}
+
 		// ---------------------------------------------------------------- the zip
 		static readonly uint[] CrcTable = MakeCrcTable();
 		static uint[] MakeCrcTable()
@@ -535,10 +610,11 @@ namespace Spike1Rom
 		{
 			m_image = new ImageSource(imagePath);
 			Log("Image: " + Path.GetFileName(imagePath) + (m_image.EntryName != Path.GetFileName(imagePath) ? " (" + m_image.EntryName + ", " : " (") + (m_image.Length / 1048576) + " MB)");
-			Want(0, 512, ReadMbr);
-			RunMetadataPasses();
-			if (m_folder == null) throw new Exception("No game folder found in the image. Is this a Stern Spike 1 SD-card image?");
-			foreach (var f in m_files) if (f.Blocks == null) throw new Exception("Could not map " + f.Name);
+			bool package = imagePath.EndsWith(".spk", StringComparison.OrdinalIgnoreCase);
+			if (package) ReadSpk(imagePath);
+			else { Want(0, 512, ReadMbr); RunMetadataPasses(); }
+			if (m_folder == null) throw new Exception(package ? "No game in the package. Is this a Stern Spike 1 .spk?" : "No game folder found in the image. Is this a Stern Spike 1 SD-card image?");
+			foreach (var f in m_files) if (f.Blocks == null && f.Source < 0) throw new Exception("Could not map " + f.Name);
 
 			// Which set: the known set from this folder whose file sizes match
 			KnownSet set = null;
@@ -565,8 +641,10 @@ namespace Spike1Rom
 			if (directoryAt > uint.MaxValue) throw new Exception("The set is too large for a plain zip");
 
 			var runs = new List<long[]>(); // phys offset, length, destination
-			int bs = m_gamePart.BlockSize;
 			foreach (var f in files)
+			{
+				if (f.Source >= 0) { if (f.Size > 0) runs.Add(new long[] { f.Source, f.Size, f.DataOffset }); continue; }
+				int bs = m_gamePart.BlockSize;
 				for (long i = 0; i < f.Blocks.Length; )
 				{
 					long j = i + 1;
@@ -576,6 +654,7 @@ namespace Spike1Rom
 					runs.Add(new long[] { m_gamePart.Start + (long)f.Blocks[i] * bs, len, f.DataOffset + i * bs });
 					i = j;
 				}
+			}
 			runs.Sort(delegate(long[] a, long[] b) { return a[0].CompareTo(b[0]); });
 			long total = 0; foreach (var r in runs) total += r[1];
 
@@ -682,7 +761,7 @@ namespace Spike1Rom
 			table.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 			table.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-			var intro = new Label { Text = "Builds the PinMAME ROM set from Stern's SD-card image (.iso.zip). Nothing in the image is changed.", AutoSize = true, Margin = new Padding(0, 0, 0, 10) };
+			var intro = new Label { Text = "Builds the PinMAME ROM set from Stern's SD-card image (.iso.zip) or update package (.spk). Nothing in it is changed.", AutoSize = true, Margin = new Padding(0, 0, 0, 10) };
 			table.Controls.Add(intro, 0, 0); table.SetColumnSpan(intro, 3);
 
 			table.Controls.Add(new Label { Text = "Stern image", AutoSize = true, Anchor = AnchorStyles.Left }, 0, 1);
@@ -690,7 +769,7 @@ namespace Spike1Rom
 			table.Controls.Add(m_image, 1, 1);
 			var pickImage = new Button { Text = "Browse...", AutoSize = true };
 			pickImage.Click += delegate {
-				using (var d = new OpenFileDialog { Filter = "Stern SD-card image (*.iso.zip;*.iso)|*.iso.zip;*.iso|All files (*.*)|*.*", Title = "Stern image" })
+				using (var d = new OpenFileDialog { Filter = "Stern download (*.iso.zip;*.iso;*.spk)|*.iso.zip;*.iso;*.spk|All files (*.*)|*.*", Title = "Stern image" })
 					if (d.ShowDialog(this) == DialogResult.OK) m_image.Text = d.FileName;
 			};
 			table.Controls.Add(pickImage, 2, 1);
@@ -728,7 +807,7 @@ namespace Spike1Rom
 		void Start()
 		{
 			string image = m_image.Text.Trim().Trim('"'), outDir = m_out.Text.Trim().Trim('"');
-			if (!File.Exists(image)) { MessageBox.Show(this, "Choose Stern's .iso.zip file first.", Text); return; }
+			if (!File.Exists(image)) { MessageBox.Show(this, "Choose Stern's .iso.zip or .spk file first.", Text); return; }
 			if (outDir.Length == 0) { MessageBox.Show(this, "Choose a folder for the ROM set.", Text); return; }
 			m_build.Enabled = false; m_close.Text = "Cancel"; m_log.Clear();
 			m_builder = new Builder();

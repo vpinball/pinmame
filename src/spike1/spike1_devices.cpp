@@ -543,13 +543,27 @@ spike1_devices::node_image spike1_devices::node_image_for(uint8_t node)
 			if (!guest_read(a, &insn, 4)) break;
 			if ((insn & 0xfffff000) == 0xe5943000) { m_block_type_at = insn & 0xfff; break; }
 		}
+		// the image list's next pointer, from the game's own lookup (ldr r3, [r3, #next]; its
+		// ldr r3, [r3] before that reads the list head)
+		const uint32_t lookup = m_cfg.symbol("_Z50node_board_runtime_hex_image_manager_get_image_pdijj");
+		for (uint32_t a = lookup; lookup && a < lookup + 0x40; a += 4) {
+			uint32_t insn = 0;
+			if (!guest_read(a, &insn, 4)) break;
+			if ((insn & 0xfffff000) == 0xe5933000 && (insn & 0xfff)) { m_image_next_at = insn & 0xfff; break; }
+		}
 	}
 	const uint32_t head = m_cfg.symbol ? m_cfg.symbol("node_board_runtime_hex_image_list_head") : 0;
 	if (!m_block_base || !m_block_stride || !head || m_block_type_at + 4 > m_block_stride) return img;
 	guest_read(m_block_base + node * m_block_stride + m_block_type_at, &img.board_type, 4);
 	if (!img.board_type) return img;
-	// image records: [0] board type, [4] proc key, [12] content, [16] offset, [24] checksum, [28] next;
-	// the version sits at content + offset + 9
+	// image records: [0] board type, [4] proc key; then up to node firmware 0.52 [12] content,
+	// [16] offset, [24] checksum, [28] next, the version at content + offset + 9. In 0.67 (Heavy
+	// Metal, whose images are encrypted and decrypted by the game into the content buffer) [8]
+	// the file name, [12] the image's header, [28] content, [44] offset, [48] size, [56] next, and
+	// no checksum (the game does not ask a board for one). The game's version of an image there:
+	// none unless [40] is 1; with [32] set, the header's bytes at [16], [18] and [20]; else the
+	// bytes at content + offset + 9, as before
+	const bool sdk_067 = m_image_next_at == 56;
 	uint32_t rec = 0;
 	guest_read(head, &rec, 4);
 	for (int guard = 0; rec && guard < 64; guard++) {
@@ -558,15 +572,23 @@ spike1_devices::node_image spike1_devices::node_image_for(uint8_t node)
 		if (type == img.board_type) {
 			uint32_t key = 0, content = 0, offset = 0;
 			guest_read(rec + 4, &key, 4);
-			guest_read(rec + 12, &content, 4);
-			guest_read(rec + 16, &offset, 4);
-			guest_read(rec + 24, &img.checksum, 2);
-			if (content) guest_read(content + offset + 9, img.version, 3);
+			guest_read(rec + (sdk_067 ? 28 : 12), &content, 4);
+			guest_read(rec + (sdk_067 ? 44 : 16), &offset, 4);
+			if (!sdk_067) guest_read(rec + 24, &img.checksum, 2);
+			uint32_t valid = 1, header = 0, size = ~0u;
+			if (sdk_067) {
+				guest_read(rec + 40, &valid, 4);
+				guest_read(rec + 32, &header, 4);
+				guest_read(rec + 48, &size, 4);
+			}
+			if (valid != 1) {}
+			else if (header) for (int i = 0; i < 3; i++) guest_read(rec + 16 + 2 * i, &img.version[i], 1);
+			else if (content && size > offset + 11) guest_read(content + offset + 9, img.version, 3);
 			img.part = key >= 1 && key <= m_chip_part.size() ? m_chip_part[key - 1] : 0;
 			img.found = true;
 			return img;
 		}
-		if (!guest_read(rec + 28, &rec, 4)) break;
+		if (!guest_read(rec + m_image_next_at, &rec, 4)) break;
 	}
 	return img;
 }
@@ -843,9 +865,26 @@ void spike1_devices::load_device_table()
 
 	std::vector<std::pair<switch_info, uint16_t>> found; // with their switch-table flags
 	std::vector<std::pair<int, size_t>> device(devices[1], { 0, 0 }); // device index -> (type, index in m_coils/m_leds)
+	// An entry's four u16 fields from +16: [board][type][flags][position] up to node firmware 0.52,
+	// [board][position][type][flags] in Heavy Metal's SDK (0.67). The order whose type field holds
+	// a device type (2 coil, 4 LED, 7 switch) in more entries is the title's
+	auto is_device = [](uint32_t t) { return t == 2 || t == 4 || t == 7; };
+	int typed_first = 0, typed_second = 0;
 	for (uint32_t i = 0; i < devices[1]; i++) {
 		uint32_t e[6] = {};
 		if (!guest_read(devices[0] + i * devices[2], e, 24)) continue;
+		typed_first += is_device(e[4] >> 16);
+		typed_second += is_device(e[5] & 0xffff);
+	}
+	const bool position_first = typed_second > typed_first;
+	for (uint32_t i = 0; i < devices[1]; i++) {
+		uint32_t e[6] = {};
+		if (!guest_read(devices[0] + i * devices[2], e, 24)) continue;
+		if (position_first) { // to [board][type][flags][position]
+			const uint32_t board_position = e[4], type_flags = e[5];
+			e[4] = (board_position & 0xffff) | (type_flags << 16);
+			e[5] = (type_flags >> 16) | (board_position & 0xffff0000);
+		}
 		const uint32_t type = e[4] >> 16, board = e[4] & 0xffff;
 		if (type != 2 && type != 4 && type != 7) continue;
 		uint32_t name_ptr = 0;
@@ -1550,7 +1589,8 @@ size_t spike1_devices::audio_take(int16_t *out, size_t frames)
 // The device table numbers coils its own way; the service menu and the manual use the Driver
 // Reference and Light Reference numbers, which the title's coil and LED tables hold:
 //   node_board_device_cl_table_data   entries of 56 bytes (sys_nbd_cl_get_table_ptr()): +32 the
-//                                     device's index, +48 bits 16-23 its Driver Reference number;
+//                                     device's index in the low half (Heavy Metal's SDK keeps flags
+//                                     in the high half), +48 bits 16-23 its Driver Reference number;
 //                                     in WWE's SDK 28 bytes: +20 the index in the low half, +24
 //                                     bits 16-23 the number
 //   node_board_device_led_table       {entries, count, size}, 24-byte entries: +12 the Light
@@ -1578,7 +1618,7 @@ void spike1_devices::apply_manual_numbers(const std::vector<std::pair<int, size_
 		for (uint32_t i = 1; index_at && i < cl_count; i++) {
 			uint32_t index = 0, number = 0;
 			if (!guest_read(cl + i * stride + index_at, &index, 4) || !guest_read(cl + i * stride + number_at, &number, 4)) continue;
-			if (stride == 28) index &= 0xffff;
+			index &= 0xffff;
 			if (index >= device.size() || device[index].first != 2) continue;
 			m_coils[device[index].second].number = uint16_t((number >> 16) & 0xff);
 			coils++;

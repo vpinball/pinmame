@@ -36,10 +36,19 @@ typedef struct spike1_file
 	unsigned size;
 } spike1_file;
 
+/* The address (and size) of one of the game program's tables or functions the machine reads, for
+   a program shipped without its symbol table (Heavy Metal); a list ends with a NULL name */
+typedef struct spike1_symbol
+{
+	const char *name;
+	unsigned address, size;
+} spike1_symbol;
+
 /* Starts the machine from the title's files. game is the game folder's name (the program runs as
-   /games/<game>/game); nvram is the block spike1_pinmame_nvram() gave the last time, or NULL for a
-   new machine. 0 on failure, with the reason in error */
-int spike1_pinmame_start(const char *game, const spike1_file *files, unsigned count,
+   /games/<game>/game); symbols is NULL, or the list for a program without a symbol table; nvram
+   is the block spike1_pinmame_nvram() gave the last time, or NULL for a new machine. 0 on failure,
+   with the reason in error */
+int spike1_pinmame_start(const char *game, const spike1_file *files, unsigned count, const spike1_symbol *symbols,
                          const unsigned char *nvram, unsigned nvram_size, char *error, unsigned error_size);
 void spike1_pinmame_stop(void);
 /* 1 while the game program runs; when it has stopped, why, in reason */

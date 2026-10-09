@@ -34,6 +34,8 @@ class spike1_linux
 {
 public:
 	struct memory_file { std::string path; const uint8_t *data = nullptr; size_t size = 0; };
+	// A symbol the program's own table does not give (a program without one: Heavy Metal)
+	struct named_address { std::string name; uint32_t address = 0, size = 0; };
 	struct config
 	{
 		// The title's files, never written: a host directory holding the machine's extracted root
@@ -43,6 +45,7 @@ public:
 		std::string executable;  // guest path of the game program, e.g. /games/<name>/game
 		std::vector<uint8_t> nvram; // what nvram() gave the last time; empty for a new machine
 		std::vector<std::string> environment;
+		std::vector<named_address> symbols; // added to the program's symbol table, over its entries
 		uint32_t clock_hz = 400000000;
 		bool trace = false;      // log every system call, not only the noteworthy ones
 		std::function<void (const std::string &)> log;

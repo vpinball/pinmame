@@ -21,11 +21,12 @@ system-call level, the way the program sees it.
   and SWI delivered to the host (see `set_swi_handler()` in `arm7.h`).
 - `spike1_memory.*` - the guest's flat address space: the program image, brk heap and mmap area in
   one low block, the main stack, the `0xffff0000` kernel helper page, and a read-only view of the
-  asset image (over 1 GB), mapped from the host's file or memory instead of copied. Each block is
-  one fast window of the shim's `address_space`. Further read-only views (WWE's LCD clips, up to
-  195 MB, mapped one at a time as they play) go to the free address space below and above the
-  asset image; the CPU reaches them through the bus callback (`read_view()`), as it has no fast
-  window left. A read-only mapping of 1 MB or more of a file the host holds is such a view.
+  asset image (over 1 GB; 1.9 GB for Heavy Metal), mapped from the host's file or memory instead
+  of copied, at the start of the space between the low block and the stack. Each block is one fast
+  window of the shim's `address_space`. Further read-only views (WWE's LCD clips, up to 195 MB,
+  mapped one at a time as they play) take that space from its top down; the CPU reaches them
+  through the bus callback (`read_view()`), as it has no fast window left. A read-only mapping of
+  1 MB or more of a file the host holds is such a view.
 - `spike1_vfs.*` - the filesystem the game sees: the title's files, read-only (a host directory
   with the machine's extracted root, or files the host holds in memory - PinMAME's ROM regions),
   under an in-memory layer with everything the game writes. The board's `/data` and `/tmp` mounts
@@ -235,8 +236,14 @@ code (its symbols are in the program) rather than from any other emulator:
   opens a window) makes the set from Stern's SD-card image, `<title>-<version>.iso.zip` or the
   `.iso` inside it: it finds the game folder on the image's ext3 partitions, reads it straight out
   of the zip in a few forward passes, writes `<set>.zip` stored, and checks every file against the
-  set's CRCs - a new set needs its files added to the script's `KnownSet` table. Stern's `.spk`
-  update packages are not read yet.
+  set's CRCs - a new set needs its files added to the script's `KnownSet` table. It reads Stern's
+  `.spk` update package too (Heavy Metal comes only as one): `SPKS`, then groups (`SPK0`), each an
+  index (`SIDX`: the group's name, a path table `STRS` and a `FINF` record per file) and the files'
+  bytes (`SDAT`), stored; the game folder is the group holding `<name>/game` and `<name>/image.bin`.
+- **A program without a symbol table** (Heavy Metal): the set's `SPIKE1_INIT_SYMBOLS` lists the
+  addresses of the tables and functions the subsystem reads by name, which `spike1_pinmame_start()`
+  adds to the program's (empty) symbol table; `spike1boot --symbols <file>` takes the same list as
+  `<hex address> <size> <name>` lines.
 - **The CPU** (`CPU_SPIKE1`, `src/cpuintrf.c`) runs the machine for the cycles PinMAME gives it,
   at 400 MHz; once a frame the driver passes switch changes in and takes coils, LEDs and the DMD out.
 - **Numbers** are the factory manual's: switches by their Switch Reference numbers (the flipper
@@ -326,6 +333,18 @@ that, each service button acts as the next one), the framebuffer, views for its 
 attract video nudge above. BACK in attract mode adds a service credit, as the game intends. Stern's `WWE_LE-1_35.iso.zip` copy here had an unreadable area on its disk; the
 `.iso` inside it builds the same set.
 
+Heavy Metal 1.02.0 (the newest SDK, node firmware 0.67.0, four node boards - one a TMC2590 stepper
+driver - and four balls; set `heavym20_102`, as `heavymtl` and `hvymetal` are taken) boots to attract mode, takes
+coins and starts a game in the harness and through libpinmame. Stern ships it only as a `.spk`,
+and its program without a symbol table. Its addresses were found by matching its code against
+Ghostbusters 1.17.0's (the same compiler and libraries): functions by their instructions with
+branch targets and literal-pool loads masked, data by the literal pools of matched functions and
+by the order of the table descriptors, which is the same in both programs. Each was checked in a
+running machine. It also needed a larger range for its asset image (1.9 GB), the device entry's
+field order and the coil table's index flags of its SDK, and its firmware image records: the
+images are encrypted, the game decrypts them into the content buffer, and an image with its own
+header gives its version there.
+
 ## Open items
 
 1. Ball physics are the table's job (PinMAME/VPX); the harness has none, so a game stops at ball 1.
@@ -350,3 +369,6 @@ attract video nudge above. BACK in attract mode adds a service credit, as the ga
    clips on the board - not established whether it does the same there).
 7. Sharing `src/p2k/shim`: `cmake/spike1.cmake` takes its sources from the Pinball 2000 library
    when there is one; a common library for both would be cleaner.
+8. Heavy Metal: its stepper driver board (TMC2590, node 2) and its WS2812 and QR scanner devices
+   are not modelled beyond what the start-up needs; node commands 0xC0 (on its packed LED SDK),
+   0xF0, 0xF1 and 0xF2 to node 4 are taken without a model. No Heavy Metal table exists yet.

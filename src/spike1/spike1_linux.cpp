@@ -324,6 +324,10 @@ bool spike1_linux::start(const config &cfg, std::string &error)
 	uint32_t entry, phdr, phnum, sp;
 	if (!load_elf(elf, entry, phdr, phnum, error) || !build_stack(entry, phdr, phnum, sp, error))
 		return false;
+	for (const auto &s : m_cfg.symbols) {
+		m_symbols[s.name] = s.address;
+		m_symbol_sizes[s.name] = s.size;
+	}
 	write_kuser_page();
 	const std::string game_dir = m_cfg.executable.substr(0, m_cfg.executable.rfind('/'));
 	spike1_devices::config dev;
