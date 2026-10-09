@@ -3522,6 +3522,7 @@ DRIVER(gbust,117h)      //Spike 1:  2016    Ghostbusters (Limited Edition 1.17.0
 DRIVER(wnbjm,155)       //Spike 1:  2015    Whoa Nellie! Big Juicy Melons (1.55.0)
 DRIVER(pabst,101)       //Spike 1:  2016    Pabst Can Crusher (1.01.0)
 DRIVER(primus,103)      //Spike 1:  2018    Primus (1.03.0)
+DRIVER(got,137h)        //Spike 1:  2015    Game of Thrones (Limited Edition 1.37.0)
 #endif
 
 #ifdef PIN2K_SOUND_TEST

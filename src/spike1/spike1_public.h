@@ -6,7 +6,8 @@
    settings (see cmake/spike1.cmake). This header is the one crossing between them - owned by the
    subsystem, included by src/wpc/spike1.c - so it is plain C. src/spike1/spike1_pinmame.cpp
    implements the functions. Numbers are the factory manual's, from the title's own tables: Switch,
-   Driver and Light Reference numbers, with the CPU board's switches C1-C16 as 101-116 */
+   Driver and Light Reference numbers, with the CPU board's switches C1-C16 as 101-116 and an
+   optional topper's own switches, which it numbers from 1 again, as 121 and up */
 
 #pragma once
 
@@ -71,9 +72,14 @@ unsigned spike1_pinmame_led_count(void);
 int spike1_pinmame_led(unsigned index, int *number, int *kind, const char **name); /* 0 past the last */
 unsigned spike1_pinmame_led_level(unsigned index);
 
-/* A motor the boards run on their own (Ghostbusters' Slimer), in the order the game configures
-   them: its position now, in the game's units, and whether it moves */
+/* A motor the boards run on their own (Ghostbusters' Slimer), in board and motor order, then their
+   steppers (Whoa Nellie's reels, Game of Thrones' dragons): its position now - a motor's in the
+   game's units, a stepper's step within its turn - and whether it moves */
 int spike1_pinmame_motor(unsigned index, int *position, int *moving); /* 0 when there is none */
+/* A stepper whose home switch is wired to another board (Game of Thrones' dragons): the stepper by
+   its board's node address and its index there, the switch by its number. The switch is then
+   closed while the stepper stands at step 0. Call after spike1_pinmame_start; 0 if no such switch */
+int spike1_pinmame_stepper_home(unsigned node, unsigned stepper, int switch_number);
 
 /* The DMD: 128x32 dots of 0-15 into dots; returns the count of frames the game has sent */
 unsigned spike1_pinmame_dmd(unsigned char *dots);

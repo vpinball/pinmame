@@ -80,6 +80,8 @@ int main(int argc, char **argv)
 	// --switch <seconds>:<name>[:<ms held, default 200>]: close a switch for a while, by its name
 	struct press { double at, held_ms; std::string name; bool down = false, up = false; };
 	std::vector<press> presses;
+	struct home_link { int node, stepper, number; };
+	std::vector<home_link> home_links;
 	bool list_switches = false, show_outputs = false;
 	std::string node_dump, wav_path;
 	for (int i = 1; i < argc; i++) {
@@ -105,6 +107,11 @@ int main(int argc, char **argv)
 			press p{ std::atof(v.c_str()), 200.0, v.substr(a + 1) };
 			if (b != a && b + 1 < v.size() && std::isdigit(uint8_t(v[b + 1]))) { p.held_ms = std::atof(v.c_str() + b + 1); p.name = v.substr(a + 1, b - a - 1); }
 			presses.push_back(p);
+		}
+		else if (arg == "--stepper-home") { // <node>:<stepper>:<switch number>, a home switch on another board
+			const std::string v = next();
+			const size_t a = v.find(':'), b = v.rfind(':');
+			home_links.push_back({ std::atoi(v.c_str()), std::atoi(v.c_str() + a + 1), std::atoi(v.c_str() + b + 1) });
 		}
 		else if (arg == "--peek") { // <address>:<bytes> of guest memory, printed at the end
 			const std::string v = next();
@@ -160,11 +167,21 @@ int main(int argc, char **argv)
 	s_linux = &linux_os;
 	std::string error;
 	if (!linux_os.start(cfg, error)) { std::fprintf(stderr, "start failed: %s\n", error.c_str()); return 1; }
+	for (const auto &h : home_links)
+		if (!linux_os.devices().link_stepper_home(uint8_t(h.node), uint8_t(h.stepper), uint16_t(h.number))) {
+			std::fprintf(stderr, "no switch %d for the home of node %d stepper %d\n", h.number, h.node, h.stepper);
+			return 2;
+		}
 
-	if (list_switches)
+	if (list_switches) {
 		for (const auto &s : linux_os.devices().switches())
 			std::printf("switch %2u-%-2u #%-3u %s%s%s\n", s.node, s.position, s.number, s.name.c_str(),
 				s.active_high ? " (active high)" : "", linux_os.devices().switch_closed(s.node, s.position) ? " (closed at rest)" : "");
+		for (const auto &c : linux_os.devices().coils())
+			std::printf("coil   %2u-%-2u #%-3u %s\n", c.node, c.position, c.number, c.name.c_str());
+		for (const auto &l : linux_os.devices().leds())
+			std::printf("led    %2u-%-3u #%-3u kind %-2u %s\n", l.node, l.position, l.number, l.kind, l.name.c_str());
+	}
 	for (const auto &p : presses)
 		if (!linux_os.devices().find_switch(p.name)) { std::fprintf(stderr, "no switch named \"%s\"\n", p.name.c_str()); return 2; }
 

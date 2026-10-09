@@ -4,8 +4,10 @@ Stern's first SPIKE platform (2015 on: Game of Thrones, KISS, WrestleMania, Ghos
 game runs as a statically linked ARMv5TE Linux program on an ARM926-class CPU board and talks to
 the playfield's node boards over a serial bus; the display is a 128x32 DMD with 16 shades.
 
-**Status: bring-up.** The subsystem runs as a PinMAME driver (`src/wpc/spike1.c`, one set:
-`gbust_117h`, Ghostbusters LE 1.17.0) and standalone (`spike1boot`, below).
+**Status: bring-up.** The subsystem runs as a PinMAME driver (`src/wpc/spike1.c`, sets
+`gbust_117h` Ghostbusters LE 1.17.0, `wnbjm_155` Whoa Nellie! Big Juicy Melons 1.55.0, `primus_103`
+Primus 1.03.0, `pabst_101` Pabst Can Crusher 1.01.0 and `got_137h` Game of Thrones LE 1.37.0) and
+standalone (`spike1boot`, below).
 
 ## How it works
 
@@ -73,13 +75,15 @@ build/spike1boot/spike1boot --root <extracted root> --game /games/<name>/game --
 build/spike1boot/spike1boot --files <the game's folder> --game /games/<name>/game --state <dir> --seconds 30
 ```
 
-Harness options: `--dmd <s>` prints the DMD every s seconds, `--list-switches` the switch map,
+Harness options: `--dmd <s>` prints the DMD every s seconds, `--list-switches` the switch, coil and LED maps,
 `--switch <s>:<name>[:<ms>]` toggles a switch by name for a while (e.g. `--switch "20:LEFT COIN:120"`),
 `--outputs` prints coil changes as they happen and the lit LEDs at the end, `--wav <file>` records
 the sound, `--insert <s>` saves
 the LCD insert every s seconds as a PPM file in the state directory, `--node-dump <file>`
 writes every node-bus frame (except switch and status reads) to a file, `--peek <address>:<bytes>`
-prints guest memory at the end, `--slice <ms>` sets the emulated time per `run()` call (1 by
+prints guest memory at the end, `--stepper-home <node>:<stepper>:<switch>` links a stepper to a
+home switch on another board as a PinMAME set's `SPIKE1_HOMES` does (Game of Thrones: `10:0:88`
+and `12:0:121`), `--slice <ms>` sets the emulated time per `run()` call (1 by
 default; PinMAME uses one frame, 16.7). With `SPIKE1_NODE_STATS` set in the environment, it
 prints the node-bus frame count per command and board.
 
@@ -121,7 +125,10 @@ code (its symbols are in the program) rather than from any other emulator:
   `node_board_device_sw_table` gives the Switch Reference numbers, `node_board_device_cl_table_data`
   the Driver Reference numbers of the coils, `node_board_device_led_table` the Light Reference
   numbers and class bits (lamp, GI string, flasher, motor drive, cabinet) of the LED channels. The
-  manual numbers the CPU board's own switches C1-C16 apart; they are 101-116 here.
+  manual numbers the CPU board's own switches C1-C16 apart; they are 101-116 here. An optional
+  topper's board - one the game names `TOPPER...` in `lang_text_nb_<node>` - numbers its switches
+  from 1 again (Game of Thrones' TOPPER DRAGON is 1, as is its LEFT RETURN LANE); they are 121 and
+  up here.
 - **Coils** (`node_board_device_table` type 2): a fire command gives a
   first power and time, then a second; a reflex configuration makes the board fire the coil on its
   own when a switch it watches closes - flippers pulse at full power, then hold at the second power
@@ -131,16 +138,27 @@ code (its symbols are in the program) rather than from any other emulator:
 - **LEDs** (type 4, up to 96 channels a board, three for an RGB LED): `NODEBUS_SetLEDMultiple2`'s
   packed updates (command 0x80-0xBF: an index, a list or a bitmap of channels, then levels and fade
   times in compact forms; see `led_update()`). Every update in a full attract-and-play run decodes to
-  exactly its length. `led_level()` gives a channel's level (0-255); the LED mask applies. The
-  older SDK (Whoa Nellie: `NODEBUS_SetLED` with an 8-bit channel) sends runs of channels instead,
-  on the same command bytes - `0x80 | first`, then a fade time and a level per channel, or 0xff and
-  a time and level per channel (`led_update_run()`); the model picks the form by that symbol.
+  exactly its length. `led_level()` gives a channel's level (0-255); the LED mask applies. A
+  title without `NODEBUS_SetLEDMultiple2` (Whoa Nellie, Primus, Pabst Can Crusher, Game of
+  Thrones) sends runs of channels instead, on the same command bytes - `0x80 | first`, then a fade
+  time and a level per channel, or 0xff and a time and level per channel (`led_update_run()`) -
+  and Game of Thrones also command 0xC0 for channels from 64 on (its start-up test sweeps all 96 a
+  board drives): a 16-bit first channel, then a run in the same two forms. The model picks the
+  packed form by that symbol.
 - **Motors**: home, go, stop and status, the move taking emulated time, so the game's encoder-motor
   code (Slimer) finds the motor homed and ready instead of re-configuring it in a loop.
-- **Steppers** (Whoa Nellie's score and credit reels, `NODEBUS_Stepper*`): configure (0x32: steps
-  a turn, home switch input), go (0x31: a target, forward or with bit 15 backward, at a time per
-  step), home (0x34) and status (0x38 + stepper: step, target, bit 1 moving, bit 2 in place). A
-  reel's home switch is closed while the reel stands within two steps of step 0.
+- **Steppers** (Whoa Nellie's score and credit reels, Game of Thrones' dragons,
+  `NODEBUS_Stepper*`): configure (0x32: steps a turn, home switch input), go (0x31: a target,
+  forward or with bit 15 backward, at a time per step; a target past the turn goes once round),
+  home (0x34) and status (0x38 + stepper: step, target, bit 1 moving, bit 2 in place). A home
+  switch is closed while its stepper stands within two steps of step 0. Game of Thrones' dragons
+  configure no home input: the game watches a switch on another board itself (DRAGON HOME, 88, on
+  node 11 for the dragon on node 10), homes by going once round until it closes, then turns the
+  wings on through it. Each time the dragon passes the switch during a move, the game sends 0x34
+  with the stepper and a clear flag and keeps its own idea of the position, so the model reads it
+  as "count from home again" and leaves the stepper as it is (older titles put the stepper where
+  the reply length goes, and the stepper seeks step 0). The host links such a switch to its
+  stepper (`link_stepper_home()`).
 - **Board blocks**: the game keeps a block a board; `sys_node_board_get_next_block_ptr` gives its
   base and size, which differ between SDK versions (a loaded constant in Ghostbusters, a computed
   one in Whoa Nellie) - the model reads both forms, as the firmware image a board must report
@@ -176,15 +194,18 @@ code (its symbols are in the program) rather than from any other emulator:
   at 400 MHz; once a frame the driver passes switch changes in and takes coils, LEDs and the DMD out.
 - **Numbers** are the factory manual's: switches by their Switch Reference numbers (the flipper
   buttons and EOS switches in PinMAME's flipper column - each title's numbers, with its coin, tilt
-  and slam switches, are in its `SPIKE1_SWITCHES`; the CPU board's C1-C16 as 101-116, its DIP
-  switches 101-108 from the DIP settings); coils 1-32 as solenoids 1-32 by their Driver Reference
-  numbers, other coils from solenoid 51, and the coils the game names LEFT FLIPPER and RIGHT FLIPPER
-  (with their HOLD coils) also as the flipper outputs 48 and 46; LED channels as lamps by their
-  Light Reference numbers (a motor drive is no lamp); the motors the boards run on their own, then
-  their steppers, as mechs (`GetMech(n)`: Ghostbusters' Slimer is mech 0; the 1000s, 100s, 10s, 1s
-  and credit reels of Whoa Nellie, Primus and Pabst Can Crusher - one hardware, one set of switch
-  numbers - are mechs 0-4, as steps 0-199). Coil and LED levels are modulated
-  outputs.
+  and slam switches, are in its `SPIKE1_SWITCHES`, or `SPIKE1_SWITCHES_UPPER` with the upper
+  flippers' buttons, which the flipper keys close with the lower ones; the CPU board's C1-C16 as
+  101-116, its DIP switches 101-108 from the DIP settings; a topper's own switches from 121);
+  coils 1-32 as solenoids 1-32 by their Driver Reference numbers, other coils from solenoid 51, and
+  the coils the game names LEFT FLIPPER and RIGHT FLIPPER, or LEFT and RIGHT FLIPPER POWER (with
+  their HOLD coils), also as the flipper outputs 48 and 46; LED channels as lamps by their Light
+  Reference numbers (a motor drive is no lamp); the motors the boards run on their own, then their
+  steppers, as mechs (`GetMech(n)`: Ghostbusters' Slimer is mech 0; the 1000s, 100s, 10s, 1s and
+  credit reels of Whoa Nellie, Primus and Pabst Can Crusher - one hardware, one set of switch
+  numbers - are mechs 0-4, as steps 0-199; Game of Thrones' dragon and topper dragon are mechs 0
+  and 1, as steps 0-199, the wings at 23, 80, 125 or 180). A title's stepper home switches on other
+  boards are its `SPIKE1_HOMES`. Coil and LED levels are modulated outputs.
   The keys: coins 5, 6, 3 and 4, start 1, the service buttons 7-0 (back, minus, plus, select), tilt
   Insert, slam Home, coin door End.
 - **Displays**: the DMD as a core DMD (`CORE_DMD_PWM_PREINTEGRATED_LINEAR_16`: the device model
@@ -231,6 +252,12 @@ plays the coin sounds and the start music, and keeps its NVRAM across a restart 
 per second, the machine taking about half of one core of an i7-13700KF. Through libpinmame, in
 VPX 10.8.1 (Rev 6113) with its PinMAME plugin, a converted Ghostbusters LE table plays: DMD and
 insert, lamps and GI, coils, switches, sound and Slimer's motor.
+
+Game of Thrones LE 1.37.0 (six boards, 241 LED channels, Light References up to 265) boots to
+attract mode, takes coins (four to a credit at its default pricing) and starts a game in the
+harness and through libpinmame; its dragon homes on its switch and stands at step 23, the upper
+and lower flippers fire from their buttons. The topper's home switch has no handler in the game
+(`swdf_dragon_topper_motor_home` is in no switch table), so the topper homes by its time-out.
 
 ## Open items
 

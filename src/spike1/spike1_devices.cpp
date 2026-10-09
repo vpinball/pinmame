@@ -568,8 +568,8 @@ void spike1_devices::node_bus_frame(const uint8_t *frame, uint32_t len, uint64_t
 	if (m_frame_observer) m_frame_observer(now_ns, frame, len);
 	const uint8_t *data = frame + 3;     // the command's own bytes, between cmd and checksum
 	const uint32_t n = len - 5;
-	if (cmd >= 0x80 && cmd <= 0xbf) {    // LED update
-		if (m_led_form < 0) m_led_form = m_cfg.symbol && m_cfg.symbol("_Z14NODEBUS_SetLEDhhhh") ? 1 : 0;
+	if (m_led_form < 0) m_led_form = m_cfg.symbol && m_cfg.symbol("_Z23NODEBUS_SetLEDMultiple2hhPhS_S_") ? 0 : 1;
+	if ((cmd >= 0x80 && cmd <= 0xbf) || (cmd == 0xc0 && m_led_form)) { // LED update
 		if (m_led_form ? led_update_run(node, cmd, data, n) : led_update(node, cmd, data, n)) return;
 		const uint32_t key = (uint32_t(node) << 8) | cmd;
 		if (m_nb_logged.insert(key).second) note = "node bus: node " + std::to_string(node) + " LED update not understood: " + bytes_hex(frame, len, 32);
@@ -608,13 +608,18 @@ void spike1_devices::node_bus_frame(const uint8_t *frame, uint32_t len, uint64_t
 		s.backward = (raw & 0x8000) != 0;
 		s.target = uint16_t((raw & 0x7fff) % s.steps);
 		s.distance = uint16_t((s.backward ? s.from + s.steps - s.target : s.target + s.steps - s.from) % s.steps);
+		if (!s.distance && (raw & 0x7fff) >= s.steps) s.distance = s.steps; // a target past the turn: once round (Game of Thrones' homing sweep)
 		s.start_ns = now_ns;
 		s.end_ns = now_ns + uint64_t(s.distance) * std::max<uint8_t>(data[3], 1) * 1000000ull;
 		if (m_cfg.trace) note = "node bus: node " + std::to_string(node) + " stepper " + std::to_string(data[0]) + " to " + std::to_string(s.target) + (s.backward ? " backward" : "");
 		return;
 	}
-	case 0x34: { // home - the stepper sits where the reply length goes: to step 0, forward
-		stepper &s = m_steppers[(uint32_t(node) << 8) | (reply_len & 7)];
+	case 0x34: { // home: [stepper][seek] - in older titles (Whoa Nellie) the stepper sits where the reply length goes, and seeks
+		stepper &s = m_steppers[(uint32_t(node) << 8) | (n >= 1 ? data[0] & 7 : reply_len & 7)];
+		// Game of Thrones sends it without the seek each time its dragon, turning on through its home
+		// switch, passes it during a move, and keeps its own idea of the position: the board counts
+		// from home again, which changes nothing here, where step 0 is home
+		if (n >= 2 && !data[1]) return;
 		s.from = stepper_position(s, now_ns);
 		s.backward = false;
 		s.target = 0;
@@ -717,7 +722,7 @@ void spike1_devices::node_bus_frame(const uint8_t *frame, uint32_t len, uint64_t
 	}
 	case 0x11: { // GetInputState: eight switch bytes (position p = byte p/8, bit p%8), then a u16 the game ignores
 		uint8_t r[10];
-		stepper_home_switches(node, now_ns);
+		stepper_home_switches(now_ns);
 		wire_bytes(node, r, 8);
 		r[8] = r[9] = 0;
 		if (data_len == sizeof(r)) { node_bus_reply(r, sizeof(r)); return; }
@@ -949,16 +954,32 @@ uint16_t spike1_devices::stepper_position(const stepper &s, uint64_t now_ns) con
 	return uint16_t((s.backward ? s.from + s.steps - done % s.steps : s.from + done) % s.steps);
 }
 
-// A reel's home switch is closed while the reel stands within two steps of step 0
-void spike1_devices::stepper_home_switches(uint8_t node, uint64_t now_ns)
+// A stepper's home switch - its board's own input, or a switch on another board the title links -
+// is closed while the stepper stands within two steps of step 0
+void spike1_devices::stepper_home_switches(uint64_t now_ns)
 {
-	for (auto it = m_steppers.lower_bound(uint32_t(node) << 8); it != m_steppers.end() && (it->first >> 8) == node; ++it) {
-		const stepper &s = it->second;
-		if (s.home_input < 0) continue;
+	for (const auto &it : m_steppers) {
+		const stepper &s = it.second;
+		const auto link = m_home_links.find(it.first);
+		uint8_t node = uint8_t(it.first >> 8), input;
+		if (link != m_home_links.end()) { node = link->second.first; input = link->second.second; }
+		else if (s.home_input >= 0) input = uint8_t(s.home_input);
+		else continue;
 		const uint16_t at = stepper_position(s, now_ns);
 		const bool home = at < 2 || at + 2 > s.steps;
-		if (switch_closed(node, uint8_t(s.home_input)) != home) set_switch(node, uint8_t(s.home_input), home, now_ns);
+		if (switch_closed(node, input) != home) set_switch(node, input, home, now_ns);
 	}
+}
+
+bool spike1_devices::link_stepper_home(uint8_t node, uint8_t stepper, uint16_t switch_number)
+{
+	for (const switch_info &sw : m_switches)
+		if (sw.number == switch_number) {
+			m_home_links[(uint32_t(node) << 8) | stepper] = { sw.node, sw.position };
+			set_switch(sw.node, sw.position, true, 0);
+			return true;
+		}
+	return false;
 }
 
 bool spike1_devices::motor_state(uint8_t node, uint8_t index, int16_t &position, bool &moving, uint64_t now_ns) const
@@ -1123,19 +1144,30 @@ bool spike1_devices::led_update(uint8_t node, uint8_t cmd, const uint8_t *data, 
 	return true;
 }
 
-// The older SDK (Whoa Nellie: NODEBUS_SetLED with an 8-bit channel, NODEBUS_SetLEDMultiple and
-// NODEBUS_SetLEDMultipleTime) sets a run of channels, at most up to channel 63:
-//   command   0x80 | the first channel
+// The SDKs before NODEBUS_SetLEDMultiple2 (Whoa Nellie, Game of Thrones: NODEBUS_SetLED,
+// NODEBUS_SetLEDMultiple, NODEBUS_SetLEDMultipleTime) set a run of channels:
+//   command   0x80 | the first channel, for a run within channels 0-63; or 0xc0 and the first
+//             channel as a u16 (Game of Thrones, for channels from 64 on - its start-up test
+//             sweeps all 96 a board drives)
 //   [time][level, one per channel]          one fade time for all (0xff never: the game sends 0xfe)
 //   [0xff][time][level] for each channel    a fade time each
+// The packed SDK's own command bytes overlap these, so the form is the program's: the packed one
+// where it has NODEBUS_SetLEDMultiple2
 bool spike1_devices::led_update_run(uint8_t node, uint8_t cmd, const uint8_t *data, uint32_t len)
 {
-	const uint32_t first = cmd & 0x7f;
+	uint32_t first = cmd & 0x3f, limit = 64;
+	if (cmd == 0xc0) {
+		if (len < 2) return false;
+		first = data[0] | (uint32_t(data[1]) << 8);
+		data += 2;
+		len -= 2;
+		limit = LED_CHANNELS;
+	}
 	if (len < 2) return false;
 	const bool pairs = data[0] == 0xff;
 	if (pairs && (len - 1) % 2) return false;
 	const uint32_t count = pairs ? (len - 1) / 2 : len - 1;
-	if (first + count > 64 || first + count > LED_CHANNELS) return false;
+	if (first + count > limit || first + count > LED_CHANNELS) return false;
 	for (uint32_t i = 0; i < count; i++) m_led[node][first + i] = pairs ? data[2 + 2 * i] : data[1 + i];
 	return true;
 }
@@ -1337,6 +1369,18 @@ void spike1_devices::apply_manual_numbers(const std::vector<std::pair<int, size_
 			switches++;
 		}
 	}
+	// An optional topper's board (the game names its boards lang_text_nb_<node>) numbers its
+	// switches from 1 again, apart from the manual: they become 121 and up, clear of the playfield's
+	std::set<uint8_t> toppers;
+	for (const switch_info &sw : m_switches) {
+		const uint32_t at = m_cfg.symbol("lang_text_nb_" + std::to_string(sw.node));
+		uint32_t text = 0;
+		std::string name;
+		if (at && guest_read(at, &text, 4) && text) m_mem.read_string(text, name, 16);
+		if (name.compare(0, 6, "TOPPER") == 0) toppers.insert(sw.node);
+	}
+	for (switch_info &sw : m_switches)
+		if (toppers.count(sw.node)) sw.number = uint16_t(sw.number + TOPPER_SWITCH_BASE);
 	log("devices: the manual's numbers for " + std::to_string(switches) + " of " + std::to_string(m_switches.size()) + " switches, " +
 		std::to_string(coils) + " of " + std::to_string(m_coils.size()) + " coils and " +
 		std::to_string(leds) + " of " + std::to_string(m_leds.size()) + " LED channels");

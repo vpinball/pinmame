@@ -16,16 +16,20 @@
                             column, so the flipper keys reach them
     switches 101-116        the CPU board's C1-C16: 101-108 its DIP switches, set from the DIP
                             settings, 109-112 the service buttons, 116 the door's power sense
+    switches 121-131        an optional topper's own switches, which it numbers 1 on (Game of
+                            Thrones' TOPPER DRAGON is 121)
     solenoids 1-32          the coils by their Driver Reference number
     solenoids 51-72         a coil numbered 0 or above 32, in number order
     solenoids 46, 48        the flipper outputs: the coils the game names RIGHT FLIPPER and
-                            LEFT FLIPPER (and their HOLD coils where a title has them), which the
-                            node board fires on its own when the button closes
+                            LEFT FLIPPER, or RIGHT and LEFT FLIPPER POWER (and their HOLD coils
+                            where a title has them), which the node board fires on its own when
+                            the button closes. Upper flippers are their coils' solenoids only
     lamps 1-n               the LED channels by their Light Reference number (an RGB LED is three;
                             GI strings and flashers are LED channels too)
     mech 0-n                the motors the boards run on their own (Ghostbusters' Slimer), then
-                            their steppers (Whoa Nellie's reels): a motor's position in the game's
-                            units, a stepper's step within its turn, through Controller.GetMech(n)
+                            their steppers (Whoa Nellie's reels, Game of Thrones' dragons): a
+                            motor's position in the game's units, a stepper's step within its
+                            turn, through Controller.GetMech(n)
   Coils and LEDs are levels (a coil driver's PWM duty, an LED channel's brightness): modulated
   outputs hold them as 0-1, the solenoid and lamp bits say whether they are on at all.
 
@@ -55,19 +59,29 @@
 
 /* The numbers a title's manual gives the switches PinMAME's keys reach; they differ between titles */
 typedef struct {
-  int flip[4];   /* left button, right button, left EOS, right EOS */
+  int flip[8];   /* left button, right button, left EOS, right EOS, then the same for the upper flippers (0: none) */
   int coin[4];   /* left, right, center, fourth */
   int tilt, slam;
 } spike1_tSwitches;
 #define SPIKE1_SWITCHES(lbutton, rbutton, leos, reos, coin1, coin2, coin3, coin4, tilt, slam) \
   { { lbutton, rbutton, leos, reos }, { coin1, coin2, coin3, coin4 }, tilt, slam }
+/* a title with upper flippers, worked by their own leaf on each flipper button (Game of Thrones) */
+#define SPIKE1_SWITCHES_UPPER(lbutton, rbutton, leos, reos, ulbutton, urbutton, coin1, coin2, coin3, coin4, tilt, slam) \
+  { { lbutton, rbutton, leos, reos, ulbutton, urbutton }, { coin1, coin2, coin3, coin4 }, tilt, slam }
+
+/* A stepper whose home switch is wired to another board (Game of Thrones' dragons): the stepper's
+   board, by its node address, and its index there, and the switch's number; node 0 for none */
+typedef struct { int node, stepper, sw; } spike1_tHome;
+#define SPIKE1_NOHOMES { { 0 } }
+#define SPIKE1_HOMES(node1, stepper1, sw1, node2, stepper2, sw2) { { node1, stepper1, sw1 }, { node2, stepper2, sw2 } }
 
 /* What a title adds to core_tGameData: its game folder's name (the program runs as
-   /games/<folder>/game) and its switch numbers */
+   /games/<folder>/game), its switch numbers and its steppers' home switches on other boards */
 typedef struct {
   core_tGameData core;
   const char *folder;
   spike1_tSwitches sw;
+  spike1_tHome home[2];
 } spike1_tGameData;
 
 static const spike1_tGameData *spike1_game(void) { return (const spike1_tGameData *)core_gameData; }
@@ -152,26 +166,29 @@ MEMORY_END
 
 /*-------------------------------------------------
 /  switch numbers <-> PinMAME's matrix (16 columns of 8)
-/    0-95     matrix entries 0-95, except that the title's four flipper switches and the numbers
-/             88-91 trade places: the flipper switches go to column 11, PinMAME's flipper column
-/             (88 right EOS, 89 right button, 90 left EOS, 91 left button, as the core's
-/             CORE_SW*FLIP* bits lay them out), 88-91 to the entries they leave free
-/    101-132  columns 12-15: the CPU board's C1-C16 as 101-116, then numbers no title uses;
-/             132 also takes any number the game does not have
+/    0-95     matrix entries 0-95, except that the title's flipper switches and the numbers 88-95
+/             trade places: the flipper switches go to column 11, PinMAME's flipper column
+/             (88 right EOS, 89 right button, 90 left EOS, 91 left button, 92-95 the same for the
+/             upper flippers, as the core's CORE_SW*FLIP* bits lay them out), 88-95 to the
+/             entries they leave free
+/    101-132  columns 12-15: the CPU board's C1-C16 as 101-116, an optional topper's switches
+/             as 121 on; 132 also takes any number the game does not have
 /-------------------------------------------------*/
 static int spike1_flipSlot(int k)
 {
   const int *flip = spike1_game()->sw.flip;
-  static const int slot[4] = { 3, 1, 2, 0 }; /* entry 88 + k holds flip[slot[k]] */
+  static const int slot[8] = { 3, 1, 2, 0, 7, 5, 6, 4 }; /* entry 88 + k holds flip[slot[k]] */
   return flip[slot[k]];
 }
 
 static int spike1_swap(int n)
 {
   int k;
-  for (k = 0; k < 4; k++) {
-    if (n == spike1_flipSlot(k)) return 88 + k;
-    if (n == 88 + k) return spike1_flipSlot(k);
+  for (k = 0; k < 8; k++) {
+    const int flip = spike1_flipSlot(k);
+    if (!flip) continue;
+    if (n == flip) return 88 + k;
+    if (n == 88 + k) return flip;
   }
   return n;
 }
@@ -457,9 +474,9 @@ static void spike1_map_outputs(void)
     else continue;
     locals.coilSol[number] = sol;
     locals.coilOf[sol] = number;
-    if (!strcmp(name, "LEFT FLIPPER")) locals.flipCoil[0][0] = number;
+    if (!strcmp(name, "LEFT FLIPPER") || !strcmp(name, "LEFT FLIPPER POWER")) locals.flipCoil[0][0] = number;
     if (!strcmp(name, "LEFT FLIPPER HOLD")) locals.flipCoil[0][1] = number;
-    if (!strcmp(name, "RIGHT FLIPPER")) locals.flipCoil[1][0] = number;
+    if (!strcmp(name, "RIGHT FLIPPER") || !strcmp(name, "RIGHT FLIPPER POWER")) locals.flipCoil[1][0] = number;
     if (!strcmp(name, "RIGHT FLIPPER HOLD")) locals.flipCoil[1][1] = number;
   }
   /* the core counts lamps in whole columns, up to the highest Light Reference number of the title;
@@ -524,6 +541,10 @@ static MACHINE_INIT(spike1)
     return;
   }
   locals.running = 1;
+  for (c = 0; c < 2; c++) {
+    const spike1_tHome *home = &spike1_game()->home[c];
+    if (home->node) spike1_pinmame_stepper_home(home->node, home->stepper, home->sw);
+  }
   spike1_map_switches();
   spike1_map_outputs();
 }
@@ -595,12 +616,18 @@ MACHINE_DRIVER_END
    switches: SPIKE1_SWITCHES(...) with the manual's numbers. The flipper switches need no FLIP_SWNO:
    spike1_sw2m() puts them in the flipper column */
 #define SPIKE1_LAMPCOLS(lamps) (((lamps) + 7) / 8 > CORE_CUSTLAMPCOL ? ((lamps) + 7) / 8 - CORE_CUSTLAMPCOL : 0)
+#define SPIKE1_CORE(layout, lamps, flippers) \
+  { GEN_SPIKE1, layout, \
+    { FLIP_SW(flippers) | FLIP_SOL(FLIP_L), 4, SPIKE1_LAMPCOLS(lamps), SPIKE1_NCUSTSOLS, 0, 0, 0, 0, spike1_getSol, NULL, spike1_getMech } }
 #define SPIKE1_INIT(name, folder, layout, lamps, switches) \
   SPIKE1_INPUT_PORTS(name) \
-  static spike1_tGameData name##GameData = { \
-    { GEN_SPIKE1, layout, \
-      { FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L), 4, SPIKE1_LAMPCOLS(lamps), SPIKE1_NCUSTSOLS, 0, 0, 0, 0, spike1_getSol, NULL, spike1_getMech } }, \
-    folder, switches }; \
+  static spike1_tGameData name##GameData = { SPIKE1_CORE(layout, lamps, FLIP_L), folder, switches, SPIKE1_NOHOMES }; \
+  static void init_##name(void) { core_gameData = &name##GameData.core; }
+/* the same for a title with upper flippers (flippers FLIP_L | FLIP_U, switches SPIKE1_SWITCHES_UPPER)
+   or home switches on other boards (homes SPIKE1_HOMES) */
+#define SPIKE1_INIT_EX(name, folder, layout, lamps, flippers, switches, homes) \
+  SPIKE1_INPUT_PORTS(name) \
+  static spike1_tGameData name##GameData = { SPIKE1_CORE(layout, lamps, flippers), folder, switches, homes }; \
   static void init_##name(void) { core_gameData = &name##GameData.core; }
 
 /*-------------------------------------------------------------------
@@ -685,5 +712,31 @@ ROM_START(pabst_101)
     ROM_LOAD("ws2812node-LPC1313-0_28_0.hex", 0x39d59000, 0x00005590, CRC(921dc0f7) SHA1(2c49842bb5163b75a19ebac37f0379ef72c64d4a))
 ROM_END
 CORE_GAMEDEF(pabst, 101, "Pabst Can Crusher (1.01.0)", 2016, "Stern", spike1, 0)
+
+/*-------------------------------------------------------------------
+/ Game of Thrones (Stern, 2015) - Limited Edition
+/ The upper flippers have their own leaf on each flipper button (switches 12 and 13), which the
+/ flipper keys close with the lower ones; their coils are solenoids 16 and 18. The dragon's wings
+/ and the optional topper dragon's are steppers turning on through their home switch (88, and the
+/ topper's 121): mech 0 and 1, each as its step (0-199)
+/-------------------------------------------------------------------*/
+SPIKE1_INIT_EX(got, "GOT_LE", spike1_dmd, 265, FLIP_L | FLIP_U, SPIKE1_SWITCHES_UPPER(10, 11, 16, 5, 12, 13, 66, 67, 68, 69, 71, 75), SPIKE1_HOMES(10, 0, 88, 12, 0, 121))
+ROM_START(got_137h)
+  ROM_REGION(0x2f27d000, SPIKE1_REGION, 0)
+    ROM_LOAD("game", 0x00000000, 0x005fa263, CRC(bd9d74e9) SHA1(41b028146e53e546dc6e88b31642ae45f6e266b7))
+    ROM_LOAD("image.bin", 0x005fb000, 0x2ec129dc, CRC(8dbe0aa4) SHA1(ca03000c6a53cf9980774e2739c0277ab12b74b0))
+    ROM_LOAD("accbridgenode-LPC1313-0_49_0.hex", 0x2f20e000, 0x0000529b, CRC(5f3ae3d6) SHA1(24a00f23fa0fbee9cf38ddf50e4cede0c96b4137))
+    ROM_LOAD("coil4node-LPC1112_101-0_49_0.hex", 0x2f214000, 0x00008595, CRC(6f4a25ae) SHA1(a7f49114a399e96879d5e58e3137c89243385287))
+    ROM_LOAD("coil4node-LPC1112_201-0_49_0.hex", 0x2f21d000, 0x00008595, CRC(43f9bc24) SHA1(b921dc5082b87828fdb376ec183caa08f41816bf))
+    ROM_LOAD("coil4node-LPC1313-0_49_0.hex", 0x2f226000, 0x0000d28b, CRC(551c8bb3) SHA1(7baef81e9d8157fbea84bbfcebd835731dbbd021))
+    ROM_LOAD("lcdnode-LPC1113_302-0_49_0.hex", 0x2f234000, 0x0000b70a, CRC(762a4010) SHA1(d76aa881edf11f9820590ee2eccabe171c45f566))
+    ROM_LOAD("netbridge-LPC1313-0_49_0.hex", 0x2f240000, 0x0000e89c, CRC(0179e13b) SHA1(e1f0768ae71b8e723d3cf567a0aa29a6230d3ce6))
+    ROM_LOAD("nodebusanalyzer-LPC1313-0_49_0.hex", 0x2f24f000, 0x0000548a, CRC(7925a13c) SHA1(9a6171b0dc26e49496366b8043a420f16c6e3b70))
+    ROM_LOAD("pinnode-LPC1112_101-0_49_0.hex", 0x2f255000, 0x0000801a, CRC(66b91e74) SHA1(0f0025758753b046b6e0a117a9668dab51d66180))
+    ROM_LOAD("pinnode-LPC1112_201-0_49_0.hex", 0x2f25e000, 0x00008057, CRC(42ca3b82) SHA1(32c08bf5e2aee47ab875e91abc3ee9a1fedeb4ec))
+    ROM_LOAD("pinnode-LPC1313-0_49_0.hex", 0x2f267000, 0x0000ddae, CRC(a31b7afa) SHA1(23670fe8e7f3d469a84fa74750c35b15deed7b7b))
+    ROM_LOAD("ws2812node-LPC1313-0_49_0.hex", 0x2f275000, 0x0000777d, CRC(00f38c82) SHA1(77dcfd9bc27a86458ce275ec79ccac69c4ba72ff))
+ROM_END
+CORE_GAMEDEF(got, 137h, "Game of Thrones (Limited Edition 1.37.0)", 2015, "Stern", spike1, 0)
 
 #endif /* HAS_SPIKE1 */

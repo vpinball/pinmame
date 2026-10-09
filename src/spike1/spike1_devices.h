@@ -101,6 +101,7 @@ public:
 	};
 	static constexpr uint16_t LED_KIND_MOTOR = 0x08;
 	static constexpr uint16_t CPU_SWITCH_BASE = 100;
+	static constexpr uint16_t TOPPER_SWITCH_BASE = 120;
 	const std::vector<output_info> &coils() const { return m_coils; }
 	const std::vector<output_info> &leds() const { return m_leds; }
 	// What a coil driver puts out at now_ns, 0 (off) to 255 (full on): the board's PWM duty
@@ -112,6 +113,10 @@ public:
 	// The same for the i-th motor the game has configured, in board and motor order, then its
 	// steppers (a stepper's position is its step within the turn)
 	bool motor_at(size_t i, int16_t &position, bool &moving, uint64_t now_ns) const;
+	// A stepper whose home switch is wired to another board, which the game watches itself (Game of
+	// Thrones' dragons): that switch, by its manual number, is closed while the stepper stands at
+	// step 0, as it does at power-on. False when the title has no such switch
+	bool link_stepper_home(uint8_t node, uint8_t stepper, uint16_t switch_number);
 
 	// Sound: what the game sends its DAC, 16-bit stereo at audio_rate() Hz. The device takes the
 	// game's writes at the pace the DAC plays them in emulated time; a host takes the samples
@@ -195,9 +200,9 @@ private:
 	void motor_move(motor &m, int16_t target, uint64_t now_ns, uint64_t duration_ns);
 	int16_t motor_position(const motor &m, uint64_t now_ns) const;
 
-	// A stepper a board runs on its own (Whoa Nellie's score and credit reels): the game sets its
-	// steps per turn and home switch input, then sends targets - the shorter way round never, but
-	// forward, or backward when the target has bit 15
+	// A stepper a board runs on its own (Whoa Nellie's score and credit reels, Game of Thrones'
+	// dragons): the game sets its steps per turn and home switch input, then sends targets - the
+	// shorter way round never, but forward, or backward when the target has bit 15
 	struct stepper
 	{
 		uint16_t steps = 200;                // per turn
@@ -207,8 +212,9 @@ private:
 		uint64_t start_ns = 0, end_ns = 0;   // the move under way, if end_ns > now
 	};
 	std::map<uint32_t, stepper> m_steppers;  // (node << 8 | stepper)
+	std::map<uint32_t, std::pair<uint8_t, uint8_t>> m_home_links; // (node << 8 | stepper) -> its home switch's board and position
 	uint16_t stepper_position(const stepper &s, uint64_t now_ns) const;
-	void stepper_home_switches(uint8_t node, uint64_t now_ns);
+	void stepper_home_switches(uint64_t now_ns);
 
 	// Coils. A board drives a coil on the game's command - a pulse at one power, then optionally a
 	// second phase at another - or on its own when a switch it watches closes (a reflex), so
