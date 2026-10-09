@@ -6,8 +6,8 @@ the playfield's node boards over a serial bus; the display is a 128x32 DMD with 
 
 **Status: bring-up.** The subsystem runs as a PinMAME driver (`src/wpc/spike1.c`, sets
 `gbust_117h` Ghostbusters LE 1.17.0, `wnbjm_155` Whoa Nellie! Big Juicy Melons 1.55.0, `primus_103`
-Primus 1.03.0, `pabst_101` Pabst Can Crusher 1.01.0 and `got_137h` Game of Thrones LE 1.37.0) and
-standalone (`spike1boot`, below).
+Primus 1.03.0, `pabst_101` Pabst Can Crusher 1.01.0, `got_137h` Game of Thrones LE 1.37.0 and
+`kiss15_141h` KISS LE 1.41.0) and standalone (`spike1boot`, below).
 
 ## How it works
 
@@ -83,7 +83,8 @@ the LCD insert every s seconds as a PPM file in the state directory, `--node-dum
 writes every node-bus frame (except switch and status reads) to a file, `--peek <address>:<bytes>`
 prints guest memory at the end, `--stepper-home <node>:<stepper>:<switch>` links a stepper to a
 home switch on another board as a PinMAME set's `SPIKE1_HOMES` does (Game of Thrones: `10:0:88`
-and `12:0:121`), `--slice <ms>` sets the emulated time per `run()` call (1 by
+and `12:0:121`), `--limit-motor <forward LED>:<backward LED>:<home switch>:<away switch>:<ms>`
+adds a limit motor as a set's `SPIKE1_LIMIT_MOTOR` does (KISS: `169:170:53:54:1000`), `--slice <ms>` sets the emulated time per `run()` call (1 by
 default; PinMAME uses one frame, 16.7). With `SPIKE1_NODE_STATS` set in the environment, it
 prints the node-bus frame count per command and board.
 
@@ -140,7 +141,7 @@ code (its symbols are in the program) rather than from any other emulator:
   times in compact forms; see `led_update()`). Every update in a full attract-and-play run decodes to
   exactly its length. `led_level()` gives a channel's level (0-255); the LED mask applies. A
   title without `NODEBUS_SetLEDMultiple2` (Whoa Nellie, Primus, Pabst Can Crusher, Game of
-  Thrones) sends runs of channels instead, on the same command bytes - `0x80 | first`, then a fade
+  Thrones, KISS) sends runs of channels instead, on the same command bytes - `0x80 | first`, then a fade
   time and a level per channel, or 0xff and a time and level per channel (`led_update_run()`) -
   and Game of Thrones also command 0xC0 for channels from 64 on (its start-up test sweeps all 96 a
   board drives): a 16-bit first channel, then a run in the same two forms. The model picks the
@@ -159,6 +160,13 @@ code (its symbols are in the program) rather than from any other emulator:
   as "count from home again" and leaves the stepper as it is (older titles put the stepper where
   the reply length goes, and the stepper seeks step 0). The host links such a switch to its
   stepper (`link_stepper_home()`).
+- **Limit motors** (KISS's Starchild, the game's `StarchildMotor`): a motor the game runs itself
+  through an H-bridge on two LED channels, between a home and an away switch - one channel at full
+  level drives it toward away, the other toward home, until the game sees the switch or gives up
+  (KISS: 434 of its ticks, about 5 s). The host links the channels and switches and gives a travel
+  time (`link_limit_motor()`); each switch is closed over the last 2% of the way, so the start-up
+  LED test, a few ms on each channel, leaves the motor on its home switch, where it stands at
+  power-on. The model moves it on at every LED update and switch read.
 - **Board blocks**: the game keeps a block a board; `sys_node_board_get_next_block_ptr` gives its
   base and size, which differ between SDK versions (a loaded constant in Ghostbusters, a computed
   one in Whoa Nellie) - the model reads both forms, as the firmware image a board must report
@@ -204,8 +212,10 @@ code (its symbols are in the program) rather than from any other emulator:
   steppers, as mechs (`GetMech(n)`: Ghostbusters' Slimer is mech 0; the 1000s, 100s, 10s, 1s and
   credit reels of Whoa Nellie, Primus and Pabst Can Crusher - one hardware, one set of switch
   numbers - are mechs 0-4, as steps 0-199; Game of Thrones' dragon and topper dragon are mechs 0
-  and 1, as steps 0-199, the wings at 23, 80, 125 or 180). A title's stepper home switches on other
-  boards are its `SPIKE1_HOMES`. Coil and LED levels are modulated outputs.
+  and 1, as steps 0-199, the wings at 23, 80, 125 or 180; then a limit motor, KISS's Starchild as
+  mech 0, from 0 at home to 100 away). A title's stepper home switches on other boards are its
+  `SPIKE1_HOMES`, its limit motor its `SPIKE1_LIMIT_MOTOR`. Coil and LED levels are modulated
+  outputs.
   The keys: coins 5, 6, 3 and 4, start 1, the service buttons 7-0 (back, minus, plus, select), tilt
   Insert, slam Home, coin door End.
 - **Displays**: the DMD as a core DMD (`CORE_DMD_PWM_PREINTEGRATED_LINEAR_16`: the device model
@@ -258,6 +268,13 @@ attract mode, takes coins (four to a credit at its default pricing) and starts a
 harness and through libpinmame; its dragon homes on its switch and stands at step 23, the upper
 and lower flippers fire from their buttons. The topper's home switch has no handler in the game
 (`swdf_dragon_topper_motor_home` is in no switch table), so the topper homes by its time-out.
+
+KISS LE 1.41.0 (Whoa Nellie's SDK, five boards, 158 LED channels) boots to attract mode, takes
+coins and starts a game. Its Starchild stands on its home switch; the game's
+ball search drives it to the away switch and back, and its switch checks stay good. Its spinning
+disc is lamp 172 (the game runs disc motor 2 only). The optional USB topper (`/dev/ttyUSB0`,
+`auto_topper`) is not modelled: its writes are taken and dropped. The set is `kiss15`, as PinMAME's
+`kiss` is Bally's of 1979.
 
 ## Open items
 

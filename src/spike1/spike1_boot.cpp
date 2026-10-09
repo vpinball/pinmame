@@ -82,6 +82,8 @@ int main(int argc, char **argv)
 	std::vector<press> presses;
 	struct home_link { int node, stepper, number; };
 	std::vector<home_link> home_links;
+	struct limit_motor { int forward, backward, home, away; unsigned travel_ms; };
+	std::vector<limit_motor> limit_motors;
 	bool list_switches = false, show_outputs = false;
 	std::string node_dump, wav_path;
 	for (int i = 1; i < argc; i++) {
@@ -112,6 +114,14 @@ int main(int argc, char **argv)
 			const std::string v = next();
 			const size_t a = v.find(':'), b = v.rfind(':');
 			home_links.push_back({ std::atoi(v.c_str()), std::atoi(v.c_str() + a + 1), std::atoi(v.c_str() + b + 1) });
+		}
+		else if (arg == "--limit-motor") { // <forward LED>:<backward LED>:<home switch>:<away switch>:<travel ms>, by number
+			limit_motor m{};
+			if (std::sscanf(next().c_str(), "%d:%d:%d:%d:%u", &m.forward, &m.backward, &m.home, &m.away, &m.travel_ms) != 5) {
+				std::fprintf(stderr, "--limit-motor takes <forward LED>:<backward LED>:<home switch>:<away switch>:<travel ms>\n");
+				return 2;
+			}
+			limit_motors.push_back(m);
 		}
 		else if (arg == "--peek") { // <address>:<bytes> of guest memory, printed at the end
 			const std::string v = next();
@@ -170,6 +180,11 @@ int main(int argc, char **argv)
 	for (const auto &h : home_links)
 		if (!linux_os.devices().link_stepper_home(uint8_t(h.node), uint8_t(h.stepper), uint16_t(h.number))) {
 			std::fprintf(stderr, "no switch %d for the home of node %d stepper %d\n", h.number, h.node, h.stepper);
+			return 2;
+		}
+	for (const auto &m : limit_motors)
+		if (!linux_os.devices().link_limit_motor(uint16_t(m.forward), uint16_t(m.backward), uint16_t(m.home), uint16_t(m.away), m.travel_ms)) {
+			std::fprintf(stderr, "no LED channels %d and %d or switches %d and %d for a limit motor\n", m.forward, m.backward, m.home, m.away);
 			return 2;
 		}
 

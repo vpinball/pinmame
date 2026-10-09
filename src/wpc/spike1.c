@@ -27,9 +27,10 @@
     lamps 1-n               the LED channels by their Light Reference number (an RGB LED is three;
                             GI strings and flashers are LED channels too)
     mech 0-n                the motors the boards run on their own (Ghostbusters' Slimer), then
-                            their steppers (Whoa Nellie's reels, Game of Thrones' dragons): a
-                            motor's position in the game's units, a stepper's step within its
-                            turn, through Controller.GetMech(n)
+                            their steppers (Whoa Nellie's reels, Game of Thrones' dragons), then a
+                            limit motor (KISS's Starchild): a motor's position in the game's
+                            units, a stepper's step within its turn, a limit motor's way from home
+                            (0) to away (100), through Controller.GetMech(n)
   Coils and LEDs are levels (a coil driver's PWM duty, an LED channel's brightness): modulated
   outputs hold them as 0-1, the solenoid and lamp bits say whether they are on at all.
 
@@ -75,13 +76,22 @@ typedef struct { int node, stepper, sw; } spike1_tHome;
 #define SPIKE1_NOHOMES { { 0 } }
 #define SPIKE1_HOMES(node1, stepper1, sw1, node2, stepper2, sw2) { { node1, stepper1, sw1 }, { node2, stepper2, sw2 } }
 
+/* A motor the game runs between two limit switches through two LED channels (KISS's Starchild):
+   the lamp numbers of the channels that drive it toward the away switch and toward home, the two
+   switches, and its travel time between them in ms; forward lamp 0 for none */
+typedef struct { int forward, backward, home, away, travelMs; } spike1_tLimitMotor;
+#define SPIKE1_NOLIMIT { 0 }
+#define SPIKE1_LIMIT_MOTOR(forward, backward, home, away, travelMs) { forward, backward, home, away, travelMs }
+
 /* What a title adds to core_tGameData: its game folder's name (the program runs as
-   /games/<folder>/game), its switch numbers and its steppers' home switches on other boards */
+   /games/<folder>/game), its switch numbers, its steppers' home switches on other boards and its
+   limit motor */
 typedef struct {
   core_tGameData core;
   const char *folder;
   spike1_tSwitches sw;
   spike1_tHome home[2];
+  spike1_tLimitMotor limit;
 } spike1_tGameData;
 
 static const spike1_tGameData *spike1_game(void) { return (const spike1_tGameData *)core_gameData; }
@@ -545,6 +555,10 @@ static MACHINE_INIT(spike1)
     const spike1_tHome *home = &spike1_game()->home[c];
     if (home->node) spike1_pinmame_stepper_home(home->node, home->stepper, home->sw);
   }
+  {
+    const spike1_tLimitMotor *limit = &spike1_game()->limit;
+    if (limit->forward) spike1_pinmame_limit_motor(limit->forward, limit->backward, limit->home, limit->away, (unsigned)limit->travelMs);
+  }
   spike1_map_switches();
   spike1_map_outputs();
 }
@@ -621,13 +635,13 @@ MACHINE_DRIVER_END
     { FLIP_SW(flippers) | FLIP_SOL(FLIP_L), 4, SPIKE1_LAMPCOLS(lamps), SPIKE1_NCUSTSOLS, 0, 0, 0, 0, spike1_getSol, NULL, spike1_getMech } }
 #define SPIKE1_INIT(name, folder, layout, lamps, switches) \
   SPIKE1_INPUT_PORTS(name) \
-  static spike1_tGameData name##GameData = { SPIKE1_CORE(layout, lamps, FLIP_L), folder, switches, SPIKE1_NOHOMES }; \
+  static spike1_tGameData name##GameData = { SPIKE1_CORE(layout, lamps, FLIP_L), folder, switches, SPIKE1_NOHOMES, SPIKE1_NOLIMIT }; \
   static void init_##name(void) { core_gameData = &name##GameData.core; }
-/* the same for a title with upper flippers (flippers FLIP_L | FLIP_U, switches SPIKE1_SWITCHES_UPPER)
-   or home switches on other boards (homes SPIKE1_HOMES) */
-#define SPIKE1_INIT_EX(name, folder, layout, lamps, flippers, switches, homes) \
+/* the same for a title with upper flippers (flippers FLIP_L | FLIP_U, switches SPIKE1_SWITCHES_UPPER),
+   home switches on other boards (homes SPIKE1_HOMES) or a limit motor (limit SPIKE1_LIMIT_MOTOR) */
+#define SPIKE1_INIT_EX(name, folder, layout, lamps, flippers, switches, homes, limit) \
   SPIKE1_INPUT_PORTS(name) \
-  static spike1_tGameData name##GameData = { SPIKE1_CORE(layout, lamps, flippers), folder, switches, homes }; \
+  static spike1_tGameData name##GameData = { SPIKE1_CORE(layout, lamps, flippers), folder, switches, homes, limit }; \
   static void init_##name(void) { core_gameData = &name##GameData.core; }
 
 /*-------------------------------------------------------------------
@@ -720,7 +734,7 @@ CORE_GAMEDEF(pabst, 101, "Pabst Can Crusher (1.01.0)", 2016, "Stern", spike1, 0)
 / and the optional topper dragon's are steppers turning on through their home switch (88, and the
 / topper's 121): mech 0 and 1, each as its step (0-199)
 /-------------------------------------------------------------------*/
-SPIKE1_INIT_EX(got, "GOT_LE", spike1_dmd, 265, FLIP_L | FLIP_U, SPIKE1_SWITCHES_UPPER(10, 11, 16, 5, 12, 13, 66, 67, 68, 69, 71, 75), SPIKE1_HOMES(10, 0, 88, 12, 0, 121))
+SPIKE1_INIT_EX(got, "GOT_LE", spike1_dmd, 265, FLIP_L | FLIP_U, SPIKE1_SWITCHES_UPPER(10, 11, 16, 5, 12, 13, 66, 67, 68, 69, 71, 75), SPIKE1_HOMES(10, 0, 88, 12, 0, 121), SPIKE1_NOLIMIT)
 ROM_START(got_137h)
   ROM_REGION(0x2f27d000, SPIKE1_REGION, 0)
     ROM_LOAD("game", 0x00000000, 0x005fa263, CRC(bd9d74e9) SHA1(41b028146e53e546dc6e88b31642ae45f6e266b7))
@@ -738,5 +752,28 @@ ROM_START(got_137h)
     ROM_LOAD("ws2812node-LPC1313-0_49_0.hex", 0x2f275000, 0x0000777d, CRC(00f38c82) SHA1(77dcfd9bc27a86458ce275ec79ccac69c4ba72ff))
 ROM_END
 CORE_GAMEDEF(got, 137h, "Game of Thrones (Limited Edition 1.37.0)", 2015, "Stern", spike1, 0)
+
+/*-------------------------------------------------------------------
+/ KISS (Stern, 2015) - Limited Edition (kiss15: PinMAME's kiss is Bally's of 1979)
+/ The Starchild goes between its MOTOR HOME and MOTOR AWAY switches (53, 54) on the two channels
+/ of an LED driver, MOTOR - BALL LEFT toward away and MOTOR - BALL RIGHT toward home (lamps 169
+/ and 170): mech 0, from 0 at home to 100 away. Its travel time is not measured: 1 s, well inside
+/ the game's own limit of about 5 s. The spinning disc runs on lamp 172
+/-------------------------------------------------------------------*/
+SPIKE1_INIT_EX(kiss15, "KISS_LE", spike1_dmd, 172, FLIP_L, SPIKE1_SWITCHES(10, 11, 65, 66, 67, 68, 69, 70, 72, 77), SPIKE1_NOHOMES, SPIKE1_LIMIT_MOTOR(169, 170, 53, 54, 1000))
+ROM_START(kiss15_141h)
+  ROM_REGION(0x3ee2e000, SPIKE1_REGION, 0)
+    ROM_LOAD("game", 0x00000000, 0x004ee9ca, CRC(1c55a059) SHA1(9467d0dd243b61707223e1723882652cd46cb926))
+    ROM_LOAD("image.bin", 0x004ef000, 0x3e8f02ec, CRC(d96ccf4c) SHA1(ac04430ffc184e2bdfe268f0f6ba91fa3fcc899e))
+    ROM_LOAD("coil4node-LPC1112_101-0_28_0.hex", 0x3ede0000, 0x00008487, CRC(29d48577) SHA1(2cef71c04de9d2ff8c4664fafaeab077532f6178))
+    ROM_LOAD("coil4node-LPC1112_201-0_28_0.hex", 0x3ede9000, 0x00008487, CRC(19aac926) SHA1(c53e6f2fe65d68a841b23a79ad35dc3422da3e6b))
+    ROM_LOAD("coil4node-LPC1313-0_28_0.hex", 0x3edf2000, 0x0000c23a, CRC(e019995b) SHA1(7d09cd36e12e79c9545e8f32e94f738951e45468))
+    ROM_LOAD("lcdnode-LPC1113_302-0_28_0.hex", 0x3edff000, 0x0000b484, CRC(d139cac7) SHA1(e4a57e712a599041f7ba7dfcf08f07a724ccbd9f))
+    ROM_LOAD("pinnode-LPC1112_101-0_28_0.hex", 0x3ee0b000, 0x00007f1c, CRC(83ca12dc) SHA1(2ac8f8c9384e8c5e0bbc1ca2d9f2ddd8bb831d3d))
+    ROM_LOAD("pinnode-LPC1112_201-0_28_0.hex", 0x3ee13000, 0x00007f66, CRC(cee92fdc) SHA1(048abb5d42962204595d7c311dd351c9cb25fd6c))
+    ROM_LOAD("pinnode-LPC1313-0_28_0.hex", 0x3ee1b000, 0x0000c859, CRC(18c17d1d) SHA1(6b2f232c0b6c2389c59f998d0487081491e9d177))
+    ROM_LOAD("ws2812node-LPC1313-0_28_0.hex", 0x3ee28000, 0x00005590, CRC(921dc0f7) SHA1(2c49842bb5163b75a19ebac37f0379ef72c64d4a))
+ROM_END
+CORE_GAMEDEF(kiss15, 141h, "KISS (Limited Edition 1.41.0)", 2015, "Stern", spike1, 0)
 
 #endif /* HAS_SPIKE1 */
