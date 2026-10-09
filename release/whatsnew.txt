@@ -72,6 +72,7 @@ Implemented memory protect logic/coin-door-switch on Sega/Stern WhiteStar games:
 Rewired Striker Xtreme, Playboy and Sharkey's Shootout to use the J2 auxiliary-data latch of 520-5192 (fixes e.g. center and outlane pegs stuck in up position for Sharkey's)
 Fixed trolls in Medieval Madness
 Improved Taito reset/(re-)load behavior (on real machines, it tries to resume the resetted game, PinMAME instead now forces the machine into a stable 'new' state/attract-mode)
+Changed the Taito service keys to match VPX's taito.vbs: 6 Statistics, 7 Test/Reset, 8 Adjustments, 9 Diagnostics, 0 Enter, - Configurations, PgUp box door, PgDn sound test
 Improved sound for Metal Man, and a bit for Jolly Park and Verne's World (in general, slightly more authentic MSM5205 sound)
 Fixed Wico's Af-Tor music/note tempo (and some minor details)
 Slightly improved YM262 sound for Sir Lancelot
@@ -86,11 +87,19 @@ Added manual sound commands (sound commander) for the Bally Cheap Squeak and Tur
 Fixed the sound command logging and altsound handling for Bally MPU-17/MPU-35 machines: it now filters only the commands the game sends to the -32/-50, -51, -56, Squawk & Talk and Cheap Squeak boards, and to Nuova Bell's -51N, -61N and own sound boards
 Slightly improved Williams System 3-7, 9/11 and WPC89 sound boards output (some loud sounds did clip (e.g. Addams Family))
 Improved BSMT2000 sound emulation speed a bit
+Fixed the BSMT2000 logo attract mode jingle on Data East/Sega/Stern games
+Improved the BSMT2000 sound emulation to follow the chip's own program more closely (Data East/Sega/Stern, Alvin G.):
+ - looped samples keep their sub-sample position when wrapping (short loops are no longer slightly off-pitch)
+ - ADPCM speech/effects decode as on the chip (proper rounding, initial step size register)
+ - unused voices are silent after a reset (no more DC offset/thump at boot or click on the first reset, e.g. Monopoly)
+ - proper reset on Data East/Sega/Stern sound boards: now restarts when the reset line is released, so the chip picks the mode the game sets (e.g. Batman, Star Trek 25th and Hook, in practice no audible change though)
+ - proper reset on Alvin G. sound boards: reset line is wired now, so games set up the chip's mode themselves (in practice no audible change though)
 Fixed VGM recording for machines using OKI6295 sound
 Added VGM recording for machines using BSMT2000 sound
 Added VGM recording for machines using MSM5205/MSM6585 sound
 (VGM should now be supported for all chips directly featured within libvgm, but that misses all voice synthesizers/decompressors, etc, that some PinMAME drivers also need to use)
 Fixed flipped left/right channel for Alvin G. BSMT2000 sound (must have regressed at some point when extending the BSMT2000 core)
+Fixed the Alvin G. BSMT2000 sound board's diagnostic LED (blinks now)
 Fixed noise filter/pass and injection filter/pass in the Votrax/SC01 emulation (some GTS80(A)s and Taitos)
 Used YMFM's OPL cores (OPL/YM3526, OPL2/YM3812, OPL3/YMF262) for a more accurate emulation (Tabart; AlvinG, JVH, Mephisto, Sleic; Lancelot)
 Credits saved, and more lamps found on Stargame games Space Ship and White Force
