@@ -104,7 +104,7 @@ bool spike1_memory::read_view(uint32_t addr, uint32_t &value) const
 bool spike1_memory::place_file(uint32_t length)
 {
 	if (m_file.mem || !length || length > FILE_LIMIT - FILE_BASE) return false;
-	const uint32_t pages = uint32_t((uint64_t(length) + PAGE_SIZE - 1) & ~uint64_t(PAGE_SIZE - 1));
+	const uint32_t pages = uint32_t((uint64_t(length) + GUEST_PAGE_SIZE - 1) & ~uint64_t(GUEST_PAGE_SIZE - 1));
 	return !m_view_free.empty() && m_view_free.front().base == FILE_BASE && m_view_free.front().size >= pages;
 }
 
@@ -129,7 +129,7 @@ uint32_t spike1_memory::map_file(const std::string &host_path, uint64_t offset, 
 	if (!view) { CloseHandle(mapping); return 0; }
 	m_file_handle = mapping;
 #else
-	const uint64_t start = offset - offset % PAGE_SIZE;
+	const uint64_t start = offset - offset % GUEST_PAGE_SIZE;
 	const size_t view_size = size_t(offset - start) + length;
 	const int fd = open(host_path.c_str(), O_RDONLY);
 	if (fd < 0) return 0;
@@ -140,7 +140,7 @@ uint32_t spike1_memory::map_file(const std::string &host_path, uint64_t offset, 
 	m_file_view = view;
 	m_file_view_size = view_size;
 	m_file = { FILE_BASE, length, static_cast<uint8_t *>(view) + (offset - start) };
-	take_span(m_view_free, FILE_BASE, uint32_t((uint64_t(length) + PAGE_SIZE - 1) & ~uint64_t(PAGE_SIZE - 1)));
+	take_span(m_view_free, FILE_BASE, uint32_t((uint64_t(length) + GUEST_PAGE_SIZE - 1) & ~uint64_t(GUEST_PAGE_SIZE - 1)));
 	if (m_space) m_space->add_fast_window(m_file.base, m_file.mem, m_file.size);
 	return m_file.base;
 }
@@ -150,11 +150,11 @@ uint32_t spike1_memory::map_view(const uint8_t *data, uint32_t length)
 	if (!data || !length) return 0;
 	if (place_file(length)) {
 		m_file = { FILE_BASE, length, const_cast<uint8_t *>(data) }; // host() never hands it out for writing
-		take_span(m_view_free, FILE_BASE, uint32_t((uint64_t(length) + PAGE_SIZE - 1) & ~uint64_t(PAGE_SIZE - 1)));
+		take_span(m_view_free, FILE_BASE, uint32_t((uint64_t(length) + GUEST_PAGE_SIZE - 1) & ~uint64_t(GUEST_PAGE_SIZE - 1)));
 		if (m_space) m_space->add_fast_window(m_file.base, m_file.mem, m_file.size);
 		return m_file.base;
 	}
-	const uint32_t pages = uint32_t((uint64_t(length) + PAGE_SIZE - 1) & ~uint64_t(PAGE_SIZE - 1));
+	const uint32_t pages = uint32_t((uint64_t(length) + GUEST_PAGE_SIZE - 1) & ~uint64_t(GUEST_PAGE_SIZE - 1));
 	for (auto it = m_view_free.rbegin(); pages && it != m_view_free.rend(); ++it) {
 		if (it->size < pages) continue;
 		const uint32_t base = it->base + it->size - pages; // from the top, clear of the asset image's place
@@ -200,8 +200,8 @@ uint32_t spike1_memory::brk(uint32_t request)
 	// Linux answers an impossible request with the current break rather than an error
 	if (request < m_brk_base || request > MMAP_BASE)
 		return m_brk;
-	const uint32_t end = (request + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
-	const uint32_t old_end = (m_brk + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
+	const uint32_t end = (request + GUEST_PAGE_SIZE - 1) & ~(GUEST_PAGE_SIZE - 1);
+	const uint32_t old_end = (m_brk + GUEST_PAGE_SIZE - 1) & ~(GUEST_PAGE_SIZE - 1);
 	if (end < old_end) // shrinking: the pages read back as zero when they are grown again
 		std::memset(m_low.mem + end, 0, old_end - end);
 	m_brk = request;
@@ -210,7 +210,7 @@ uint32_t spike1_memory::brk(uint32_t request)
 
 uint32_t spike1_memory::map(uint32_t length)
 {
-	length = (length + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
+	length = (length + GUEST_PAGE_SIZE - 1) & ~(GUEST_PAGE_SIZE - 1);
 	if (!length) return 0;
 	for (auto it = m_free.begin(); it != m_free.end(); ++it) {
 		if (it->size < length) continue;
@@ -228,11 +228,11 @@ void spike1_memory::unmap(uint32_t addr, uint32_t length)
 {
 	for (auto v = m_views.begin(); v != m_views.end(); ++v)
 		if (v->base == addr) {
-			release_span(m_view_free, addr, (v->size + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1));
+			release_span(m_view_free, addr, (v->size + GUEST_PAGE_SIZE - 1) & ~(GUEST_PAGE_SIZE - 1));
 			m_views.erase(v);
 			return;
 		}
-	length = (length + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
+	length = (length + GUEST_PAGE_SIZE - 1) & ~(GUEST_PAGE_SIZE - 1);
 	if (addr < MMAP_BASE || addr >= LOW_SIZE || !length || length > LOW_SIZE - addr)
 		return;
 	release_span(m_free, addr, length);

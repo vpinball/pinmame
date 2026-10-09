@@ -26,7 +26,7 @@ public:
 	static constexpr uint32_t STACK_SIZE  = 0x00800000;
 	static constexpr uint32_t KUSER_BASE  = 0xffff0000;
 	static constexpr uint32_t KUSER_SIZE  = 0x00001000;
-	static constexpr uint32_t PAGE_SIZE   = 0x1000;
+	static constexpr uint32_t GUEST_PAGE_SIZE   = 0x1000;
 	// A large file the game maps read-only (a Spike 1 game's asset image: 1.9 GB for Heavy Metal)
 	// is mapped by the host straight into the space between the low block and the stack, from its
 	// start, so it is paged in on demand rather than copied
@@ -57,7 +57,7 @@ public:
 	bool read_string(uint32_t addr, std::string &out, size_t limit = 4096);
 
 	// brk heap, growing up from the end of the program image
-	void set_brk_base(uint32_t base) { m_brk_base = m_brk = (base + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1); }
+	void set_brk_base(uint32_t base) { m_brk_base = m_brk = (base + GUEST_PAGE_SIZE - 1) & ~(GUEST_PAGE_SIZE - 1); }
 	uint32_t brk(uint32_t request);
 
 	// Anonymous memory from the mmap area, zero-filled; 0 when it is exhausted
