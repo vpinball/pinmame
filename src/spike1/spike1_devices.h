@@ -111,12 +111,19 @@ public:
 	// For a host that animates a mechanism: the position of a board's motor
 	bool motor_state(uint8_t node, uint8_t index, int16_t &position, bool &moving, uint64_t now_ns) const;
 	// The same for the i-th motor the game has configured, in board and motor order, then its
-	// steppers (a stepper's position is its step within the turn)
+	// steppers (a stepper's position is its step within the turn), then the limit motors
 	bool motor_at(size_t i, int16_t &position, bool &moving, uint64_t now_ns) const;
 	// A stepper whose home switch is wired to another board, which the game watches itself (Game of
 	// Thrones' dragons): that switch, by its manual number, is closed while the stepper stands at
 	// step 0, as it does at power-on. False when the title has no such switch
 	bool link_stepper_home(uint8_t node, uint8_t stepper, uint16_t switch_number);
+	// A motor the game runs itself between two limit switches through an H-bridge on two LED
+	// channels (KISS's Starchild): while the forward channel is lit it goes toward the away switch,
+	// while the backward one is, toward home, taking travel_ms from one switch to the other. The
+	// channels and switches by their manual numbers; the motor stands at home at power-on, and
+	// comes after the steppers in motor_at(), as 0 (home) to 100 (away). False when the title has
+	// no such channel or switch
+	bool link_limit_motor(uint16_t forward_led, uint16_t backward_led, uint16_t home_switch, uint16_t away_switch, uint32_t travel_ms);
 
 	// Sound: what the game sends its DAC, 16-bit stereo at audio_rate() Hz. The device takes the
 	// game's writes at the pace the DAC plays them in emulated time; a host takes the samples
@@ -215,6 +222,20 @@ private:
 	std::map<uint32_t, std::pair<uint8_t, uint8_t>> m_home_links; // (node << 8 | stepper) -> its home switch's board and position
 	uint16_t stepper_position(const stepper &s, uint64_t now_ns) const;
 	void stepper_home_switches(uint64_t now_ns);
+
+	// A motor between two limit switches (link_limit_motor())
+	struct limit_motor
+	{
+		uint8_t forward[2] = {}, backward[2] = {};  // the LED channels: board, position
+		uint8_t home[2] = {}, away[2] = {};         // the switches: board, position
+		int64_t travel_ns = 1;
+		int64_t at_ns = 0;                          // its way from home, 0 to travel_ns
+		int drive = 0;                              // since since_ns: 1 toward away, -1 toward home
+		uint64_t since_ns = 0;
+	};
+	std::vector<limit_motor> m_limit_motors;
+	int64_t limit_motor_position(const limit_motor &m, uint64_t now_ns) const;
+	void limit_motors_run(uint64_t now_ns);         // after every LED update and switch read
 
 	// Coils. A board drives a coil on the game's command - a pulse at one power, then optionally a
 	// second phase at another - or on its own when a switch it watches closes (a reflex), so

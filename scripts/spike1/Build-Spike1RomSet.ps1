@@ -123,6 +123,17 @@ namespace Spike1Rom
 				new KnownFile("pinnode-LPC1112_201-0_49_0.hex", 0x00008057, 0x42ca3b82),
 				new KnownFile("pinnode-LPC1313-0_49_0.hex", 0x0000ddae, 0xa31b7afa),
 				new KnownFile("ws2812node-LPC1313-0_49_0.hex", 0x0000777d, 0x00f38c82) } },
+			new KnownSet { Set = "kiss15_141h", Folder = "KISS_LE", Title = "KISS LE 1.41.0", Files = new KnownFile[] {
+				new KnownFile("game", 0x004ee9ca, 0x1c55a059),
+				new KnownFile("image.bin", 0x3e8f02ec, 0xd96ccf4c),
+				new KnownFile("coil4node-LPC1112_101-0_28_0.hex", 0x00008487, 0x29d48577),
+				new KnownFile("coil4node-LPC1112_201-0_28_0.hex", 0x00008487, 0x19aac926),
+				new KnownFile("coil4node-LPC1313-0_28_0.hex", 0x0000c23a, 0xe019995b),
+				new KnownFile("lcdnode-LPC1113_302-0_28_0.hex", 0x0000b484, 0xd139cac7),
+				new KnownFile("pinnode-LPC1112_101-0_28_0.hex", 0x00007f1c, 0x83ca12dc),
+				new KnownFile("pinnode-LPC1112_201-0_28_0.hex", 0x00007f66, 0xcee92fdc),
+				new KnownFile("pinnode-LPC1313-0_28_0.hex", 0x0000c859, 0x18c17d1d),
+				new KnownFile("ws2812node-LPC1313-0_28_0.hex", 0x00005590, 0x921dc0f7) } },
 		};
 	}
 

@@ -570,7 +570,10 @@ void spike1_devices::node_bus_frame(const uint8_t *frame, uint32_t len, uint64_t
 	const uint32_t n = len - 5;
 	if (m_led_form < 0) m_led_form = m_cfg.symbol && m_cfg.symbol("_Z23NODEBUS_SetLEDMultiple2hhPhS_S_") ? 0 : 1;
 	if ((cmd >= 0x80 && cmd <= 0xbf) || (cmd == 0xc0 && m_led_form)) { // LED update
-		if (m_led_form ? led_update_run(node, cmd, data, n) : led_update(node, cmd, data, n)) return;
+		if (m_led_form ? led_update_run(node, cmd, data, n) : led_update(node, cmd, data, n)) {
+			if (!m_limit_motors.empty()) limit_motors_run(now_ns);
+			return;
+		}
 		const uint32_t key = (uint32_t(node) << 8) | cmd;
 		if (m_nb_logged.insert(key).second) note = "node bus: node " + std::to_string(node) + " LED update not understood: " + bytes_hex(frame, len, 32);
 		return;
@@ -723,6 +726,7 @@ void spike1_devices::node_bus_frame(const uint8_t *frame, uint32_t len, uint64_t
 	case 0x11: { // GetInputState: eight switch bytes (position p = byte p/8, bit p%8), then a u16 the game ignores
 		uint8_t r[10];
 		stepper_home_switches(now_ns);
+		if (!m_limit_motors.empty()) limit_motors_run(now_ns);
 		wire_bytes(node, r, 8);
 		r[8] = r[9] = 0;
 		if (data_len == sizeof(r)) { node_bus_reply(r, sizeof(r)); return; }
@@ -980,6 +984,47 @@ bool spike1_devices::link_stepper_home(uint8_t node, uint8_t stepper, uint16_t s
 			return true;
 		}
 	return false;
+}
+
+bool spike1_devices::link_limit_motor(uint16_t forward_led, uint16_t backward_led, uint16_t home_switch, uint16_t away_switch, uint32_t travel_ms)
+{
+	limit_motor m;
+	unsigned found = 0;
+	for (const output_info &led : m_leds) {
+		if (led.number == forward_led) { m.forward[0] = led.node; m.forward[1] = led.position; found |= 1; }
+		if (led.number == backward_led) { m.backward[0] = led.node; m.backward[1] = led.position; found |= 2; }
+	}
+	for (const switch_info &sw : m_switches) {
+		if (sw.number == home_switch) { m.home[0] = sw.node; m.home[1] = sw.position; found |= 4; }
+		if (sw.number == away_switch) { m.away[0] = sw.node; m.away[1] = sw.position; found |= 8; }
+	}
+	if (found != 15 || !travel_ms) return false;
+	m.travel_ns = int64_t(travel_ms) * 1000000;
+	set_switch(m.home[0], m.home[1], true, 0);
+	m_limit_motors.push_back(m);
+	return true;
+}
+
+int64_t spike1_devices::limit_motor_position(const limit_motor &m, uint64_t now_ns) const
+{
+	const int64_t at = m.at_ns + m.drive * int64_t(now_ns - m.since_ns);
+	return std::clamp<int64_t>(at, 0, m.travel_ns);
+}
+
+// Moves each limit motor on to now_ns as the drive left it, takes the drive the LED channels set
+// now, and sets its switches, each closed over the last 2% of the way to it - so the game's
+// start-up LED test, a few ms on each channel, leaves the motor on its home switch
+void spike1_devices::limit_motors_run(uint64_t now_ns)
+{
+	for (limit_motor &m : m_limit_motors) {
+		m.at_ns = limit_motor_position(m, now_ns);
+		m.since_ns = now_ns;
+		m.drive = (led_level(m.forward[0], m.forward[1]) ? 1 : 0) - (led_level(m.backward[0], m.backward[1]) ? 1 : 0);
+		const int64_t zone = m.travel_ns / 50;
+		const bool home = m.at_ns <= zone, away = m.at_ns >= m.travel_ns - zone;
+		if (switch_closed(m.home[0], m.home[1]) != home) set_switch(m.home[0], m.home[1], home, now_ns);
+		if (switch_closed(m.away[0], m.away[1]) != away) set_switch(m.away[0], m.away[1], away, now_ns);
+	}
 }
 
 bool spike1_devices::motor_state(uint8_t node, uint8_t index, int16_t &position, bool &moving, uint64_t now_ns) const
@@ -1396,10 +1441,18 @@ bool spike1_devices::motor_at(size_t i, int16_t &position, bool &moving, uint64_
 		return true;
 	}
 	i -= m_motors.size();
-	if (i >= m_steppers.size()) return false;
-	auto it = m_steppers.begin();
-	std::advance(it, i);
-	position = int16_t(stepper_position(it->second, now_ns));
-	moving = it->second.end_ns > now_ns;
+	if (i < m_steppers.size()) {
+		auto it = m_steppers.begin();
+		std::advance(it, i);
+		position = int16_t(stepper_position(it->second, now_ns));
+		moving = it->second.end_ns > now_ns;
+		return true;
+	}
+	i -= m_steppers.size();
+	if (i >= m_limit_motors.size()) return false;
+	const limit_motor &m = m_limit_motors[i];
+	const int64_t at = limit_motor_position(m, now_ns);
+	position = int16_t(at * 100 / m.travel_ns);
+	moving = (m.drive > 0 && at < m.travel_ns) || (m.drive < 0 && at > 0);
 	return true;
 }

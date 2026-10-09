@@ -211,6 +211,13 @@ int spike1_pinmame_stepper_home(unsigned node, unsigned stepper, int switch_numb
 		d->link_stepper_home(uint8_t(node), uint8_t(stepper), uint16_t(switch_number));
 }
 
+int spike1_pinmame_limit_motor(int forward_lamp, int backward_lamp, int home_switch, int away_switch, unsigned travel_ms)
+{
+	spike1_devices *d = devices();
+	return d && forward_lamp >= 0 && backward_lamp >= 0 && home_switch >= 0 && away_switch >= 0 &&
+		d->link_limit_motor(uint16_t(forward_lamp), uint16_t(backward_lamp), uint16_t(home_switch), uint16_t(away_switch), travel_ms);
+}
+
 unsigned spike1_pinmame_led_level(unsigned index)
 {
 	const spike1_devices *d = devices();

@@ -73,13 +73,20 @@ int spike1_pinmame_led(unsigned index, int *number, int *kind, const char **name
 unsigned spike1_pinmame_led_level(unsigned index);
 
 /* A motor the boards run on their own (Ghostbusters' Slimer), in board and motor order, then their
-   steppers (Whoa Nellie's reels, Game of Thrones' dragons): its position now - a motor's in the
-   game's units, a stepper's step within its turn - and whether it moves */
+   steppers (Whoa Nellie's reels, Game of Thrones' dragons), then the limit motors below: its
+   position now - a motor's in the game's units, a stepper's step within its turn - and whether it
+   moves */
 int spike1_pinmame_motor(unsigned index, int *position, int *moving); /* 0 when there is none */
 /* A stepper whose home switch is wired to another board (Game of Thrones' dragons): the stepper by
    its board's node address and its index there, the switch by its number. The switch is then
    closed while the stepper stands at step 0. Call after spike1_pinmame_start; 0 if no such switch */
 int spike1_pinmame_stepper_home(unsigned node, unsigned stepper, int switch_number);
+/* A motor the game runs between two limit switches through two LED channels (KISS's Starchild):
+   the forward channel's lamp number drives it toward the away switch, the backward one's toward
+   home, and it takes travel_ms between them. It stands at home at power-on, and comes after the
+   steppers in spike1_pinmame_motor(), as 0 (home) to 100 (away). Call after spike1_pinmame_start;
+   0 if the title has no such channel or switch */
+int spike1_pinmame_limit_motor(int forward_lamp, int backward_lamp, int home_switch, int away_switch, unsigned travel_ms);
 
 /* The DMD: 128x32 dots of 0-15 into dots; returns the count of frames the game has sent */
 unsigned spike1_pinmame_dmd(unsigned char *dots);
