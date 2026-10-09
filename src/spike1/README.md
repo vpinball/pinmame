@@ -297,8 +297,14 @@ code (its symbols are in the program) rather than from any other emulator:
   DMD is `ctrl://PinMAME/display?id=0`, the LCD insert or WWE's LCD `ctrl://PinMAME/display?id=1`;
   `Controller.GetMech(0)` is the motor's position (leave `HandleMechanics` at its default). The
   table needs the `PinMAMETimer` and `PulseTimer` timers core.vbs drives, and switch pulses go
-  through `vpmTimer.PulseSw`: the plugin's controller has no `PulseSwitch`. Spike 1 has no system
-  script among VPinMAME's, so the table defines its cabinet switches and keys itself.
+  through `vpmTimer.PulseSw`: the plugin's controller has no `PulseSwitch`. The system script is
+  `scripts/spike1/spike1.vbs` (it goes in VPX's Scripts folder, beside `sam.vbs`): a table defines
+  `cGameName` and calls `LoadVPM "", "spike1.vbs", 3.61`, and the script sets the title's cabinet
+  switches (`swCoin1`-`swCoin4`, `swStartButton`, `swTournament`, `swLaunch`, `swTilt`,
+  `swSlamTilt`, the flipper buttons' leaves) from the set name, as each title numbers them its own
+  way, with the CPU board's (`swEnter`, `swUp`, `swDown`, `swCancel`, `swCoinDoor`), the keys, the
+  help text and the DIP switch dialog. The flipper keys close the upper flippers' leaves too,
+  unless the table sets `Spike1StagedFlippers = True` for staged flipper buttons.
 
 Build: `cmake/spike1.cmake` (on by default, `-DPINMAME_SPIKE1=OFF` leaves it out), hooked into
 `cmake/pinmame/CMakeLists_win-x64.txt` and `cmake/libpinmame/CMakeLists.txt`. With the Pinball 2000
