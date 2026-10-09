@@ -181,8 +181,9 @@ code (its symbols are in the program) rather than from any other emulator:
   numbers, other coils from solenoid 51, and the coils the game names LEFT FLIPPER and RIGHT FLIPPER
   (with their HOLD coils) also as the flipper outputs 48 and 46; LED channels as lamps by their
   Light Reference numbers (a motor drive is no lamp); the motors the boards run on their own, then
-  their steppers, as mechs (`GetMech(n)`: Ghostbusters' Slimer is mech 0, Whoa Nellie's 1000s,
-  100s, 10s, 1s and credit reels mechs 0-4, as steps 0-199). Coil and LED levels are modulated
+  their steppers, as mechs (`GetMech(n)`: Ghostbusters' Slimer is mech 0; the 1000s, 100s, 10s, 1s
+  and credit reels of Whoa Nellie, Primus and Pabst Can Crusher - one hardware, one set of switch
+  numbers - are mechs 0-4, as steps 0-199). Coil and LED levels are modulated
   outputs.
   The keys: coins 5, 6, 3 and 4, start 1, the service buttons 7-0 (back, minus, plus, select), tilt
   Insert, slam Home, coin door End.

@@ -650,4 +650,40 @@ ROM_START(wnbjm_155)
 ROM_END
 CORE_GAMEDEF(wnbjm, 155, "Whoa Nellie! Big Juicy Melons (1.55.0)", 2015, "Stern", spike1, 0)
 
+/*-------------------------------------------------------------------
+/ Primus (Stern, 2018) and Pabst Can Crusher (Stern, 2016): Whoa Nellie's hardware - the apron LCD,
+/ the score and credit reels as mechs 0-4, the bells - and its switch numbers
+/-------------------------------------------------------------------*/
+SPIKE1_INIT(primus, "primus", spike1_dmd, 76, SPIKE1_SWITCHES(3, 4, 1, 2, 53, 54, 55, 56, 58, 60))
+ROM_START(primus_103)
+  ROM_REGION(0x2a4d2000, SPIKE1_REGION, 0)
+    ROM_LOAD("game", 0x00000000, 0x0041372a, CRC(017178e5) SHA1(eae72f6251af2f4c7381c93c3ee1d48388c37967))
+    ROM_LOAD("image.bin", 0x00414000, 0x2a06f114, CRC(cb499566) SHA1(d0a4b05a93ea9b73d6796393ce128df407766787))
+    ROM_LOAD("coil4node-LPC1112_101-0_28_0.hex", 0x2a484000, 0x00008487, CRC(29d48577) SHA1(2cef71c04de9d2ff8c4664fafaeab077532f6178))
+    ROM_LOAD("coil4node-LPC1112_201-0_28_0.hex", 0x2a48d000, 0x00008487, CRC(19aac926) SHA1(c53e6f2fe65d68a841b23a79ad35dc3422da3e6b))
+    ROM_LOAD("coil4node-LPC1313-0_28_0.hex", 0x2a496000, 0x0000c23a, CRC(e019995b) SHA1(7d09cd36e12e79c9545e8f32e94f738951e45468))
+    ROM_LOAD("lcdnode-LPC1113_302-0_28_0.hex", 0x2a4a3000, 0x0000b484, CRC(d139cac7) SHA1(e4a57e712a599041f7ba7dfcf08f07a724ccbd9f))
+    ROM_LOAD("pinnode-LPC1112_101-0_28_0.hex", 0x2a4af000, 0x00007f1c, CRC(83ca12dc) SHA1(2ac8f8c9384e8c5e0bbc1ca2d9f2ddd8bb831d3d))
+    ROM_LOAD("pinnode-LPC1112_201-0_28_0.hex", 0x2a4b7000, 0x00007f66, CRC(cee92fdc) SHA1(048abb5d42962204595d7c311dd351c9cb25fd6c))
+    ROM_LOAD("pinnode-LPC1313-0_28_0.hex", 0x2a4bf000, 0x0000c859, CRC(18c17d1d) SHA1(6b2f232c0b6c2389c59f998d0487081491e9d177))
+    ROM_LOAD("ws2812node-LPC1313-0_28_0.hex", 0x2a4cc000, 0x00005590, CRC(921dc0f7) SHA1(2c49842bb5163b75a19ebac37f0379ef72c64d4a))
+ROM_END
+CORE_GAMEDEF(primus, 103, "Primus (1.03.0)", 2018, "Stern", spike1, 0)
+
+SPIKE1_INIT(pabst, "can_crusher", spike1_dmd, 76, SPIKE1_SWITCHES(3, 4, 1, 2, 53, 54, 55, 56, 58, 60))
+ROM_START(pabst_101)
+  ROM_REGION(0x39d5f000, SPIKE1_REGION, 0)
+    ROM_LOAD("game", 0x00000000, 0x004122e1, CRC(0a114c42) SHA1(f1179042ab49190e506d93d66028bd5404ba19f8))
+    ROM_LOAD("image.bin", 0x00413000, 0x398fd2c4, CRC(424bb457) SHA1(4289990fc4991803fa72cb76508caa3e1f6402f4))
+    ROM_LOAD("coil4node-LPC1112_101-0_28_0.hex", 0x39d11000, 0x00008487, CRC(29d48577) SHA1(2cef71c04de9d2ff8c4664fafaeab077532f6178))
+    ROM_LOAD("coil4node-LPC1112_201-0_28_0.hex", 0x39d1a000, 0x00008487, CRC(19aac926) SHA1(c53e6f2fe65d68a841b23a79ad35dc3422da3e6b))
+    ROM_LOAD("coil4node-LPC1313-0_28_0.hex", 0x39d23000, 0x0000c23a, CRC(e019995b) SHA1(7d09cd36e12e79c9545e8f32e94f738951e45468))
+    ROM_LOAD("lcdnode-LPC1113_302-0_28_0.hex", 0x39d30000, 0x0000b484, CRC(d139cac7) SHA1(e4a57e712a599041f7ba7dfcf08f07a724ccbd9f))
+    ROM_LOAD("pinnode-LPC1112_101-0_28_0.hex", 0x39d3c000, 0x00007f1c, CRC(83ca12dc) SHA1(2ac8f8c9384e8c5e0bbc1ca2d9f2ddd8bb831d3d))
+    ROM_LOAD("pinnode-LPC1112_201-0_28_0.hex", 0x39d44000, 0x00007f66, CRC(cee92fdc) SHA1(048abb5d42962204595d7c311dd351c9cb25fd6c))
+    ROM_LOAD("pinnode-LPC1313-0_28_0.hex", 0x39d4c000, 0x0000c859, CRC(18c17d1d) SHA1(6b2f232c0b6c2389c59f998d0487081491e9d177))
+    ROM_LOAD("ws2812node-LPC1313-0_28_0.hex", 0x39d59000, 0x00005590, CRC(921dc0f7) SHA1(2c49842bb5163b75a19ebac37f0379ef72c64d4a))
+ROM_END
+CORE_GAMEDEF(pabst, 101, "Pabst Can Crusher (1.01.0)", 2016, "Stern", spike1, 0)
+
 #endif /* HAS_SPIKE1 */
