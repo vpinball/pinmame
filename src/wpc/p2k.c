@@ -727,11 +727,10 @@ MACHINE_DRIVER_END
 
    Bit assignments are MAME's (src/mame/drivers/pinball2k.cpp, its keyboard handler), but the keys
    follow PinMAME's coin door convention (wpc.h, VPMKeys.vbs) rather than MAME's 7 = Enter / 0 = Escape:
-   7/8/9/0 = Escape/Down/Up/Enter, with END toggling the coin door. Note that the bit-to-function
-   mapping is NOT the one wpc.h's labels suggest: wpc.h calls 0x20/0x40 Up/Down, but the switches
-   those bits reach on WPC are Down/Up (WPC.vbs swDown = 6, swUp = 7), and Down/Up is what P2K
-   expects from 8/9. p2k.vbs is kept in step with this. The board's own coin door bit reads "closed" when set -
-    the machine reports COINDOOR IS OPEN with the bit clear, which is the state it powers up */
+   7/8/9/0 = Escape/Down/Up/Enter, with END toggling the coin door. 8/9 are Down/Up as on WPC (wpc.h,
+   WPC.vbs swDown = 6, swUp = 7), which is what P2K expects from them. p2k.vbs is kept in step with this.
+   The board's own coin door bit reads "closed" when set - the machine reports COINDOOR IS OPEN with the
+   bit clear, which is the state it powers up */
 INPUT_PORTS_START(rfm)
 	CORE_PORTS
 	/* SIM_PORTS(1) - PinMAME's built-in ball simulator, commented out rather than removed so it is
