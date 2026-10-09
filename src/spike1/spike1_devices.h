@@ -275,7 +275,7 @@ private:
 		uint64_t phase1_end_ns = 0, phase2_end_ns = 0;
 		bool holding = false;          // at power2 for as long as the reflex switch stays closed
 		bool reflex = false;
-		uint8_t trigger = 0, eos = 0;  // reflex switches: position | REFLEX_USED [| REFLEX_INVERT]
+		uint8_t trigger[3] = {}, eos = 0; // reflex switches: position | REFLEX_USED [| REFLEX_INVERT]; any trigger fires
 		uint8_t reflex_power1 = 0, reflex_power2 = 0;
 		uint32_t reflex_pulse_ms = 0, reflex_holdoff_ms = 0;
 		uint64_t holdoff_end_ns = 0;
@@ -286,6 +286,7 @@ private:
 	void coil_fire(uint8_t node, const uint8_t *data, uint32_t len, uint64_t now_ns, std::string &note);
 	void coil_reflex(uint8_t node, const uint8_t *data, uint32_t len, std::string &note);
 	void run_reflexes(uint8_t node, uint64_t now_ns);
+	bool reflex_triggered(uint8_t node, const coil &c) const;
 	bool reflex_switch_active(uint8_t node, uint8_t sw) const;
 
 	// LEDs: up to 96 channels a board, an RGB LED taking three. An update gives each channel a level
