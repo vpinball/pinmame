@@ -25,7 +25,7 @@
 class spike1_devices
 {
 public:
-	enum class kind { none, i2c, node_bus, dmd_spi, cpu_spi, adc, i2s, amp, backlight, gpio, rtc, dmd, other };
+	enum class kind { none, i2c, node_bus, dmd_spi, cpu_spi, adc, i2s, amp, backlight, gpio, rtc, dmd, fb, other };
 
 	// A read/write/ioctl result that means "block until wait_ns, then call again"
 	static constexpr int32_t WAIT = INT32_MIN;
@@ -63,7 +63,10 @@ public:
 		kind type = kind::none;
 		std::string path;
 		uint16_t i2c_slave = 0;
+		uint64_t wait_until_ns = 0;   // a wait under way (the framebuffer's vblank wait)
 	};
+	// Where the game mapped a device's memory: the framebuffer's pixels
+	void mapped(const handle &h, uint32_t addr, uint32_t len);
 
 	// Results follow the system-call convention - a byte count or value, or -errno - or WAIT
 	int32_t read(handle &h, uint32_t buf, uint32_t len, uint64_t now_ns, uint64_t &wait_ns, std::string &note);
@@ -140,6 +143,19 @@ public:
 	uint8_t insert_backlight() const { return m_insert_backlight; }
 	const uint16_t *insert_pixels(uint64_t now_ns);
 
+	// The CPU board's own LCD (WWE's), a Linux framebuffer at /dev/fb0 that the game maps and draws
+	// into: 320x240 RGB565, two buffers one above the other, the shown one picked by a pan. The
+	// picture shown now, row by row (false until the game has shown a frame), and the frames shown
+	static constexpr uint32_t LCD_WIDTH = 320, LCD_HEIGHT = 240;
+	bool lcd_picture(uint16_t *out) const;
+	uint64_t lcd_frame_count() const { return m_fb_pans; }
+	// The key the title's LCD videos are RC4-encrypted with. The board's factory key store (EEPROM
+	// 0x51, encrypted with a key derived from the board's MAC address, and holding a block the
+	// model cannot make) gives it to the game, which keeps it in rc4_key once read; the model puts
+	// it there instead, while rc4_key still holds the game's 0xCC placeholder. False when the
+	// title has no rc4_key
+	bool provide_video_key(const uint8_t key[16]);
+
 	// The last frame the game sent to the DMD as 16 shades per dot (0-15), row by row
 	const uint8_t *dmd_frame() const { return m_dmd_dots; }
 	// Frames the game sent, per command byte and board, for bring-up statistics
@@ -176,10 +192,20 @@ private:
 	std::vector<eeprom> m_eeproms;
 	std::vector<digipot> m_digipots;
 
+	// The LCD's framebuffer: where the game mapped it, the line the shown buffer starts at, the
+	// panel's frame time (from the timing the game sets; 60 Hz until it does) and the frames shown
+	uint32_t m_fb_addr = 0, m_fb_len = 0, m_fb_yoffset = 0;
+	uint64_t m_fb_frame_ns = 16666667, m_fb_pans = 0;
+	int32_t fb_ioctl(handle &h, uint32_t req, uint32_t arg, uint64_t now_ns, uint64_t &wait_ns, std::string &note);
+	// WWE's video background, asked for again once the node bus start-up is over (lcd_video_background())
+	bool m_fb_startup_seen = false, m_fb_background_asked = false;
+	void lcd_video_background();
+
 	// AC line sense: a sampled, rectified mains waveform - flat 0 V once the power goes off
 	uint64_t m_adc_next_ns = 0;   // when the buffer being sampled is complete
 	uint32_t m_adc_phase = 0;
 	bool m_power_off = false;
+	bool m_cpu_inputs_from_1 = false; // WWE's SDK: the CPU board's inputs at positions 1-15 a bit lower on the wire (wire_bytes())
 
 	// Node bus: the RS-485 link to the playfield and cabinet node boards
 	std::deque<uint8_t> m_nb_reply;          // reply bytes waiting for the game's read
@@ -190,7 +216,7 @@ private:
 	std::set<uint32_t> m_nb_logged;          // (node << 8 | command) already reported as not modelled
 	uint8_t m_bridge_version[3] = {};        // of the title's netbridge firmware; zero when it has none
 	std::vector<uint32_t> m_chip_part;       // [proc key - 1]: NXP part ID of the title's node chips, in the game's order
-	uint32_t m_block_base = 0, m_block_stride = 0;
+	uint32_t m_block_base = 0, m_block_stride = 0, m_block_type_at = 88;
 	uint32_t m_nb_received[128] = {};        // frames each board has taken, as its GetStatus counts them
 	uint32_t m_lcd_image_id = 0;             // the LCD insert holds the title's lcdinsert.bin: its ID word
 	frame_observer m_frame_observer;
@@ -331,4 +357,5 @@ private:
 	void node_bus_reply(const uint8_t *data, uint32_t len, uint8_t status = 0);
 	const std::vector<uint8_t> &node_bus_nodes();
 	bool guest_read(uint32_t addr, void *dst, uint32_t len) { return m_mem.read(addr, dst, len); }
+	bool guest_write(uint32_t addr, const void *src, uint32_t len) { return m_mem.write(addr, src, len); }
 };

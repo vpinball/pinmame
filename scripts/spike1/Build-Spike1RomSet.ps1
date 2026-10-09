@@ -134,6 +134,49 @@ namespace Spike1Rom
 				new KnownFile("pinnode-LPC1112_201-0_28_0.hex", 0x00007f66, 0xcee92fdc),
 				new KnownFile("pinnode-LPC1313-0_28_0.hex", 0x0000c859, 0x18c17d1d),
 				new KnownFile("ws2812node-LPC1313-0_28_0.hex", 0x00005590, 0x921dc0f7) } },
+			new KnownSet { Set = "wwe_135h", Folder = "WWE_LE", Title = "WWE WrestleMania LE 1.35.0", Files = new KnownFile[] {
+				new KnownFile("game", 0x005685c2, 0xedc2c801),
+				new KnownFile("image.bin", 0x547598dc, 0xaa528057),
+				new KnownFile("AJ.spv", 0x008ca1fc, 0x6fe0fc26),
+				new KnownFile("BELLA_TWINS.spv", 0x008ca1fc, 0x5ca08b63),
+				new KnownFile("BLANK_FRAME.spv", 0x00025824, 0x19340b39),
+				new KnownFile("CENA_BG_FPS20.spv", 0x01588cb4, 0xc516caca),
+				new KnownFile("CENA_INTRO_FPS20.spv", 0x059a733c, 0xfefaf73d),
+				new KnownFile("coil4node-LPC1112_101-0_18_4.hex", 0x000086b3, 0x0db5fef9),
+				new KnownFile("coil4node-LPC1112_201-0_18_4.hex", 0x000086b3, 0x0d97d36b),
+				new KnownFile("coil4node-LPC1313-0_18_4.hex", 0x00009910, 0xeda97e7a),
+				new KnownFile("DB_BG_FPS20.spv", 0x01588cb4, 0xdadcc332),
+				new KnownFile("DB_INTRO_FPS20.spv", 0x0a95843c, 0x1c0764df),
+				new KnownFile("FIREWORKS_FPS20.spv", 0x008ca1fc, 0x4a85e806),
+				new KnownFile("HBK_BG_FPS20.spv", 0x01588cb4, 0x32e76255),
+				new KnownFile("HBK_INTRO_FPS20.spv", 0x0b9c07bc, 0xcf51844f),
+				new KnownFile("HHH_BG_FPS20.spv", 0x01588cb4, 0xa535703f),
+				new KnownFile("HHH_INTRO_FPS20.spv", 0x064c959c, 0x2ba4c0e4),
+				new KnownFile("HOGAN_BG_FPS20.spv", 0x01588cb4, 0x7fd2b05f),
+				new KnownFile("HOGAN_INTRO_FPS20.spv", 0x099d10ec, 0xbfffb34e),
+				new KnownFile("KANE.spv", 0x005dc15c, 0xd0d04329),
+				new KnownFile("lcdnode-LPC1113_302-0_18_4.hex", 0x00009783, 0xb9e6387e),
+				new KnownFile("LEGENDS_FPS20.spv", 0x0070819c, 0xd45c415f),
+				new KnownFile("LEGION_OF_DOOM.spv", 0x008ca1fc, 0x3031bab7),
+				new KnownFile("MAIN_EVENT.spv", 0x008ca1fc, 0x9386f7d6),
+				new KnownFile("pinnode-LPC1112_101-0_18_4.hex", 0x00008005, 0x72dd8621),
+				new KnownFile("pinnode-LPC1112_201-0_18_4.hex", 0x0000802a, 0x8a0e089c),
+				new KnownFile("pinnode-LPC1313-0_18_4.hex", 0x0000a082, 0x0e9790a7),
+				new KnownFile("RAW.spv", 0x008ca1fc, 0x7c19cd49),
+				new KnownFile("ROCK_BG_FPS20.spv", 0x01588cb4, 0x8ed98eb7),
+				new KnownFile("ROCK_INTRO_FPS20.spv", 0x06c6773c, 0x3a667503),
+				new KnownFile("ROYAL_RUMBLE.spv", 0x00a4124c, 0xd549883a),
+				new KnownFile("SCSA_BG_FPS20.spv", 0x01588cb4, 0x9230922c),
+				new KnownFile("SCSA_INTRO_FPS20.spv", 0x0668b5fc, 0x42a33cce),
+				new KnownFile("TAG_TEAM.spv", 0x005dc15c, 0xf90ff90f),
+				new KnownFile("UNDERTAKER_BG_FPS20.spv", 0x01588cb4, 0x69dd7575),
+				new KnownFile("UNDERTAKER_INTRO_FPS20.spv", 0x070f2034, 0xf513bc4f),
+				new KnownFile("US_CHAMPIONS.spv", 0x011943dc, 0x7a004855),
+				new KnownFile("WORLD_HEAVYWEIGHT.spv", 0x011943dc, 0x4fd67f81),
+				new KnownFile("WORLD_INTERCONTINENTAL.spv", 0x0148247c, 0x72ea6cc2),
+				new KnownFile("WRESTLEMANIALOGO.spv", 0x00d2f2ec, 0xe387938a),
+				new KnownFile("WWE_SHATTERLOGO_FPS20.spv", 0x015f94cc, 0x8be9e928),
+				new KnownFile("WWELOGO_FPS20.spv", 0x008efa04, 0x0b72c2aa) } },
 		};
 	}
 
@@ -412,6 +455,17 @@ namespace Spike1Rom
 			});
 		}
 
+		// A regular file of the game folder, mapped to its blocks
+		void AddFile(Partition p, string fname, uint inode)
+		{
+			ReadInode(p, inode, delegate(byte[] fi) {
+				if ((U16(fi, 0) & 0xF000) != 0x8000) return;
+				var found = new FoundFile { Name = fname, Size = SizeOf(fi) };
+				m_files.Add(found);
+				MapBlocks(p, fi, delegate(uint[] blocks) { found.Blocks = blocks; });
+			});
+		}
+
 		// The game folder is the partition's directory that holds "game" and "image.bin"
 		void RootListed(Partition p, List<KeyValuePair<string, uint>> entries, List<byte> types)
 		{
@@ -432,14 +486,20 @@ namespace Spike1Rom
 						for (int k = 0; k < files.Count; k++)
 						{
 							if (files[k].Key == "." || files[k].Key == "..") continue;
+							if (files[k].Key == "video" && (ftypes[k] == 0 || ftypes[k] == 2))
+							{
+								// WWE's LCD clips: the files of the folder's video directory, under their own names
+								ReadInode(p, files[k].Value, delegate(byte[] vi) {
+									if ((U16(vi, 0) & 0xF000) != 0x4000) return;
+									ReadDir(p, vi, delegate(List<KeyValuePair<string, uint>> clips, List<byte> ctypes) {
+										for (int c = 0; c < clips.Count; c++)
+											if (clips[c].Key != "." && clips[c].Key != ".." && (ctypes[c] == 0 || ctypes[c] == 1)) AddFile(p, clips[c].Key, clips[c].Value);
+									});
+								});
+								continue;
+							}
 							if (ftypes[k] != 0 && ftypes[k] != 1) continue;
-							string fname = files[k].Key;
-							ReadInode(p, files[k].Value, delegate(byte[] fi) {
-								if ((U16(fi, 0) & 0xF000) != 0x8000) return;
-								var found = new FoundFile { Name = fname, Size = SizeOf(fi) };
-								m_files.Add(found);
-								MapBlocks(p, fi, delegate(uint[] blocks) { found.Blocks = blocks; });
-							});
+							AddFile(p, files[k].Key, files[k].Value);
 						}
 					});
 				});

@@ -6,8 +6,9 @@ the playfield's node boards over a serial bus; the display is a 128x32 DMD with 
 
 **Status: bring-up.** The subsystem runs as a PinMAME driver (`src/wpc/spike1.c`, sets
 `gbust_117h` Ghostbusters LE 1.17.0, `wnbjm_155` Whoa Nellie! Big Juicy Melons 1.55.0, `primus_103`
-Primus 1.03.0, `pabst_101` Pabst Can Crusher 1.01.0, `got_137h` Game of Thrones LE 1.37.0 and
-`kiss15_141h` KISS LE 1.41.0) and standalone (`spike1boot`, below).
+Primus 1.03.0, `pabst_101` Pabst Can Crusher 1.01.0, `got_137h` Game of Thrones LE 1.37.0,
+`kiss15_141h` KISS LE 1.41.0 and `wwe_135h` WWE WrestleMania LE 1.35.0) and standalone
+(`spike1boot`, below).
 
 ## How it works
 
@@ -21,7 +22,10 @@ system-call level, the way the program sees it.
 - `spike1_memory.*` - the guest's flat address space: the program image, brk heap and mmap area in
   one low block, the main stack, the `0xffff0000` kernel helper page, and a read-only view of the
   asset image (over 1 GB), mapped from the host's file or memory instead of copied. Each block is
-  one fast window of the shim's `address_space`.
+  one fast window of the shim's `address_space`. Further read-only views (WWE's LCD clips, up to
+  195 MB, mapped one at a time as they play) go to the free address space below and above the
+  asset image; the CPU reaches them through the bus callback (`read_view()`), as it has no fast
+  window left. A read-only mapping of 1 MB or more of a file the host holds is such a view.
 - `spike1_vfs.*` - the filesystem the game sees: the title's files, read-only (a host directory
   with the machine's extracted root, or files the host holds in memory - PinMAME's ROM regions),
   under an in-memory layer with everything the game writes. The board's `/data` and `/tmp` mounts
@@ -84,13 +88,17 @@ writes every node-bus frame (except switch and status reads) to a file, `--peek 
 prints guest memory at the end, `--stepper-home <node>:<stepper>:<switch>` links a stepper to a
 home switch on another board as a PinMAME set's `SPIKE1_HOMES` does (Game of Thrones: `10:0:88`
 and `12:0:121`), `--limit-motor <forward LED>:<backward LED>:<home switch>:<away switch>:<ms>`
-adds a limit motor as a set's `SPIKE1_LIMIT_MOTOR` does (KISS: `169:170:53:54:1000`), `--slice <ms>` sets the emulated time per `run()` call (1 by
+adds a limit motor as a set's `SPIKE1_LIMIT_MOTOR` does (KISS: `169:170:53:54:1000`),
+`--video-key <32 hex digits>` hands the game the key its LCD clips are encrypted with, `--lcd <s>`
+saves the CPU board's LCD every s seconds as a PPM file in the state directory,
+`--poke <s>:<hex address>:<hex byte>` writes a byte of guest memory then (for experiments),
+`--slice <ms>` sets the emulated time per `run()` call (1 by
 default; PinMAME uses one frame, 16.7). With `SPIKE1_NODE_STATS` set in the environment, it
 prints the node-bus frame count per command and board.
 
 `--root` is the machine's root filesystem extracted from its image (with `games/<name>/game` and
 `image.bin` in it). `--files` instead loads the game's folder (`games/<name>`: the program,
-`image.bin`, `lcdinsert.bin`, the node firmware) into memory, as PinMAME will hold it; the game
+`image.bin`, `lcdinsert.bin`, the node firmware, WWE's `video/` clips) into memory, as PinMAME will hold it; the game
 needs nothing else from the root. The state directory keeps the machine's NVRAM between runs as
 `spike1.nv`, and the `--insert` pictures. `--trace` logs every system call; without it, only noteworthy ones (device
 traffic, files not found, threads) are logged. From Git Bash, set `MSYS_NO_PATHCONV=1`, or it turns
@@ -121,7 +129,12 @@ code (its symbols are in the program) rather than from any other emulator:
   polarity. A board's eight GetInputState bytes and the CPU board's 3-byte `/dev/spi1` transfer
   carry position p in byte p/8, bit p%8, active low unless the switch table marks it active high.
   At rest: a trough opto per installed ball (`hook_balls_installed_in_game`), the firmware's other
-  closed-at-rest marks, and the coin door's power sense.
+  closed-at-rest marks and the coin door's power sense. WWE's SDK asks GetInputState for the eight
+  switch bytes alone, and its device table gives the CPU board's inputs after DIP 1 a position one
+  too high (DIP 2 at 2, SERVICE SELECT at 9, BACK at 12; the later titles have 1, 8 and 11). The
+  board is the same: the game's own switch map for board 0 (`g_node_switch_map`) has DIP 1-8 on
+  bits 0-7, ENTER, PLUS, MINUS and ESCAPE on 8-11 and the interlock on 16, so `wire_bytes()` puts
+  that table's positions 1-15 a bit lower.
 - **Numbers** are the factory manual's, which the title's own tables hold (`apply_manual_numbers()`):
   `node_board_device_sw_table` gives the Switch Reference numbers, `node_board_device_cl_table_data`
   the Driver Reference numbers of the coils, `node_board_device_led_table` the Light Reference
@@ -129,7 +142,9 @@ code (its symbols are in the program) rather than from any other emulator:
   manual numbers the CPU board's own switches C1-C16 apart; they are 101-116 here. An optional
   topper's board - one the game names `TOPPER...` in `lang_text_nb_<node>` - numbers its switches
   from 1 again (Game of Thrones' TOPPER DRAGON is 1, as is its LEFT RETURN LANE); they are 121 and
-  up here.
+  up here. WWE's SDK lays the tables out its own way: 28-byte coil entries (the index in the low
+  half at +20, the number at +24) and 64-byte switch entries with the index at +40 and the number
+  at +60.
 - **Coils** (`node_board_device_table` type 2): a fire command gives a
   first power and time, then a second; a reflex configuration makes the board fire the coil on its
   own when a switch it watches closes - flippers pulse at full power, then hold at the second power
@@ -169,8 +184,9 @@ code (its symbols are in the program) rather than from any other emulator:
   power-on. The model moves it on at every LED update and switch read.
 - **Board blocks**: the game keeps a block a board; `sys_node_board_get_next_block_ptr` gives its
   base and size, which differ between SDK versions (a loaded constant in Ghostbusters, a computed
-  one in Whoa Nellie) - the model reads both forms, as the firmware image a board must report
-  hangs off its block.
+  one in Whoa Nellie and WWE, 80 bytes there) - the model reads both forms, as the firmware image a
+  board must report hangs off its block. The board type the game settles on for a block sits where
+  `node_update_runtime_hex_image_id` first looks (+88 on most SDKs, +32 on WWE's).
 - **Sound** (`/dev/i2s`): the game's DAC handler writes 200 stereo frames of 16-bit samples at a
   time, at the rate it sets with a code from its own table (44.1 kHz). A write waits while the DAC
   still has more than the driver's buffer (2940 bytes) to play, so the sound thread runs at the
@@ -185,19 +201,38 @@ code (its symbols are in the program) rather than from any other emulator:
   (the game's table: 84 for 15 fps), and sets the backlight; `insert_pixels()` gives the picture
   the player sees. Ghostbusters runs the Stern logo (frames 129-173) in attract mode and shows its
   own logo (frame 174) once credits are in.
+- **CPU board LCD** (`/dev/fb0`, WWE's playfield screen): a Linux framebuffer, 320x240 RGB565 in
+  two buffers one above the other. The game maps it, sets its timing (the model takes the frame
+  rate from the pixel clock and margins: 58.95 Hz), draws into the buffer not shown and pans to it,
+  then waits out the frame's vblanks - counted with Stern's ioctl 0x80204612 (32 bytes, the count
+  at +4) and waited with `FBIO_WAITFORVSYNC`, whose argument is the count, so the clips play at
+  their own rate (20 fps). `lcd_picture()` gives the shown buffer. The clips (`video/*.spv`: a
+  36-byte header, then 153600-byte frames) are RC4-encrypted; the game decrypts each frame itself
+  (`VideoPlayer::render_frame`, key byte 9 XORed with the frame number) with the key its factory
+  key store gives it - a block in EEPROM 0x51 encrypted with a key derived from the board's MAC
+  address, which the model cannot make. So the host hands the key over (`provide_video_key()`) and
+  the model puts it in the game's `rc4_key` while that holds the game's 0xCC placeholder; the
+  HMAC key beside it is never used. WWE picks its attract video once, at start-up, while its node
+  bus start-up (a power cycle of the boards, some 5 s) still holds video effects back; on the
+  board, the program's slower loading puts that after the start-up. The model sets the game's
+  `video_effect_update_background_flag` once the start-up is over - what the game does itself
+  when a video ends - and the attract clips play.
 
 ## In PinMAME (`src/wpc/spike1.c`)
 
 - **The set** is the title's game folder from Stern's update image - the program, `image.bin`,
-  `lcdinsert.bin` if it has one, the node firmware - loaded one after another into one ROM region
-  and audited like any other set's ROMs. The region is over 1 GB, so the games need a 64-bit
-  build. `MACHINE_INIT` hands the files to the subsystem, which runs the program as
-  `/games/<folder>/game`; `image.bin` is mapped from the region, not copied.
-  `scripts/spike1/Build-Spike1RomSet.ps1` (or `Build ROM set.cmd` beside it, which opens a window)
-  makes the set from Stern's SD-card image, `<title>-<version>.iso.zip`: it finds the game folder
-  on the image's ext3 partitions, reads it straight out of the zip in a few forward passes, writes
-  `<set>.zip` stored, and checks every file against the set's CRCs - a new set needs its files
-  added to the script's `KnownSet` table. Stern's `.spk` update packages are not read yet.
+  `lcdinsert.bin` if it has one, the node firmware, and WWE's 33 LCD clips (`.spv`) from the
+  folder's `video` directory - loaded one after another into one ROM region and audited like any
+  other set's ROMs. The region is over 1 GB (WWE's 2.9 GB), so the games need a 64-bit build.
+  `MACHINE_INIT` hands the files to the subsystem, which runs the program as
+  `/games/<folder>/game` and puts the clips in `video/` (a set's files sit side by side, as
+  PinMAME matches a ROM by its name alone); `image.bin` and the clips are mapped from the region,
+  not copied. `scripts/spike1/Build-Spike1RomSet.ps1` (or `Build ROM set.cmd` beside it, which
+  opens a window) makes the set from Stern's SD-card image, `<title>-<version>.iso.zip` or the
+  `.iso` inside it: it finds the game folder on the image's ext3 partitions, reads it straight out
+  of the zip in a few forward passes, writes `<set>.zip` stored, and checks every file against the
+  set's CRCs - a new set needs its files added to the script's `KnownSet` table. Stern's `.spk`
+  update packages are not read yet.
 - **The CPU** (`CPU_SPIKE1`, `src/cpuintrf.c`) runs the machine for the cycles PinMAME gives it,
   at 400 MHz; once a frame the driver passes switch changes in and takes coils, LEDs and the DMD out.
 - **Numbers** are the factory manual's: switches by their Switch Reference numbers (the flipper
@@ -219,9 +254,11 @@ code (its symbols are in the program) rather than from any other emulator:
   The keys: coins 5, 6, 3 and 4, start 1, the service buttons 7-0 (back, minus, plus, select), tilt
   Insert, slam Home, coin door End.
 - **Displays**: the DMD as a core DMD (`CORE_DMD_PWM_PREINTEGRATED_LINEAR_16`: the device model
-  already sums the four bitplanes to 16 even shades); the LCD insert below it as a video display,
-  drawn through 32768 palette pens after the core's. libpinmame reads a video display at its
-  layout position, so the two are separate displays there.
+  already sums the four bitplanes to 16 even shades); the LCD insert (160x128) or the CPU board's
+  LCD (WWE, 320x240) below it as a video display, drawn through 32768 palette pens after the
+  core's. libpinmame reads a video display at its layout position, so the two are separate
+  displays there. The driver hands the subsystem the key encrypted LCD clips use
+  (`spike1_pinmame_video_key()`, a no-op for the other titles).
 - **Sound**: a stereo stream from the device model's samples, at the rate the game sets on
   `/dev/i2s` (Ghostbusters 44.1 kHz, Whoa Nellie 24 kHz); the mixer resamples it. The machine makes
   samples in time slices, and in about half of the stream's updates it had fewer ready than the
@@ -240,7 +277,7 @@ code (its symbols are in the program) rather than from any other emulator:
   sound stream asked for and got (with the peak sample), and the switch changes it passed on.
 - **Tables** (VPX with its PinMAME plugin): `cGameName = "gbust_117h"`; `Controller.SolMask(2) = 2`
   for the lamps as levels (0-255) - the coils then come as levels too, any level above 0 on; the
-  DMD is `ctrl://PinMAME/display?id=0`, the LCD insert `ctrl://PinMAME/display?id=1`;
+  DMD is `ctrl://PinMAME/display?id=0`, the LCD insert or WWE's LCD `ctrl://PinMAME/display?id=1`;
   `Controller.GetMech(0)` is the motor's position (leave `HandleMechanics` at its default). The
   table needs the `PinMAMETimer` and `PulseTimer` timers core.vbs drives, and switch pulses go
   through `vpmTimer.PulseSw`: the plugin's controller has no `PulseSwitch`. Spike 1 has no system
@@ -276,6 +313,15 @@ disc is lamp 172 (the game runs disc motor 2 only). The optional USB topper (`/d
 `auto_topper`) is not modelled: its writes are taken and dropped. The set is `kiss15`, as PinMAME's
 `kiss` is Bally's of 1979.
 
+WWE WrestleMania LE 1.35.0 (the oldest SDK, node firmware 0.18.4, six boards, four balls) boots to
+attract mode with its DMD, and its playfield LCD plays the attract clips (the shattering "Legends
+of WrestleMania" logo and the WWE logo, decrypted by the game, at 20 fps); it takes coins and
+starts a game. It needed `syncfs` (system call 373), 8-byte switch reads, its own table layouts,
+80-byte board blocks, its CPU board inputs a bit lower than its table gives them (above; without
+that, each service button acts as the next one), the framebuffer, views for its clips and the
+attract video nudge above. BACK in attract mode adds a service credit, as the game intends. Stern's `WWE_LE-1_35.iso.zip` copy here had an unreadable area on its disk; the
+`.iso` inside it builds the same set.
+
 ## Open items
 
 1. Ball physics are the table's job (PinMAME/VPX); the harness has none, so a game stops at ball 1.
@@ -295,5 +341,9 @@ disc is lamp 172 (the game runs disc motor 2 only). The optional USB topper (`/d
    rt_sigreturn back), but a signal to a thread blocked in a system call waits until the thread
    wakes instead of interrupting the call.
 6. `/proc` and `/sys` entries the game reads (`/proc/self/task/<tid>/comm`, `/proc/cpuinfo`).
+   WWE: the LCD's backlight (a GPIO line, `/dev/gpio` 0x3c03/0x3c04 on line 157) is not modelled,
+   so the LCD shows whatever the game draws; the wrestler-select clips are asked for from frame
+   157 on, past the end of their 147 frames, so the LCD stays dark there (the same game code and
+   clips on the board - not established whether it does the same there).
 7. Sharing `src/p2k/shim`: `cmake/spike1.cmake` takes its sources from the Pinball 2000 library
    when there is one; a common library for both would be cleaner.

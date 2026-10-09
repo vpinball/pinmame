@@ -47,6 +47,8 @@ spike1_memory::spike1_memory()
 	m_stack = { STACK_TOP - STACK_SIZE, STACK_SIZE, allocate(STACK_SIZE) };
 	m_kuser = { KUSER_BASE, KUSER_SIZE, allocate(KUSER_SIZE) };
 	m_free.push_back({ MMAP_BASE, LOW_SIZE - MMAP_BASE });
+	m_view_free.push_back({ VIEW_LOW_BASE, FILE_BASE - VIEW_LOW_BASE });
+	m_view_free.push_back({ VIEW_HIGH_BASE, STACK_TOP - STACK_SIZE - VIEW_HIGH_BASE });
 }
 
 spike1_memory::~spike1_memory()
@@ -78,7 +80,25 @@ uint8_t *spike1_memory::host(uint32_t addr, uint32_t len, bool for_write)
 		if (off < b->size && len <= b->size - off)
 			return b->mem + off;
 	}
+	if (!for_write)
+		for (block &v : m_views) {
+			const uint32_t off = addr - v.base;
+			if (off < v.size && len <= v.size - off)
+				return v.mem + off;
+		}
 	return nullptr;
+}
+
+bool spike1_memory::read_view(uint32_t addr, uint32_t &value) const
+{
+	for (const block &v : m_views) {
+		const uint32_t off = addr - v.base;
+		if (off >= v.size) continue;
+		value = 0;
+		std::memcpy(&value, v.mem + off, std::min<uint32_t>(4, v.size - off));
+		return true;
+	}
+	return false;
 }
 
 uint32_t spike1_memory::map_file(const std::string &host_path, uint64_t offset, uint32_t length)
@@ -119,10 +139,23 @@ uint32_t spike1_memory::map_file(const std::string &host_path, uint64_t offset, 
 
 uint32_t spike1_memory::map_view(const uint8_t *data, uint32_t length)
 {
-	if (m_file.mem || !data || !length || length > FILE_LIMIT - FILE_BASE) return 0;
-	m_file = { FILE_BASE, length, const_cast<uint8_t *>(data) }; // host() never hands it out for writing
-	if (m_space) m_space->add_fast_window(m_file.base, m_file.mem, m_file.size);
-	return m_file.base;
+	if (!data || !length) return 0;
+	if (!m_file.mem && length <= FILE_LIMIT - FILE_BASE) {
+		m_file = { FILE_BASE, length, const_cast<uint8_t *>(data) }; // host() never hands it out for writing
+		if (m_space) m_space->add_fast_window(m_file.base, m_file.mem, m_file.size);
+		return m_file.base;
+	}
+	const uint32_t pages = (length + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
+	for (auto it = m_view_free.begin(); pages && it != m_view_free.end(); ++it) {
+		if (it->size < pages) continue;
+		const uint32_t base = it->base;
+		it->base += pages;
+		it->size -= pages;
+		if (!it->size) m_view_free.erase(it);
+		m_views.push_back({ base, length, const_cast<uint8_t *>(data) });
+		return base;
+	}
+	return 0;
 }
 
 bool spike1_memory::read(uint32_t addr, void *dst, uint32_t len)
@@ -186,19 +219,30 @@ uint32_t spike1_memory::map(uint32_t length)
 
 void spike1_memory::unmap(uint32_t addr, uint32_t length)
 {
+	for (auto v = m_views.begin(); v != m_views.end(); ++v)
+		if (v->base == addr) {
+			release_span(m_view_free, addr, (v->size + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1));
+			m_views.erase(v);
+			return;
+		}
 	length = (length + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
 	if (addr < MMAP_BASE || addr >= LOW_SIZE || !length || length > LOW_SIZE - addr)
 		return;
-	auto it = std::lower_bound(m_free.begin(), m_free.end(), addr,
+	release_span(m_free, addr, length);
+}
+
+void spike1_memory::release_span(std::vector<span> &list, uint32_t addr, uint32_t length)
+{
+	auto it = std::lower_bound(list.begin(), list.end(), addr,
 		[](const span &s, uint32_t a) { return s.base < a; });
-	it = m_free.insert(it, { addr, length });
+	it = list.insert(it, { addr, length });
 	// merge with the neighbours so the area does not fragment into page-sized holes
-	if (it + 1 != m_free.end() && it->base + it->size == (it + 1)->base) {
+	if (it + 1 != list.end() && it->base + it->size == (it + 1)->base) {
 		it->size += (it + 1)->size;
-		m_free.erase(it + 1);
+		list.erase(it + 1);
 	}
-	if (it != m_free.begin() && (it - 1)->base + (it - 1)->size == it->base) {
+	if (it != list.begin() && (it - 1)->base + (it - 1)->size == it->base) {
 		(it - 1)->size += it->size;
-		m_free.erase(it);
+		list.erase(it);
 	}
 }

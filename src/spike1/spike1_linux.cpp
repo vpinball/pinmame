@@ -60,7 +60,7 @@ const syscall_name SYSCALL_NAMES[] = {
 	{258,"timer_settime"},{262,"timer_delete"},{263,"clock_gettime"},{264,"clock_getres"},
 	{265,"clock_nanosleep"},{268,"tgkill"},{281,"socket"},{282,"bind"},{283,"connect"},
 	{322,"openat"},{327,"fstatat64"},{334,"faccessat"},{338,"set_robust_list"},{351,"eventfd"},
-	{356,"eventfd2"},{359,"pipe2"},
+	{356,"eventfd2"},{359,"pipe2"},{373,"syncfs"},
 	{0xf0002,"cacheflush"},{0xf0005,"set_tls"},
 };
 
@@ -891,7 +891,7 @@ int32_t spike1_linux::syscall(uint32_t nr, const uint32_t a[7], bool &handled, s
 		if ((t == spike1_vfs::type::directory) != (nr == 40)) return nr == 40 ? -E_NOTDIR : -E_ISDIR;
 		return m_vfs.remove(g) ? 0 : -E_NOTEMPTY;
 	}
-	case 36: m_syncs++; return 0;          // sync
+	case 36: case 373: m_syncs++; return 0; // sync, syncfs
 	case 118: case 148: return 0;          // fsync, fdatasync
 	case 143: return 0; // flock
 	case 15: return 0;  // chmod
@@ -1281,11 +1281,12 @@ int32_t spike1_linux::sys_mmap(uint32_t addr, uint32_t len, uint32_t prot, uint3
 	if (!len) return -E_INVAL;
 	const bool fixed = (flags & 0x10) != 0, anonymous = (flags & 0x20) != 0;
 	uint32_t where;
-	if (!fixed && !anonymous && len >= (16u << 20) && !(prot & 2)) {
-		// a big read-only mapping (the asset image): the host maps the file instead of copying it
+	if (!fixed && !anonymous && len >= (1u << 20) && !(prot & 2)) {
+		// a big read-only mapping (the asset image, WWE's LCD clips): a view of the file instead of
+		// a copy - of a file the host holds, or from 16 MB of one on the host's disk
 		auto f = get_fd(fd);
 		const bool in_memory = f && f->type == file::kind::memory && offset + len <= f->size;
-		if (in_memory || (f && f->type == file::kind::host && f->fp)) {
+		if (in_memory || (f && f->type == file::kind::host && f->fp && len >= (16u << 20))) {
 			const uint32_t view = in_memory ? m_mem.map_view(f->data + offset, len) : m_mem.map_file(f->host, offset, len);
 			note = view ? "mapped " + f->guest + " (" + std::to_string(len) + " bytes) read-only at " + hex(view)
 			            : "could not map " + f->guest + " (" + std::to_string(len) + " bytes)";
@@ -1304,6 +1305,7 @@ int32_t spike1_linux::sys_mmap(uint32_t addr, uint32_t len, uint32_t prot, uint3
 		auto f = get_fd(fd);
 		if (!f) { m_mem.unmap(where, len); return -E_BADF; }
 		if (f->type == file::kind::device) {
+			m_devices.mapped(f->dev, where, len);
 			note = "mmap of device " + f->guest + " (" + std::to_string(len) + " bytes at offset " + std::to_string(offset) + ") gives plain memory";
 		} else if (f->type == file::kind::memory || f->type == file::kind::written) {
 			const uint8_t *src = f->written ? f->written->data() : f->data;

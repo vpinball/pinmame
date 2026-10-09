@@ -43,7 +43,14 @@ void copy_text(const std::string &s, char *dst, unsigned size)
 	std::snprintf(dst, size, "%s", s.c_str());
 }
 
-u32 unmapped_read(void *, offs_t addr, u32) { if (g_machine && g_machine->os) g_machine->os->fault(addr, false); return 0; }
+// Outside the CPU's fast windows: a file view the memory holds beyond them (the bus context), or a fault
+u32 unmapped_read(void *ctx, offs_t addr, u32)
+{
+	uint32_t value = 0;
+	if (ctx && static_cast<const spike1_memory *>(ctx)->read_view(addr, value)) return value;
+	if (g_machine && g_machine->os) g_machine->os->fault(addr, false);
+	return 0;
+}
 void unmapped_write(void *, offs_t addr, u32, u32) { if (g_machine && g_machine->os) g_machine->os->fault(addr, true); }
 
 spike1_devices *devices() { return g_machine && g_machine->os ? &g_machine->os->devices() : nullptr; }
@@ -63,7 +70,7 @@ int spike1_pinmame_start(const char *game, const spike1_file *files, unsigned co
 	p2k_active_config = &m->config;
 
 	m->cpu = &SPIKE1_CPU(m->config, "maincpu", SPIKE1_CPU_HZ);
-	p2k_bus_callbacks bus{ unmapped_read, unmapped_write, nullptr };
+	p2k_bus_callbacks bus{ unmapped_read, unmapped_write, &m->memory };
 	m->space = std::make_unique<address_space>(bus);
 	m->memory.attach(*m->space);
 	m->cpu->p2k_set_space(AS_PROGRAM, m->space.get());
@@ -73,9 +80,13 @@ int spike1_pinmame_start(const char *game, const spike1_file *files, unsigned co
 
 	spike1_linux::config cfg;
 	const std::string dir = std::string("/games/") + (game ? game : "");
+	// A set's files sit side by side; on the card a title's LCD clips (.spv) are in its video folder
 	for (unsigned i = 0; i < count; i++)
-		if (files[i].name && files[i].data)
-			cfg.files.push_back({ dir + "/" + files[i].name, files[i].data, files[i].size });
+		if (files[i].name && files[i].data) {
+			const std::string name = files[i].name;
+			const bool clip = name.size() > 4 && name.compare(name.size() - 4, 4, ".spv") == 0;
+			cfg.files.push_back({ dir + (clip ? "/video/" : "/") + name, files[i].data, files[i].size });
+		}
 	cfg.executable = dir + "/game";
 	cfg.environment = { "HOME=/root", "PATH=/bin:/usr/bin:/usr/local/bin", "LANG=C", "LC_ALL=C", "GAMES_PATH=/games" };
 	cfg.clock_hz = SPIKE1_CPU_HZ;
@@ -247,6 +258,18 @@ int spike1_pinmame_insert(unsigned short *rgb565, unsigned *backlight)
 	if (!px) return 0;
 	if (rgb565) std::memcpy(rgb565, px, SPIKE1_INSERT_WIDTH * SPIKE1_INSERT_HEIGHT * sizeof(uint16_t));
 	return 1;
+}
+
+int spike1_pinmame_lcd(unsigned short *rgb565)
+{
+	const spike1_devices *d = devices();
+	return d && rgb565 && d->lcd_picture(rgb565);
+}
+
+int spike1_pinmame_video_key(const unsigned char *key)
+{
+	spike1_devices *d = devices();
+	return d && key && d->provide_video_key(key);
 }
 
 unsigned spike1_pinmame_audio_rate(void)

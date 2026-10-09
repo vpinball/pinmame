@@ -92,6 +92,7 @@ spike1_devices::kind spike1_devices::kind_for_path(const std::string &path)
 		{ "/dev/spi0", kind::dmd_spi }, { "/dev/spi1", kind::cpu_spi }, { "/dev/dmd", kind::dmd },
 		{ "/dev/adc", kind::adc }, { "/dev/i2s", kind::i2s }, { "/dev/amp", kind::amp },
 		{ "/dev/backlight", kind::backlight }, { "/dev/gpio", kind::gpio }, { "/dev/rtc", kind::rtc },
+		{ "/dev/fb0", kind::fb },
 	};
 	for (const auto &t : table) if (path == t.path) return t.type;
 	return path.rfind("/dev/", 0) == 0 ? kind::other : kind::none;
@@ -153,6 +154,10 @@ void spike1_devices::start(const config &cfg)
 	m_insert_frames = 0;
 	m_insert_image.clear();
 	m_insert_backlight = 0;
+	m_fb_addr = m_fb_len = m_fb_yoffset = 0;
+	m_fb_frame_ns = 16666667;
+	m_fb_pans = 0;
+	m_fb_startup_seen = m_fb_background_asked = false;
 	for (auto &c : m_insert) c = insert_channel();
 	if (m_cfg.read_game_file) m_cfg.read_game_file("lcdinsert.bin", m_insert_image);
 	const uint8_t *head = m_insert_image.data();
@@ -281,6 +286,8 @@ int32_t spike1_devices::ioctl(handle &h, uint32_t req, uint32_t arg, uint64_t no
 		case 0x4204: case 0x4206: return 0;
 		}
 	}
+	if (h.type == kind::fb)
+		return fb_ioctl(h, req, arg, now_ns, wait_ns, note);
 	if (h.type == kind::dmd && (req == 0x3d01 || req == 0x3d02))
 		return 0; // the display thread brackets every frame write with these
 	if (h.type == kind::i2s && req == 0x3e00) { // sample rate: [code, u32]
@@ -511,8 +518,10 @@ int32_t spike1_devices::node_bus_write(uint32_t buf, uint32_t len, uint64_t now_
 // The board block array: sys_node_board_get_next_block_ptr(node) is base + node * stride, the base
 // loaded from its literal pool (ldr r1, [pc, #imm]) and the stride an immediate - both differ
 // between SDK versions, so read them from the function itself. Newer SDKs load the stride
-// (mov r3, #imm); older ones (Whoa Nellie) compute the address with shifts and step the scan loop
-// by it (add r3, r3, #imm)
+// (mov r3, #imm); older ones (Whoa Nellie, WWE) compute the address with shifts and step the scan
+// loop by it (add r3, r3, #imm). The board type the game settles on for a block sits at the
+// offset node_update_runtime_hex_image_id checks first (ldr r3, [r4, #imm]): +88 on most SDKs,
+// +32 on WWE's
 spike1_devices::node_image spike1_devices::node_image_for(uint8_t node)
 {
 	node_image img;
@@ -524,14 +533,20 @@ spike1_devices::node_image spike1_devices::node_image_for(uint8_t node)
 			if ((insn & 0xfffff000) == 0xe59f1000 && !m_block_base) {
 				uint32_t base = 0;
 				if (guest_read(a + 8 + (insn & 0xfff), &base, 4)) m_block_base = base;
-			} else if (((insn & 0xfffff000) == 0xe3a03000 || (insn & 0xffffff00) == 0xe2833000) && (insn & 0xff) >= 100) {
+			} else if (((insn & 0xfffff000) == 0xe3a03000 || (insn & 0xffffff00) == 0xe2833000) && (insn & 0xff) >= 64) {
 				m_block_stride = insn & 0xff;
 			}
 		}
+		const uint32_t update = m_cfg.symbol("_Z32node_update_runtime_hex_image_idP18node_board_block_s");
+		for (uint32_t a = update; update && a < update + 0x20; a += 4) {
+			uint32_t insn = 0;
+			if (!guest_read(a, &insn, 4)) break;
+			if ((insn & 0xfffff000) == 0xe5943000) { m_block_type_at = insn & 0xfff; break; }
+		}
 	}
 	const uint32_t head = m_cfg.symbol ? m_cfg.symbol("node_board_runtime_hex_image_list_head") : 0;
-	if (!m_block_base || !m_block_stride || !head) return img;
-	guest_read(m_block_base + node * m_block_stride + 88, &img.board_type, 4);
+	if (!m_block_base || !m_block_stride || !head || m_block_type_at + 4 > m_block_stride) return img;
+	guest_read(m_block_base + node * m_block_stride + m_block_type_at, &img.board_type, 4);
 	if (!img.board_type) return img;
 	// image records: [0] board type, [4] proc key, [12] content, [16] offset, [24] checksum, [28] next;
 	// the version sits at content + offset + 9
@@ -723,13 +738,13 @@ void spike1_devices::node_bus_frame(const uint8_t *frame, uint32_t len, uint64_t
 		}
 		break;
 	}
-	case 0x11: { // GetInputState: eight switch bytes (position p = byte p/8, bit p%8), then a u16 the game ignores
+	case 0x11: { // GetInputState: eight switch bytes (position p = byte p/8, bit p%8), then a u16 the game ignores (WWE's SDK asks for the eight alone)
 		uint8_t r[10];
 		stepper_home_switches(now_ns);
 		if (!m_limit_motors.empty()) limit_motors_run(now_ns);
 		wire_bytes(node, r, 8);
 		r[8] = r[9] = 0;
-		if (data_len == sizeof(r)) { node_bus_reply(r, sizeof(r)); return; }
+		if (data_len == sizeof(r) || data_len == 8) { node_bus_reply(r, data_len); return; }
 		break;
 	}
 	case 0xfe: { // GetVersion: [address | boot << 7][major][minor][patch][part ID, 4][u16]
@@ -881,6 +896,14 @@ void spike1_devices::load_device_table()
 		    n.find("INTERLOCK") != std::string::npos || n.find("DC SENSE") != std::string::npos)
 			set_switch(f.first.node, f.first.position, true, 0);
 	}
+	// WWE's SDK gives the CPU board's inputs after DIP 1 a position one too high in this table (DIP 2
+	// at 2, SERVICE SELECT at 9 and BACK at 12, where the later titles have 1, 8 and 11). The board
+	// is the same: the game's own switch map for board 0 (g_node_switch_map) has DIP 1-8 on bits
+	// 0-7, ENTER, PLUS, MINUS and ESCAPE on 8-11 and the interlock on 16, as this table has for the
+	// later titles. wire_bytes() puts positions 1-15 a bit lower
+	m_cpu_inputs_from_1 = false;
+	for (const auto &f : found)
+		if (f.first.node == 0 && f.first.position == 2 && upper_name(f.first.name) == "DIP 2") m_cpu_inputs_from_1 = true;
 	for (auto &f : found) m_switches.push_back(f.first);
 	apply_manual_numbers(device);
 	std::string closed;
@@ -911,6 +934,12 @@ void spike1_devices::wire_bytes(uint8_t node, uint8_t *out, uint32_t len) const
 {
 	for (uint32_t i = 0; i < len; i++)
 		out[i] = i < 8 ? uint8_t(~(m_sw_closed[node & 127][i] ^ m_sw_active_high[node & 127][i])) : 0xff;
+	if (node == 0 && m_cpu_inputs_from_1 && len >= 2) { // positions 1-15 one bit lower (see load_device_table()); bit 15 idles high
+		const uint16_t w = uint16_t(out[0] | out[1] << 8);
+		const uint16_t board = uint16_t((w & 1) | ((w >> 1) & 0x7ffe) | 0x8000);
+		out[0] = uint8_t(board);
+		out[1] = uint8_t(board >> 8);
+	}
 }
 
 // The CPU board's own inputs (DIP switches, service buttons, the door's power sense - board 0)
@@ -1321,6 +1350,134 @@ const uint16_t *spike1_devices::insert_pixels(uint64_t now_ns)
 	return m_insert_rgb.data();
 }
 
+// ---------------------------------------------------------------- the CPU board's LCD
+//
+// WWE's FB_Init, FB_SetTiming and lcd_display_begin/end_frame: the game reads the fixed and
+// variable screen info, maps smem_len bytes, sets its timing (FBIOPUT_VSCREENINFO), then for each
+// frame draws into the buffer not shown, pans to it (yoffset 0 or 240), and waits out the rest of
+// the frame's vblanks - counted from Stern's 0x80204612 (32 bytes, the vblank count at +4) and
+// waited with FBIO_WAITFORVSYNC, whose argument is the count to wait
+namespace {
+constexpr uint32_t FB_LINE_BYTES = 320 * 2, FB_BUFFERS = 2;
+constexpr uint32_t FBIOGET_VSCREENINFO = 0x4600, FBIOPUT_VSCREENINFO = 0x4601, FBIOGET_FSCREENINFO = 0x4602;
+constexpr uint32_t FBIOPAN_DISPLAY = 0x4606, FBIO_WAITFORVSYNC = 0x40044620, FB_STERN_VBLANK = 0x80204612;
+}
+
+void spike1_devices::mapped(const handle &h, uint32_t addr, uint32_t len)
+{
+	if (h.type != kind::fb) return;
+	m_fb_addr = addr;
+	m_fb_len = len;
+	log("lcd: the game maps the framebuffer at " + hex(addr) + " (" + std::to_string(len) + " bytes)");
+}
+
+// WWE picks its LCD's attract video when its effect lists are evaluated at start-up, which happens
+// while its node bus start-up (a power cycle of the boards and their checks, some 5 s) still holds
+// video effects back (node_bus_control_thread_flags bits 0 and 3), and nothing evaluates them again
+// in attract mode. On the board the program's slower loading puts that first evaluation after the
+// start-up; here loading takes no time. So once the start-up is over, the model asks for the video
+// background again the way the game does itself when a video ends
+// (video_effect_update_background_flag) - once, from the LCD thread's vblank waits
+void spike1_devices::lcd_video_background()
+{
+	if (m_fb_background_asked) return;
+	const uint32_t flags_at = m_cfg.symbol ? m_cfg.symbol("node_bus_control_thread_flags") : 0;
+	const uint32_t ask_at = m_cfg.symbol ? m_cfg.symbol("_ZL35video_effect_update_background_flag") : 0;
+	uint32_t flags = 0;
+	if (!flags_at || !ask_at || !guest_read(flags_at, &flags, 4)) { m_fb_background_asked = true; return; }
+	if (flags & 9) { m_fb_startup_seen = true; return; }
+	if (!m_fb_startup_seen) return;
+	const uint8_t ask = 1;
+	m_fb_background_asked = guest_write(ask_at, &ask, 1);
+	log("lcd: node bus start-up over - the game picks its video background again");
+}
+
+int32_t spike1_devices::fb_ioctl(handle &h, uint32_t req, uint32_t arg, uint64_t now_ns, uint64_t &wait_ns, std::string &note)
+{
+	if (req == FBIO_WAITFORVSYNC && !h.wait_until_ns) lcd_video_background();
+	switch (req) {
+	case FBIOGET_VSCREENINFO: { // struct fb_var_screeninfo, 160 bytes
+		uint32_t var[40] = {};
+		var[0] = LCD_WIDTH; var[1] = LCD_HEIGHT;                   // xres, yres
+		var[2] = LCD_WIDTH; var[3] = LCD_HEIGHT * FB_BUFFERS;      // xres_virtual, yres_virtual
+		var[5] = m_fb_yoffset;
+		var[6] = 16;                                               // bits per pixel: RGB565
+		var[8] = 11; var[9] = 5; var[11] = 5; var[12] = 6; var[14] = 0; var[15] = 5; // red, green, blue: offset, length
+		return guest_write(arg, var, sizeof(var)) ? 0 : -E_FAULT;
+	}
+	case FBIOPUT_VSCREENINFO: { // the game's timing: the frame time from the pixel clock (ps) and the margins
+		uint32_t var[40] = {};
+		if (!guest_read(arg, var, sizeof(var))) return -E_FAULT;
+		const uint64_t htotal = uint64_t(var[0]) + var[26] + var[27] + var[30], vtotal = uint64_t(var[1]) + var[28] + var[29] + var[31];
+		if (var[25] && htotal && vtotal) {
+			m_fb_frame_ns = std::max<uint64_t>(uint64_t(var[25]) * htotal * vtotal / 1000, 1000000);
+			note = "lcd: " + std::to_string(var[0]) + "x" + std::to_string(var[1]) + " at " + std::to_string(1e9 / double(m_fb_frame_ns)) + " Hz";
+		}
+		return 0;
+	}
+	case FBIOGET_FSCREENINFO: { // struct fb_fix_screeninfo, 68 bytes
+		uint8_t fix[68] = {};
+		std::memcpy(fix, "spike1 lcd", 10);
+		const uint32_t smem_len = FB_LINE_BYTES * LCD_HEIGHT * FB_BUFFERS, visual_truecolor = 2, line_length = FB_LINE_BYTES;
+		const uint16_t ypanstep = 1;
+		std::memcpy(fix + 20, &smem_len, 4);
+		std::memcpy(fix + 32, &visual_truecolor, 4);
+		std::memcpy(fix + 38, &ypanstep, 2);
+		std::memcpy(fix + 44, &line_length, 4);
+		return guest_write(arg, fix, sizeof(fix)) ? 0 : -E_FAULT;
+	}
+	case FBIOPAN_DISPLAY: {
+		uint32_t yoffset = 0;
+		if (!guest_read(arg + 20, &yoffset, 4)) return -E_FAULT;
+		if (yoffset > LCD_HEIGHT * (FB_BUFFERS - 1)) return -E_INVAL;
+		m_fb_yoffset = yoffset;
+		m_fb_pans++;
+		return 0;
+	}
+	case FB_STERN_VBLANK: {
+		uint32_t info[8] = {};
+		info[1] = uint32_t(now_ns / m_fb_frame_ns);
+		return guest_write(arg, info, sizeof(info)) ? 0 : -E_FAULT;
+	}
+	case FBIO_WAITFORVSYNC: { // until the count of vblanks has passed
+		if (h.wait_until_ns) {
+			if (now_ns < h.wait_until_ns) { wait_ns = h.wait_until_ns; return WAIT; }
+			h.wait_until_ns = 0;
+			return 0;
+		}
+		uint32_t count = 0;
+		if (!guest_read(arg, &count, 4)) return -E_FAULT;
+		if (!count) return 0;
+		h.wait_until_ns = (now_ns / m_fb_frame_ns + std::min<uint32_t>(count, 60)) * m_fb_frame_ns;
+		wait_ns = h.wait_until_ns;
+		return WAIT;
+	}
+	}
+	if (first_time("ioctl " + h.path + " " + hex(req))) note = "ioctl " + h.path + " request " + hex(req) + " arg " + hex(arg) + ": not modelled";
+	return 0;
+}
+
+bool spike1_devices::lcd_picture(uint16_t *out) const
+{
+	const uint32_t bytes = FB_LINE_BYTES * LCD_HEIGHT;
+	if (!m_fb_pans || !m_fb_addr || uint64_t(m_fb_yoffset) * FB_LINE_BYTES + bytes > m_fb_len) return false;
+	const uint8_t *p = m_mem.host(m_fb_addr + m_fb_yoffset * FB_LINE_BYTES, bytes);
+	if (!p) return false;
+	std::memcpy(out, p, bytes); // RGB565, little endian like the host
+	return true;
+}
+
+bool spike1_devices::provide_video_key(const uint8_t key[16])
+{
+	const uint32_t at = m_cfg.symbol ? m_cfg.symbol("_ZL7rc4_key") : 0;
+	uint8_t placeholder[2] = {};
+	if (!at || !guest_read(at, placeholder, 2)) return false;
+	if (placeholder[0] != 0xcc || placeholder[1] != 0xcc) return true; // the game has its key already
+	if (!guest_write(at, key, 16)) return false;
+	log("lcd: video key provided at " + hex(at));
+	return true;
+}
+
 // ---------------------------------------------------------------- sound
 
 int32_t spike1_devices::audio_write(uint32_t buf, uint32_t len, uint64_t now_ns, uint64_t &wait_ns)
@@ -1358,14 +1515,17 @@ size_t spike1_devices::audio_take(int16_t *out, size_t frames)
 // The device table numbers coils its own way; the service menu and the manual use the Driver
 // Reference and Light Reference numbers, which the title's coil and LED tables hold:
 //   node_board_device_cl_table_data   entries of 56 bytes (sys_nbd_cl_get_table_ptr()): +32 the
-//                                     device's index, +48 bits 16-23 its Driver Reference number
+//                                     device's index, +48 bits 16-23 its Driver Reference number;
+//                                     in WWE's SDK 28 bytes: +20 the index in the low half, +24
+//                                     bits 16-23 the number
 //   node_board_device_led_table       {entries, count, size}, 24-byte entries: +12 the Light
 //                                     Reference number in the low half, the device's index in the
 //                                     high half; +16 the class bits
 //   node_board_device_sw_table        {entries, count, size}: 20 bytes before an entry's end the
 //                                     Switch Reference number in the low half, the device's index in
 //                                     the high half (+32 of 52 bytes in Ghostbusters, +44 of 64 in
-//                                     Whoa Nellie, whose entries carry three more pointers)
+//                                     Whoa Nellie, whose entries carry three more pointers); in
+//                                     WWE's (64 bytes) +40 the index, +60 the number in the low half
 // The manual numbers the CPU board's own switches (DIP switches, service buttons, the door's power
 // sense) apart, as C1-C16: they become 101-116 here, so that every switch has one number
 // Entry 0 of each is a blank. An entry that names no device of the right type is skipped
@@ -1378,9 +1538,12 @@ void spike1_devices::apply_manual_numbers(const std::vector<std::pair<int, size_
 	if (cl && cl_count_at && guest_read(cl_count_at, &cl_count, 4) && cl_count) {
 		const uint32_t size = m_cfg.symbol_size ? m_cfg.symbol_size("node_board_device_cl_table_data") : 0;
 		const uint32_t stride = size / cl_count;
-		for (uint32_t i = 1; stride >= 52 && i < cl_count; i++) {
+		// where an entry keeps the device's index and the Driver Reference number (bits 16-23)
+		const uint32_t index_at = stride >= 52 ? 32 : stride == 28 ? 20 : 0, number_at = stride >= 52 ? 48 : 24;
+		for (uint32_t i = 1; index_at && i < cl_count; i++) {
 			uint32_t index = 0, number = 0;
-			if (!guest_read(cl + i * stride + 32, &index, 4) || !guest_read(cl + i * stride + 48, &number, 4)) continue;
+			if (!guest_read(cl + i * stride + index_at, &index, 4) || !guest_read(cl + i * stride + number_at, &number, 4)) continue;
+			if (stride == 28) index &= 0xffff;
 			if (index >= device.size() || device[index].first != 2) continue;
 			m_coils[device[index].second].number = uint16_t((number >> 16) & 0xff);
 			coils++;
@@ -1404,15 +1567,27 @@ void spike1_devices::apply_manual_numbers(const std::vector<std::pair<int, size_
 	uint32_t st[3] = {};
 	const uint32_t st_at = m_cfg.symbol("node_board_device_sw_table");
 	if (st_at && guest_read(st_at, st, 12) && st[0] && st[2] >= 36 && st[2] <= 256) {
-		for (uint32_t i = 1; i < st[1]; i++) {
-			uint32_t w = 0;
-			if (!guest_read(st[0] + i * st[2] + st[2] - 20, &w, 4)) continue;
-			const uint32_t index = w >> 16;
-			if (index >= device.size() || device[index].first != 7 || device[index].second >= m_switches.size()) continue;
-			switch_info &sw = m_switches[device[index].second];
-			sw.number = uint16_t((w & 0xffff) + (sw.node == 0 ? CPU_SWITCH_BASE : 0));
-			switches++;
-		}
+		// Two layouts: index << 16 | number 20 bytes before an entry's end; or (WWE's SDK) the index
+		// 24 bytes before the end and the number in the last word's low half. The first that names
+		// switch devices is the title's
+		for (int layout = 0; layout < 2 && !switches; layout++)
+			for (uint32_t i = 1; i < st[1]; i++) {
+				const uint32_t entry = st[0] + i * st[2];
+				uint32_t index = 0, number = 0;
+				if (layout == 0) {
+					uint32_t w = 0;
+					if (!guest_read(entry + st[2] - 20, &w, 4)) continue;
+					index = w >> 16;
+					number = w & 0xffff;
+				} else {
+					if (!guest_read(entry + st[2] - 24, &index, 4) || !guest_read(entry + st[2] - 4, &number, 4)) continue;
+					number &= 0xffff;
+				}
+				if (index >= device.size() || device[index].first != 7 || device[index].second >= m_switches.size()) continue;
+				switch_info &sw = m_switches[device[index].second];
+				sw.number = uint16_t(number + (sw.node == 0 ? CPU_SWITCH_BASE : 0));
+				switches++;
+			}
 	}
 	// An optional topper's board (the game names its boards lang_text_nb_<node>) numbers its
 	// switches from 1 again, apart from the manual: they become 121 and up, clear of the playfield's
