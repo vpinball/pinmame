@@ -35,7 +35,8 @@
   outputs hold them as 0-1, the solenoid and lamp bits say whether they are on at all.
 
   The display is the DMD, and below it the LCD insert when the title has one (Ghostbusters' Ecto
-  goggles), drawn in direct colour through 32768 palette pens after the core's own.
+  goggles) or the CPU board's own LCD (WWE's playfield screen, 320x240), drawn in direct colour
+  through 32768 palette pens after the core's own.
 ************************************************************************************************/
 
 #include "driver.h"
@@ -391,6 +392,34 @@ static PINMAME_VIDEO_UPDATE(spike1_insert_video)
   }
 }
 
+/*-------------------------------------------------
+/  the CPU board's LCD (WWE's playfield screen), drawn below the DMD
+/-------------------------------------------------*/
+static PINMAME_VIDEO_UPDATE(spike1_lcd_video)
+{
+  static UINT16 rgb[SPIKE1_LCD_WIDTH * SPIKE1_LCD_HEIGHT];
+  const int shown = spike1_pinmame_lcd(rgb);
+  int x, y;
+  (void)cliprect;
+  for (y = 0; y < SPIKE1_LCD_HEIGHT && layout->top + y < bitmap->height; y++) {
+    UINT16 *line = (UINT16 *)bitmap->line[layout->top + y] + layout->left;
+    for (x = 0; x < SPIKE1_LCD_WIDTH && layout->left + x < bitmap->width; x++) {
+      UINT32 c = 0;
+      if (shown) { /* RGB565 to RGB555 */
+        const UINT32 p = rgb[y * SPIKE1_LCD_WIDTH + x];
+        c = ((p >> 1) & 0x7fe0) | (p & 0x1f);
+      }
+      line[x] = (UINT16)Machine->pens[SPIKE1_PEN0 + c];
+    }
+  }
+}
+
+/* The key the encrypted LCD clips (WWE's .spv files) are RC4-encrypted with, which each board's
+   factory key store holds: the subsystem hands it to a title that has such clips */
+static const unsigned char spike1_video_key[16] = {
+  0x8e, 0x1f, 0x55, 0x43, 0xc2, 0xf5, 0x4a, 0x11, 0x67, 0x3a, 0x28, 0x2a, 0x2f, 0x87, 0xc0, 0x06
+};
+
 static core_tLCDLayout spike1_dmd[] = {
   {0, 0, SPIKE1_DMD_HEIGHT, SPIKE1_DMD_WIDTH, CORE_DMD, NULL, NULL},
   {0}
@@ -400,6 +429,13 @@ static core_tLCDLayout spike1_dmd[] = {
 static core_tLCDLayout spike1_dmd_insert[] = {
   {0, 0, SPIKE1_DMD_HEIGHT, SPIKE1_DMD_WIDTH, CORE_DMD, NULL, NULL},
   {68, 0, SPIKE1_INSERT_HEIGHT, SPIKE1_INSERT_WIDTH, CORE_VIDEO, (genf *)spike1_insert_video, NULL},
+  {0}
+};
+
+/* The CPU board's LCD in the same place */
+static core_tLCDLayout spike1_dmd_lcd[] = {
+  {0, 0, SPIKE1_DMD_HEIGHT, SPIKE1_DMD_WIDTH, CORE_DMD, NULL, NULL},
+  {68, 0, SPIKE1_LCD_HEIGHT, SPIKE1_LCD_WIDTH, CORE_VIDEO, (genf *)spike1_lcd_video, NULL},
   {0}
 };
 
@@ -551,6 +587,7 @@ static MACHINE_INIT(spike1)
     return;
   }
   locals.running = 1;
+  spike1_pinmame_video_key(spike1_video_key); /* a no-op for a title without encrypted clips */
   for (c = 0; c < 2; c++) {
     const spike1_tHome *home = &spike1_game()->home[c];
     if (home->node) spike1_pinmame_stepper_home(home->node, home->stepper, home->sw);
@@ -614,6 +651,16 @@ MACHINE_DRIVER_START(spike1)
   MDRV_SOUND_ADD(CUSTOM, spike1_sndInt)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
   MDRV_PALETTE_LENGTH(SPIKE1_PEN0 + 32768)
+MACHINE_DRIVER_END
+
+/* A title with the CPU board's LCD (WWE): the DMD with the LCD below it is taller than PinMAME's
+   default screen outside VPinMAME (320x256) */
+MACHINE_DRIVER_START(spike1_lcd)
+  MDRV_IMPORT_FROM(spike1)
+#if CORE_SCREENY < 68 + SPIKE1_LCD_HEIGHT
+  MDRV_SCREEN_SIZE(SPIKE1_LCD_WIDTH, 68 + SPIKE1_LCD_HEIGHT)
+  MDRV_VISIBLE_AREA(0, SPIKE1_LCD_WIDTH - 1, 0, 68 + SPIKE1_LCD_HEIGHT - 1)
+#endif
 MACHINE_DRIVER_END
 
 /*-------------------------------------------------
@@ -775,5 +822,60 @@ ROM_START(kiss15_141h)
     ROM_LOAD("ws2812node-LPC1313-0_28_0.hex", 0x3ee28000, 0x00005590, CRC(921dc0f7) SHA1(2c49842bb5163b75a19ebac37f0379ef72c64d4a))
 ROM_END
 CORE_GAMEDEF(kiss15, 141h, "KISS (Limited Edition 1.41.0)", 2015, "Stern", spike1, 0)
+
+/*-------------------------------------------------------------------
+/ WWE WrestleMania (Stern, 2015) - Limited Edition
+/ The oldest Spike 1 SDK. Its playfield LCD is the CPU board's own 320x240 screen, the second
+/ display; the clips it plays are the folder's video files (.spv, RC4-encrypted), which the set
+/ holds beside the others and the subsystem puts in video/. Each flipper button has a second leaf
+/ (74, 75) for the upper flipper (solenoid 22)
+/-------------------------------------------------------------------*/
+SPIKE1_INIT_EX(wwe, "WWE_LE", spike1_dmd_lcd, 102, FLIP_L | FLIP_U, SPIKE1_SWITCHES_UPPER(10, 11, 65, 66, 74, 75, 67, 68, 69, 70, 72, 77), SPIKE1_NOHOMES, SPIKE1_NOLIMIT)
+ROM_START(wwe_135h)
+  ROM_REGION(0xaae47000, SPIKE1_REGION, 0)
+    ROM_LOAD("game", 0x00000000, 0x005685c2, CRC(edc2c801) SHA1(23e2936810e3869d52d39bc3ff7863d9de59951b))
+    ROM_LOAD("image.bin", 0x00569000, 0x547598dc, CRC(aa528057) SHA1(f513c5afd07cee4bba97b38822f98943857dc824))
+    ROM_LOAD("AJ.spv", 0x54cc3000, 0x008ca1fc, CRC(6fe0fc26) SHA1(2bc3a9b2d149416c421b9778f8f981e96be0b9b9))
+    ROM_LOAD("BELLA_TWINS.spv", 0x5558e000, 0x008ca1fc, CRC(5ca08b63) SHA1(0250a7b67af1143643f2235ebb613f52b1687c3c))
+    ROM_LOAD("BLANK_FRAME.spv", 0x55e59000, 0x00025824, CRC(19340b39) SHA1(a1dced3d232eefa7b5ee355de58c117a584c2601))
+    ROM_LOAD("CENA_BG_FPS20.spv", 0x55e7f000, 0x01588cb4, CRC(c516caca) SHA1(4a0e80d34b34ecebf032fa2e508e1fa50e145dc1))
+    ROM_LOAD("CENA_INTRO_FPS20.spv", 0x57408000, 0x059a733c, CRC(fefaf73d) SHA1(eb7413d6d4bfc3f499caa2ffe80531f594076540))
+    ROM_LOAD("coil4node-LPC1112_101-0_18_4.hex", 0x5cdb0000, 0x000086b3, CRC(0db5fef9) SHA1(a1d1be1ab95c07ffa1bde5295047b1e184b358e8))
+    ROM_LOAD("coil4node-LPC1112_201-0_18_4.hex", 0x5cdb9000, 0x000086b3, CRC(0d97d36b) SHA1(63d1740e475faf5b1a6edd082713f71797d8518f))
+    ROM_LOAD("coil4node-LPC1313-0_18_4.hex", 0x5cdc2000, 0x00009910, CRC(eda97e7a) SHA1(c25649ea0a0d832f259c97a0cace84d22668eabe))
+    ROM_LOAD("DB_BG_FPS20.spv", 0x5cdcc000, 0x01588cb4, CRC(dadcc332) SHA1(a283a50b9b135f57c73582ecbca89a5e0f9a5f5f))
+    ROM_LOAD("DB_INTRO_FPS20.spv", 0x5e355000, 0x0a95843c, CRC(1c0764df) SHA1(f32d322fe7b7c540b33d9fad9f00cf66ee44c67b))
+    ROM_LOAD("FIREWORKS_FPS20.spv", 0x68cae000, 0x008ca1fc, CRC(4a85e806) SHA1(218ed67c6604322c6a1f58c903a67da3ff26b5fe))
+    ROM_LOAD("HBK_BG_FPS20.spv", 0x69579000, 0x01588cb4, CRC(32e76255) SHA1(87d06190e814e1c5cb5dd1328f3360e58f12372e))
+    ROM_LOAD("HBK_INTRO_FPS20.spv", 0x6ab02000, 0x0b9c07bc, CRC(cf51844f) SHA1(df10d2f302f0a0f1a5cf223907900579a36035aa))
+    ROM_LOAD("HHH_BG_FPS20.spv", 0x764c3000, 0x01588cb4, CRC(a535703f) SHA1(7b8f9fd3d9179a079920dbf1c48368ef8fd10d55))
+    ROM_LOAD("HHH_INTRO_FPS20.spv", 0x77a4c000, 0x064c959c, CRC(2ba4c0e4) SHA1(84849d6b4faafdf23546eb243bd3e5c24f25e630))
+    ROM_LOAD("HOGAN_BG_FPS20.spv", 0x7df16000, 0x01588cb4, CRC(7fd2b05f) SHA1(8c0ea36071553a06eccaef4651c229822468f5c4))
+    ROM_LOAD("HOGAN_INTRO_FPS20.spv", 0x7f49f000, 0x099d10ec, CRC(bfffb34e) SHA1(a175c2e1b8daaa19765b874ce8ca384d043c51f0))
+    ROM_LOAD("KANE.spv", 0x88e71000, 0x005dc15c, CRC(d0d04329) SHA1(ffeafbc4bec80367c4d4ca90c727cc59f6080870))
+    ROM_LOAD("lcdnode-LPC1113_302-0_18_4.hex", 0x8944e000, 0x00009783, CRC(b9e6387e) SHA1(cc5b609d967d2b587a2fe297b2409c368696e7f0))
+    ROM_LOAD("LEGENDS_FPS20.spv", 0x89458000, 0x0070819c, CRC(d45c415f) SHA1(893358a533fecd9b0da79335048cb1d32bdf8fb5))
+    ROM_LOAD("LEGION_OF_DOOM.spv", 0x89b61000, 0x008ca1fc, CRC(3031bab7) SHA1(2d85188ca39b67d4c08ffd53aedb6564019f7ae6))
+    ROM_LOAD("MAIN_EVENT.spv", 0x8a42c000, 0x008ca1fc, CRC(9386f7d6) SHA1(5f162af60eb8ba6ff441c91027df3607ccdd9d21))
+    ROM_LOAD("pinnode-LPC1112_101-0_18_4.hex", 0x8acf7000, 0x00008005, CRC(72dd8621) SHA1(66e6693e1bdd570db5eee4218f36a9153da760ff))
+    ROM_LOAD("pinnode-LPC1112_201-0_18_4.hex", 0x8ad00000, 0x0000802a, CRC(8a0e089c) SHA1(e41ade3256e4cc7cfcaece06a5e1035c7ff2d026))
+    ROM_LOAD("pinnode-LPC1313-0_18_4.hex", 0x8ad09000, 0x0000a082, CRC(0e9790a7) SHA1(9bafcdde92f5eecccd18e43f4eaf0a20a813a611))
+    ROM_LOAD("RAW.spv", 0x8ad14000, 0x008ca1fc, CRC(7c19cd49) SHA1(43b25425622cb269798bc4d12a3fa600647e1216))
+    ROM_LOAD("ROCK_BG_FPS20.spv", 0x8b5df000, 0x01588cb4, CRC(8ed98eb7) SHA1(d2877ea40166bdc163746e65af091cc3fbe4312d))
+    ROM_LOAD("ROCK_INTRO_FPS20.spv", 0x8cb68000, 0x06c6773c, CRC(3a667503) SHA1(76d1f34eb816e6e759ca2877316659cc7b6a998e))
+    ROM_LOAD("ROYAL_RUMBLE.spv", 0x937d0000, 0x00a4124c, CRC(d549883a) SHA1(765a859973d7b9c2036d2c55288c842615b8e793))
+    ROM_LOAD("SCSA_BG_FPS20.spv", 0x94212000, 0x01588cb4, CRC(9230922c) SHA1(5a9a303b41dd74164ff55b09d8463e257f3052ab))
+    ROM_LOAD("SCSA_INTRO_FPS20.spv", 0x9579b000, 0x0668b5fc, CRC(42a33cce) SHA1(e5828f2656c2057b602df50f329bcb4364c6fe5c))
+    ROM_LOAD("TAG_TEAM.spv", 0x9be27000, 0x005dc15c, CRC(f90ff90f) SHA1(c1c5d5b77d2f17131a394d2d25faa6a2153c7dfe))
+    ROM_LOAD("UNDERTAKER_BG_FPS20.spv", 0x9c404000, 0x01588cb4, CRC(69dd7575) SHA1(d90b1da92106d2947eafcd8072250ffd7f2753e7))
+    ROM_LOAD("UNDERTAKER_INTRO_FPS20.spv", 0x9d98d000, 0x070f2034, CRC(f513bc4f) SHA1(fedb1a69f0b4d9a7b28b0b5aef23228f1c7f7fe3))
+    ROM_LOAD("US_CHAMPIONS.spv", 0xa4a80000, 0x011943dc, CRC(7a004855) SHA1(d056ebe16513e8ff2a1f4a5bdcaa8d6386329e71))
+    ROM_LOAD("WORLD_HEAVYWEIGHT.spv", 0xa5c15000, 0x011943dc, CRC(4fd67f81) SHA1(3bb7366a4e2908782a5f34301758b20ede7c6826))
+    ROM_LOAD("WORLD_INTERCONTINENTAL.spv", 0xa6daa000, 0x0148247c, CRC(72ea6cc2) SHA1(e66895e0a9c335567c685535a4d5108002af0f43))
+    ROM_LOAD("WRESTLEMANIALOGO.spv", 0xa822d000, 0x00d2f2ec, CRC(e387938a) SHA1(449fe9ac64c59886af50f8f285294eedb74be401))
+    ROM_LOAD("WWE_SHATTERLOGO_FPS20.spv", 0xa8f5d000, 0x015f94cc, CRC(8be9e928) SHA1(eaa6fda36d57396639cc4a25deabd39c25292cc2))
+    ROM_LOAD("WWELOGO_FPS20.spv", 0xaa557000, 0x008efa04, CRC(0b72c2aa) SHA1(031082beaae636e21e5adb69fa642b9a7ec27bcf))
+ROM_END
+CORE_GAMEDEF(wwe, 135h, "WWE WrestleMania (Limited Edition 1.35.0)", 2015, "Stern", spike1_lcd, 0)
 
 #endif /* HAS_SPIKE1 */

@@ -67,14 +67,43 @@ static void save_insert(spike1_linux &os, const std::string &dir)
 	std::fclose(f);
 }
 
-static u32 unmapped_read(void *, offs_t addr, u32) { if (s_linux) s_linux->fault(addr, false); return 0; }
+// The CPU board's LCD (WWE's framebuffer) as a PPM file in dir, named after the emulated time
+static void save_lcd(spike1_linux &os, const std::string &dir)
+{
+	std::vector<uint16_t> px(spike1_devices::LCD_WIDTH * spike1_devices::LCD_HEIGHT);
+	const bool shown = os.devices().lcd_picture(px.data());
+	char name[64];
+	std::snprintf(name, sizeof(name), "/lcd_%07.3f.ppm", double(os.now_ns()) / 1e9);
+	std::printf("lcd at %.3f s: %llu frames shown%s\n", double(os.now_ns()) / 1e9, (unsigned long long)os.devices().lcd_frame_count(), shown ? (" -> " + dir + name).c_str() : "");
+	if (!shown) return;
+	FILE *f = std::fopen((dir + name).c_str(), "wb");
+	if (!f) return;
+	std::fprintf(f, "P6\n%u %u\n255\n", spike1_devices::LCD_WIDTH, spike1_devices::LCD_HEIGHT);
+	for (uint16_t p : px) {
+		const uint8_t rgb[3] = { uint8_t((p >> 11) << 3), uint8_t(((p >> 5) & 63) << 2), uint8_t((p & 31) << 3) };
+		std::fwrite(rgb, 1, 3, f);
+	}
+	std::fclose(f);
+}
+
+// Outside the CPU's fast windows: a file view the memory holds beyond them (the bus context), or a fault
+static u32 unmapped_read(void *ctx, offs_t addr, u32)
+{
+	uint32_t value = 0;
+	if (ctx && static_cast<const spike1_memory *>(ctx)->read_view(addr, value)) return value;
+	if (s_linux) s_linux->fault(addr, false);
+	return 0;
+}
 static void unmapped_write(void *, offs_t addr, u32, u32) { if (s_linux) s_linux->fault(addr, true); }
 
 int main(int argc, char **argv)
 {
 	spike1_linux::config cfg;
-	double seconds = 30.0, dmd_every = 0.0, insert_every = 0.0, slice_ms = 1.0;
+	double seconds = 30.0, dmd_every = 0.0, insert_every = 0.0, lcd_every = 0.0, slice_ms = 1.0;
+	std::vector<uint8_t> video_key;
 	std::vector<std::pair<uint32_t, uint32_t>> peeks;
+	struct poke { double at; uint32_t addr; uint8_t value; bool done; };
+	std::vector<poke> pokes;
 	std::string state_dir, files_dir;
 	std::vector<std::vector<uint8_t>> file_bytes;
 	// --switch <seconds>:<name>[:<ms held, default 200>]: close a switch for a while, by its name
@@ -99,6 +128,12 @@ int main(int argc, char **argv)
 		else if (arg == "--trace") cfg.trace = true;
 		else if (arg == "--dmd") dmd_every = std::atof(next().c_str());
 		else if (arg == "--insert") insert_every = std::atof(next().c_str()); // the LCD insert, as PPM files in the state directory
+		else if (arg == "--lcd") lcd_every = std::atof(next().c_str()); // the CPU board's LCD, as PPM files in the state directory
+		else if (arg == "--video-key") { // 32 hex digits: the key the title's LCD videos are encrypted with
+			const std::string v = next();
+			for (size_t k = 0; k + 1 < v.size() && video_key.size() < 16; k += 2) video_key.push_back(uint8_t(std::strtoul(v.substr(k, 2).c_str(), nullptr, 16)));
+			if (video_key.size() != 16) { std::fprintf(stderr, "--video-key takes 32 hex digits\n"); return 2; }
+		}
 		else if (arg == "--list-switches") list_switches = true;
 		else if (arg == "--outputs") show_outputs = true; // coil changes as they happen, lit LEDs at the end
 		else if (arg == "--node-dump") node_dump = next(); // every node-bus frame except switch reads, to a file
@@ -127,19 +162,27 @@ int main(int argc, char **argv)
 			const std::string v = next();
 			peeks.emplace_back(uint32_t(std::strtoul(v.c_str(), nullptr, 0)), uint32_t(std::strtoul(v.substr(v.find(':') + 1).c_str(), nullptr, 0)));
 		}
+		else if (arg == "--poke") { // <seconds>:<hex address>:<hex byte>, written into guest memory then (for experiments)
+			poke p{};
+			unsigned value = 0;
+			if (std::sscanf(next().c_str(), "%lf:%x:%x", &p.at, &p.addr, &value) != 3) { std::fprintf(stderr, "--poke takes <seconds>:<hex address>:<hex byte>\n"); return 2; }
+			p.value = uint8_t(value);
+			pokes.push_back(p);
+		}
 		else { std::fprintf(stderr, "unknown argument %s\n", arg.c_str()); return 2; }
 	}
 	if (!files_dir.empty() && !cfg.executable.empty()) {
 		const std::string guest_dir = cfg.executable.substr(0, cfg.executable.rfind('/'));
 		std::error_code ec;
-		for (auto it = std::filesystem::directory_iterator(std::filesystem::u8path(files_dir), ec); !ec && it != std::filesystem::directory_iterator(); it.increment(ec)) {
+		const auto base = std::filesystem::u8path(files_dir);
+		for (auto it = std::filesystem::recursive_directory_iterator(base, ec); !ec && it != std::filesystem::recursive_directory_iterator(); it.increment(ec)) {
 			if (!it->is_regular_file(ec)) continue;
 			std::ifstream in(it->path(), std::ios::binary | std::ios::ate);
 			std::vector<uint8_t> bytes(size_t(in.tellg()));
 			in.seekg(0);
 			in.read(reinterpret_cast<char *>(bytes.data()), std::streamsize(bytes.size()));
 			file_bytes.push_back(std::move(bytes));
-			cfg.files.push_back({ guest_dir + "/" + it->path().filename().u8string(), file_bytes.back().data(), file_bytes.back().size() });
+			cfg.files.push_back({ guest_dir + "/" + it->path().lexically_relative(base).generic_u8string(), file_bytes.back().data(), file_bytes.back().size() });
 		}
 		std::printf("files: %zu from %s in memory\n", cfg.files.size(), files_dir.c_str());
 	}
@@ -164,9 +207,9 @@ int main(int argc, char **argv)
 	p2k_active_config = &config;
 
 	spike1_cpu_device &cpu = SPIKE1_CPU(config, "maincpu", cfg.clock_hz);
-	p2k_bus_callbacks bus{ unmapped_read, unmapped_write, nullptr };
-	address_space space(bus);
 	spike1_memory memory;
+	p2k_bus_callbacks bus{ unmapped_read, unmapped_write, &memory };
+	address_space space(bus);
 	memory.attach(space);
 	cpu.p2k_set_space(AS_PROGRAM, &space);
 	for (auto &dev : config.devices) dev->p2k_resolve();
@@ -187,6 +230,8 @@ int main(int argc, char **argv)
 			std::fprintf(stderr, "no LED channels %d and %d or switches %d and %d for a limit motor\n", m.forward, m.backward, m.home, m.away);
 			return 2;
 		}
+	if (video_key.size() == 16 && !linux_os.devices().provide_video_key(video_key.data()))
+		std::fprintf(stderr, "the title has no video key to provide\n");
 
 	if (list_switches) {
 		for (const auto &s : linux_os.devices().switches())
@@ -218,6 +263,7 @@ int main(int argc, char **argv)
 	const auto t0 = std::chrono::steady_clock::now();
 	uint64_t next_dmd_ns = dmd_every > 0 ? uint64_t(dmd_every * 1e9) : UINT64_MAX;
 	uint64_t next_insert_ns = insert_every > 0 ? uint64_t(insert_every * 1e9) : UINT64_MAX;
+	uint64_t next_lcd_ns = lcd_every > 0 ? uint64_t(lcd_every * 1e9) : UINT64_MAX;
 	while (linux_os.run(slice) == spike1_linux::status::running && linux_os.now_ns() < uint64_t(seconds * 1e9)) {
 		const double now_s = double(linux_os.now_ns()) / 1e9;
 		for (auto &p : presses) {
@@ -253,6 +299,15 @@ int main(int argc, char **argv)
 		if (linux_os.now_ns() >= next_insert_ns) {
 			save_insert(linux_os, state_dir);
 			next_insert_ns += uint64_t(insert_every * 1e9);
+		}
+		for (auto &p : pokes)
+			if (!p.done && now_s >= p.at) {
+				p.done = true;
+				std::printf("[%10.6f] poke %08x = %02x%s\n", now_s, p.addr, p.value, memory.write(p.addr, &p.value, 1) ? "" : " (not mapped)");
+			}
+		if (linux_os.now_ns() >= next_lcd_ns) {
+			save_lcd(linux_os, state_dir);
+			next_lcd_ns += uint64_t(lcd_every * 1e9);
 		}
 		if (linux_os.now_ns() >= next_dmd_ns) {
 			print_dmd(linux_os);

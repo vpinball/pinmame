@@ -23,6 +23,9 @@ extern "C" {
 /* The LCD insert, as the player sees it (Ghostbusters' Ecto goggles) */
 #define SPIKE1_INSERT_WIDTH  160
 #define SPIKE1_INSERT_HEIGHT 128
+/* The CPU board's own LCD (WWE's playfield screen) */
+#define SPIKE1_LCD_WIDTH  320
+#define SPIKE1_LCD_HEIGHT 240
 
 /* One of the title's files, by its name in the game folder; the caller keeps the bytes alive
    until spike1_pinmame_stop() */
@@ -94,6 +97,13 @@ unsigned spike1_pinmame_dmd(unsigned char *dots);
    (0-255) while it shows a frame, 0 otherwise */
 int spike1_pinmame_insert_present(void);
 int spike1_pinmame_insert(unsigned short *rgb565, unsigned *backlight);
+/* The CPU board's LCD, when the title draws on it: 1 and its picture as RGB565 (320x240) once the
+   game has shown a frame, 0 otherwise */
+int spike1_pinmame_lcd(unsigned short *rgb565);
+/* The 16-byte key the title's LCD videos are encrypted with, which the board's factory key store
+   would give the game (WWE's clips): call after spike1_pinmame_start; 0 if the title has no
+   encrypted video */
+int spike1_pinmame_video_key(const unsigned char *key);
 
 /* Sound: 16-bit stereo at spike1_pinmame_audio_rate(); takes up to frames frames, interleaved
    left/right, and returns how many it took */

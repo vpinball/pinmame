@@ -31,6 +31,11 @@ public:
 	// by the host straight into this range, so it is paged in on demand rather than copied
 	static constexpr uint32_t FILE_BASE   = 0x40000000;
 	static constexpr uint32_t FILE_LIMIT  = 0xa0000000;
+	// Further read-only views (WWE's LCD clips, mapped one by one as they play) go where the
+	// address space is free, below and above the file range. The CPU has no fast window left for
+	// them: its reads there come through read_view()
+	static constexpr uint32_t VIEW_LOW_BASE  = 0x20000000;
+	static constexpr uint32_t VIEW_HIGH_BASE = 0xa0000000;
 
 	spike1_memory();
 	~spike1_memory();
@@ -64,8 +69,12 @@ public:
 	// the guest address; 0 when the range is taken or the host cannot map the file. One file
 	// for now: the CPU's address space has one fast window left for it
 	uint32_t map_file(const std::string &host_path, uint64_t offset, uint32_t length);
-	// The same for bytes the host already holds in memory; they must stay put while mapped
+	// The same for bytes the host already holds in memory; they must stay put while mapped. The
+	// first takes the file range, later ones a view of their own until unmap()
 	uint32_t map_view(const uint8_t *data, uint32_t length);
+	// A dword the CPU reads outside its fast windows: from a view (bytes past the view's end read
+	// as zero). False when no view holds addr
+	bool read_view(uint32_t addr, uint32_t &value) const;
 
 private:
 	struct block { uint32_t base; uint32_t size; uint8_t *mem; };
@@ -79,6 +88,9 @@ private:
 	uint32_t m_brk_base = 0, m_brk = 0;
 	struct span { uint32_t base, size; };
 	std::vector<span> m_free; // free mmap spans, sorted by address
+	std::vector<block> m_views;
+	std::vector<span> m_view_free; // free address space for views, sorted by address
+	static void release_span(std::vector<span> &list, uint32_t addr, uint32_t length);
 
 	static uint8_t *allocate(size_t size);
 	static void release(uint8_t *mem, size_t size);
