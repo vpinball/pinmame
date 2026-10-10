@@ -73,6 +73,22 @@ static int _nvramInit = 0;
 static uint8_t _nvram[CORE_MAXNVRAM];
 static PinmameNVRAMState _nvramState[CORE_MAXNVRAM];
 
+// The file types PinmameSetPath() can override, indexed by PINMAME_FILE_TYPE, with the folder each one defaults to
+// below PinmameConfig::vpmPath. An override replaces that default and outlives later PinmameSetConfig() calls
+static const struct {
+	int fileType;
+	const char* defaultFolder;
+} _pathTypes[] = {
+	{ FILETYPE_ROM, "roms" },
+	{ FILETYPE_NVRAM, "nvram" },
+	{ FILETYPE_SAMPLE, "samples" },
+	{ FILETYPE_CONFIG, "cfg" },
+	{ FILETYPE_HIGHSCORE, "hi" },
+};
+static constexpr int PINMAME_FILE_TYPE_COUNT = sizeof(_pathTypes) / sizeof(_pathTypes[0]);
+static_assert(PINMAME_FILE_TYPE_COUNT == PINMAME_FILE_TYPE_HIGHSCORE + 1, "_pathTypes must cover every PINMAME_FILE_TYPE");
+static char* _pathOverrides[PINMAME_FILE_TYPE_COUNT] = {};
+
 typedef struct {
 	PinmameDisplayLayout layout;
 	void* pData;
@@ -303,6 +319,30 @@ static char* ComposePath(const char* const path, const char* const file)
 	strcpy(newPath, path);
 	strcpy(newPath + pathLength, file);
 	return newPath;
+}
+
+/******************************************************
+ * CopyPath
+ ******************************************************/
+
+static char* CopyPath(const char* const path)
+{
+	char* const newPath = (char*)malloc(strlen(path) + 1);
+	strcpy(newPath, path);
+	return newPath;
+}
+
+/******************************************************
+ * ApplyPath
+ ******************************************************/
+
+static void ApplyPath(const PINMAME_FILE_TYPE fileType)
+{
+	// setPath() takes ownership of the string
+	if (_pathOverrides[fileType])
+		setPath(_pathTypes[fileType].fileType, CopyPath(_pathOverrides[fileType]));
+	else
+		setPath(_pathTypes[fileType].fileType, ComposePath(_p_Config ? _p_Config->vpmPath : "", _pathTypes[fileType].defaultFolder));
 }
 
 /******************************************************
@@ -1089,11 +1129,9 @@ PINMAMEAPI void PinmameSetConfig(const PinmameConfig* const p_config)
 	// 1 = default address range). Only effective in builds that compile a JIT in
 	options.at91jit = 1;
 
-	setPath(FILETYPE_ROM, ComposePath(_p_Config->vpmPath, "roms"));
-	setPath(FILETYPE_NVRAM, ComposePath(_p_Config->vpmPath, "nvram"));
-	setPath(FILETYPE_SAMPLE, ComposePath(_p_Config->vpmPath, "samples"));
-	setPath(FILETYPE_CONFIG, ComposePath(_p_Config->vpmPath, "cfg"));
-	setPath(FILETYPE_HIGHSCORE, ComposePath(_p_Config->vpmPath, "hi"));
+	// keeps the paths set with PinmameSetPath()
+	for (int fileType = 0; fileType < PINMAME_FILE_TYPE_COUNT; fileType++)
+		ApplyPath((PINMAME_FILE_TYPE)fileType);
 	setPath(FILETYPE_INPUTLOG, ComposePath(_p_Config->vpmPath, "inp"));
 	setPath(FILETYPE_MEMCARD, ComposePath(_p_Config->vpmPath, "memcard"));
 	setPath(FILETYPE_STATE, ComposePath(_p_Config->vpmPath, "sta"));
@@ -1107,34 +1145,39 @@ PINMAMEAPI void PinmameSetConfig(const PinmameConfig* const p_config)
  * PinmameSetPath
  ******************************************************/
 
-PINMAMEAPI void PinmameSetPath(const PINMAME_FILE_TYPE fileType, const char* const p_path)
+PINMAMEAPI PINMAME_STATUS PinmameSetPath(const PINMAME_FILE_TYPE fileType, const char* const p_path)
 {
-	if (!p_path)
-		return;
-
-	char* const newPath = (char*)malloc(strlen(p_path) + 1);
-	strcpy(newPath, p_path);
-
-	switch(fileType) {
-		case PINMAME_FILE_TYPE_ROMS:
-			setPath(FILETYPE_ROM, newPath);
-			break;
-		case PINMAME_FILE_TYPE_NVRAM:
-			setPath(FILETYPE_NVRAM, newPath);
-			break;
-		case PINMAME_FILE_TYPE_SAMPLES:
-			setPath(FILETYPE_SAMPLE, newPath);
-			break;
-		case PINMAME_FILE_TYPE_CONFIG:
-			setPath(FILETYPE_CONFIG, newPath);
-			break;
-		case PINMAME_FILE_TYPE_HIGHSCORE:
-			setPath(FILETYPE_HIGHSCORE, newPath);
-			break;
-		default:
-			free(newPath);
-			break;
+	if ((int)fileType < 0 || (int)fileType >= PINMAME_FILE_TYPE_COUNT) {
+		libpinmame_log_error("PinmameSetPath(): unknown file type %d", (int)fileType);
+		return PINMAME_STATUS_FILE_TYPE_INVALID;
 	}
+
+	// the game thread reads the paths whenever it opens a file
+	if (_isRunning) {
+		libpinmame_log_error("PinmameSetPath(): cannot change paths while a game is running");
+		return PINMAME_STATUS_GAME_ALREADY_RUNNING;
+	}
+
+	free(_pathOverrides[fileType]);
+	_pathOverrides[fileType] = (p_path && p_path[0]) ? CopyPath(p_path) : nullptr;
+
+	ApplyPath(fileType);
+
+	libpinmame_log_info("PinmameSetPath(): fileType=%d, path=%s", (int)fileType, getPath(_pathTypes[fileType].fileType));
+
+	return PINMAME_STATUS_OK;
+}
+
+/******************************************************
+ * PinmameGetPath
+ ******************************************************/
+
+PINMAMEAPI const char* PinmameGetPath(const PINMAME_FILE_TYPE fileType)
+{
+	if ((int)fileType < 0 || (int)fileType >= PINMAME_FILE_TYPE_COUNT)
+		return nullptr;
+
+	return getPath(_pathTypes[fileType].fileType);
 }
 
 /******************************************************

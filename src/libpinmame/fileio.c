@@ -134,6 +134,11 @@ void setPath(int type, const char* path)
 	pathlist[type].rawpath = path;
 }
 
+const char* getPath(int type)
+{
+	return pathlist[type].rawpath;
+}
+
 //============================================================
 //	FILE PATH OPTIONS
 //============================================================
