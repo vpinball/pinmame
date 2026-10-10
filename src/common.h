@@ -440,6 +440,7 @@ void save_screen_snapshot(struct mame_bitmap *bitmap);
 void *get_disk_handle(int diskindex);
 
 /* ROM processing */
+struct GameDriver;
 int rom_load(const struct RomModule *romp);
 const struct RomModule *rom_first_region(const struct GameDriver *drv);
 const struct RomModule *rom_next_region(const struct RomModule *romp);
