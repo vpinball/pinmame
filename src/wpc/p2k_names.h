@@ -185,8 +185,8 @@
    stock - no Pinball 2000 shipped with a knocker, a shaker or a topper, whatever the test menu's
    own "Knocker Test" entry suggests. Their instructions recommend a 26-1200 for the knocker; the
    shaker and the topper are a motor and a lamp, not coils. Lamp bulb types are in the manuals too, on the Lamp Locations pages, but are not transcribed here yet */
-#ifndef P2K_NAMES_H
-#define P2K_NAMES_H
+
+#pragma once
 
 /* What is on the end of a driver output, where the manuals name a part. Only the coil tables carry
    it: it decides which physical model PinMAME's PWM integrator uses for that output, and a coil is
@@ -683,5 +683,3 @@ static const char *p2k_lookup(const p2k_name_t * const t, int num) {
   int i; for (i = 0; t[i].name; i++) if (t[i].num == num) return t[i].name;
   return NULL;
 }
-
-#endif /* P2K_NAMES_H */

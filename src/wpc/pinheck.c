@@ -45,6 +45,10 @@
 #define RF12 (1u << 12)
 #define RF13 (1u << 13)
 
+#ifndef MIN
+#define MIN(a, b) ((a) > (b) ? (b) : (a))
+#endif
+
 static pinheck_prop prop;
 static cat24m01 u13;
 static ds1340 rtc;
@@ -209,7 +213,7 @@ static void pinheck_brd_start(void *ctx, uint64_t t, int on)
 static void pinheck_brd_level(int idx, UINT8 v)
 {
 	brd_cust[idx - PINHECK_SOL_RGB] = v;
-	coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + idx].value = v / 255.0f;
+	coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + idx].value = (float)v / 255.0f;
 }
 
 static void pinheck_brd_rgb(void *ctx, uint64_t t, int chain, int led, uint8_t r, uint8_t g, uint8_t b)
@@ -594,7 +598,7 @@ static void pinheck_open_card(void)
 /* test hook PINHECK_INSERVICE: the Propeller EEPROM's in-service record, skipping the first-start setup */
 static void pinheck_in_service(uint8_t *mem, uint32_t version)
 {
-	uint32_t w0 = version << 24 | 0xBAFAu, w1 = 0xABBA0002u;
+	const uint32_t w0 = version << 24 | 0xBAFAu, w1 = 0xABBA0002u;
 	int i;
 	for (i = 0; i < 4; i++) {
 		mem[0x8000 + i] = (uint8_t)(w0 >> (8 * i));
@@ -660,9 +664,9 @@ static void pinheck_disp_frame_log(const uint8_t *frame, size_t n, uint64_t t)
 	int k;
 	for (a = 0; a + n <= 0x8000; a++)
 		if (prop.chip.hub[a] == frame[0] && !memcmp(prop.chip.hub + a, frame, n)) { at = a; break; }
-	for (k = 0; k < 8; k++) stamp[k] = (uint8_t)(t >> (8 * k));
-	for (k = 0; k < 8; k++) stamp[8 + k] = (uint8_t)(pic >> (8 * k));
-	for (k = 0; k < 4; k++) stamp[16 + k] = (uint8_t)(at >> (8 * k));
+	for (k = 0; k < 8; k++) stamp[k     ] = (uint8_t)(t   >> (8 * k));
+	for (k = 0; k < 8; k++) stamp[8  + k] = (uint8_t)(pic >> (8 * k));
+	for (k = 0; k < 4; k++) stamp[16 + k] = (uint8_t)(at  >> (8 * k));
 	fwrite(stamp, 1, 20, disp_log);
 	fwrite(frame, 1, n, disp_log);
 }
@@ -720,7 +724,7 @@ static void pinheck_dmd_sub(void *ctx, const uint8_t *sub, int level, uint64_t t
 /* test hook PINHECK_DMD_PROOF: a second decoder reads the dots from the frame in hub RAM (dmdHub), compared with the pin decoder */
 static pinheck_dmd dmd_row;
 static int dmd_proof;
-static unsigned long dmd_subs, dmd_differ, dmd_rows;
+static unsigned int dmd_subs, dmd_differ, dmd_rows;
 static uint64_t dmd_first;
 
 static void pinheck_dmd_row_sub(void *ctx, const uint8_t *sub, int level, uint64_t t)
@@ -731,7 +735,7 @@ static void pinheck_dmd_row_sub(void *ctx, const uint8_t *sub, int level, uint64
 	for (r = 0; r < DMD_H; r++) n += memcmp(sub + r * DMD_ROW, dmd.sub + r * DMD_ROW, DMD_ROW) != 0;
 	if (!n) return;
 	if (!dmd_differ++) dmd_first = t;
-	dmd_rows += (unsigned long)n;
+	dmd_rows += (unsigned int)n;
 }
 
 /* test log (PINHECK_FRAME_LOG): each cycle of 16 subframes, one byte per dot (0-15) */
@@ -744,9 +748,9 @@ static void pinheck_dmd_frame(void *ctx, const uint8_t *shades, uint64_t t)
 	(void)ctx;
 	for (k = 0; k < DMD_W * DMD_H && at != 0xFFFFFFFFu; k += 2)
 		if (p8x32a_hub_at(&prop.chip, (at + k / 2) & 0xFFFF, t) != (shades[k] << 4 | shades[k + 1])) at = 0xFFFFFFFFu;
-	for (k = 0; k < 8; k++) stamp[k] = (uint8_t)(t >> (8 * k));
-	for (k = 0; k < 8; k++) stamp[8 + k] = (uint8_t)(pic >> (8 * k));
-	for (k = 0; k < 4; k++) stamp[16 + k] = (uint8_t)(at >> (8 * k));
+	for (k = 0; k < 8; k++) stamp[k     ] = (uint8_t)(t   >> (8 * k));
+	for (k = 0; k < 8; k++) stamp[8  + k] = (uint8_t)(pic >> (8 * k));
+	for (k = 0; k < 4; k++) stamp[16 + k] = (uint8_t)(at  >> (8 * k));
 	fwrite(stamp, 1, 20, disp_log);
 	fwrite(shades, 1, DMD_W * DMD_H, disp_log);
 }
@@ -827,7 +831,7 @@ static void pinheck_dmd_stop(void)
 	char msg[160];
 #ifdef PINHECK_TEST_HOOKS
 	if (dmd_proof) {
-		sprintf(msg, "dmd: proof: %lu subframes, the row model differs in %lu (%lu rows)", dmd_subs, dmd_differ, dmd_rows);
+		sprintf(msg, "dmd: proof: %u subframes, the row model differs in %u (%u rows)", dmd_subs, dmd_differ, dmd_rows);
 		if (dmd_differ) sprintf(msg + strlen(msg), ", the first at Propeller cycle %llu", (unsigned long long)dmd_first);
 		pinheck_prop_log(NULL, msg);
 	}
@@ -847,7 +851,7 @@ static void pinheck_disp_init(void)
 {
 	int v;
 	for (v = 0; v < 256; v++) {
-		int r = ((v >> 5) & 7) * 255 / 7, g = ((v >> 2) & 7) * 255 / 7, b = (v & 3) * 255 / 3;
+		const int r = ((v >> 5) & 7) * 255 / 7, g = ((v >> 2) & 7) * 255 / 7, b = (v & 3) * 255 / 3;
 		disp_rgb32[v] = MAKE_RGB(r, g, b);
 		disp_rgb15[v] = (UINT16)(((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3));
 	}
@@ -914,7 +918,7 @@ static void pinheck_disp_stop(void)
 PINMAME_VIDEO_UPDATE(pinheck_video)
 {
 	const int x0 = layout->left, y0 = layout->top, h = (int)(disp.frame / DISPLAY_W);
-	int x, y;
+	int y;
 	prop_sync(&prop);
 	(void)cliprect;
 #if !defined(LIBPINMAME) && PINHECK_VIDEO_SCALE == 2
@@ -922,22 +926,40 @@ PINMAME_VIDEO_UPDATE(pinheck_video)
 	   (round dots, full brightness, factory POSITION), BUT no bar brightness, which keeps it default/guessed (firmware (not dumped yet) would decide what the real value is) */
 	if (disp_dirty) pinheck_display_render(&disp_look, disp_shown, h, disp_img);
 	disp_dirty = 0;
-	for (y = 0; y < 2 * h && y0 + y < bitmap->height; y++)
-		for (x = 0; x < DISPLAY_LOOK_W && x0 + x < bitmap->width; x++) {
-			const uint8_t * const p = disp_img + y * (DISPLAY_LOOK_W * 3) + x * 3;
-			if (bitmap->depth == 32) ((UINT32 *)bitmap->line[y0 + y])[x0 + x] = MAKE_RGB(p[0], p[1], p[2]);
-			else ((UINT16 *)bitmap->line[y0 + y])[x0 + x] = (UINT16)(((p[0] >> 3) << 10) | ((p[1] >> 3) << 5) | (p[2] >> 3));
+	const int miny = MIN(2 * h, bitmap->height - y0);
+	const int minx = MIN(DISPLAY_LOOK_W, bitmap->width - x0);
+	for (y = 0; y < miny; y++) {
+		const uint8_t * __restrict p = disp_img + y * (DISPLAY_LOOK_W * 3);
+		int x;
+		if (bitmap->depth == 32) {
+			UINT32 * const __restrict line = (UINT32 *)bitmap->line[y0 + y] + x0;
+			for (x = 0; x < minx; x++,p+=3)
+				line[x] = MAKE_RGB(p[0], p[1], p[2]);
+		} else {
+			UINT16 * const __restrict line = (UINT16 *)bitmap->line[y0 + y] + x0;
+			for (x = 0; x < minx; x++,p+=3)
+				line[x] = (UINT16)(((p[0] >> 3) << 10) | ((p[1] >> 3) << 5) | (p[2] >> 3));
 		}
+	}
 #else
 	/* the raw pixels, without the module's look.
 	   TODO: decide whether libpinmame keeps leaving the look (PIXEL SHAPE, BRIGHTNESS, POSITION, BAR BRIGHT) to the
 	   host, or respects the display config, e.g. applying BRIGHTNESS and POSITION or passing the settings with the frame */
-	for (y = 0; y < h * PINHECK_VIDEO_SCALE && y0 + y < bitmap->height; y++)
-		for (x = 0; x < DISPLAY_W * PINHECK_VIDEO_SCALE && x0 + x < bitmap->width; x++) {
-			const uint8_t v = disp_shown[(y / PINHECK_VIDEO_SCALE) * DISPLAY_W + x / PINHECK_VIDEO_SCALE];
-			if (bitmap->depth == 32) ((UINT32 *)bitmap->line[y0 + y])[x0 + x] = disp_rgb32[v];
-			else ((UINT16 *)bitmap->line[y0 + y])[x0 + x] = disp_rgb15[v];
+	const int miny = MIN(h * PINHECK_VIDEO_SCALE, bitmap->height - y0);
+	const int minx = MIN(DISPLAY_W * PINHECK_VIDEO_SCALE, bitmap->width - x0);
+	for (y = 0; y < miny; y++) {
+		const int py = (y / PINHECK_VIDEO_SCALE) * DISPLAY_W;
+		int x;
+		if (bitmap->depth == 32) {
+			UINT32 * const __restrict line = (UINT32 *)bitmap->line[y0 + y] + x0;
+			for (x = 0; x < minx; x++)
+				line[x] = disp_rgb32[disp_shown[py + x / PINHECK_VIDEO_SCALE]];
+		} else {
+			UINT16 * const __restrict line = (UINT16 *)bitmap->line[y0 + y] + x0;
+			for (x = 0; x < minx; x++)
+				line[x] = disp_rgb15[disp_shown[py + x / PINHECK_VIDEO_SCALE]];
 		}
+	}
 #endif
 }
 
@@ -964,13 +986,13 @@ static INTERRUPT_GEN(pinheck_vblank)
 }
 
 static int hex_bad;   /* the game's Intel HEX did not convert: the machine refuses to run */
-static long hex_bytes; /* data bytes programmed */
+static int hex_bytes; /* data bytes programmed */
 
 /* program flash once per launch from PINHECK_HEXREGION */
 void pinheck_flash_hex(void)
 {
 	char err[96], msg[200];
-	long n;
+	int n;
 	hex_bad = 0;
 	hex_bytes = 0;
 	if (!memory_region(PINHECK_HEXREGION) || !memory_region(PINHECK_CPUREGION)) return;
@@ -1018,13 +1040,13 @@ static void pinheck_wav_header(FILE *f, uint32_t rate, uint32_t bytes)
 
 static void pinheck_snd_update(int param, INT16 **buffer, int length)
 {
-	int16_t tmp[2 * 512];
+	float tmp[2 * 512];
 	int done = 0, i;
 	uint64_t now, t0, t1;
 	(void)param;
 	if (locals.idle) {
-		memset(buffer[0], 0, length * sizeof(INT16));
-		memset(buffer[1], 0, length * sizeof(INT16));
+		memset(buffer[0], 0, length * sizeof(float));
+		memset(buffer[1], 0, length * sizeof(float));
 		return;
 	}
 	/* render up to the current emulated time; the per-frame sample count varies */
@@ -1034,7 +1056,7 @@ static void pinheck_snd_update(int param, INT16 **buffer, int length)
 	t1 = prop_time(&prop, now);
 	if (t1 < t0) t1 = t0;
 	while (done < length) {
-		int n = length - done > 512 ? 512 : length - done;
+		const int n = length - done > 512 ? 512 : length - done;
 		audio_render(&snd, tmp, n, t0 + (t1 - t0) * (uint64_t)(done + n) / (uint64_t)length);
 		for (i = 0; i < n; i++) {
 			buffer[0][done + i] = tmp[2 * i];
@@ -1070,7 +1092,7 @@ static int pinheck_sh_start(const struct MachineSound *msound)
 	}
 #endif
 	sndl.started = 1;
-	return stream_init_multi(2, names, vol, sndl.rate, 0, pinheck_snd_update) < 0;
+	return stream_init_multi_float(2, names, vol, sndl.rate, 0, pinheck_snd_update, 1) < 0;
 }
 
 static void pinheck_sh_stop(void)
@@ -1145,7 +1167,7 @@ static MACHINE_INIT(pinheck)
 	boot_set_log(&boot, pinheck_prop_log, NULL);
 	if (hex_bytes) {
 		char msg[64];
-		sprintf(msg, "hex: %ld bytes of program flash", hex_bytes);
+		sprintf(msg, "hex: %d bytes of program flash", hex_bytes);
 		pinheck_prop_log(NULL, msg);
 	}
 	boot_set_window(&boot, (uint64_t)pinheck_game()->bootHold * (PINHECK_CLOCK / 1000));

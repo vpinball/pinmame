@@ -55,7 +55,7 @@ void p2k_pinmame_start(const unsigned char *prism, unsigned prismLen,
 	u32 cpu_hz = 233000000/3; //!! sync with p2k.c
 #if P2K_DEBUG
 	// P2K_CPU_HZ raises it, which is how that was measured
-	if (const char *s = getenv("P2K_CPU_HZ")) { const long v = strtol(s, nullptr, 0); if (v > 0) cpu_hz = u32(v); }
+	if (const char *s = getenv("P2K_CPU_HZ")) { const long long v = strtoll(s, nullptr, 0); if (v > 0) cpu_hz = u32(v); }
 #endif
 	g_machine->build_machine(cpu_hz);
 	g_machine->reset();

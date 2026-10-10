@@ -1,7 +1,6 @@
 // license:BSD-3-Clause
 
-#ifndef PINHECK_DISPLAY_H
-#define PINHECK_DISPLAY_H
+#pragma once
 
 #include <stdint.h>
 
@@ -49,21 +48,19 @@ typedef struct display {
 	display_log_fn log;
 	uint32_t level;
 	uint8_t buf[DISPLAY_FRAME_MAX];
-	long frame;     /* bytes in a frame: DISPLAY_FRAME, or as pinheck_display_size set it */
-	long nbits;
+	int frame; /* bytes in a frame: DISPLAY_FRAME, or as pinheck_display_size set it */
+	int nbits;
 	int mode;
 	int logged_bits, logged_mixed, logged_cfg;
 	int logged_frame; /* discarded frames logged, up to DISPLAY_LOG_FRAMES + 1 */
 } display;
 
-void pinheck_display_init(display *d, void *ctx, display_frame_fn on_frame, display_config_fn on_config, display_log_fn log);
-int pinheck_display_size(display *d, int w, int h);
-void pinheck_display_pins(display *d, uint64_t t, uint32_t out, uint32_t dir);
-int pinheck_display_look(display_look *look, const uint8_t *cfg, int n);
-void pinheck_display_render(const display_look *look, const uint8_t *frame, int h, uint8_t *rgb);
+void pinheck_display_init(display * const d, void *ctx, display_frame_fn on_frame, display_config_fn on_config, display_log_fn log);
+int pinheck_display_size(display * const d, int w, int h);
+void pinheck_display_pins(display * const d, uint64_t t, uint32_t out, uint32_t dir);
+int pinheck_display_look(display_look * const look, const uint8_t * const cfg, int n);
+void pinheck_display_render(const display_look * const look, const uint8_t * const frame, int h, uint8_t * const rgb);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

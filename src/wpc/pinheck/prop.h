@@ -1,7 +1,6 @@
 // license:BSD-3-Clause
 
-#ifndef PINHECK_PROP_H
-#define PINHECK_PROP_H
+#pragma once
 
 #include "../../cpu/p8x32a/p8x32a.h"
 #include "eeprom.h"
@@ -73,26 +72,26 @@ typedef struct pinheck_prop {
 	uint8_t samp_val[PROP_SAMPS];
 } pinheck_prop;
 
-void prop_init(pinheck_prop *p, const uint8_t *rom32k, uint8_t *eemem);
-void prop_attach_sd(pinheck_prop *p, prop_spi_fn fn, void *ctx);
-void prop_set_log(pinheck_prop *p, prop_log_fn fn, void *ctx);
-void prop_set_tx(pinheck_prop *p, prop_tx_fn fn, void *ctx);
-void prop_set_sound(pinheck_prop *p, prop_ctr_fn ctr, prop_pins_fn pins, void *ctx);
-void prop_set_pins(pinheck_prop *p, prop_pins_fn fn, void *ctx);
-void prop_set_pins_mask(pinheck_prop *p, uint32_t mask);
-void prop_set_pins_lazy(pinheck_prop *p, prop_pins_fn fn, void *ctx, uint32_t mask);
-void prop_reset(pinheck_prop *p, uint64_t pic_cycle);
-void prop_pic_pins(pinheck_prop *p, uint64_t pic_cycle, uint32_t pins);
-void prop_catch_up(pinheck_prop *p, uint64_t pic_cycle);
-int prop_p24(pinheck_prop *p, uint64_t pic_cycle);
-uint32_t prop_sample(pinheck_prop *p, uint64_t pic_cycle);      /* with the worker: prop_p24 left to it; a token */
-int prop_sample_get(pinheck_prop *p, uint32_t token, int wait); /* its P24 (0, 1); -1 not yet (wait 0) */
-void prop_set_clock(pinheck_prop *p, prop_clock_fn fn, void *ctx);
-uint64_t prop_stamp(const pinheck_prop *p);
-int prop_start_thread(pinheck_prop *p);
-void prop_stop_thread(pinheck_prop *p);
-void prop_sync(pinheck_prop *p);
-uint64_t prop_time(pinheck_prop *p, uint64_t pic_cycle);
+void prop_init(pinheck_prop * const p, const uint8_t *rom32k, uint8_t *eemem);
+void prop_attach_sd(pinheck_prop * const p, prop_spi_fn fn, void *ctx);
+void prop_set_log(pinheck_prop * const p, prop_log_fn fn, void *ctx);
+void prop_set_tx(pinheck_prop * const p, prop_tx_fn fn, void *ctx);
+void prop_set_sound(pinheck_prop * const p, prop_ctr_fn ctr, prop_pins_fn pins, void *ctx);
+void prop_set_pins(pinheck_prop * const p, prop_pins_fn fn, void *ctx);
+void prop_set_pins_mask(pinheck_prop * const p, uint32_t mask);
+void prop_set_pins_lazy(pinheck_prop * const p, prop_pins_fn fn, void *ctx, uint32_t mask);
+void prop_reset(pinheck_prop * const p, uint64_t pic_cycle);
+void prop_pic_pins(pinheck_prop * const p, uint64_t pic_cycle, uint32_t pins);
+void prop_catch_up(pinheck_prop * const p, uint64_t pic_cycle);
+int prop_p24(pinheck_prop * const p, uint64_t pic_cycle);
+uint32_t prop_sample(pinheck_prop * const p, uint64_t pic_cycle);      /* with the worker: prop_p24 left to it; a token */
+int prop_sample_get(pinheck_prop * const p, uint32_t token, int wait); /* its P24 (0, 1); -1 not yet (wait 0) */
+void prop_set_clock(pinheck_prop * const p, prop_clock_fn fn, void *ctx);
+uint64_t prop_stamp(const pinheck_prop * const p);
+int prop_start_thread(pinheck_prop * const p);
+void prop_stop_thread(pinheck_prop * const p);
+void prop_sync(pinheck_prop * const p);
+uint64_t prop_time(pinheck_prop * const p, uint64_t pic_cycle);
 
 /* prop_governor, called each vblank with host and emulated time in seconds, keeps the worker only while faster. */
 #define PROP_GOV_RING 5
@@ -100,11 +99,9 @@ typedef struct prop_gov {
 	int state, flip, slow, n, k, warm;
 	double w0, e0, wl, el, rate, next, pause, inl, thr[PROP_GOV_RING];
 } prop_gov;
-int prop_gov_start(pinheck_prop *p, prop_gov *g, double host_s, int flip);
-void prop_governor(pinheck_prop *p, prop_gov *g, double host_s, double emu_s);
+int prop_gov_start(pinheck_prop * const p, prop_gov * const g, double host_s, int flip);
+void prop_governor(pinheck_prop * const p, prop_gov * const g, double host_s, double emu_s);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

@@ -1,7 +1,6 @@
 // license:BSD-3-Clause
 
-#ifndef PINHECK_SD_H
-#define PINHECK_SD_H
+#pragma once
 
 #include <stdint.h>
 
@@ -32,6 +31,4 @@ int sd_update(sd_card *s, int cs, int sclk, int mosi);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

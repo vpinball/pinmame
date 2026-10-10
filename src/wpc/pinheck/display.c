@@ -6,17 +6,17 @@
 
 #define PINS (DISPLAY_P17 | DISPLAY_P20 | DISPLAY_P21 | DISPLAY_P22)
 
-static void say(display *d, int *once, const char *msg)
+static void say(display * const d, int *once, const char *msg)
 {
 	if (*once) return;
 	*once = 1;
 	if (d->log) d->log(d->ctx, msg);
 }
 
-static void latch(display *d, uint64_t t, int cfg)
+static void latch(display * const d, uint64_t t, int cfg)
 {
 	char msg[80];
-	long n = d->nbits / 8;
+	int n = d->nbits / 8;
 
 	if (d->nbits == 0) return;
 	if (d->nbits % 8) {
@@ -42,7 +42,7 @@ static void latch(display *d, uint64_t t, int cfg)
 	d->nbits = 0;
 }
 
-void pinheck_display_init(display *d, void *ctx, display_frame_fn on_frame, display_config_fn on_config, display_log_fn log)
+void pinheck_display_init(display * const d, void *ctx, display_frame_fn on_frame, display_config_fn on_config, display_log_fn log)
 {
 	memset(d, 0, sizeof(*d));
 	d->ctx = ctx;
@@ -53,16 +53,16 @@ void pinheck_display_init(display *d, void *ctx, display_frame_fn on_frame, disp
 }
 
 /* the 128 x 32 or the 128 x 64 module: frames of w * h bytes; 0 (frames stay 128 x 32) for any other size */
-int pinheck_display_size(display *d, int w, int h)
+int pinheck_display_size(display * const d, int w, int h)
 {
 	if (!DISPLAY_SIZE_OK(w, h)) return 0;
-	d->frame = (long)w * h;
+	d->frame = w * h;
 	return 1;
 }
 
-void pinheck_display_pins(display *d, uint64_t t, uint32_t out, uint32_t dir)
+void pinheck_display_pins(display * const d, uint64_t t, uint32_t out, uint32_t dir)
 {
-	uint32_t now = out & dir & PINS, old = d->level;
+	const uint32_t now = out & dir & PINS, old = d->level;
 
 	d->level = now;
 	if ((now & DISPLAY_P20) && !(old & DISPLAY_P20)) {
@@ -70,7 +70,7 @@ void pinheck_display_pins(display *d, uint64_t t, uint32_t out, uint32_t dir)
 		return;
 	}
 	if ((now & DISPLAY_P22) && !(old & DISPLAY_P22) && !(now & DISPLAY_P20)) {
-		long i = d->nbits >> 3;
+		int i = d->nbits >> 3;
 		if (d->nbits == 0) d->mode = (now & DISPLAY_P17) != 0;
 		if (i < d->frame) {
 			if ((d->nbits & 7) == 0) d->buf[i] = 0;
@@ -80,7 +80,7 @@ void pinheck_display_pins(display *d, uint64_t t, uint32_t out, uint32_t dir)
 	}
 }
 
-static int word(const uint8_t *b, int i)
+static int word(const uint8_t * const b, int i)
 {
 	return b[2 * i] << 8 | b[2 * i + 1];
 }
@@ -88,7 +88,7 @@ static int word(const uint8_t *b, int i)
 /* Big-endian words: ?, POSITION, PIXEL SHAPE, BRIGHTNESS, width, height, then BAR BRIGHT in the 128 x 32 module's 14
    bytes; the 128 x 64 module's 12 bytes end after the height (The Jetsons: 1, 55, 0, 255, 128, 64), so its bar brightness
    keeps the default/guess. Anything else keeps the exact look (square dots, as sent) and returns 0 */
-int pinheck_display_look(display_look *look, const uint8_t *cfg, int n)
+int pinheck_display_look(display_look * const look, const uint8_t * const cfg, int n)
 {
 	look->shape = DISPLAY_SQUARE;
 	look->brightness = 255;
@@ -104,7 +104,7 @@ int pinheck_display_look(display_look *look, const uint8_t *cfg, int n)
 	return 1;
 }
 
-static void rgb332(uint8_t v, int *c)
+static void rgb332(uint8_t v, int * const c)
 {
 	c[0] = ((v >> 5) & 7) * 255 / 7;
 	c[1] = ((v >> 2) & 7) * 255 / 7;
@@ -112,7 +112,7 @@ static void rgb332(uint8_t v, int *c)
 }
 
 /* adds dot (x, y)'s colour to c; outside the frame (h rows) is black */
-static void add_dot(const uint8_t *f, int h, int x, int y, int *c)
+static void add_dot(const uint8_t * const f, int h, int x, int y, int * const c)
 {
 	int d[3];
 	if (x >= DISPLAY_W || y >= h) return;
@@ -124,7 +124,7 @@ static void add_dot(const uint8_t *f, int h, int x, int y, int *c)
 
 /* Scale2x: sub-pixel (sx, sy) of dot (x, y), neighbours clamped at the edges.
    TODO: find out what the module's HIGH REZ really does (photos, videos or its firmware); Scale2x is a stand-in */
-static uint8_t scale2x(const uint8_t *f, int h, int x, int y, int sx, int sy)
+static uint8_t scale2x(const uint8_t * const f, int h, int x, int y, int sx, int sy)
 {
 	uint8_t p = f[y * DISPLAY_W + x];
 	uint8_t up = y > 0 ? f[(y - 1) * DISPLAY_W + x] : p, down = y < h - 1 ? f[(y + 1) * DISPLAY_W + x] : p;
@@ -134,27 +134,28 @@ static uint8_t scale2x(const uint8_t *f, int h, int x, int y, int sx, int sy)
 }
 
 /* frame (128 x h RGB332, h = 32 or 64) -> rgb (256 x 2h, 3 bytes per pixel) in the look */
-void pinheck_display_render(const display_look *look, const uint8_t *frame, int h, uint8_t *rgb)
+void pinheck_display_render(const display_look * const look, const uint8_t * const frame, int h, uint8_t * const rgb)
 {
-	int x, y, k, dy = look->position - DISPLAY_ALIGNED;
+	int y, dy = look->position - DISPLAY_ALIGNED;
 	dy = dy >= 0 ? dy / 4 : -((3 - dy) / 4);
 	memset(rgb, 0, (size_t)DISPLAY_LOOK_W * 2 * h * 3);
 	for (y = 0; y < 2 * h; y++) {
 		const int dotY = y >> 1, sy = y & 1;
-		uint8_t *out;
-		if (y + dy < 0 || y + dy >= 2 * h) continue;
-		out = rgb + (y + dy) * (DISPLAY_LOOK_W * 3);
+		if (/*y + dy < 0 ||*/ (unsigned int)(y + dy) >= (unsigned int)(2 * h)) continue;
+		uint8_t *out = rgb + (y + dy) * (DISPLAY_LOOK_W * 3);
+		int x;
 		for (x = 0; x < DISPLAY_LOOK_W; x++) {
 			const int dotX = x >> 1, sx = x & 1;
-			int c[3] = { 0, 0, 0 };
+			int c[3];
+			int k;
 			if (look->shape == DISPLAY_HIGHREZ)
 				rgb332(scale2x(frame, h, dotX, dotY, sx, sy), c);
 			else if (look->shape == DISPLAY_SQUARE || !(sx | sy))
-				add_dot(frame, h, dotX, dotY, c);
+				rgb332(frame[dotY * DISPLAY_W + dotX], c);
 			else {
 				/* a gap between round dots: the mean of the dots around it, times bar / 124 */
 				const int m = (1 + sx) * (1 + sy);
-				add_dot(frame, h, dotX, dotY, c);
+				rgb332(frame[dotY * DISPLAY_W + dotX], c);
 				if (sx) add_dot(frame, h, dotX + 1, dotY, c);
 				if (sy) add_dot(frame, h, dotX, dotY + 1, c);
 				if (sx && sy) add_dot(frame, h, dotX + 1, dotY + 1, c);

@@ -1,7 +1,6 @@
 // license:BSD-3-Clause
 
-#ifndef INC_PINHECK
-#define INC_PINHECK
+#pragma once
 
 #include "core.h"
 #include "sim.h"
@@ -17,9 +16,9 @@
 #else
 #define PINHECK_VIDEO_SCALE 2
 #endif
-#define PINHECK_VIDEO_W (128 * PINHECK_VIDEO_SCALE)
-#define PINHECK_VIDEO_H (32 * PINHECK_VIDEO_SCALE)
-#define PINHECK_VIDEO_H64 (64 * PINHECK_VIDEO_SCALE) /* the 128x64 module */
+#define PINHECK_VIDEO_W   (128 * PINHECK_VIDEO_SCALE)
+#define PINHECK_VIDEO_H   (32  * PINHECK_VIDEO_SCALE)
+#define PINHECK_VIDEO_H64 (64  * PINHECK_VIDEO_SCALE) /* the 128x64 module */
 
 #define PINHECK_SWLFLIP  4
 #define PINHECK_SWRFLIP  3
@@ -27,13 +26,13 @@
 
 #define PINHECK_COMPORTS \
   PORT_START /* 0 */ \
-    COREPORT_BITDEF(  0x0001, IPT_TILT,          KEYCODE_INSERT) \
-    COREPORT_BITDEF(  0x0002, IPT_COIN1,         IP_KEY_DEFAULT) \
-    COREPORT_BITDEF(  0x0004, IPT_START1,        IP_KEY_DEFAULT) \
-    COREPORT_BITTOG(  0x0008, "Coin Door",       KEYCODE_END) \
-    COREPORT_BIT(     0x0010, "Back",            KEYCODE_7) \
-    COREPORT_BIT(     0x0020, "Enter",           KEYCODE_0) \
-    COREPORT_BIT(     0x0040, "User",            KEYCODE_9)
+    COREPORT_BITDEF(0x0001, IPT_TILT,    KEYCODE_INSERT) \
+    COREPORT_BITDEF(0x0002, IPT_COIN1,   IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(0x0004, IPT_START1,  IP_KEY_DEFAULT) \
+    COREPORT_BITTOG(0x0008, "Coin Door", KEYCODE_END) \
+    COREPORT_BIT(   0x0010, "Back",      KEYCODE_7) \
+    COREPORT_BIT(   0x0020, "Enter",     KEYCODE_0) \
+    COREPORT_BIT(   0x0040, "User",      KEYCODE_9)
 
 #define PINHECK_INPUT_PORTS_START(name, balls) \
   INPUT_PORTS_START(name) \
@@ -98,5 +97,3 @@ extern MACHINE_DRIVER_EXTERN(PINHECK);
 extern MACHINE_DRIVER_EXTERN(PINHECKDMD);
 #define gl_mPINHECK PINHECK
 #define gl_mPINHECKDMD PINHECKDMD
-
-#endif

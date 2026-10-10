@@ -19,49 +19,48 @@
 #define PIN_SDA  (1u << 29)
 #define PIN_SND  ((1u << 14) | (1u << 15))
 
-static void do_catch_up(pinheck_prop *p, uint64_t pic_cycle);
-static void do_pic_pins(pinheck_prop *p, uint64_t pic_cycle, uint32_t pins);
+static void do_catch_up(pinheck_prop * const p, uint64_t pic_cycle);
+static void do_pic_pins(pinheck_prop * const p, uint64_t pic_cycle, uint32_t pins);
 
 static const uint32_t rate_num[8] = { 3, 1, 13, 13, 13, 13, 13, 13 };
 static const uint32_t rate_den[8] = { 20, 4000, 160, 160, 80, 40, 20, 10 };
 
-static const prop_seg *seg_pic(const pinheck_prop *p, uint64_t a)
+static const prop_seg *seg_pic(const pinheck_prop * const p, uint64_t a)
 {
 	int k = p->nseg - 1;
 	while (k > 0 && p->seg[k].pic0 > a) k--;
 	return &p->seg[k];
 }
 
-static uint64_t to_prop(const pinheck_prop *p, uint64_t a)
+static uint64_t to_prop(const pinheck_prop * const p, uint64_t a)
 {
 	const prop_seg *s = seg_pic(p, a);
 	if (a < s->pic0) return s->prop0;
 	return s->prop0 + (a - s->pic0) * s->num / s->den;
 }
 
-static uint64_t to_pic(const pinheck_prop *p, uint64_t t)
+static uint64_t to_pic(const pinheck_prop * const p, uint64_t t)
 {
 	int k = p->nseg - 1;
-	const prop_seg *s;
 	while (k > 0 && p->seg[k].prop0 > t) k--;
-	s = &p->seg[k];
+	const prop_seg * const s = &p->seg[k];
 	if (t < s->prop0) return s->pic0;
 	return s->pic0 + ((t - s->prop0) * s->den + s->num - 1) / s->num;
 }
 
 /* the clock segments changed: convert the queued edges again */
-static void retime(pinheck_prop *p)
+static void retime(pinheck_prop * const p)
 {
 	int k;
 	for (k = 0; k < p->count; k++) {
-		prop_edge *e = &p->edge[(p->head + k) % PROP_EDGES];
+		prop_edge * const e = &p->edge[(p->head + k) % PROP_EDGES];
 		e->prop = to_prop(p, e->pic);
 	}
 }
 
-static void add_seg(pinheck_prop *p, uint64_t t, uint8_t cfg)
+static void add_seg(pinheck_prop * const p, uint64_t t, uint8_t cfg)
 {
-	uint64_t a = to_pic(p, t);
+	const uint64_t a = to_pic(p, t);
 	if (p->nseg == PROP_SEGS) {
 		memmove(p->seg, p->seg + 1, sizeof(p->seg[0]) * (PROP_SEGS - 1));
 		p->nseg--;
@@ -76,11 +75,11 @@ static void add_seg(pinheck_prop *p, uint64_t t, uint8_t cfg)
 
 static uint32_t pins_in(void *ctx, uint64_t t)
 {
-	pinheck_prop *p = (pinheck_prop *)ctx;
+	pinheck_prop * const p = (pinheck_prop *)ctx;
 	uint32_t v = p->base_pins;
 	int k;
 	for (k = 0; k < p->count; k++) {
-		const prop_edge *e = &p->edge[(p->head + k) % PROP_EDGES];
+		const prop_edge * const e = &p->edge[(p->head + k) % PROP_EDGES];
 		if (e->prop > t) break;
 		v = e->pins;
 	}
@@ -89,7 +88,7 @@ static uint32_t pins_in(void *ctx, uint64_t t)
 
 static uint64_t pins_next(void *ctx, uint64_t t)
 {
-	pinheck_prop *p = (pinheck_prop *)ctx;
+	pinheck_prop * const p = (pinheck_prop *)ctx;
 	int k;
 	for (k = 0; k < p->count; k++) {
 		uint64_t e = p->edge[(p->head + k) % PROP_EDGES].prop;
@@ -101,7 +100,7 @@ static uint64_t pins_next(void *ctx, uint64_t t)
 /* each device only acts on changes of its own pins */
 static void pins_out(void *ctx, uint64_t t, uint32_t out, uint32_t dir)
 {
-	pinheck_prop *p = (pinheck_prop *)ctx;
+	pinheck_prop * const p = (pinheck_prop *)ctx;
 	uint32_t ch;
 	/* a lazy cog's pins as last sent */
 	if (p->lz_mask) {
@@ -136,7 +135,7 @@ static void pins_out(void *ctx, uint64_t t, uint32_t out, uint32_t dir)
 
 static void lazy(void *ctx, uint64_t t, uint32_t mask, uint32_t out, uint32_t dir)
 {
-	pinheck_prop *p = (pinheck_prop *)ctx;
+	pinheck_prop * const p = (pinheck_prop *)ctx;
 	(void)t;
 	if (p->log && p->chip.lazies <= 16 && mask != p->lz_mask) {
 		char msg[48];
@@ -151,7 +150,7 @@ static void lazy(void *ctx, uint64_t t, uint32_t mask, uint32_t out, uint32_t di
 
 static void lazy_pins(void *ctx, uint64_t t, uint32_t out, uint32_t dir)
 {
-	pinheck_prop *p = (pinheck_prop *)ctx;
+	pinheck_prop * const p = (pinheck_prop *)ctx;
 	p->lz_out = out;
 	p->lz_dir = dir;
 	if (p->pins_lazy) p->pins_lazy(p->pins_lazy_ctx, t, out, dir);
@@ -166,13 +165,13 @@ static void lazy_update(pinheck_prop *p)
 
 static void ctr_state(void *ctx, uint64_t t, int cog, int ctr, uint32_t ctr_reg, uint32_t frq)
 {
-	pinheck_prop *p = (pinheck_prop *)ctx;
+	pinheck_prop * const p = (pinheck_prop *)ctx;
 	if (p->snd_ctr) p->snd_ctr(p->snd_ctx, t, cog, ctr, ctr_reg, frq);
 }
 
 static void clkset(void *ctx, uint64_t t, uint8_t cfg)
 {
-	pinheck_prop *p = (pinheck_prop *)ctx;
+	pinheck_prop * const p = (pinheck_prop *)ctx;
 	char msg[24];
 	add_seg(p, t, cfg);
 	if (p->log) {
@@ -184,13 +183,13 @@ static void clkset(void *ctx, uint64_t t, uint8_t cfg)
 
 static void logmsg(void *ctx, const char *msg)
 {
-	pinheck_prop *p = (pinheck_prop *)ctx;
+	pinheck_prop * const p = (pinheck_prop *)ctx;
 	if (p->log) p->log(p->log_ctx, msg);
 }
 
 static void restart(pinheck_prop *p, uint64_t t)
 {
-	uint64_t a = to_pic(p, t);
+	const uint64_t a = to_pic(p, t);
 	p8x32a_reset(&p->chip, t);
 	p->nseg = 1;
 	p->seg[0].pic0 = a;
@@ -205,7 +204,7 @@ static void restart(pinheck_prop *p, uint64_t t)
 	retime(p);
 }
 
-void prop_init(pinheck_prop *p, const uint8_t *rom32k, uint8_t *eemem)
+void prop_init(pinheck_prop * const p, const uint8_t *rom32k, uint8_t *eemem)
 {
 	p8x32a_bus bus;
 	memset(p, 0, sizeof(*p));
@@ -232,7 +231,7 @@ void prop_init(pinheck_prop *p, const uint8_t *rom32k, uint8_t *eemem)
 	p->sd_do = 1;
 }
 
-void prop_attach_sd(pinheck_prop *p, prop_spi_fn fn, void *ctx)
+void prop_attach_sd(pinheck_prop * const p, prop_spi_fn fn, void *ctx)
 {
 	p->sd = fn;
 	p->sd_ctx = ctx;
@@ -240,13 +239,13 @@ void prop_attach_sd(pinheck_prop *p, prop_spi_fn fn, void *ctx)
 	p->po_ok = 0;
 }
 
-void prop_set_log(pinheck_prop *p, prop_log_fn fn, void *ctx)
+void prop_set_log(pinheck_prop * const p, prop_log_fn fn, void *ctx)
 {
 	p->log = fn;
 	p->log_ctx = ctx;
 }
 
-void prop_set_tx(pinheck_prop *p, prop_tx_fn fn, void *ctx)
+void prop_set_tx(pinheck_prop * const p, prop_tx_fn fn, void *ctx)
 {
 	p->tx = fn;
 	p->tx_ctx = ctx;
@@ -254,7 +253,7 @@ void prop_set_tx(pinheck_prop *p, prop_tx_fn fn, void *ctx)
 	p->tx_level = 1;
 }
 
-void prop_set_pins(pinheck_prop *p, prop_pins_fn fn, void *ctx)
+void prop_set_pins(pinheck_prop * const p, prop_pins_fn fn, void *ctx)
 {
 	p->pins = fn;
 	p->pins_ctx = ctx;
@@ -262,7 +261,7 @@ void prop_set_pins(pinheck_prop *p, prop_pins_fn fn, void *ctx)
 	lazy_update(p);
 }
 
-void prop_set_pins_mask(pinheck_prop *p, uint32_t mask)
+void prop_set_pins_mask(pinheck_prop * const p, uint32_t mask)
 {
 	p->pins_mask = mask;
 	p->po_ok = 0;
@@ -270,7 +269,7 @@ void prop_set_pins_mask(pinheck_prop *p, uint32_t mask)
 }
 
 /* set before the Propeller runs: fn gets a lazy cog's pin changes within mask */
-void prop_set_pins_lazy(pinheck_prop *p, prop_pins_fn fn, void *ctx, uint32_t mask)
+void prop_set_pins_lazy(pinheck_prop * const p, prop_pins_fn fn, void *ctx, uint32_t mask)
 {
 	p->pins_lazy = fn;
 	p->pins_lazy_ctx = ctx;
@@ -278,7 +277,7 @@ void prop_set_pins_lazy(pinheck_prop *p, prop_pins_fn fn, void *ctx, uint32_t ma
 	lazy_update(p);
 }
 
-void prop_set_sound(pinheck_prop *p, prop_ctr_fn ctr, prop_pins_fn pins, void *ctx)
+void prop_set_sound(pinheck_prop * const p, prop_ctr_fn ctr, prop_pins_fn pins, void *ctx)
 {
 	p->snd_ctr = ctr;
 	p->snd_pins = pins;
@@ -286,7 +285,7 @@ void prop_set_sound(pinheck_prop *p, prop_ctr_fn ctr, prop_pins_fn pins, void *c
 	p->po_ok = 0;
 }
 
-void prop_reset(pinheck_prop *p, uint64_t pic_cycle)
+void prop_reset(pinheck_prop * const p, uint64_t pic_cycle)
 {
 	prop_sync(p);
 	p->stamp = p->clock ? p->clock(p->clock_ctx) : 0;
@@ -299,21 +298,21 @@ void prop_reset(pinheck_prop *p, uint64_t pic_cycle)
 	retime(p);
 }
 
-uint64_t prop_time(pinheck_prop *p, uint64_t pic_cycle)
+uint64_t prop_time(pinheck_prop * const p, uint64_t pic_cycle)
 {
 	prop_sync(p);
 	return to_prop(p, pic_cycle);
 }
 
-void prop_set_clock(pinheck_prop *p, prop_clock_fn fn, void *ctx)
+void prop_set_clock(pinheck_prop * const p, prop_clock_fn fn, void *ctx)
 {
 	p->clock = fn;
 	p->clock_ctx = ctx;
 }
 
-uint64_t prop_stamp(const pinheck_prop *p) { return p->stamp; }
+uint64_t prop_stamp(const pinheck_prop * const p) { return p->stamp; }
 
-static void do_catch_up(pinheck_prop *p, uint64_t pic_cycle)
+static void do_catch_up(pinheck_prop * const p, uint64_t pic_cycle)
 {
 	uint64_t t;
 	if (pic_cycle > p->pic_last) p->pic_last = pic_cycle;
@@ -328,7 +327,7 @@ static void do_catch_up(pinheck_prop *p, uint64_t pic_cycle)
 	}
 }
 
-static void do_pic_pins(pinheck_prop *p, uint64_t pic_cycle, uint32_t pins)
+static void do_pic_pins(pinheck_prop * const p, uint64_t pic_cycle, uint32_t pins)
 {
 	if (pic_cycle > p->pic_last) p->pic_last = pic_cycle;
 	if (pins == p->last_pins) return;
@@ -340,7 +339,7 @@ static void do_pic_pins(pinheck_prop *p, uint64_t pic_cycle, uint32_t pins)
 	p->last_pins = pins;
 }
 
-int prop_p24(pinheck_prop *p, uint64_t pic_cycle)
+int prop_p24(pinheck_prop * const p, uint64_t pic_cycle)
 {
 	uint32_t dir, out;
 	prop_catch_up(p, pic_cycle);
@@ -349,8 +348,7 @@ int prop_p24(pinheck_prop *p, uint64_t pic_cycle)
 	return (dir & PIN_P24) ? (out & PIN_P24) != 0 : 0;
 }
 
-/* PIC32-side calls may run on a worker thread, queued in order with their PIC32 cycle; prop_sync drains the
-   queue before Propeller state is read. */
+/* PIC32-side calls may run on a worker thread, queued in order with their PIC32 cycle; prop_sync drains the queue before Propeller state is read */
 #define PROP_Q 4096
 /* a wait spins this long, then blocks; longer on Windows, which wakes blocked threads slowly */
 #ifdef _WIN32
@@ -364,12 +362,12 @@ enum { CMD_PINS, CMD_CATCH_UP, CMD_SAMPLE, CMD_QUIT };
 typedef struct prop_cmd { uint64_t pic, stamp; uint32_t pins; int kind; } prop_cmd;
 
 #ifdef PINHECK_NO_THREADS
-uint32_t prop_sample(pinheck_prop *p, uint64_t pic_cycle) { (void)p; (void)pic_cycle; return 0; }
-int prop_sample_get(pinheck_prop *p, uint32_t token, int wait) { (void)p; (void)token; (void)wait; return 0; }
-int prop_start_thread(pinheck_prop *p) { (void)p; return -1; }
-void prop_stop_thread(pinheck_prop *p) { (void)p; }
-void prop_sync(pinheck_prop *p) { (void)p; }
-static void post(pinheck_prop *p, int kind, uint64_t pic, uint32_t pins) { (void)p; (void)kind; (void)pic; (void)pins; }
+uint32_t prop_sample(pinheck_prop * const p, uint64_t pic_cycle) { (void)p; (void)pic_cycle; return 0; }
+int prop_sample_get(pinheck_prop * const p, uint32_t token, int wait) { (void)p; (void)token; (void)wait; return 0; }
+int prop_start_thread(pinheck_prop * const p) { (void)p; return -1; }
+void prop_stop_thread(pinheck_prop * const p) { (void)p; }
+void prop_sync(pinheck_prop * const p) { (void)p; }
+static void post(pinheck_prop * const p, int kind, uint64_t pic, uint32_t pins) { (void)p; (void)kind; (void)pic; (void)pins; }
 #else
 #ifdef _WIN32
 #include <windows.h>
@@ -406,7 +404,7 @@ static int cpus_allowed(void)
 static void worker_loop(void *arg);
 static unsigned __stdcall os_entry(void *arg) { worker_loop(arg); return 0; }
 /* CRT thread start, at the emulation thread's priority */
-static int os_start(prop_os *o, void *arg)
+static int os_start(prop_os * const o, void *arg)
 {
 	o->ev = CreateEvent(NULL, FALSE, FALSE, NULL);
 	o->sev = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -420,7 +418,7 @@ static int os_start(prop_os *o, void *arg)
 	ResumeThread(o->th);
 	return 0;
 }
-static void os_join(prop_os *o)
+static void os_join(prop_os * const o)
 {
 	WaitForSingleObject(o->th, INFINITE);
 	CloseHandle(o->th);
@@ -428,17 +426,17 @@ static void os_join(prop_os *o)
 	CloseHandle(o->sev);
 }
 /* worker waits for a post; a post wakes it */
-static void os_sleep(prop_os *o) { WaitForSingleObject(o->ev, INFINITE); }
-static void os_wake(prop_os *o) { SetEvent(o->ev); }
+static void os_sleep(prop_os * const o) { WaitForSingleObject(o->ev, INFINITE); }
+static void os_wake(prop_os * const o) { SetEvent(o->ev); }
 /* poster waits for *head to reach want; the worker wakes it */
-static void os_wait_head(prop_os *o, volatile unsigned *head, unsigned want, volatile unsigned *waiting, volatile unsigned *wantp)
+static void os_wait_head(prop_os * const o, volatile unsigned *head, unsigned want, volatile unsigned *waiting, volatile unsigned *wantp)
 {
 	*wantp = want;
 	xchg(waiting, 1);
 	while ((int)(get_sc(head) - want) < 0) WaitForSingleObject(o->sev, INFINITE);
 	xchg(waiting, 0);
 }
-static void os_head_moved(prop_os *o) { SetEvent(o->sev); }
+static void os_head_moved(prop_os * const o) { SetEvent(o->sev); }
 #else
 #include <pthread.h>
 #include <sched.h>
@@ -482,7 +480,7 @@ static int cpus_allowed(void)
 }
 static void worker_loop(void *arg);
 static void *os_entry(void *arg) { worker_loop(arg); return NULL; }
-static int os_start(prop_os *o, void *arg)
+static int os_start(prop_os * const o, void *arg)
 {
 	pthread_mutex_init(&o->m, NULL);
 	pthread_cond_init(&o->c, NULL);
@@ -493,7 +491,7 @@ static int os_start(prop_os *o, void *arg)
 	pthread_mutex_destroy(&o->m);
 	return -1;
 }
-static void os_join(prop_os *o)
+static void os_join(prop_os * const o)
 {
 	pthread_join(o->th, NULL);
 	pthread_cond_destroy(&o->c);
@@ -501,14 +499,14 @@ static void os_join(prop_os *o)
 	pthread_mutex_destroy(&o->m);
 }
 /* worker waits for a post; a post wakes it */
-static void os_sleep(prop_os *o)
+static void os_sleep(prop_os * const o)
 {
 	pthread_mutex_lock(&o->m);
 	while (!o->wake) pthread_cond_wait(&o->c, &o->m);
 	o->wake = 0;
 	pthread_mutex_unlock(&o->m);
 }
-static void os_wake(prop_os *o)
+static void os_wake(prop_os * const o)
 {
 	pthread_mutex_lock(&o->m);
 	o->wake = 1;
@@ -516,7 +514,7 @@ static void os_wake(prop_os *o)
 	pthread_mutex_unlock(&o->m);
 }
 /* poster waits for *head to reach want; the worker wakes it */
-static void os_wait_head(prop_os *o, volatile unsigned *head, unsigned want, volatile unsigned *waiting, volatile unsigned *wantp)
+static void os_wait_head(prop_os * const o, volatile unsigned *head, unsigned want, volatile unsigned *waiting, volatile unsigned *wantp)
 {
 	pthread_mutex_lock(&o->m);
 	*wantp = want;
@@ -525,7 +523,7 @@ static void os_wait_head(prop_os *o, volatile unsigned *head, unsigned want, vol
 	xchg(waiting, 0);
 	pthread_mutex_unlock(&o->m);
 }
-static void os_head_moved(prop_os *o)
+static void os_head_moved(prop_os * const o)
 {
 	pthread_mutex_lock(&o->m);
 	pthread_cond_signal(&o->sc);
@@ -536,7 +534,7 @@ static void os_head_moved(prop_os *o)
 static uint64_t spin_ns = PROP_SPIN_NS;
 
 /* one step of a bounded spin; 1 after spin_ns */
-static int spin(uint64_t *t0, unsigned *k)
+static int spin(uint64_t * const t0, unsigned * const k)
 {
 	if (!(*k & 63)) {
 		uint64_t n = now_ns();
@@ -567,19 +565,19 @@ typedef struct prop_worker {
 } prop_worker;
 
 /* an idle worker blocks until the next post */
-static void idle_wait(prop_worker *w, unsigned h)
+static void idle_wait(prop_worker * const w, unsigned h)
 {
 	if (xchg(&w->sleeping, 1) == 0 && get_acq(&w->tail) == h) os_sleep(&w->os);
 	xchg(&w->sleeping, 0);
 }
 
-static void wake(prop_worker *w)
+static void wake(prop_worker * const w)
 {
 	if (xchg(&w->sleeping, 0)) os_wake(&w->os);
 }
 
 /* the poster spins, then blocks, until head reaches want */
-static void wait_head(prop_worker *w, unsigned want)
+static void wait_head(prop_worker * const w, unsigned want)
 {
 	uint64_t t0 = 0;
 	unsigned k = 0;
@@ -591,13 +589,13 @@ static void wait_head(prop_worker *w, unsigned want)
 }
 
 /* advance head to h and wake a waiting poster */
-static void head_moved(prop_worker *w, unsigned h)
+static void head_moved(prop_worker * const w, unsigned h)
 {
 	put_sc(&w->head, h);
 	if (get_sc(&w->waiting) && (int)(h - w->want) >= 0) os_head_moved(&w->os);
 }
 
-static void run_cmd(pinheck_prop *p, const prop_cmd *c)
+static void run_cmd(pinheck_prop * const p, const prop_cmd * const c)
 {
 	p->stamp = c->stamp;
 	if (c->kind == CMD_CATCH_UP) do_catch_up(p, c->pic);
@@ -613,8 +611,8 @@ static void run_cmd(pinheck_prop *p, const prop_cmd *c)
 
 static void worker_loop(void *arg)
 {
-	pinheck_prop *p = (pinheck_prop *)arg;
-	prop_worker *w = (prop_worker *)p->worker;
+	pinheck_prop * const p = (pinheck_prop *)arg;
+	prop_worker * const w = (prop_worker *)p->worker;
 	unsigned h = w->head, t = h, k = 0;
 	uint64_t t0 = 0;
 	for (;;) {
@@ -632,12 +630,11 @@ static void worker_loop(void *arg)
 
 static void post(pinheck_prop *p, int kind, uint64_t pic, uint32_t pins)
 {
-	prop_worker *w = (prop_worker *)p->worker;
+	prop_worker * const w = (prop_worker *)p->worker;
 	unsigned t = w->tail;
-	prop_cmd *c;
 	/* head is read only when the queue looks full by head_seen */
 	if (t - w->head_seen >= PROP_Q && t - (w->head_seen = get_acq(&w->head)) >= PROP_Q) wait_head(w, t - PROP_Q + 1);
-	c = &w->q[t % PROP_Q];
+	prop_cmd * const c = &w->q[t % PROP_Q];
 	c->kind = kind;
 	c->pic = pic;
 	c->pins = pins;
@@ -647,7 +644,7 @@ static void post(pinheck_prop *p, int kind, uint64_t pic, uint32_t pins)
 }
 
 /* only the owning thread waits; others read the state as is */
-void prop_sync(pinheck_prop *p)
+void prop_sync(pinheck_prop * const p)
 {
 	prop_worker *w;
 	if (p->owner != self_id()) return;
@@ -655,7 +652,7 @@ void prop_sync(pinheck_prop *p)
 	if (w) wait_head(w, w->tail);
 }
 
-int prop_start_thread(pinheck_prop *p)
+int prop_start_thread(pinheck_prop * const p)
 {
 	prop_worker *w;
 	if (p->worker) return 0;
@@ -669,7 +666,7 @@ int prop_start_thread(pinheck_prop *p)
 	{
 		/* PINHECK_SPIN_US (1-100000) */
 		const char *us = getenv("PINHECK_SPIN_US");
-		long v = us ? strtol(us, NULL, 10) : 0;
+		long long v = us ? strtoll(us, NULL, 10) : 0;
 		if (v >= 1 && v <= 100000) spin_ns = (uint64_t)v * 1000;
 	}
 #endif
@@ -685,9 +682,9 @@ int prop_start_thread(pinheck_prop *p)
 	return 0;
 }
 
-void prop_stop_thread(pinheck_prop *p)
+void prop_stop_thread(pinheck_prop * const p)
 {
-	prop_worker *w = (prop_worker *)p->worker;
+	prop_worker * const w = (prop_worker *)p->worker;
 	if (!w) return;
 	post(p, CMD_QUIT, 0, 0);
 	os_join(&w->os);
@@ -696,16 +693,16 @@ void prop_stop_thread(pinheck_prop *p)
 }
 
 /* P24 at pic_cycle, read by the worker; collect with prop_sample_get */
-uint32_t prop_sample(pinheck_prop *p, uint64_t pic_cycle)
+uint32_t prop_sample(pinheck_prop * const p, uint64_t pic_cycle)
 {
-	prop_worker *w = (prop_worker *)p->worker;
+	prop_worker * const w = (prop_worker *)p->worker;
 	uint32_t k = ++p->samp_post;
 	p->samp_cmd[k % PROP_SAMPS] = w->tail;
 	post(p, CMD_SAMPLE, pic_cycle, k);
 	return k;
 }
 
-int prop_sample_get(pinheck_prop *p, uint32_t token, int wait)
+int prop_sample_get(pinheck_prop * const p, uint32_t token, int wait)
 {
 	if ((int)(get_acq(&p->samp_done) - token) < 0) {
 		prop_worker *w = (prop_worker *)p->worker;
@@ -717,14 +714,14 @@ int prop_sample_get(pinheck_prop *p, uint32_t token, int wait)
 }
 #endif
 
-void prop_catch_up(pinheck_prop *p, uint64_t pic_cycle)
+void prop_catch_up(pinheck_prop * const p, uint64_t pic_cycle)
 {
 	if (p->worker) { post(p, CMD_CATCH_UP, pic_cycle, 0); return; }
 	p->stamp = p->clock ? p->clock(p->clock_ctx) : pic_cycle;
 	do_catch_up(p, pic_cycle);
 }
 
-void prop_pic_pins(pinheck_prop *p, uint64_t pic_cycle, uint32_t pins)
+void prop_pic_pins(pinheck_prop * const p, uint64_t pic_cycle, uint32_t pins)
 {
 	pins &= PROP_PIC_PINS;
 	if (p->worker) { post(p, CMD_PINS, pic_cycle, pins); return; }
@@ -737,7 +734,7 @@ void prop_pic_pins(pinheck_prop *p, uint64_t pic_cycle, uint32_t pins)
 #define GOV_MARGIN 1.15
 enum { GOV_OFF, GOV_THREADED, GOV_TRY_INLINE, GOV_CHECK_THREADED, GOV_INLINE, GOV_TRY_THREADED };
 
-static void gov_log(pinheck_prop *p, const char *what, double a, double b)
+static void gov_log(pinheck_prop * const p, const char * const what, double a, double b)
 {
 	char msg[96];
 	if (!p->log) return;
@@ -745,7 +742,7 @@ static void gov_log(pinheck_prop *p, const char *what, double a, double b)
 	p->log(p->log_ctx, msg);
 }
 
-static double gov_median(const double *v, int n)
+static double gov_median(const double * const v, int n)
 {
 	double a[PROP_GOV_RING], t;
 	int i, j;
@@ -755,14 +752,14 @@ static double gov_median(const double *v, int n)
 	return a[n / 2];
 }
 
-static void gov_backoff(prop_gov *g, double w)
+static void gov_backoff(prop_gov * const g, double w)
 {
 	g->next = w + g->pause;
 	if (g->pause < 320.0) g->pause *= 2.0;
 }
 
 /* starts the worker; 0 when it runs */
-int prop_gov_start(pinheck_prop *p, prop_gov *g, double w, int flip)
+int prop_gov_start(pinheck_prop * const p, prop_gov * const g, double w, int flip)
 {
 	memset(g, 0, sizeof(*g));
 	if (prop_start_thread(p)) return -1;
@@ -773,7 +770,7 @@ int prop_gov_start(pinheck_prop *p, prop_gov *g, double w, int flip)
 	return 0;
 }
 
-void prop_governor(pinheck_prop *p, prop_gov *g, double w, double e)
+void prop_governor(pinheck_prop * const p, prop_gov * const g, double w, double e)
 {
 	double s, gap = w - g->wl, de = e - g->el;
 	int stall = gap > 3.0 || (gap > 0.25 && gap > 4.0 * g->rate * de);

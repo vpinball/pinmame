@@ -1,7 +1,6 @@
 // license:BSD-3-Clause
 
-#ifndef PINHECK_EEPROM_H
-#define PINHECK_EEPROM_H
+#pragma once
 
 #include <stdint.h>
 
@@ -27,6 +26,4 @@ int cat24m01_update(cat24m01 *e, int scl, int sda);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

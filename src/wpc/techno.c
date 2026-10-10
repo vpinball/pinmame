@@ -15,7 +15,7 @@
 
   Issues/Todo:
   #0) Display is going too fast @ 8Mhz cpu
-  #1) Not 100% sure of the IRQ timing, although I think it should be correct from the schematics.
+  #1) Not 100% sure of the IRQ timing, although I think it should be correct from the schematics
   #2) Seems the display might go too fast in places, ie, doesn't scroll enough sometimes
   #3) In relation to #2 - not sure if calculation of the display column is always 100% correct
 
@@ -29,11 +29,11 @@
 #include "sndbrd.h"
 
 #define TECNO_SOLSMOOTH 4
-//#define TECNO_CPUFREQ 8000000		//As written in manual
-#define TECNO_CPUFREQ 4000000			//Seems to work better
+//#define TECNO_CPUFREQ 8000000 //As written in manual
+#define TECNO_CPUFREQ 4000000 //Seems to work better
 
 // Crystal from CPU feeds an LS393 - Q1 (acts as divide by 2) - Feeds 4040 which divides by 128 - Feeds 7474 (divide by 2)
-#define TECNO_IRQ_FREQ TIME_IN_HZ(TECNO_CPUFREQ/2/128/2)		//Not 100% sure on this one..
+#define TECNO_IRQ_FREQ TIME_IN_HZ(TECNO_CPUFREQ/2/128/2) //Not 100% sure on this one..
 
 #if 0
 #define LOG(x) printf x
@@ -100,8 +100,8 @@ static INTERRUPT_GEN(vblank) {
 
 static SWITCH_UPDATE(tecno) {
   if (inports) {
-	  coreGlobals.swMatrix[1] = (inports[CORE_COREINPORT] & 0x00ff);		//Column 0 Switches
-	  coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0xfc) | (inports[CORE_COREINPORT] & 0x0300)>>8;     //Column 1 Switches
+	  coreGlobals.swMatrix[1] = (inports[CORE_COREINPORT] & 0x00ff); //Column 0 Switches
+	  coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0xfc) | (inports[CORE_COREINPORT] & 0x0300)>>8; //Column 1 Switches
   }
 }
 
@@ -128,8 +128,8 @@ static MACHINE_STOP(tecno)
 
 //Input Key - Return Switches (uses Lamp Column Strobe)
 static READ16_HANDLER(input_key_r) {
-	UINT8 switches = coreGlobals.swMatrix[locals.LampCol+1];	//+1 so we begin by reading column 1 of input matrix instead of 0 which is used for special switches in many drivers
-	return (UINT16)core_revbyte(switches);	//Reverse bits to align with switch matrix from manual
+	UINT8 switches = coreGlobals.swMatrix[locals.LampCol+1]; //+1 so we begin by reading column 1 of input matrix instead of 0 which is used for special switches in many drivers
+	return (UINT16)core_revbyte(switches); //Reverse bits to align with switch matrix from manual
 }
 
 //Return Sound Status?
