@@ -81,12 +81,13 @@ Improved AY8910 sound emulation (more accurate noise, measured DAC curve, 16-ste
 Improved TMS52X0 sound emulation (more accurate, many previously needed hacks disabled)
 Improved (slightly) the SN76496/SN76489(A)/SN76494 sound emulation (more accurate noise and fix lowest note)
 Improved MSM6585 sound emulation (accurate sample rate/prescale mapping)
+Improved Tecnoplay (X Force & Space Team) sound emulation (incl. TMS7000 & Y8950 emulation improvements)
 Wired up sample rate selection for Verne's World and Jolly Park (potentially fixes some samples played)
 Fixed sound problems if a OKI6295 game is used after a OKI6376 game (e.g. GTS3 after Sleic)
 Added manual sound commands (sound commander) for the Bally Cheap Squeak and Turbo Cheap Squeak sound boards
 Fixed the sound command logging and altsound handling for Bally MPU-17/MPU-35 machines: it now filters only the commands the game sends to the -32/-50, -51, -56, Squawk & Talk and Cheap Squeak boards, and to Nuova Bell's -51N, -61N and own sound boards
-Fixed the sound command logging for Whirlwind: the bytes that drive the solenoid overlay board are no longer logged as sound commands (sound commander, AltSound, libPinMAME)
-Fixed the sound command logging for the Bally 6803 machines: one byte per command, the one the sound strobe goes out with, not every write of port 1 (sound commander, AltSound, libPinMAME)
+Fixed the sound command logging and altsound handling for Whirlwind: the bytes that drive the solenoid overlay board are no longer also logged as sound commands
+Fixed the sound command logging and altsound handling for the Bally 6803 machines: one byte per command (the one the sound strobe goes out with), not every write of port 1
 Slightly improved Williams System 3-7, 9/11 and WPC89 sound boards output (some loud sounds did clip (e.g. Addams Family))
 Improved BSMT2000 sound emulation speed a bit
 Fixed the BSMT2000 logo attract mode jingle on Data East/Sega/Stern games
