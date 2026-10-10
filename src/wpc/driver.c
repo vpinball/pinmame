@@ -3517,6 +3517,19 @@ DRIVER(swep1,040)       //          06/99   Pinball 2000: Star Wars Episode I (0
 // 0.1  (03/99, XINA 1.02) - a cleaned up version of what was demo'd for Lucas
 #endif
 
+#if HAS_SPIKE1
+DRIVER(gbust,117h)      //Spike 1:  2016    Ghostbusters (Limited Edition 1.17.0)
+DRIVER(wnbjm,155)       //Spike 1:  2015    Whoa Nellie! Big Juicy Melons (1.55.0)
+DRIVER(pabst,101)       //Spike 1:  2016    Pabst Can Crusher (1.01.0)
+DRIVER(primus,103)      //Spike 1:  2018    Primus (1.03.0)
+DRIVER(got,137h)        //Spike 1:  2015    Game of Thrones (Limited Edition 1.37.0)
+DRIVER(got,137)         //Spike 1:  2015    Game of Thrones (Pro 1.37.0)
+DRIVER(kiss15,141h)     //Spike 1:  2015    KISS (Limited Edition 1.41.0)
+DRIVER(wwe,135h)        //Spike 1:  2015    WWE WrestleMania (Limited Edition 1.35.0)
+DRIVER(heavym20,102)    //Spike 1:  2020    Heavy Metal (1.02.0)
+DRIVER(supreme,101)     //Spike 1:  2018    Supreme (1.01.0)
+#endif
+
 #ifdef PIN2K_SOUND_TEST
 DRIVERNV(pin2ksnd)      //                  Pinball 2000 PinMAME DCS2 sound board test harness, RFM  (see docs/pin2k_sound.md)
 DRIVERNV(pin2ksw1)      //                  Pinball 2000 PinMAME DCS2 sound board test harness, SWEP1
