@@ -10,6 +10,7 @@
 #include <vector>
 #include <algorithm>
 #include <format>
+#include <map>
 
 #if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || defined(__ia64__) || defined(__x86_64__)
  #define SSE_DISPLAY_OPT
@@ -303,6 +304,10 @@ static struct MsgLocals
    };
    char memMapStringBuffer[256];
    std::vector<MemMapState> memMapStates;
+
+   // I/O names gathered from a machine definition provided through PinmameSetGameDef,
+   // keyed by state group id (PMPI_GROUP_SOLENOID/GI/LAMP/SWITCH/DIPSWITCH) and mappingId
+   std::map<std::pair<uint32_t, uint32_t>, std::string> gameDefStates;
 } msgLocals = {};
 
 
@@ -2427,6 +2432,33 @@ static void SetupMsgApiGameStates()
    }
    setupGroup(PMPI_GROUP_GAMESTATE, "Game States", "Live game states gathered from internal machine memory");
 
+   // Overlay the names of the I/O states with the ones from the machine definition provided through PinmameSetGameDef (if any)
+   if (!msgLocals.gameDefStates.empty())
+   {
+      for (uint32_t groupId = PMPI_GROUP_SOLENOID; groupId <= PMPI_GROUP_VPM_MECH; groupId++)
+      {
+         // The VPinMAME backward compatible groups expose the same devices as the corresponding new groups
+         uint32_t defGroupId = groupId;
+         switch (groupId)
+         {
+         case PMPI_GROUP_VPM_SOLENOID: defGroupId = PMPI_GROUP_SOLENOID; break;
+         case PMPI_GROUP_VPM_GI: defGroupId = PMPI_GROUP_GI; break;
+         case PMPI_GROUP_VPM_LAMP: defGroupId = PMPI_GROUP_LAMP; break;
+         }
+         auto& group = msgLocals.stateGroups[groupId - PMPI_GROUP_SOLENOID];
+         for (auto& state : group.states)
+         {
+            if (const auto it = msgLocals.gameDefStates.find(std::make_pair(defGroupId, state.mappingId)); it != msgLocals.gameDefStates.end())
+            {
+               char* name = new char[it->second.size() + 1];
+               strcpy(name, it->second.c_str());
+               delete[] state.name;
+               state.name = name;
+            }
+         }
+      }
+   }
+
    msgLocals.stateProvider = std::make_unique<PinballPlugin::Controller::CtrlItemProvider<StateSrcId>>(msgLocals.msgApi, msgLocals.endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG);
    std::vector<StateSrcId> stateGroups;
    for (uint32_t groupId = PMPI_GROUP_SOLENOID; groupId <= PMPI_GROUP_VPM_MECH; groupId++)
@@ -3410,5 +3442,57 @@ PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t
 	catch (const std::exception& e) {
 		msgLocals.memMapStates.clear();
 		libpinmame_log_error("PinmameSetMemMap(): failed to parse memory map: %s", e.what());
+	}
+}
+
+static void SetGameDefImpl(uint8_t* game, size_t gameSize)
+{
+   msgLocals.gameDefStates.clear();
+   if (!game || gameSize == 0)
+      return;
+
+   // Machine definitions (see https://github.com/vpinball/pinmame-game-defs) declare their
+   // I/O devices in 'inputs'/'outputs' arrays. Each item binds to a group identifying the
+   // state group it belongs to and a device which is the public address reported as mappingId.
+   const json gameDef = json::parse(std::string(reinterpret_cast<char*>(game), gameSize));
+   static const std::pair<const char*, uint32_t> groupMap[] = {
+      { "pinmame.input.switch",    PMPI_GROUP_SWITCH },
+      { "pinmame.input.dip",       PMPI_GROUP_DIPSWITCH },
+      { "pinmame.output.solenoid", PMPI_GROUP_SOLENOID },
+      { "pinmame.output.gi",       PMPI_GROUP_GI },
+      { "pinmame.output.lamp",     PMPI_GROUP_LAMP },
+   };
+   for (const char* section : { "inputs", "outputs" })
+   {
+      if (!gameDef.contains(section) || !gameDef[section].is_array())
+         continue;
+      for (const json& item : gameDef[section])
+      {
+         if (!item.is_object() || !item.contains("label") || !item["label"].is_string()
+            || !item.contains("binding") || !item["binding"].is_object()
+            || !item["binding"].contains("group") || !item["binding"]["group"].is_string()
+            || !item["binding"].contains("device") || !item["binding"]["device"].is_number_integer())
+            continue;
+         for (const auto& [name, groupId] : groupMap)
+            if (item["binding"]["group"] == name)
+               msgLocals.gameDefStates[std::make_pair(groupId, static_cast<uint16_t>(static_cast<int16_t>(item["binding"]["device"].get<int>())))] = item["label"].get<std::string>();
+      }
+   }
+}
+
+/******************************************************
+ * PinmameSetGameDef
+ ******************************************************/
+
+PINMAMEAPI void PinmameSetGameDef(uint8_t* game, size_t gameSize)
+{
+	// Same failure containment as PinmameSetMemMap: the definition file is host-provided
+	// input that may be truncated or hand-edited, so parsing errors must not cross the C boundary.
+	try {
+		SetGameDefImpl(game, gameSize);
+	}
+	catch (const std::exception& e) {
+		msgLocals.gameDefStates.clear();
+		libpinmame_log_error("PinmameSetGameDef(): failed to parse game definition: %s", e.what());
 	}
 }
