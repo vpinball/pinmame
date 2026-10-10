@@ -1886,6 +1886,7 @@ void eint( void )
 {
 	pSR |= (SR_N|SR_Z|SR_C|SR_I);
 	tms7000_icount -= 5;
+	checkIrqs = 1;
 }
 
 void idle( void );
@@ -2889,6 +2890,7 @@ void pop_st( void )
 	pSR = t;
 
 	tms7000_icount -= 6;
+	checkIrqs = 1;
 }	
 
 void push_a( void );
@@ -2955,6 +2957,7 @@ void reti( void )
 	PULLBYTE( pSR );
 	
 	tms7000_icount -= 9;
+	checkIrqs = 1;
 }
 
 void rets_imp( void );
