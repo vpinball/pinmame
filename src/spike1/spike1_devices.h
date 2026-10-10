@@ -109,6 +109,10 @@ public:
 	const std::vector<output_info> &leds() const { return m_leds; }
 	// What a coil driver puts out at now_ns, 0 (off) to 255 (full on): the board's PWM duty
 	uint8_t coil_level(uint8_t node, uint8_t position, uint64_t now_ns) const;
+	// The same as a host shows it (PinMAME's solenoids), taken once a look: a pulse that came and
+	// went since the last look shows at its power, so one shorter than the look is not lost; the
+	// 1 ms pulses of the game's power-on driver check, too short to move a coil, show nothing
+	uint8_t coil_output(uint8_t node, uint8_t position, uint64_t now_ns);
 	// An LED channel's level at now_ns, 0-255: on its way to the level the game last set, over that
 	// update's fade time
 	uint8_t led_level(uint8_t node, uint8_t position, uint64_t now_ns) const;
@@ -280,6 +284,8 @@ private:
 		uint32_t reflex_pulse_ms = 0, reflex_holdoff_ms = 0;
 		uint64_t holdoff_end_ns = 0;
 		bool trigger_was_active = false;
+		bool check = false;            // the pulse now is a driver check (coil_output())
+		uint8_t shown = 0;             // the highest power fired since a host last took coil_output()
 	};
 	coil m_coil[128][COILS_PER_NODE];
 	uint16_t m_coil_mask[128] = {};    // set bits: drivers the game has switched off

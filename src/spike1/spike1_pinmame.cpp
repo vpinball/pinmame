@@ -179,12 +179,12 @@ int spike1_pinmame_coil(unsigned index, int *number, const char **name)
 	return 1;
 }
 
-unsigned spike1_pinmame_coil_level(int number)
+unsigned spike1_pinmame_coil_output(int number)
 {
-	const spike1_devices *d = devices();
+	spike1_devices *d = devices();
 	if (!d) return 0;
 	for (const auto &c : d->coils())
-		if (c.number == number) return d->coil_level(c.node, c.position, now_ns());
+		if (c.number == number) return d->coil_output(c.node, c.position, now_ns());
 	return 0;
 }
 

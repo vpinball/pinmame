@@ -48,6 +48,11 @@ constexpr uint32_t NODE_TICK_HZ = 1000;
 // Reflex switch bytes in a coil configuration: position | used [| inverted]
 constexpr uint8_t REFLEX_USED = 0x40, REFLEX_INVERT = 0x80, REFLEX_POSITION = 0x3f;
 
+// The shortest coil pulse a host shows. At power-on every title but WWE fires each driver alone
+// for 1 ms, the others switched off, and logs its current - a check for missing and shorted
+// coils. The shortest pulse that moves something is 16 ms (Primus' slingshots)
+constexpr uint32_t COIL_SHOWN_MIN_MS = 4;
+
 // Motors: how long a home takes, and a move per encoder count. The game polls until the board
 // says the move is done, so these only set the pace of the mechanism, not whether it works
 constexpr uint64_t MOTOR_HOME_NS = 1500000000;
@@ -1128,11 +1133,14 @@ void spike1_devices::coil_fire(uint8_t node, const uint8_t *data, uint32_t len, 
 {
 	if (len < 9 || data[0] >= COILS_PER_NODE) { note = "node bus: node " + std::to_string(node) + " coil fire not understood: " + bytes_hex(data, len); return; }
 	coil &c = m_coil[node][data[0]];
+	const uint32_t ms1 = ticks_ms(data + 2), ms2 = ticks_ms(data + 5);
 	c.power1 = data[1];
 	c.power2 = data[4];
-	c.phase1_end_ns = now_ns + uint64_t(ticks_ms(data + 2)) * 1000000;
-	c.phase2_end_ns = c.phase1_end_ns + uint64_t(ticks_ms(data + 5)) * 1000000;
+	c.phase1_end_ns = now_ns + uint64_t(ms1) * 1000000;
+	c.phase2_end_ns = c.phase1_end_ns + uint64_t(ms2) * 1000000;
 	c.holding = false;
+	c.check = (c.power1 ? ms1 : 0) + (c.power2 ? ms2 : 0) < COIL_SHOWN_MIN_MS;
+	if (!c.check && !((m_coil_mask[node] >> data[0]) & 1)) c.shown = std::max({ c.shown, c.power1, c.power2 });
 	if (len > 9 && std::any_of(data + 9, data + len, [](uint8_t b) { return b != 0; }) && first_time("coil fire extras"))
 		note = "node bus: node " + std::to_string(node) + " coil fire with a time and switch condition (not modelled): " + bytes_hex(data, len);
 	else if (m_cfg.trace)
@@ -1192,6 +1200,8 @@ void spike1_devices::run_reflexes(uint8_t node, uint64_t now_ns)
 			c.phase2_end_ns = 0;
 			c.holding = c.reflex_power2 != 0;
 			c.holdoff_end_ns = c.phase1_end_ns + uint64_t(c.reflex_holdoff_ms) * 1000000;
+			c.check = false;
+			if (!((m_coil_mask[node] >> unsigned(&c - m_coil[node])) & 1)) c.shown = std::max(c.shown, c.power1);
 		} else if (!active && c.trigger_was_active && c.holding) {
 			c.holding = false;                                     // a released flipper drops at once
 			c.phase1_end_ns = std::min(c.phase1_end_ns, now_ns);
@@ -1209,6 +1219,15 @@ uint8_t spike1_devices::coil_level(uint8_t node, uint8_t position, uint64_t now_
 	if (now_ns < c.phase1_end_ns) return c.power1;
 	if (c.holding || now_ns < c.phase2_end_ns) return c.power2;
 	return 0;
+}
+
+uint8_t spike1_devices::coil_output(uint8_t node, uint8_t position, uint64_t now_ns)
+{
+	if (node > 127 || position >= COILS_PER_NODE) return 0;
+	coil &c = m_coil[node][position];
+	const uint8_t shown = std::max(c.check ? uint8_t(0) : coil_level(node, position, now_ns), c.shown);
+	c.shown = 0;
+	return shown;
 }
 
 // ---------------------------------------------------------------- LEDs
