@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "cpuintrf.h"
+#include "cpuexec.h"
 #include "state.h"
 #include "mamedbg.h"
 #include "tms7000.h"
