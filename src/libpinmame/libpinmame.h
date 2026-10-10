@@ -533,3 +533,6 @@ PINMAMEAPI void PinmameSetMsgAPI(MsgPluginAPI* msgPluginAPI, unsigned int endpoi
 
 // Provide a 'Pinball Memory Maps' (see https://github.com/tomlogic/pinmame-nvram-maps) to expose additional internal game states
 PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t* game, size_t gameSize);
+
+// Provide a 'PinMAME game definition' (see https://github.com/vpinball/pinmame-game-defs) to name the emulated machine's I/O states
+PINMAMEAPI void PinmameSetGameDef(uint8_t* game, size_t gameSize);
