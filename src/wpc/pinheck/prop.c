@@ -374,6 +374,11 @@ static void post(pinheck_prop *p, int kind, uint64_t pic, uint32_t pins) { (void
 #ifdef _WIN32
 #include <windows.h>
 #include <process.h>
+#if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
+// mingw.org headers lack both (x86 only)
+#define MemoryBarrier() __asm__ __volatile__("lock; orl $0,(%%esp)" ::: "memory")
+#define YieldProcessor() __asm__ __volatile__("rep; nop")
+#endif
 typedef struct prop_os { HANDLE th, ev, sev; } prop_os;
 static unsigned get_acq(volatile unsigned *v) { unsigned r = *v; MemoryBarrier(); return r; }
 static void put_rel(volatile unsigned *v, unsigned x) { MemoryBarrier(); *v = x; }

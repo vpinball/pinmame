@@ -86,6 +86,7 @@ Fixed sound problems if a OKI6295 game is used after a OKI6376 game (e.g. GTS3 a
 Added manual sound commands (sound commander) for the Bally Cheap Squeak and Turbo Cheap Squeak sound boards
 Fixed the sound command logging and altsound handling for Bally MPU-17/MPU-35 machines: it now filters only the commands the game sends to the -32/-50, -51, -56, Squawk & Talk and Cheap Squeak boards, and to Nuova Bell's -51N, -61N and own sound boards
 Fixed the sound command logging for Whirlwind: the bytes that drive the solenoid overlay board are no longer logged as sound commands (sound commander, AltSound, libPinMAME)
+Fixed the sound command logging for the Bally 6803 machines: one byte per command, the one the sound strobe goes out with, not every write of port 1 (sound commander, AltSound, libPinMAME)
 Slightly improved Williams System 3-7, 9/11 and WPC89 sound boards output (some loud sounds did clip (e.g. Addams Family))
 Improved BSMT2000 sound emulation speed a bit
 Fixed the BSMT2000 logo attract mode jingle on Data East/Sega/Stern games
@@ -110,7 +111,7 @@ Replaced existing arm7/AT91 JIT compiler with a new asmjit-library based one, wh
 Slightly improve Splin (Belgium) bingo sets (via i86 fixes)
 Caveman should now work consistently (also via i86 fixes)
 
-*** ROM SUPPORT *** Thanks to Tom Collins/Scorbit, Paul Swan, Dieter Werner, Victor Fernandez, Jordi Beltran, ipdb.org, Billc479, Scott Charles, inkochnito, frisbez, Chad Hendrickson, idealjoker, ingo333, RedBall, Quench, slochar, Jesus Carballo, Rockman i uri666arcade de l'associaciÛ ARCADE (Recreativas.org), myPinballs, hemtoni
+*** ROM SUPPORT *** Thanks to Tom Collins/Scorbit, Paul Swan, Dieter Werner, Victor Fernandez, Jordi Beltran, ipdb.org, Billc479, Scott Charles, inkochnito, frisbez, Chad Hendrickson, idealjoker, ingo333, RedBall, Quench, slochar, Jesus Carballo, Rockman i uri666arcade de l'associaci√≥ ARCADE (Recreativas.org), myPinballs, hemtoni
 New:
 IDSA: Fantastic Car
 Inder: Hot & Cold
@@ -292,7 +293,7 @@ Fixed reset and slam-tilt problems of Baby Pac-Man
 Fixed PPS4 emulation: ADCSK and ADSK instructions did both respect the carry-in flag because of one wrong byte in the Gottlieb System 1 spider chip reads! Also, regular instructions only increase the six lowest PC bits.
 Improved WPC emulation: implementing FIRQ and the highres timer
 
-*** ROM SUPPORT *** Thanks to Laszlo (www.zaccaria-pinball.hu), ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, Jo„o Pedras & Jo„o Carneiro, ingo333, Ronaldo, Quench, Museo del Recreativo, caius, Stephan Semmler (Flippermuseum Seligenstadt), Doug Cope, Michel Maignaut, Thierry Ailloud, Francis Voglioso, Chad Hendrickson, watacaractr, indisc, Dr.Boely, Scott Charles, empee3, random_overflow, Corrado Tomaselli, www.zaccaria-pinball.com, grisu2, Miwi123, Garzol, Paulo Gordinho, Matt Walsh, jordigahan, Corrado Tomaselli, Tom Collins, Ken Sumrall
+*** ROM SUPPORT *** Thanks to Laszlo (www.zaccaria-pinball.hu), ipdb.org, Valerio Curzio, Matt's Basement Arcade, inkochnito, flipprojets.fr, Idleman, idealjoker, Jo√£o Pedras & Jo√£o Carneiro, ingo333, Ronaldo, Quench, Museo del Recreativo, caius, Stephan Semmler (Flippermuseum Seligenstadt), Doug Cope, Michel Maignaut, Thierry Ailloud, Francis Voglioso, Chad Hendrickson, watacaractr, indisc, Dr.Boely, Scott Charles, empee3, random_overflow, Corrado Tomaselli, www.zaccaria-pinball.com, grisu2, Miwi123, Garzol, Paulo Gordinho, Matt Walsh, jordigahan, Corrado Tomaselli, Tom Collins, Ken Sumrall
 New:
 Jeutel: Papillon
 Seeben: Brooklyn (Bingo) (not working)
@@ -460,7 +461,7 @@ Added Ekky sound module support for clones of LTD's Force, Space Poker, and Blac
 Some sound improvements for LTD
 Fixed Special Forces Solenoid issues (Bally MPU-6803 in general)
 
-*** ROM SUPPORT *** Thanks to inkochnito, Guru, Victor Fernandez (City Game), Flipprojets.fr (FranÁois & Thierry Davroux), KoP, Quench, electronicavys.es, Bill Ung, Matt's Basement Arcade, Silvio Finotti, ipdb.org
+*** ROM SUPPORT *** Thanks to inkochnito, Guru, Victor Fernandez (City Game), Flipprojets.fr (Fran√ßois & Thierry Davroux), KoP, Quench, electronicavys.es, Bill Ung, Matt's Basement Arcade, Silvio Finotti, ipdb.org
 New:
 Stern: S.A.M. IV Board Tester
 Williams: Phantom Haus 0.4 (Prototype)
@@ -646,7 +647,7 @@ Make Williams Flash L-1 and T-1 use the Sys6 board (as these are newer than the 
 Demolition Man: Added lamp layout, simulated all major shots (except maybe a weak car crash shot), the elevator and cryoclaw mechanism, along with the right ramp diverter that feeds it, and enabled the Buy-In button
                 (also demonstrates how to show P1-P4 scores at all times)
 
-*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, Juan (Akiles), barakandl, Dgoett & pinballfan6500, JosÈ Renato Castro Milanez & Sergio Munemori, Larry DeMar, Duncan Brown, nuatari, pellew, flippers.be, Tilowil, Scott Charles, Vesperugo, rmcc, Flipprojets.fr, MLM, Victor Fernandez (City Game), ClawGrip, idealjoker, electrÛnicavys.es, JunoMan, Jess Askey
+*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, Juan (Akiles), barakandl, Dgoett & pinballfan6500, Jos√© Renato Castro Milanez & Sergio Munemori, Larry DeMar, Duncan Brown, nuatari, pellew, flippers.be, Tilowil, Scott Charles, Vesperugo, rmcc, Flipprojets.fr, MLM, Victor Fernandez (City Game), ClawGrip, idealjoker, electr√≥nicavys.es, JunoMan, Jess Askey
 New:
 Atari: Middle Earth (alternate)
        Middle Earth (Prototype or German) - bad dump, not working
@@ -757,7 +758,7 @@ Fix sound command mode for Bally Squawk n Talk
 
 Updated LISY support (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs): one can control real pinball machines via PinMAME, special hardware needed, have a look at http://www.lisy80.com & http://www.lisy.dev, also README.lisy
 
-*** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org, Onevox, Juan JosÈ Cordero, Juan (Akiles), tecnopinball.org, David Gersic, Quench, watacaractr, idleman, Gore Daimon, Alexandre Rocha, Matt Morin, COY, Stefan Fettes, The Sanctum, Bob Kane, Flipprojets.fr
+*** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org, Onevox, Juan Jos√© Cordero, Juan (Akiles), tecnopinball.org, David Gersic, Quench, watacaractr, idleman, Gore Daimon, Alexandre Rocha, Matt Morin, COY, Stefan Fettes, The Sanctum, Bob Kane, Flipprojets.fr
 New:
 Barni: Champion
 Cirsa: Sport 2000
@@ -1339,7 +1340,7 @@ Changed head mech handler for PZ:
  Head will assume varying positions between 0 and 95 that translate to test positions 0 to 6 (within small ranges)
 Updated to zlib 1.2.8
 
-*** ROM SUPPORT *** Thanks to John Lundy, Inkochnito, John Wart Jr, Mitch, John Crawford, Kelley, Juan, pinball-broker, FranÁois, PinKitty, Tim Polzin & Chad Hendrickson
+*** ROM SUPPORT *** Thanks to John Lundy, Inkochnito, John Wart Jr, Mitch, John Crawford, Kelley, Juan, pinball-broker, Fran√ßois, PinKitty, Tim Polzin & Chad Hendrickson
 New:
 Apple Time: Thunder Man
 Atari: 4x4 (not working yet)

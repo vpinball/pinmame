@@ -52,6 +52,7 @@ static struct {
   int LampCol;
   UINT8 sndCmd;
   int sndAck;
+  int sndStrobe;
 } locals;
 
 /* Each time an IRQ is fired, the Vector # is incremented (since the IRQ generation is via a 4040 timer)
@@ -106,6 +107,7 @@ static SWITCH_UPDATE(tecno) {
 
 static MACHINE_INIT(tecno) {
   memset(&locals, 0, sizeof(locals));
+  locals.sndStrobe = 1;
 
   //setup 68000 IRQ callback to generate IRQ Vector #
   cpu_set_irq_callback(0, tecno_irq_callback);
@@ -170,7 +172,10 @@ static WRITE16_HANDLER(sound_w) {
 	int dclk = (data & 0x400) >> 10;
 
 	//LOG(("sound_w = %04x\n",data));
-	sndbrd_data_w(0, data & 0xff);
+	//A sound command is the byte on D0-D7 when the strobe (D8) goes low; the other writes clock the display
+	if (locals.sndStrobe && !(data & 0x100))
+		sndbrd_data_w(0, data & 0xff);
+	locals.sndStrobe = (data & 0x100) >> 8;
 
 	//LOG(("%08x: dclk_w = %04x\n",activecpu_get_pc(),dclk));
 
@@ -339,13 +344,10 @@ MACHINE_DRIVER_START(tecno)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
 MACHINE_DRIVER_END
 
+//Every byte is a command, 00 included (Space Team sends it); INT3 is held until the sound CPU takes it
 static WRITE_HANDLER(tecsnd_data_w) {
-  if (data) {
-    locals.sndCmd = data;
-    cpu_set_irq_line(1, TMS7000_IRQ3_LINE, ASSERT_LINE);
-  } else {
-    cpu_set_irq_line(1, TMS7000_IRQ3_LINE, CLEAR_LINE);
-  }
+  locals.sndCmd = data;
+  cpu_set_irq_line(1, TMS7000_IRQ3_LINE, HOLD_LINE);
 }
 const struct sndbrdIntf tecnoplayIntf = {
   "TECNOPLAY", NULL, NULL, NULL, tecsnd_data_w, tecsnd_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
