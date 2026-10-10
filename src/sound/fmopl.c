@@ -669,6 +669,11 @@ INLINE int limit( int val, int max, int min ) {
 }
 
 
+/* flags that drive the IRQ output: BRDY (bit 3) does not, as in MAME's current Y8950 (ymfm).
+   The DELTA-T unit sets BRDY at reset and register 04 starts with every flag unmasked, so
+   letting BRDY through kept the IRQ output asserted from the start: timer flags made no edge. */
+#define OPL_IRQ_FLAGS(OPL)	((OPL)->statusmask & ~0x08)
+
 /* status set and IRQ handling */
 INLINE void OPL_STATUS_SET(FM_OPL *OPL,int flag)
 {
@@ -676,7 +681,7 @@ INLINE void OPL_STATUS_SET(FM_OPL *OPL,int flag)
 	OPL->status |= flag;
 	if(!(OPL->status & 0x80))
 	{
-		if(OPL->status & OPL->statusmask)
+		if(OPL->status & OPL_IRQ_FLAGS(OPL))
 		{	/* IRQ on */
 			OPL->status |= 0x80;
 			/* callback user interrupt handler (IRQ is OFF to ON) */
@@ -692,7 +697,7 @@ INLINE void OPL_STATUS_RESET(FM_OPL *OPL,int flag)
 	OPL->status &=~flag;
 	if((OPL->status & 0x80))
 	{
-		if (!(OPL->status & OPL->statusmask) )
+		if (!(OPL->status & OPL_IRQ_FLAGS(OPL)) )
 		{
 			OPL->status &= 0x7f;
 			/* callback user interrupt handler (IRQ is ON to OFF) */
