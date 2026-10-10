@@ -808,6 +808,10 @@ target_link_libraries(sdl3pinmame PUBLIC
    SDL3::SDL3
 )
 
+# --- Profile-guided optimisation (PINMAME_PGO), off by default; see cmake/pgo.cmake
+include(${CMAKE_SOURCE_DIR}/cmake/pgo.cmake)
+pinmame_enable_pgo(sdl3pinmame)
+
 # --- asmjit-based ARM7 JIT backend
 # No-op on a target with no JIT backend; see cmake/asmjit.cmake
 include(${CMAKE_SOURCE_DIR}/cmake/asmjit.cmake)
