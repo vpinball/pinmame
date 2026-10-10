@@ -132,22 +132,16 @@ static READ16_HANDLER(input_key_r) {
 	return (UINT16)core_revbyte(switches); //Reverse bits to align with switch matrix from manual
 }
 
-//Return Sound Status?
+//Sound board ready (TMS7000 port B bit 1) on D0; the schematic shows this at 0x14800 by mistake.
+//The game only sends a command while this bit is set, and the sound CPU clears it while busy.
 static READ16_HANDLER(input_sound_r) {
-	LOG(("input_sound_r\n"));
-	return locals.sndAck ? 0 : 0xffff;
+	return 0xfffe | locals.sndAck;
 }
 
 //The value here is read, which is tied to the ls74 flip generating the blanking signal.
 static READ16_HANDLER(rtrg_r) {
 	//LOG(("%08x: rtrg_r\n",activecpu_get_pc()));
 	return 0xffff;
-}
-
-//This value is read but unused according to schematics.
-static READ16_HANDLER(rtrg2_r) {
-	//LOG(("%08x: rtrg2_r\n",activecpu_get_pc()));
-	return 0;
 }
 
 //Lamp Rows (actually columns) 1-8
@@ -245,9 +239,8 @@ static MEMORY_READ16_START(readmem)
   { 0x004000, 0x005fff, MRA16_RAM },
   { 0x006000, 0x00ffff, MRA16_ROM },
   { 0x014000, 0x014001, input_key_r },
-  { 0x014800, 0x014801, input_sound_r },
   { 0x015000, 0x015001, rtrg_r },
-  { 0x015800, 0x015801, rtrg2_r },
+  { 0x015800, 0x015801, input_sound_r },
 MEMORY_END
 
 static MEMORY_WRITE16_START(writemem)
