@@ -576,8 +576,29 @@ extern "C" int osd_start_audio_stream(const int stereo)
  * osd_update_audio_stream
  ******************************************************/
 
+// -1 = nothing queued. A plain std::atomic array would start at 0 and apply "0 %" to every channel
+// on the first frame, hence the constructor.
+static struct PendingMixerLevels {
+   std::atomic<int> level[MIXER_MAX_CHANNELS];
+   PendingMixerLevels() { Clear(); }
+   void Clear() { for (auto& l : level) l.store(-1); }
+} _pendingMixer;
+
+static void ApplyPendingMixerLevels()
+{
+   // Emulation thread only. The mixer has finished this frame when osd_update_audio_stream runs,
+   // so mixer_set_mixing_level's catch-up update is a no-op and the level takes effect next frame.
+   for (int ch = 0; ch < MIXER_MAX_CHANNELS; ch++) {
+      const int level = _pendingMixer.level[ch].exchange(-1);
+      if (level >= 0 && mixer_get_name(ch) != NULL)
+         mixer_set_mixing_level(ch, level);
+   }
+}
+
 extern "C" int osd_update_audio_stream(INT16* p_buffer)
 {
+   ApplyPendingMixerLevels();
+
    if (msgLocals.registered)
    {
       const int samplesThisFrame = mixer_samples_this_frame();
@@ -1231,6 +1252,8 @@ PINMAMEAPI PINMAME_STATUS PinmameRun(const char* const p_name)
 
    msgLocals.gameId = std::format("pinmame::{}", p_name);
 
+   _pendingMixer.Clear(); // a level queued against the previous machine must not land on this one
+
    OnStateChange(2); // Starting state (in between stopped and started)
 
 	vp_init();
@@ -1673,6 +1696,72 @@ PINMAMEAPI int PinmameGetNewSoundCommands(PinmameSoundCommand* const p_newComman
 	if (count > 0)
 		memcpy(p_newCommands, chgSounds, count * sizeof(PinmameSoundCommand));
 	return count;
+}
+
+/******************************************************
+ * PinmameGetMixerChannelCount
+ ******************************************************/
+
+PINMAMEAPI int PinmameGetMixerChannelCount()
+{
+   if (!_isRunning)
+      return 0;
+
+   // Channels are allocated contiguously from 0; the first unnamed one ends the list.
+   int count = 0;
+   while (count < MIXER_MAX_CHANNELS && mixer_get_name(count) != NULL)
+      count++;
+   return count;
+}
+
+/******************************************************
+ * PinmameGetMixerChannelName
+ ******************************************************/
+
+PINMAMEAPI const char* PinmameGetMixerChannelName(const int channel)
+{
+   if (!_isRunning || channel < 0 || channel >= MIXER_MAX_CHANNELS)
+      return NULL;
+
+   return mixer_get_name(channel);
+}
+
+/******************************************************
+ * PinmameGetMixerChannelLevel
+ ******************************************************/
+
+PINMAMEAPI int PinmameGetMixerChannelLevel(const int channel)
+{
+   if (!_isRunning || channel < 0 || channel >= MIXER_MAX_CHANNELS || mixer_get_name(channel) == NULL)
+      return -1;
+
+   // A queued change not yet applied by the emulation thread is what the caller last asked for.
+   const int pending = _pendingMixer.level[channel].load();
+   return pending >= 0 ? pending : mixer_get_mixing_level(channel);
+}
+
+/******************************************************
+ * PinmameGetMixerChannelDefaultLevel
+ ******************************************************/
+
+PINMAMEAPI int PinmameGetMixerChannelDefaultLevel(const int channel)
+{
+   if (!_isRunning || channel < 0 || channel >= MIXER_MAX_CHANNELS || mixer_get_name(channel) == NULL)
+      return -1;
+
+   return mixer_get_default_mixing_level(channel);
+}
+
+/******************************************************
+ * PinmameSetMixerChannelLevel
+ ******************************************************/
+
+PINMAMEAPI void PinmameSetMixerChannelLevel(const int channel, const int level)
+{
+   if (channel < 0 || channel >= MIXER_MAX_CHANNELS)
+      return;
+
+   _pendingMixer.level[channel].store(level < 0 ? 0 : (level > 100 ? 100 : level));
 }
 
 /******************************************************
