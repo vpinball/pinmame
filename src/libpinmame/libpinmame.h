@@ -40,7 +40,7 @@
 #define UINT32 uint32_t
 #define UINT8  uint8_t
 
-#include "plugins/MsgPlugin.h"
+typedef struct MsgPluginAPI MsgPluginAPI;
 
 
 typedef enum {
