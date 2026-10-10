@@ -1059,10 +1059,10 @@ static void pinheck_snd_update(int param, INT16 **buffer, int length)
 		const int n = length - done > 512 ? 512 : length - done;
 		audio_render(&snd, tmp, n, t0 + (t1 - t0) * (uint64_t)(done + n) / (uint64_t)length);
 		for (i = 0; i < n; i++) {
-			buffer[0][done + i] = tmp[2 * i];
-			buffer[1][done + i] = tmp[2 * i + 1];
+			((float**)buffer)[0][done + i] = tmp[2 * i];
+			((float**)buffer)[1][done + i] = tmp[2 * i + 1];
 #ifdef PINHECK_TEST_HOOKS
-			if (sndl.wav) { pinheck_wav_le(sndl.wav, (uint16_t)tmp[2 * i], 2); pinheck_wav_le(sndl.wav, (uint16_t)tmp[2 * i + 1], 2); }
+			if (sndl.wav) { pinheck_wav_le(sndl.wav, (uint16_t)(tmp[2 * i]*32767.f), 2); pinheck_wav_le(sndl.wav, (uint16_t)(tmp[2 * i + 1]*32767.f), 2); } //!! clamp
 #endif
 		}
 #ifdef PINHECK_TEST_HOOKS
