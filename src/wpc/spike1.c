@@ -110,6 +110,7 @@ static struct {
   UINT8 swState[256];     /* each switch as last handed to the machine */
   int coilSol[SPIKE1_MAXCOILS]; /* the PinMAME solenoid of coil k, 0 if the game has no coil k */
   int coilOf[CORE_MODOUT_SOL_MAX + 1]; /* and back: the coil of solenoid s, -1 for none */
+  UINT8 coilLevel[SPIKE1_MAXCOILS]; /* coil k's output this frame, taken once (spike1_pinmame_coil_output) */
   int flipCoil[2][2];     /* left, right: the flipper's coil and its separate hold coil (Whoa Nellie), -1 for none */
   int startSw;
   unsigned dmdFrames;
@@ -291,7 +292,7 @@ static void spike1_sync_io(void)
   for (i = 0; i < SPIKE1_MAXCOILS; i++) {
     const int sol = locals.coilSol[i];
     if (sol) {
-      const unsigned level = spike1_pinmame_coil_level(i);
+      const unsigned level = locals.coilLevel[i] = (UINT8)spike1_pinmame_coil_output(i);
       coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + sol - 1].value = level / 255.0f;
       if (level && sol <= 32) sols |= CORE_SOLBIT(sol);
     }
@@ -299,8 +300,8 @@ static void spike1_sync_io(void)
   coreGlobals.solenoids = coreGlobals.pulsedSolState = sols;
   coreGlobals.solenoids2 &= ~(UINT32)(CORE_LLFLIPSOLBITS | CORE_LRFLIPSOLBITS);
   for (i = 0; i < 4; i++) {
-    const int coil = locals.flipCoil[i >> 1][i & 1];
-    if (coil >= 0 && spike1_pinmame_coil_level(coil)) coreGlobals.solenoids2 |= (i >> 1) ? CORE_LRFLIPSOLBITS : CORE_LLFLIPSOLBITS;
+    const int coil = locals.flipCoil[i >> 1][i & 1]; /* a flipper coil always has a solenoid, so its level is taken above */
+    if (coil >= 0 && locals.coilLevel[coil]) coreGlobals.solenoids2 |= (i >> 1) ? CORE_LRFLIPSOLBITS : CORE_LLFLIPSOLBITS;
   }
   /* LEDs */
   memset((void *)coreGlobals.lampMatrix, 0, sizeof(coreGlobals.lampMatrix));
@@ -367,7 +368,7 @@ static int spike1_getMech(int mechNo)
 static int spike1_getSol(int solNo)
 {
   if (solNo < SPIKE1_FIRSTCUSTSOL || solNo > CORE_MODOUT_SOL_MAX || locals.coilOf[solNo] < 0) return 0;
-  return (int)spike1_pinmame_coil_level(locals.coilOf[solNo]);
+  return locals.coilLevel[locals.coilOf[solNo]];
 }
 
 /*-------------------------------------------------

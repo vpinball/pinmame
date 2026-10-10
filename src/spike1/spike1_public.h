@@ -72,9 +72,11 @@ int spike1_pinmame_switch(unsigned index, int *number, int *closed_at_rest, cons
 int spike1_pinmame_find_switch(const char *name); /* the number of the switch so named, -1 if none */
 void spike1_pinmame_set_switch(int number, int closed);
 
-/* Coils: their factory-manual Driver Reference numbers and names, and a driver's PWM duty now (0-255) */
+/* Coils: their factory-manual Driver Reference numbers and names, and a driver's PWM duty (0-255)
+   as a host shows it. Take it once a frame: a pulse that came and went since the last call shows
+   at its power, and the 1 ms pulses of the game's power-on driver check show nothing */
 int spike1_pinmame_coil(unsigned index, int *number, const char **name); /* 0 past the last */
-unsigned spike1_pinmame_coil_level(int number);
+unsigned spike1_pinmame_coil_output(int number);
 
 /* LED channels (an RGB LED is three): each one's factory-manual Light Reference number, its class
    bits (1 lamp, 2 GI string, 4 flasher, 8 motor drive, 0x10 and 0x20 cabinet) and name, and its

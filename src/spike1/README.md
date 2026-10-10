@@ -154,7 +154,11 @@ code (its symbols are in the program) rather than from any other emulator:
   depends on the SDK, which its length tells (see `coil_reflex()`: 23 bytes in WWE, 28 in Supreme,
   34 from node firmware 0.28 to 0.52, 43 in Heavy Metal); up to three switches can trigger one
   coil (Heavy Metal's slings have two). `coil_level()` gives a driver's PWM duty (0-255) at a
-  given time; the coil mask (a set bit switches a driver off) applies.
+  given time; the coil mask (a set bit switches a driver off) applies. `coil_output()` is what a
+  host shows, taken once a frame: a pulse that came and went between two frames shows at its
+  power, and a pulse shorter than 4 ms shows nothing. That is the game's power-on driver check:
+  every title but WWE fires each driver alone for 1 ms and logs its current, too short to move
+  anything (the shortest real pulse is 16 ms, Primus' slingshots).
 - **LEDs** (type 4, up to 96 channels a board, three for an RGB LED): `NODEBUS_SetLEDMultiple2`'s
   packed updates (command 0x80-0xBF: an index, a list or a bitmap of channels, then levels and fade
   times in compact forms; see `led_update()`). Every update in a full attract-and-play run decodes to
@@ -386,9 +390,7 @@ now takes as RIGHT FLIPPER POWER.
 4. PinMAME, what is left: VPinMAME (the COM controller) has not been checked; only CMake builds
    the subsystem (not the makefiles or the Visual Studio projects); the game lists do not name the
    set yet. A Visual Studio build of the subsystem runs at about half the speed of a GCC one.
-   Coils are sampled once a frame: the game's own fires last 30 ms or more, but the 1 ms pulses of
-   its start-up driver check are sometimes seen, so a table can twitch a flipper or a post at
-   power-on, and a flipper's coil reaches the table up to a frame late.
+   Coils are taken once a frame, so a flipper's coil reaches the table up to a frame late.
 5. Signals: kill, tkill and tgkill deliver to a handler (a frame with siginfo and ucontext,
    rt_sigreturn back), but a signal to a thread blocked in a system call waits until the thread
    wakes instead of interrupting the call.
