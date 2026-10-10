@@ -119,6 +119,7 @@ static MACHINE_INIT(tecno) {
   locals.irq_count = 1;
 
   sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_CPU2), NULL, NULL);
+  cpu_setbank(1, memory_region(REGION_SOUND1));
 }
 
 static MACHINE_STOP(tecno)
@@ -272,9 +273,16 @@ static WRITE_HANDLER(m7000_w) {
   // bit 2 controls the X2 output, but it's connected nowhere?
 }
 
+/* Sound board map, as on the schematic (MAME's techno.cpp has the same): 4000-BFFF is one of
+   four 32K sample ROMs (ic8-ic11), selected by port B bits 2-3; C000-FFFF is the second half of
+   the program ROM (ic12, whose first half is never addressed). The sound program plays its DAC
+   samples (commands 40-4E) from 4000-BFFF. No sample ROM is dumped, and Space Team's game program
+   never sends 40-7F, so the sockets are probably empty: they read as FF, a constant DAC level. */
 static MEMORY_READ_START(snd_readmem)
   { 0x3000, 0x3000, Y8950_status_port_0_r },
-  { 0x3001, 0xffff, MRA_ROM },
+  { 0x3001, 0x3fff, MRA_ROM },
+  { 0x4000, 0xbfff, MRA_BANK1 },
+  { 0xc000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(snd_writemem)
@@ -292,6 +300,7 @@ static WRITE_HANDLER(tms_port_w) {
   LOG(("p_out %c: %02x\n", 'A' + offset, data));
   if (offset == 1) {
     locals.sndAck = (data & 2) >> 1;
+    cpu_setbank(1, memory_region(REGION_SOUND1) + ((data >> 2) & 3) * 0x8000);
   }
 }
 
@@ -414,6 +423,7 @@ ROM_START(xforce)
     ROM_LOAD("sound.bin", 0x8000, 0x8000, NO_DUMP)
     ROM_RELOAD(0, 0x8000)
   NORMALREGION(0x40000, REGION_USER1)
+  ROM_REGION(0x20000, REGION_SOUND1, ROMREGION_ERASEFF) // sample ROMs ic8-ic11, not dumped
 ROM_END
 #define input_ports_xforce input_ports_tecno
 CORE_GAMEDEFNV(xforce, "X Force", 1987, "Tecnoplay", tecno, GAME_IMPERFECT_SOUND)
@@ -435,6 +445,7 @@ ROM_START(spcteam)
     ROM_LOAD("sound.bin", 0x8000, 0x8000, CRC(6a87370f) SHA1(51e055dcf23a30e337ff439bba3c40e5c51c490a))
     ROM_RELOAD(0, 0x8000)
   NORMALREGION(0x40000, REGION_USER1)
+  ROM_REGION(0x20000, REGION_SOUND1, ROMREGION_ERASEFF) // sample ROMs ic8-ic11, not dumped
 ROM_END
 #define input_ports_spcteam input_ports_tecno
 CORE_GAMEDEFNV(spcteam, "Space Team", 1988, "Tecnoplay", tecno, GAME_IMPERFECT_SOUND)
