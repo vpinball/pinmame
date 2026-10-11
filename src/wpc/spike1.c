@@ -418,10 +418,62 @@ static PINMAME_VIDEO_UPDATE(spike1_lcd_video)
 }
 
 /* The key the encrypted LCD clips (WWE's .spv files) are RC4-encrypted with, which each board's
-   factory key store holds: the subsystem hands it to a title that has such clips */
-static const unsigned char spike1_video_key[16] = {
-  0x8e, 0x1f, 0x55, 0x43, 0xc2, 0xf5, 0x4a, 0x11, 0x67, 0x3a, 0x28, 0x2a, 0x2f, 0x87, 0xc0, 0x06
-};
+   factory key store holds and the ROM set does not: the user puts it in <set>.txt beside the set
+   (wwe_135h.txt) as 32 hex digits. Spaces, commas and 0x prefixes are allowed. 1 when the file
+   holds a key, 0 when there is no file, -1 when the file holds no key */
+static int spike1_hex_digit(char c)
+{
+  if (c >= '0' && c <= '9') return c - '0';
+  if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+  if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+  return -1;
+}
+
+static int spike1_read_video_key(const char *name, unsigned char key[16])
+{
+  mame_file *file = mame_fopen(NULL, name, FILETYPE_ROM, 0);
+  char text[512];
+  UINT32 length, i;
+  int digits = 0;
+
+  if (!file) return 0;
+  length = mame_fread(file, text, sizeof(text));
+  mame_fclose(file);
+  i = length >= 3 && memcmp(text, "\xef\xbb\xbf", 3) == 0 ? 3 : 0; /* a UTF-8 byte order mark */
+  for (; i < length; i++) {
+    const char c = text[i];
+    const int value = spike1_hex_digit(c);
+    if (value < 0) {
+      /* the 0 of a 0x prefix, which starts a byte, was taken for a digit */
+      if ((c == 'x' || c == 'X') && digits % 2 == 1 && text[i - 1] == '0' && (i < 2 || spike1_hex_digit(text[i - 2]) < 0))
+        digits--;
+      else if (c != ' ' && c != '\t' && c != '\r' && c != '\n' && c != ',')
+        return -1;
+      continue;
+    }
+    if (digits == 32) return -1;
+    key[digits / 2] = (unsigned char)(digits % 2 ? key[digits / 2] | value : value << 4);
+    digits++;
+  }
+  return digits == 32 ? 1 : -1;
+}
+
+/* Gives a title with encrypted LCD clips the key from its key file, or says what is missing */
+static void spike1_provide_video_key(void)
+{
+  char name[64];
+  unsigned char key[16];
+  int found;
+
+  if (!spike1_pinmame_needs_video_key()) return;
+  sprintf(name, "%s.txt", Machine->gamedrv->name);
+  found = spike1_read_video_key(name, key);
+  if (found > 0 && spike1_pinmame_video_key(key)) return;
+  if (found < 0)
+    usrintf_showmessage_secs(30, "Spike 1: %s does not hold a video key (32 hex digits)", name);
+  else
+    usrintf_showmessage_secs(30, "Spike 1: the LCD videos need their key: put it in %s beside the ROM set", name);
+}
 
 static core_tLCDLayout spike1_dmd[] = {
   {0, 0, SPIKE1_DMD_HEIGHT, SPIKE1_DMD_WIDTH, CORE_DMD, NULL, NULL},
@@ -597,7 +649,7 @@ static MACHINE_INIT(spike1)
     return;
   }
   locals.running = 1;
-  spike1_pinmame_video_key(spike1_video_key); /* a no-op for a title without encrypted clips */
+  spike1_provide_video_key();
   for (c = 0; c < 2; c++) {
     const spike1_tHome *home = &spike1_game()->home[c];
     if (home->node) spike1_pinmame_stepper_home(home->node, home->stepper, home->sw);

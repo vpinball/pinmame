@@ -273,6 +273,12 @@ int spike1_pinmame_video_key(const unsigned char *key)
 	return d && key && d->provide_video_key(key);
 }
 
+int spike1_pinmame_needs_video_key(void)
+{
+	spike1_devices *d = devices();
+	return d && d->needs_video_key();
+}
+
 unsigned spike1_pinmame_audio_rate(void)
 {
 	const spike1_devices *d = devices();

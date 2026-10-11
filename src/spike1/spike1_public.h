@@ -115,6 +115,9 @@ int spike1_pinmame_lcd(unsigned short *rgb565);
    would give the game (WWE's clips): call after spike1_pinmame_start; 0 if the title has no
    encrypted video */
 int spike1_pinmame_video_key(const unsigned char *key);
+/* 1 when the title has encrypted LCD videos and no key for them yet: call after
+   spike1_pinmame_start */
+int spike1_pinmame_needs_video_key(void);
 
 /* Sound: 16-bit stereo at spike1_pinmame_audio_rate(); takes up to frames frames, interleaved
    left/right, and returns how many it took */

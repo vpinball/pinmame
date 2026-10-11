@@ -160,6 +160,8 @@ public:
 	// it there instead, while rc4_key still holds the game's 0xCC placeholder. False when the
 	// title has no rc4_key
 	bool provide_video_key(const uint8_t key[16]);
+	// True while rc4_key holds the placeholder: the title has encrypted clips and no key yet
+	bool needs_video_key();
 
 	// The last frame the game sent to the DMD as 16 shades per dot (0-15), row by row
 	const uint8_t *dmd_frame() const { return m_dmd_dots; }
@@ -377,4 +379,5 @@ private:
 	const std::vector<uint8_t> &node_bus_nodes();
 	bool guest_read(uint32_t addr, void *dst, uint32_t len) { return m_mem.read(addr, dst, len); }
 	bool guest_write(uint32_t addr, const void *src, uint32_t len) { return m_mem.write(addr, src, len); }
+	uint32_t video_key_at() const { return m_cfg.symbol ? m_cfg.symbol("_ZL7rc4_key") : 0; }
 };

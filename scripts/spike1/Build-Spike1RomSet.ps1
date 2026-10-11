@@ -61,6 +61,8 @@ namespace Spike1Rom
 	{
 		public string Set, Folder, Title;
 		public KnownFile[] Files;
+		// The set's LCD clips are encrypted, and the key is not in the set: the user adds <set>.txt
+		public bool VideoKey;
 		public static readonly KnownSet[] All = new KnownSet[] {
 			new KnownSet { Set = "gbust_117h", Folder = "ghostbusters_le", Title = "Ghostbusters LE 1.17.0", Files = new KnownFile[] {
 				new KnownFile("game", 0x006c311a, 0x0b6958ba),
@@ -150,7 +152,7 @@ namespace Spike1Rom
 				new KnownFile("pinnode-LPC1112_201-0_28_0.hex", 0x00007f66, 0xcee92fdc),
 				new KnownFile("pinnode-LPC1313-0_28_0.hex", 0x0000c859, 0x18c17d1d),
 				new KnownFile("ws2812node-LPC1313-0_28_0.hex", 0x00005590, 0x921dc0f7) } },
-			new KnownSet { Set = "wwe_135h", Folder = "WWE_LE", Title = "WWE WrestleMania LE 1.35.0", Files = new KnownFile[] {
+			new KnownSet { Set = "wwe_135h", Folder = "WWE_LE", Title = "WWE WrestleMania LE 1.35.0", VideoKey = true, Files = new KnownFile[] {
 				new KnownFile("game", 0x005685c2, 0xedc2c801),
 				new KnownFile("image.bin", 0x547598dc, 0xaa528057),
 				new KnownFile("AJ.spv", 0x008ca1fc, 0x6fe0fc26),
@@ -806,6 +808,8 @@ namespace Spike1Rom
 			if (File.Exists(target)) File.Delete(target);
 			File.Move(partial, target);
 			Log("Done: " + target + " (" + (new FileInfo(target).Length / 1048576) + " MB, " + files.Count + " files" + (set != null ? ", all CRCs match" : "") + ")");
+			if (set != null && set.VideoKey)
+				Log("The LCD videos also need their key: put it (32 hex digits) in " + set.Set + ".txt beside the zip.");
 			Progress("Done", 1);
 			return target;
 		}

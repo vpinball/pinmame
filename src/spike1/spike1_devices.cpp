@@ -1586,12 +1586,18 @@ bool spike1_devices::lcd_picture(uint16_t *out) const
 	return true;
 }
 
+bool spike1_devices::needs_video_key()
+{
+	const uint32_t at = video_key_at();
+	uint8_t placeholder[2] = {};
+	return at && guest_read(at, placeholder, 2) && placeholder[0] == 0xcc && placeholder[1] == 0xcc;
+}
+
 bool spike1_devices::provide_video_key(const uint8_t key[16])
 {
-	const uint32_t at = m_cfg.symbol ? m_cfg.symbol("_ZL7rc4_key") : 0;
-	uint8_t placeholder[2] = {};
-	if (!at || !guest_read(at, placeholder, 2)) return false;
-	if (placeholder[0] != 0xcc || placeholder[1] != 0xcc) return true; // the game has its key already
+	const uint32_t at = video_key_at();
+	if (!at) return false;
+	if (!needs_video_key()) return true; // the game has its key already
 	if (!guest_write(at, key, 16)) return false;
 	log("lcd: video key provided at " + hex(at));
 	return true;

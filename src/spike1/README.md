@@ -283,8 +283,11 @@ code (its symbols are in the program) rather than from any other emulator:
   already sums the four bitplanes to 16 even shades); the LCD insert (160x128) or the CPU board's
   LCD (WWE, 320x240) below it as a video display, drawn through 32768 palette pens after the
   core's. libpinmame reads a video display at its layout position, so the two are separate
-  displays there. The driver hands the subsystem the key encrypted LCD clips use
-  (`spike1_pinmame_video_key()`, a no-op for the other titles).
+  displays there. The key the encrypted LCD clips use is not in the set: the user puts it in
+  `<set>.txt` beside the set (`wwe_135h.txt`, 32 hex digits; spaces, commas and `0x` prefixes are
+  allowed), which the driver reads from the ROM path when the title has such clips
+  (`spike1_pinmame_needs_video_key()`) and hands to the subsystem (`spike1_pinmame_video_key()`).
+  Without it, a message names the file and the clips show as noise.
 - **Sound**: a stereo stream from the device model's samples, at the rate the game sets on
   `/dev/i2s` (Ghostbusters 44.1 kHz, Whoa Nellie 24 kHz); the mixer resamples it. The machine makes
   samples in time slices, and in about half of the stream's updates it had fewer ready than the
@@ -352,7 +355,8 @@ disc is lamp 172 (the game runs disc motor 2 only). The optional USB topper (`/d
 
 WWE WrestleMania LE 1.35.0 (the oldest SDK, node firmware 0.18.4, six boards, four balls) boots to
 attract mode with its DMD, and its playfield LCD plays the attract clips (the shattering "Legends
-of WrestleMania" logo and the WWE logo, decrypted by the game, at 20 fps); it takes coins and
+of WrestleMania" logo and the WWE logo, decrypted by the game with the key from `wwe_135h.txt`,
+at 20 fps); it takes coins and
 starts a game. It needed `syncfs` (system call 373), 8-byte switch reads, its own table layouts,
 80-byte board blocks, its CPU board inputs a bit lower than its table gives them (above; without
 that, each service button acts as the next one), the framebuffer, views for its clips and the
