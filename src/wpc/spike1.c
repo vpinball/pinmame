@@ -86,8 +86,9 @@ typedef struct { int forward, backward, home, away, travelMs; } spike1_tLimitMot
 
 /* What a title adds to core_tGameData: its game folder's name (the program runs as
    /games/<folder>/game), its switch numbers, its steppers' home switches on other boards, its
-   limit motor, and for a game program shipped without its symbol table the addresses of the
-   tables the subsystem reads (NULL when the program has its own) */
+   limit motor, for a game program shipped without its symbol table the addresses of the tables
+   the subsystem reads (NULL when the program has its own), and for a title whose game picks its
+   display by the machine's /usr/local/spike/display.hex link that link's target (NULL: none) */
 typedef struct {
   core_tGameData core;
   const char *folder;
@@ -95,6 +96,7 @@ typedef struct {
   spike1_tHome home[2];
   spike1_tLimitMotor limit;
   const spike1_symbol *symbols;
+  const char *displayLink;
 } spike1_tGameData;
 
 static const spike1_tGameData *spike1_game(void) { return (const spike1_tGameData *)core_gameData; }
@@ -261,12 +263,12 @@ static SWITCH_UPDATE(spike1)
   const spike1_tSwitches *sw = &spike1_game()->sw;
   int i;
   if (!inports) return;
-  for (i = 0; i < 4; i++) core_setSw(sw->coin[i], inports[CORE_COREINPORT] & (0x0001 << i));
+  for (i = 0; i < 4; i++) if (sw->coin[i]) core_setSw(sw->coin[i], inports[CORE_COREINPORT] & (0x0001 << i));
   for (i = 0; i < 4; i++) core_setSw(SPIKE1_SW_BACK - i, inports[CORE_COREINPORT] & (0x0010 << i)); /* back, minus, plus, select */
   core_setSw(SPIKE1_SW_DCSENSE, !(inports[CORE_COREINPORT] & 0x0100));
   if (locals.startSw >= 0) core_setSw(locals.startSw, inports[CORE_COREINPORT] & 0x0200);
-  core_setSw(sw->tilt, inports[CORE_COREINPORT] & 0x0400);
-  core_setSw(sw->slam, inports[CORE_COREINPORT] & 0x0800);
+  if (sw->tilt) core_setSw(sw->tilt, inports[CORE_COREINPORT] & 0x0400);
+  if (sw->slam) core_setSw(sw->slam, inports[CORE_COREINPORT] & 0x0800); /* a free-play title (Spider-Man) has no coin or slam switches */
 }
 
 /*-------------------------------------------------
@@ -322,8 +324,9 @@ static void spike1_sync_io(void)
       locals.audioRate = rate;
     }
   }
-  /* the DMD: a new frame when the game has sent one */
-  {
+  /* the DMD: a new frame when the game has sent one (a title with the RGB matrix instead draws it
+     as video, spike1_rgb_video) */
+  if ((core_gameData->lcdLayout->type & CORE_SEGALL) == CORE_DMD) {
     static UINT8 dots[SPIKE1_DMD_WIDTH * SPIKE1_DMD_HEIGHT];
     const unsigned frames = spike1_pinmame_dmd(dots);
     if (frames != locals.dmdFrames) {
@@ -417,6 +420,24 @@ static PINMAME_VIDEO_UPDATE(spike1_lcd_video)
   }
 }
 
+/*-------------------------------------------------
+/  the RGB LED matrix (Spider-Man's display, in the DMD's place)
+/-------------------------------------------------*/
+static PINMAME_VIDEO_UPDATE(spike1_rgb_video)
+{
+  static UINT16 rgb[SPIKE1_RGB_WIDTH * SPIKE1_RGB_HEIGHT];
+  const unsigned frames = spike1_pinmame_rgb(rgb);
+  int x, y;
+  (void)cliprect;
+  for (y = 0; y < SPIKE1_RGB_HEIGHT && layout->top + y < bitmap->height; y++) {
+    UINT16 *line = (UINT16 *)bitmap->line[layout->top + y] + layout->left;
+    for (x = 0; x < SPIKE1_RGB_WIDTH && layout->left + x < bitmap->width; x++) {
+      const UINT32 p = frames ? rgb[y * SPIKE1_RGB_WIDTH + x] : 0;
+      line[x] = (UINT16)Machine->pens[SPIKE1_PEN0 + (((p >> 1) & 0x7fe0) | (p & 0x1f))]; /* RGB565 to RGB555 */
+    }
+  }
+}
+
 /* The key the encrypted LCD clips (WWE's .spv files) are RC4-encrypted with, which each board's
    factory key store holds and the ROM set does not: the user puts it in <set>.txt beside the set
    (wwe_135h.txt) as 32 hex digits. Spaces, commas and 0x prefixes are allowed. 1 when the file
@@ -491,6 +512,12 @@ static core_tLCDLayout spike1_dmd_insert[] = {
 static core_tLCDLayout spike1_dmd_lcd[] = {
   {0, 0, SPIKE1_DMD_HEIGHT, SPIKE1_DMD_WIDTH, CORE_DMD, NULL, NULL},
   {68, 0, SPIKE1_LCD_HEIGHT, SPIKE1_LCD_WIDTH, CORE_VIDEO, (genf *)spike1_lcd_video, NULL},
+  {0}
+};
+
+/* The RGB matrix alone, a title's only display */
+static core_tLCDLayout spike1_rgb[] = {
+  {0, 0, SPIKE1_RGB_HEIGHT, SPIKE1_RGB_WIDTH, CORE_VIDEO, (genf *)spike1_rgb_video, NULL},
   {0}
 };
 
@@ -632,7 +659,8 @@ static MACHINE_INIT(spike1)
   /* the insert's colours: the pens after the core's palette are RGB555 */
   for (c = 0; c < 32768; c++)
     palette_set_color(SPIKE1_PEN0 + c, (c >> 7 & 0xf8) | (c >> 12), (c >> 2 & 0xf8) | (c >> 7 & 7), (c << 3 & 0xf8) | (c >> 2 & 7));
-  core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_PREINTEGRATED_LINEAR_16, CORE_DMD_PWM_PREINTEGRATED_LINEAR_16, 0);
+  if ((core_gameData->lcdLayout->type & CORE_SEGALL) == CORE_DMD)
+    core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_PREINTEGRATED_LINEAR_16, CORE_DMD_PWM_PREINTEGRATED_LINEAR_16, 0);
 
   /* the title's files, as the ROM set lays them out in SPIKE1_REGION */
   for (region = rom_first_region(Machine->gamedrv); region; region = rom_next_region(region)) {
@@ -650,6 +678,7 @@ static MACHINE_INIT(spike1)
   }
   locals.running = 1;
   spike1_provide_video_key();
+  if (spike1_game()->displayLink) spike1_pinmame_display_link(spike1_game()->displayLink);
   for (c = 0; c < 2; c++) {
     const spike1_tHome *home = &spike1_game()->home[c];
     if (home->node) spike1_pinmame_stepper_home(home->node, home->stepper, home->sw);
@@ -756,6 +785,12 @@ MACHINE_DRIVER_END
 #define SPIKE1_INIT_SYMBOLS(name, folder, layout, lamps, switches, symbols) \
   SPIKE1_INPUT_PORTS(name) \
   static spike1_tGameData name##GameData = { SPIKE1_CORE(layout, lamps, FLIP_L), folder, switches, SPIKE1_NOHOMES, SPIKE1_NOLIMIT, symbols }; \
+  static void init_##name(void) { core_gameData = &name##GameData.core; }
+/* the same for a title with the RGB matrix as its display (Spider-Man): displayLink is the file the
+   machine's /usr/local/spike/display.hex points at, whose name tells the game its display type */
+#define SPIKE1_INIT_RGB(name, folder, lamps, switches, displayLink) \
+  SPIKE1_INPUT_PORTS(name) \
+  static spike1_tGameData name##GameData = { SPIKE1_CORE(spike1_rgb, lamps, FLIP_L), folder, switches, SPIKE1_NOHOMES, SPIKE1_NOLIMIT, NULL, displayLink }; \
   static void init_##name(void) { core_gameData = &name##GameData.core; }
 /* Another edition of a title (a Pro beside its LE): the set name_ver, a clone of the set parent,
    with its own game data from SPIKE1_INIT*(data, ...). Its files are the edition's own; those it
@@ -1041,5 +1076,27 @@ ROM_START(supreme_101)
     ROM_LOAD("ws2812node-LPC1313-0_22_0.hex", 0x0744e000, 0x00005590, CRC(9a090388) SHA1(2f92d8c86bb2c86026cda36ff256b2fcd813cf0e))
 ROM_END
 CORE_GAMEDEF(supreme, 101, "Supreme (1.01.0)", 2018, "Stern", spike1, 0)
+
+/*-------------------------------------------------------------------
+/ Spider-Man CP (Stern, 2016)
+/ Node firmware 0.19.1: two boards, four balls, free play (no coin or slam switches). Its display is
+/ a 64x32 RGB LED matrix in the DMD's place, which the game picks by the machine's
+/ /usr/local/spike/display.hex link (rgbdotmatrix-0_1_1.hex). The set comes from a card image (the
+/ game folder "spiderman_cp"); the cabinet's numbers are Supreme's
+/-------------------------------------------------------------------*/
+SPIKE1_INIT_RGB(smancp, "spiderman_cp", 130, SPIKE1_SWITCHES(8, 10, 9, 11, 0, 0, 0, 0, 14, 0), "rgbdotmatrix-0_1_1.hex")
+ROM_START(smancp_101)
+  ROM_REGION(0x10b03000, SPIKE1_REGION, 0)
+    ROM_LOAD("game", 0x00000000, 0x00504aef, CRC(11a8c4e4) SHA1(015a8155da2179725bde3b91f131b74386654ee7))
+    ROM_LOAD("image.bin", 0x00505000, 0x105bafbc, CRC(10f7f532) SHA1(b22fb9d40dd0ab71aaae4dbb96d4f99e9e068dc9))
+    ROM_LOAD("coil4node-LPC1112_101-0_19_1.hex", 0x10ac0000, 0x00008705, CRC(4f7ee588) SHA1(8ae7da77e6725bed415b7209a0ab9559d7a6d0cb))
+    ROM_LOAD("coil4node-LPC1112_201-0_19_1.hex", 0x10ac9000, 0x00008705, CRC(5dd30f62) SHA1(0a488ab4cb90e118eb0842a7ab66ad018c7728c0))
+    ROM_LOAD("coil4node-LPC1313-0_19_1.hex", 0x10ad2000, 0x00009a09, CRC(0b2c7089) SHA1(c1999b6b0a82776239e50bdc57c745a6f2e27054))
+    ROM_LOAD("lcdnode-LPC1113_302-0_19_1.hex", 0x10adc000, 0x00009be8, CRC(8efe9b44) SHA1(790bfb0c8865d42c973ac47132ff74219c017343))
+    ROM_LOAD("pinnode-LPC1112_101-0_19_1.hex", 0x10ae6000, 0x00008057, CRC(221c95fd) SHA1(7bf6eb85483ecbd1bf95ee75f2f0d309e1d77c1a))
+    ROM_LOAD("pinnode-LPC1112_201-0_19_1.hex", 0x10aef000, 0x0000807c, CRC(2769520c) SHA1(380f4755b683b69e59af172000c9300350bfab41))
+    ROM_LOAD("pinnode-LPC1313-0_19_1.hex", 0x10af8000, 0x0000a188, CRC(feb117d1) SHA1(453a0de75a62aef43bfaa1edea1634eada328190))
+ROM_END
+CORE_GAMEDEF(smancp, 101, "Spider-Man CP (1.01)", 2016, "Stern", spike1, 0)
 
 #endif /* HAS_SPIKE1 */

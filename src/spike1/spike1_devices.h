@@ -32,6 +32,10 @@ public:
 
 	static constexpr uint32_t DMD_WIDTH = 128, DMD_HEIGHT = 32;
 	static constexpr uint32_t DMD_FRAME_BYTES = DMD_WIDTH * DMD_HEIGHT / 8 * 4; // four bitplanes
+	// The RGB LED matrix Spider-Man has in the DMD's place (the game's display type rgbdotmatrix):
+	// 64x32 dots of 4-bit red, green and blue, as four bitplanes
+	static constexpr uint32_t RGB_WIDTH = 64, RGB_HEIGHT = 32;
+	static constexpr uint32_t RGB_FRAME_BYTES = RGB_WIDTH * RGB_HEIGHT * 3 / 8 * 4;
 
 	struct config
 	{
@@ -165,6 +169,9 @@ public:
 
 	// The last frame the game sent to the DMD as 16 shades per dot (0-15), row by row
 	const uint8_t *dmd_frame() const { return m_dmd_dots; }
+	// The same for the RGB matrix, as RGB565 dots row by row, and the count of its frames
+	const uint16_t *rgb_frame() const { return m_rgb565; }
+	uint64_t rgb_frame_count() const { return m_rgb_frames; }
 	// Frames the game sent, per command byte and board, for bring-up statistics
 	const std::map<uint32_t, uint64_t> &node_bus_counts() const { return m_nb_counts; }
 	uint64_t dmd_frame_count() const { return m_dmd_frames; }
@@ -360,6 +367,9 @@ private:
 	uint64_t m_dmd_next_ns = 0;   // when the panel takes the next frame
 	uint64_t m_dmd_frames = 0;
 	uint8_t m_dmd_dots[DMD_WIDTH * DMD_HEIGHT] = {};
+	uint64_t m_rgb_frames = 0;
+	uint16_t m_rgb565[RGB_WIDTH * RGB_HEIGHT] = {};
+	int32_t rgb_write(uint32_t buf, uint32_t len, uint64_t now_ns, uint64_t &wait_ns);
 
 	void log(const std::string &line) const { if (m_cfg.log) m_cfg.log(line); }
 	// True the first time a kind of unmodelled traffic is seen (always when tracing), so the log

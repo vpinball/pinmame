@@ -14,11 +14,12 @@
   forward passes, or the files straight out of the .spk, writes <set>.zip (stored, not
   compressed, so PinMAME maps image.bin quickly) and checks every file against the set's CRCs.
 
-  Without -Image it opens a window. Start it with "Build ROM set.cmd", or drop the .iso.zip or
-  .spk onto that file.
+  Without -Image it opens a window. Start it with "Build ROM set.cmd", or drop the .iso.zip, card
+  dump or .spk onto that file.
 
 .PARAMETER Image
-  Stern's .iso.zip, the .iso inside it, or Stern's .spk.
+  Stern's .iso.zip, the .iso inside it, a raw dump of a card (.bin or .img, as Spider-Man's), or
+  Stern's .spk.
 
 .PARAMETER OutDir
   Where <set>.zip goes. Default: the roms folder of VPX's PinMAME plugin (PinMAMEPath in
@@ -219,6 +220,16 @@ namespace Spike1Rom
 				new KnownFile("pinnode-LPC1112_201-0_22_0.hex", 0x00008138, 0xb3646ae2),
 				new KnownFile("pinnode-LPC1313-0_22_0.hex", 0x0000c313, 0xf6416a86),
 				new KnownFile("ws2812node-LPC1313-0_22_0.hex", 0x00005590, 0x9a090388) } },
+			new KnownSet { Set = "smancp_101", Folder = "spiderman_cp", Title = "Spider-Man CP 1.01", Files = new KnownFile[] {
+				new KnownFile("game", 0x00504aef, 0x11a8c4e4),
+				new KnownFile("image.bin", 0x105bafbc, 0x10f7f532),
+				new KnownFile("coil4node-LPC1112_101-0_19_1.hex", 0x00008705, 0x4f7ee588),
+				new KnownFile("coil4node-LPC1112_201-0_19_1.hex", 0x00008705, 0x5dd30f62),
+				new KnownFile("coil4node-LPC1313-0_19_1.hex", 0x00009a09, 0x0b2c7089),
+				new KnownFile("lcdnode-LPC1113_302-0_19_1.hex", 0x00009be8, 0x8efe9b44),
+				new KnownFile("pinnode-LPC1112_101-0_19_1.hex", 0x00008057, 0x221c95fd),
+				new KnownFile("pinnode-LPC1112_201-0_19_1.hex", 0x0000807c, 0x2769520c),
+				new KnownFile("pinnode-LPC1313-0_19_1.hex", 0x0000a188, 0xfeb117d1) } },
 		};
 	}
 
@@ -848,7 +859,7 @@ namespace Spike1Rom
 			table.Controls.Add(m_image, 1, 1);
 			var pickImage = new Button { Text = "Browse...", AutoSize = true };
 			pickImage.Click += delegate {
-				using (var d = new OpenFileDialog { Filter = "Stern download (*.iso.zip;*.iso;*.spk)|*.iso.zip;*.iso;*.spk|All files (*.*)|*.*", Title = "Stern image" })
+				using (var d = new OpenFileDialog { Filter = "Stern download or card dump (*.iso.zip;*.iso;*.spk;*.bin;*.img)|*.iso.zip;*.iso;*.spk;*.bin;*.img|All files (*.*)|*.*", Title = "Stern image" })
 					if (d.ShowDialog(this) == DialogResult.OK) m_image.Text = d.FileName;
 			};
 			table.Controls.Add(pickImage, 2, 1);
@@ -886,7 +897,7 @@ namespace Spike1Rom
 		void Start()
 		{
 			string image = m_image.Text.Trim().Trim('"'), outDir = m_out.Text.Trim().Trim('"');
-			if (!File.Exists(image)) { MessageBox.Show(this, "Choose Stern's .iso.zip or .spk file first.", Text); return; }
+			if (!File.Exists(image)) { MessageBox.Show(this, "Choose Stern's .iso.zip, card dump or .spk file first.", Text); return; }
 			if (outDir.Length == 0) { MessageBox.Show(this, "Choose a folder for the ROM set.", Text); return; }
 			m_build.Enabled = false; m_close.Text = "Cancel"; m_log.Clear();
 			m_builder = new Builder();

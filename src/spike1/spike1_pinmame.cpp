@@ -267,6 +267,21 @@ int spike1_pinmame_lcd(unsigned short *rgb565)
 	return d && rgb565 && d->lcd_picture(rgb565);
 }
 
+unsigned spike1_pinmame_rgb(unsigned short *rgb565)
+{
+	const spike1_devices *d = devices();
+	if (!d) return 0;
+	if (rgb565) std::memcpy(rgb565, d->rgb_frame(), SPIKE1_RGB_WIDTH * SPIKE1_RGB_HEIGHT * sizeof(uint16_t));
+	return unsigned(d->rgb_frame_count());
+}
+
+int spike1_pinmame_display_link(const char *target)
+{
+	if (!g_machine || !g_machine->os || !target) return 0;
+	g_machine->os->add_link("/usr/local/spike/display.hex", target);
+	return 1;
+}
+
 int spike1_pinmame_video_key(const unsigned char *key)
 {
 	spike1_devices *d = devices();
@@ -296,3 +311,4 @@ unsigned spike1_pinmame_audio(short *dst, unsigned frames)
 static_assert(SPIKE1_LED_MOTOR == spike1_devices::LED_KIND_MOTOR, "the LED class bits differ");
 static_assert(SPIKE1_DMD_WIDTH == spike1_devices::DMD_WIDTH && SPIKE1_DMD_HEIGHT == spike1_devices::DMD_HEIGHT, "the DMD sizes differ");
 static_assert(SPIKE1_INSERT_WIDTH == spike1_devices::INSERT_WIDTH && SPIKE1_INSERT_HEIGHT == spike1_devices::INSERT_HEIGHT, "the insert sizes differ");
+static_assert(SPIKE1_RGB_WIDTH == spike1_devices::RGB_WIDTH && SPIKE1_RGB_HEIGHT == spike1_devices::RGB_HEIGHT, "the RGB matrix sizes differ");

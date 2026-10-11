@@ -861,6 +861,11 @@ int32_t spike1_linux::syscall(uint32_t nr, const uint32_t a[7], bool &handled, s
 			const uint32_t n = std::min<uint32_t>(a[2], uint32_t(m_cfg.executable.size()));
 			return m_mem.write(a[1], m_cfg.executable.data(), n) ? int32_t(n) : -E_FAULT;
 		}
+		const auto link = m_links.find(guest_absolute(path));
+		if (link != m_links.end()) {
+			const uint32_t n = std::min<uint32_t>(a[2], uint32_t(link->second.size()));
+			return m_mem.write(a[1], link->second.data(), n) ? int32_t(n) : -E_FAULT;
+		}
 		return -E_INVAL;
 	}
 	case 183: { // getcwd

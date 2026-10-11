@@ -86,6 +86,25 @@ static void save_lcd(spike1_linux &os, const std::string &dir)
 	std::fclose(f);
 }
 
+// The RGB matrix (Spider-Man's display) as a PPM file in dir, named after the emulated time
+static void save_rgb(spike1_linux &os, const std::string &dir)
+{
+	const auto &dev = os.devices();
+	char name[64];
+	std::snprintf(name, sizeof(name), "/rgb_%07.3f.ppm", double(os.now_ns()) / 1e9);
+	std::printf("rgb at %.3f s: %llu frames%s\n", double(os.now_ns()) / 1e9, (unsigned long long)dev.rgb_frame_count(), dev.rgb_frame_count() ? (" -> " + dir + name).c_str() : "");
+	if (!dev.rgb_frame_count()) return;
+	FILE *f = std::fopen((dir + name).c_str(), "wb");
+	if (!f) return;
+	std::fprintf(f, "P6\n%u %u\n255\n", spike1_devices::RGB_WIDTH, spike1_devices::RGB_HEIGHT);
+	for (uint32_t i = 0; i < spike1_devices::RGB_WIDTH * spike1_devices::RGB_HEIGHT; i++) {
+		const uint16_t p = dev.rgb_frame()[i];
+		const uint8_t rgb[3] = { uint8_t((p >> 11) << 3), uint8_t(((p >> 5) & 63) << 2), uint8_t((p & 31) << 3) };
+		std::fwrite(rgb, 1, 3, f);
+	}
+	std::fclose(f);
+}
+
 // Outside the CPU's fast windows: a file view the memory holds beyond them (the bus context), or a fault
 static u32 unmapped_read(void *ctx, offs_t addr, u32)
 {
@@ -99,7 +118,8 @@ static void unmapped_write(void *, offs_t addr, u32, u32) { if (s_linux) s_linux
 int main(int argc, char **argv)
 {
 	spike1_linux::config cfg;
-	double seconds = 30.0, dmd_every = 0.0, insert_every = 0.0, lcd_every = 0.0, slice_ms = 1.0;
+	double seconds = 30.0, dmd_every = 0.0, insert_every = 0.0, lcd_every = 0.0, rgb_every = 0.0, slice_ms = 1.0;
+	std::string display_link;
 	std::vector<uint8_t> video_key;
 	std::vector<std::pair<uint32_t, uint32_t>> peeks;
 	struct poke { double at; uint32_t addr; uint8_t value; bool done; };
@@ -129,6 +149,8 @@ int main(int argc, char **argv)
 		else if (arg == "--dmd") dmd_every = std::atof(next().c_str());
 		else if (arg == "--insert") insert_every = std::atof(next().c_str()); // the LCD insert, as PPM files in the state directory
 		else if (arg == "--lcd") lcd_every = std::atof(next().c_str()); // the CPU board's LCD, as PPM files in the state directory
+		else if (arg == "--rgb") rgb_every = std::atof(next().c_str()); // the RGB matrix, as PPM files in the state directory
+		else if (arg == "--display-link") display_link = next(); // what /usr/local/spike/display.hex points at (Spider-Man: rgbdotmatrix-0_1_1.hex)
 		else if (arg == "--video-key") { // 32 hex digits: the key the title's LCD videos are encrypted with
 			const std::string v = next();
 			for (size_t k = 0; k + 1 < v.size() && video_key.size() < 16; k += 2) video_key.push_back(uint8_t(std::strtoul(v.substr(k, 2).c_str(), nullptr, 16)));
@@ -231,6 +253,7 @@ int main(int argc, char **argv)
 	s_linux = &linux_os;
 	std::string error;
 	if (!linux_os.start(cfg, error)) { std::fprintf(stderr, "start failed: %s\n", error.c_str()); return 1; }
+	if (!display_link.empty()) linux_os.add_link("/usr/local/spike/display.hex", display_link);
 	for (const auto &h : home_links)
 		if (!linux_os.devices().link_stepper_home(uint8_t(h.node), uint8_t(h.stepper), uint16_t(h.number))) {
 			std::fprintf(stderr, "no switch %d for the home of node %d stepper %d\n", h.number, h.node, h.stepper);
@@ -275,6 +298,7 @@ int main(int argc, char **argv)
 	uint64_t next_dmd_ns = dmd_every > 0 ? uint64_t(dmd_every * 1e9) : UINT64_MAX;
 	uint64_t next_insert_ns = insert_every > 0 ? uint64_t(insert_every * 1e9) : UINT64_MAX;
 	uint64_t next_lcd_ns = lcd_every > 0 ? uint64_t(lcd_every * 1e9) : UINT64_MAX;
+	uint64_t next_rgb_ns = rgb_every > 0 ? uint64_t(rgb_every * 1e9) : UINT64_MAX;
 	while (linux_os.run(slice) == spike1_linux::status::running && linux_os.now_ns() < uint64_t(seconds * 1e9)) {
 		const double now_s = double(linux_os.now_ns()) / 1e9;
 		for (auto &p : presses) {
@@ -319,6 +343,10 @@ int main(int argc, char **argv)
 		if (linux_os.now_ns() >= next_lcd_ns) {
 			save_lcd(linux_os, state_dir);
 			next_lcd_ns += uint64_t(lcd_every * 1e9);
+		}
+		if (linux_os.now_ns() >= next_rgb_ns) {
+			save_rgb(linux_os, state_dir);
+			next_rgb_ns += uint64_t(rgb_every * 1e9);
 		}
 		if (linux_os.now_ns() >= next_dmd_ns) {
 			print_dmd(linux_os);

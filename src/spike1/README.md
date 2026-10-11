@@ -2,13 +2,15 @@
 
 Stern's first SPIKE platform (2015 on: Game of Thrones, KISS, WrestleMania, Ghostbusters, ...). The
 game runs as a statically linked ARMv5TE Linux program on an ARM926-class CPU board and talks to
-the playfield's node boards over a serial bus; the display is a 128x32 DMD with 16 shades.
+the playfield's node boards over a serial bus; the display is a 128x32 DMD with 16 shades (on
+Spider-Man CP a 64x32 RGB LED matrix in its place).
 
 **Status: bring-up.** The subsystem runs as a PinMAME driver (`src/wpc/spike1.c`, sets
 `gbust_117h` Ghostbusters LE 1.17.0, `wnbjm_155` Whoa Nellie! Big Juicy Melons 1.55.0, `primus_103`
 Primus 1.03.0, `pabst_101` Pabst Can Crusher 1.01.0, `got_137h` Game of Thrones LE 1.37.0,
-`kiss15_141h` KISS LE 1.41.0 and `wwe_135h` WWE WrestleMania LE 1.35.0) and standalone
-(`spike1boot`, below).
+`got_137` Game of Thrones Pro 1.37.0, `kiss15_141h` KISS LE 1.41.0, `wwe_135h` WWE WrestleMania LE
+1.35.0, `heavym20_102` Heavy Metal 1.02.0, `supreme_101` Supreme 1.01.0 and `smancp_101` Spider-Man
+CP 1.01) and standalone (`spike1boot`, below).
 
 ## How it works
 
@@ -84,7 +86,8 @@ Harness options: `--dmd <s>` prints the DMD every s seconds, `--list-switches` t
 `--switch <s>:<name>[:<ms>]` toggles a switch by name for a while (e.g. `--switch "20:LEFT COIN:120"`),
 `--outputs` prints coil changes as they happen and the lit LEDs at the end, `--wav <file>` records
 the sound, `--insert <s>` saves
-the LCD insert every s seconds as a PPM file in the state directory, `--node-dump <file>`
+the LCD insert every s seconds as a PPM file in the state directory (`--rgb <s>` the same for the
+RGB matrix, which needs `--display-link rgbdotmatrix-0_1_1.hex` as the PinMAME set gives it), `--node-dump <file>`
 writes every node-bus frame (except switch and status reads) to a file, `--peek <address>:<bytes>`
 prints guest memory at the end, `--stepper-home <node>:<stepper>:<switch>` links a stepper to a
 home switch on another board as a PinMAME set's `SPIKE1_HOMES` does (Game of Thrones: `10:0:88`
@@ -117,6 +120,13 @@ code (its symbols are in the program) rather than from any other emulator:
   `LineSenseThread` measures as 60 Hz and accepts as a real line; reads wait for the samples' time.
 - **DMD** (`/dev/spi0`): 2048-byte frames of four bitplanes, plane n weighing 2^n, decoded to 16
   shades; writes wait for the panel's 15.75 ms PWM pattern.
+- **RGB matrix** (Spider-Man CP, `/dev/spi0` as well): 3072-byte frames of 64x32 dots, 4 bits each
+  of red, green and blue as four bitplanes (`rgb_write()` has the layout). The game picks its
+  display by the target of the root filesystem's `/usr/local/spike/display.hex` link
+  (Spider-Man's program knows `rgbdotmatrix-*`, and the 64x32 mono `dmd_1x-*` and `dotmatrix-*`,
+  its default); `spike1_linux::add_link()`
+  answers that readlink with what the set says. Its display thread also paces the game's main
+  loop, so writes wait for a frame time; the panel's is not known, so the DMD's is used.
 - **Node bus** (`/dev/ttyS4`): the game's own `NODEBUS_TransferMessage` framing. The board list comes
   from the title's `node_board_table`; each board's identity (firmware version, NXP part ID,
   checksum) from the firmware image the game itself loaded for it, so validation passes with no
@@ -287,7 +297,9 @@ code (its symbols are in the program) rather than from any other emulator:
   `<set>.txt` beside the set (`wwe_135h.txt`, 32 hex digits; spaces, commas and `0x` prefixes are
   allowed), which the driver reads from the ROM path when the title has such clips
   (`spike1_pinmame_needs_video_key()`) and hands to the subsystem (`spike1_pinmame_video_key()`).
-  Without it, a message names the file and the clips show as noise.
+  Without it, a message names the file and the clips show as noise. Spider-Man CP's RGB matrix is its
+  only display (layout `spike1_rgb`, `SPIKE1_INIT_RGB`): a 64x32 video display, display 0, in full
+  colour; the set's `displayLink` goes to `spike1_pinmame_display_link()`.
 - **Sound**: a stereo stream from the device model's samples, at the rate the game sets on
   `/dev/i2s` (Ghostbusters 44.1 kHz, Whoa Nellie 24 kHz); the mixer resamples it. The machine makes
   samples in time slices, and in about half of the stream's updates it had fewer ready than the
@@ -383,6 +395,15 @@ slings (23 bytes) and Heavy Metal's (43 bytes) did not fire on their own either 
 `coil_reflex()` read each form. Its right flipper coil is named RT FLIPPER POWER, which the driver
 now takes as RIGHT FLIPPER POWER.
 
+Spider-Man CP 1.01 (node firmware 0.19.1, two boards, four balls, free play; set `smancp_101`,
+from a raw dump of its card, `spiderman.bin`, game folder `spiderman_cp`; no manual exists; the
+game shows V1.01 - the 1.1.0 in its NVRAM files' names is their format's version) boots
+to attract mode with its RGB matrix in colour, starts a game, and fires its flippers, slings and
+pops from their switches (the 23-byte reflex form, as WWE's). Its switch table keeps each entry's
+index and number 24 bytes before the end, a third layout for `apply_manual_numbers()`; the numbers
+are the game's own, which its switch test shows, and its cabinet's are Supreme's. It runs at about
+4.7x real time in the harness. Its sound comes at 24 kHz.
+
 ## Open items
 
 1. Ball physics are the table's job (PinMAME/VPX); the harness has none, so a game stops at ball 1.
@@ -408,3 +429,8 @@ now takes as RIGHT FLIPPER POWER.
 8. Heavy Metal: its stepper driver board (TMC2590, node 2) and its WS2812 and QR scanner devices
    are not modelled beyond what the start-up needs; node commands 0xC0 (on its packed LED SDK),
    0xF0, 0xF1 and 0xF2 to node 4 are taken without a model. No Heavy Metal table exists yet.
+9. Spider-Man CP: its node thread reads a chip at I2C address 0x59 over SMBus (`I2C_SMBUS`, not
+   modelled) and sends each board a key (0xF3, `NODEBUS_SendKey`, taken without a model); the game
+   runs on. The RGB panel's frame time is the DMD's (not known). The game writes its settings and
+   audits to `/data` as they change and commits nothing at the power fail, so a power down waits
+   its full time; nothing is lost.

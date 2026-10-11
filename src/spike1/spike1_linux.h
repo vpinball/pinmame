@@ -85,6 +85,9 @@ public:
 	// Address of a symbol in the game program's symbol table, 0 when it has none by that name
 	uint32_t symbol(const std::string &name) const;
 	uint32_t symbol_size(const std::string &name) const;
+	// A symbolic link of the machine's root filesystem the game reads with readlink(), outside the
+	// title's own files: /usr/local/spike/display.hex names the display a title has
+	void add_link(const std::string &path, const std::string &target) { m_links[path] = target; }
 
 private:
 	struct file;
@@ -138,6 +141,7 @@ private:
 	std::map<int, std::shared_ptr<file>> m_fds;
 	std::map<std::string, uint32_t> m_symbols;
 	std::map<std::string, uint32_t> m_symbol_sizes;
+	std::map<std::string, std::string> m_links; // add_link()
 	std::string m_cwd = "/";
 	sigaction_entry m_sigactions[65];
 

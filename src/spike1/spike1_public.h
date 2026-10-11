@@ -26,6 +26,9 @@ extern "C" {
 /* The CPU board's own LCD (WWE's playfield screen) */
 #define SPIKE1_LCD_WIDTH  320
 #define SPIKE1_LCD_HEIGHT 240
+/* The RGB LED matrix a title has in the DMD's place (Spider-Man) */
+#define SPIKE1_RGB_WIDTH  64
+#define SPIKE1_RGB_HEIGHT 32
 
 /* One of the title's files, by its name in the game folder; the caller keeps the bytes alive
    until spike1_pinmame_stop() */
@@ -111,6 +114,13 @@ int spike1_pinmame_insert(unsigned short *rgb565, unsigned *backlight);
 /* The CPU board's LCD, when the title draws on it: 1 and its picture as RGB565 (320x240) once the
    game has shown a frame, 0 otherwise */
 int spike1_pinmame_lcd(unsigned short *rgb565);
+/* The RGB matrix, when the title has one: its picture as RGB565 (64x32) into rgb565; returns the
+   count of frames the game has sent */
+unsigned spike1_pinmame_rgb(unsigned short *rgb565);
+/* The display the machine has, as its root filesystem's /usr/local/spike/display.hex link names
+   it (Spider-Man: "rgbdotmatrix-0_1_1.hex"; the game picks its display type from the name): call
+   after spike1_pinmame_start, for a title whose game reads the link */
+int spike1_pinmame_display_link(const char *target);
 /* The 16-byte key the title's LCD videos are encrypted with, which the board's factory key store
    would give the game (WWE's clips): call after spike1_pinmame_start; 0 if the title has no
    encrypted video */

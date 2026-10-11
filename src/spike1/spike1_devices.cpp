@@ -262,6 +262,8 @@ int32_t spike1_devices::write(handle &h, uint32_t buf, uint32_t len, uint64_t no
 {
 	if (h.type == kind::dmd_spi && len == DMD_FRAME_BYTES)
 		return dmd_write(buf, len, now_ns, wait_ns);
+	if (h.type == kind::dmd_spi && len == RGB_FRAME_BYTES)
+		return rgb_write(buf, len, now_ns, wait_ns);
 	if (h.type == kind::node_bus)
 		return node_bus_write(buf, len, now_ns, note);
 	if (h.type == kind::i2s)
@@ -440,6 +442,33 @@ int32_t spike1_devices::dmd_write(uint32_t buf, uint32_t len, uint64_t now_ns, u
 			m_dmd_dots[y * DMD_WIDTH + x] = level;
 		}
 	m_dmd_frames++;
+	m_dmd_next_ns = (m_dmd_next_ns && m_dmd_next_ns + DMD_FRAME_NS > now_ns ? m_dmd_next_ns : now_ns) + DMD_FRAME_NS;
+	return int32_t(len);
+}
+
+// The RGB matrix's frame (the game's display_pack_buffer_12_bit_rgb_64x32()): four 768-byte
+// bitplanes, plane n holding bit n of every 4-bit colour value. A plane is 16 lines of 48 bytes,
+// line l carrying rows l and l + 16 as the panel scans both halves at once: column x takes bits
+// 6x to 6x + 5, red, green and blue of the upper row then of the lower one, most significant bit
+// of a byte first. The panel's frame time is not known; the DMD's is used
+int32_t spike1_devices::rgb_write(uint32_t buf, uint32_t len, uint64_t now_ns, uint64_t &wait_ns)
+{
+	if (now_ns < m_dmd_next_ns) { wait_ns = m_dmd_next_ns; return WAIT; }
+	const uint8_t *p = m_mem.host(buf, len, false);
+	if (!p) return -E_FAULT;
+	constexpr uint32_t plane = RGB_FRAME_BYTES / 4, line = RGB_WIDTH * 6 / 8;
+	for (uint32_t y = 0; y < RGB_HEIGHT; y++)
+		for (uint32_t x = 0; x < RGB_WIDTH; x++) {
+			uint32_t c[3] = {};
+			for (uint32_t k = 0; k < 3; k++) {
+				const uint32_t bit = 6 * x + (y >> 4) * 3 + k;
+				for (uint32_t n = 0; n < 4; n++)
+					c[k] |= ((p[n * plane + (y & 15) * line + bit / 8] >> (7 - bit % 8)) & 1u) << n;
+			}
+			// 4 bits a colour to RGB565, the top bits repeated below
+			m_rgb565[y * RGB_WIDTH + x] = uint16_t((c[0] << 12 | c[0] >> 3 << 11) | (c[1] << 7 | c[1] >> 2 << 5) | (c[2] << 1 | c[2] >> 3));
+		}
+	m_rgb_frames++;
 	m_dmd_next_ns = (m_dmd_next_ns && m_dmd_next_ns + DMD_FRAME_NS > now_ns ? m_dmd_next_ns : now_ns) + DMD_FRAME_NS;
 	return int32_t(len);
 }
@@ -1651,7 +1680,9 @@ size_t spike1_devices::audio_take(int16_t *out, size_t frames)
 //                                     Switch Reference number in the low half, the device's index in
 //                                     the high half (+32 of 52 bytes in Ghostbusters, +44 of 64 in
 //                                     Whoa Nellie, whose entries carry three more pointers); in
-//                                     WWE's (64 bytes) +40 the index, +60 the number in the low half
+//                                     WWE's (64 bytes) +40 the index, +60 the number in the low half;
+//                                     in Spider-Man's (68 bytes) the number and index as the first
+//                                     form but 24 bytes before the end, at +44
 // The manual numbers the CPU board's own switches (DIP switches, service buttons, the door's power
 // sense) apart, as C1-C16: they become 101-116 here, so that every switch has one number
 // Entry 0 of each is a blank. An entry that names no device of the right type is skipped
@@ -1693,16 +1724,17 @@ void spike1_devices::apply_manual_numbers(const std::vector<std::pair<int, size_
 	uint32_t st[3] = {};
 	const uint32_t st_at = m_cfg.symbol("node_board_device_sw_table");
 	if (st_at && guest_read(st_at, st, 12) && st[0] && st[2] >= 36 && st[2] <= 256) {
-		// Two layouts: index << 16 | number 20 bytes before an entry's end; or (WWE's SDK) the index
-		// 24 bytes before the end and the number in the last word's low half. The first that names
-		// switch devices is the title's
-		for (int layout = 0; layout < 2 && !switches; layout++)
+		// Three layouts: index << 16 | number 20 bytes before an entry's end; or (WWE's SDK) the
+		// index 24 bytes before the end and the number in the last word's low half; or (Spider-Man's)
+		// index << 16 | number 24 bytes before the end. The first that names switch devices is the
+		// title's
+		for (int layout = 0; layout < 3 && !switches; layout++)
 			for (uint32_t i = 1; i < st[1]; i++) {
 				const uint32_t entry = st[0] + i * st[2];
 				uint32_t index = 0, number = 0;
-				if (layout == 0) {
+				if (layout != 1) {
 					uint32_t w = 0;
-					if (!guest_read(entry + st[2] - 20, &w, 4)) continue;
+					if (!guest_read(entry + st[2] - (layout == 0 ? 20 : 24), &w, 4)) continue;
 					index = w >> 16;
 					number = w & 0xffff;
 				} else {

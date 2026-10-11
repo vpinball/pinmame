@@ -103,6 +103,10 @@ Private Sub spike1Cabinet(ByVal aGame)
 			swCoin1 = 76 : swCoin2 = 77 : swCoin3 = 78 : swCoin4 = 79
 			swStartButton = 13 : swTournament = 74 : swLaunch = 15 : swTilt = 14 : swSlamTilt = 84
 			swLLFlip = 8 : swLRFlip = 10 : spike1FlipperCoils = Array(3, 4)
+		Case "smancp"                   ' Spider-Man CP: free play, no coin or slam switches; Supreme's other numbers
+			swCoin1 = 0 : swCoin2 = 0 : swCoin3 = 0 : swCoin4 = 0
+			swStartButton = 13 : swLaunch = 15 : swTilt = 14 : swSlamTilt = 0
+			swLLFlip = 8 : swLRFlip = 10 : spike1FlipperCoils = Array(3, 4)
 		Case Else
 			MsgBox "spike1.vbs does not know the set """ & aGame & """."
 	End Select
@@ -172,17 +176,17 @@ Function vpmKeyDown(ByVal keycode)
 				If swURFlip <> 0 And (Not Spike1StagedFlippers Or keycode = stagedFlipperR) Then .Switch(swURFlip) = True
 			Case stagedFlipperL  If swULFlip <> 0 Then .Switch(swULFlip) = True
 			Case stagedFlipperR  If swURFlip <> 0 Then .Switch(swURFlip) = True
-			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
-			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
-			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
-			Case keyInsertCoin4  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin4'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
+			Case keyInsertCoin1  If swCoin1 <> 0 Then vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
+			Case keyInsertCoin2  If swCoin2 <> 0 Then vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
+			Case keyInsertCoin3  If swCoin3 <> 0 Then vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
+			Case keyInsertCoin4  If swCoin4 <> 0 Then vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin4'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
 			Case StartGameKey    .Switch(swStartButton) = True
 			Case keyFront        If swTournament <> 0 Then .Switch(swTournament) = True
 			Case keyCancel       .Switch(swCancel)      = True
 			Case keyDown         .Switch(swDown)        = True
 			Case keyUp           .Switch(swUp)          = True
 			Case keyEnter        .Switch(swEnter)       = True
-			Case keySlamDoorHit  .Switch(swSlamTilt)    = True
+			Case keySlamDoorHit  If swSlamTilt <> 0 Then .Switch(swSlamTilt) = True
 			' The door switch reads closed when set, as Pinball 2000's: a "closed" door is Switch = True
 			Case keyCoinDoor     If toggleKeyCoinDoor Then .Switch(swCoinDoor) = Not .Switch(swCoinDoor) Else .Switch(swCoinDoor) = inverseKeyCoinDoor
 			Case keyBangBack     vpmNudge.DoMechTilt
@@ -212,7 +216,7 @@ Function vpmKeyUp(ByVal keycode)
 			Case keyDown         .Switch(swDown)        = False
 			Case keyUp           .Switch(swUp)          = False
 			Case keyEnter        .Switch(swEnter)       = False
-			Case keySlamDoorHit  .Switch(swSlamTilt)    = False
+			Case keySlamDoorHit  If swSlamTilt <> 0 Then .Switch(swSlamTilt) = False
 			Case keyCoinDoor     If toggleKeyCoinDoor = False Then .Switch(swCoinDoor) = Not inverseKeyCoinDoor
 			Case keyShowOpts     .Pause = True : vpmShowOptions : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
