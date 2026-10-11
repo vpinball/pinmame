@@ -1903,12 +1903,17 @@ static bool SubmitWrite(const PinMAMEWriteMemoryOp* const ops, const uint32_t co
 	time_fence_post();
 
 	/* Bounded, so a stalled or paused emulator cannot hang the caller. */
-	if (!g_writeCv.wait_for(lock, std::chrono::milliseconds(250), [&w] { return w.done; }))
-	{
-		std::erase(g_writeQueue, &w);
-		return false;
-	}
+	if (g_writeCv.wait_for(lock, std::chrono::milliseconds(250), [&w] { return w.done; }))
+		return true;
 
+	/* Still queued: withdraw it, and nothing is applied. */
+	if (std::erase(g_writeQueue, &w) != 0)
+		return false;
+
+	/* Already taken by the drain, which is applying it from w and the caller's ops on the
+	   emulation thread: wait for it to finish, so neither is released while in use, and
+	   report it applied, because it is. The drain is running, so this wait is short. */
+	g_writeCv.wait(lock, [&w] { return w.done; });
 	return true;
 }
 
