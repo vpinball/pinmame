@@ -20,20 +20,20 @@ static void latch(display * const d, uint64_t t, int cfg)
 
 	if (d->nbits == 0) return;
 	if (d->nbits % 8) {
-		sprintf(msg, "display: latch after %ld bits, discarded", d->nbits);
+		sprintf(msg, "display: latch after %d bits, discarded", d->nbits);
 		say(d, &d->logged_bits, msg);
 	} else if (d->mode != cfg) {
-		sprintf(msg, "display: mode changed during a %ld-byte transfer, discarded", n);
+		sprintf(msg, "display: mode changed during a %d-byte transfer, discarded", n);
 		say(d, &d->logged_mixed, msg);
 	} else if (cfg) {
 		if (n > DISPLAY_CFG_MAX) {
-			sprintf(msg, "display: %ld-byte config packet, first %d kept", n, DISPLAY_CFG_MAX);
+			sprintf(msg, "display: %d-byte config packet, first %d kept", n, DISPLAY_CFG_MAX);
 			say(d, &d->logged_cfg, msg);
 			n = DISPLAY_CFG_MAX;
 		}
 		if (d->on_config) d->on_config(d->ctx, d->buf, (int)n, t);
 	} else if (n != d->frame) {
-		sprintf(msg, "display: frame of %ld bytes discarded", n);
+		sprintf(msg, "display: frame of %d bytes discarded", n);
 		if (d->logged_frame < DISPLAY_LOG_FRAMES && d->log) d->log(d->ctx, msg);
 		else if (d->logged_frame == DISPLAY_LOG_FRAMES && d->log) d->log(d->ctx, "display: further discarded frames not logged");
 		if (d->logged_frame <= DISPLAY_LOG_FRAMES) d->logged_frame++;
