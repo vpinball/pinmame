@@ -1814,6 +1814,8 @@ PINMAMEAPI int PinmameReadMainCPUMemory(const uint32_t address, uint8_t* const p
  * PinmameWriteMainCPUMemory
  ******************************************************/
 
+extern "C" void time_fence_post(void);
+
 namespace {
 
 struct PendingWrite
@@ -1895,6 +1897,10 @@ static bool SubmitWrite(const PinMAMEWriteMemoryOp* const ops, const uint32_t co
 
 	std::unique_lock<std::mutex> lock(g_writeMutex);
 	g_writeQueue.push_back(&w);
+
+	/* The emulator may be parked at the time fence, which only this caller's thread advances:
+	   wake it so it applies the write there instead of waiting for a fence that cannot come. */
+	time_fence_post();
 
 	/* Bounded, so a stalled or paused emulator cannot hang the caller. */
 	if (!g_writeCv.wait_for(lock, std::chrono::milliseconds(250), [&w] { return w.done; }))
