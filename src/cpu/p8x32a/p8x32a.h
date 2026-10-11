@@ -1,7 +1,6 @@
 // license:BSD-3-Clause
 
-#ifndef P8X32A_H
-#define P8X32A_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -194,6 +193,4 @@ uint8_t p8x32a_hub_at(const p8x32a *p, uint32_t a, uint64_t t); /* hub RAM as th
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

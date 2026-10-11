@@ -1,7 +1,6 @@
 // license:BSD-3-Clause
 
-#ifndef MIPS32_H
-#define MIPS32_H
+#pragma once
 
 #include <stdint.h>
 
@@ -92,12 +91,10 @@ void mips32_direct(mips32_state *s, int slot, uint32_t base, uint32_t size, cons
 int mips32_run(mips32_state *s, int cycles);
 uint32_t *mips32_regs(mips32_state *s);
 void mips32_uncertain(mips32_state *s, uint32_t mask, uint32_t token); /* from bus.read: bits of this read not known yet */
-void mips32_settle(mips32_state *s);                                  /* a register not known yet gets its bits */
+void mips32_settle(mips32_state *s);                                   /* a register not known yet gets its bits */
 void mips32_set_eic(mips32_state *s, int ripl, int vector, int srs);
 int mips32_timer_irq(const mips32_state *s);
 int mips32_soft_irq(const mips32_state *s);
 int mips32_translate(const mips32_state *s, uint32_t va, uint32_t *pa);
 uint32_t mips32_get_cp0(const mips32_state *s, int reg, int sel);
 unsigned mips32_dasm(char *buf, uint32_t pc, uint32_t op);
-
-#endif

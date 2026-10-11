@@ -2036,7 +2036,7 @@ u32 p2k_state::mem_r(offs_t addr, u32 mem_mask)
 	// P2K_READWATCH=<from>[-<to>], hexadecimal: the first 40 reads from that range, with the PC.
 	// The write watch answers who fills a structure; this answers whether a device is ever asked
 	static unsigned rwatch_from = 0, rwatch_to = 0;
-	static long rwatch_left = 40;
+	static int rwatch_left = 40;
 	static const bool rwatch_init = []() {
 		if (const char *s = getenv("P2K_READWATCH"))
 		{

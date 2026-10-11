@@ -3,7 +3,7 @@
 #include "dmd.h"
 #include <string.h>
 
-static void restart(pinheck_dmd *d)
+static void restart(pinheck_dmd * const d)
 {
 	d->rows = d->row = d->nsum = d->sublevel = -1;
 	d->count = 0;
@@ -13,7 +13,7 @@ static void restart(pinheck_dmd *d)
 	memset(d->sub, 0, sizeof(d->sub));
 }
 
-void pinheck_dmd_init(pinheck_dmd *d, int full, const uint8_t *hub, uint32_t buf, void *ctx, dmd_sub_fn on_sub, dmd_frame_fn on_frame)
+void pinheck_dmd_init(pinheck_dmd * const d, int full, const uint8_t *hub, uint32_t buf, void *ctx, dmd_sub_fn on_sub, dmd_frame_fn on_frame)
 {
 	memset(d, 0, sizeof(*d));
 	d->full = full;
@@ -26,7 +26,7 @@ void pinheck_dmd_init(pinheck_dmd *d, int full, const uint8_t *hub, uint32_t buf
 }
 
 /* P18 rising: the row's dots go to the output latches; P20 marks a subframe's first row */
-static void latch(pinheck_dmd *d, uint32_t now, uint64_t t)
+static void latch(pinheck_dmd * const d, uint32_t now, uint64_t t)
 {
 	int x;
 	if (now & DMD_P20) {
@@ -61,7 +61,7 @@ static void latch(pinheck_dmd *d, uint32_t now, uint64_t t)
 	}
 }
 
-static void subframe(pinheck_dmd *d, uint64_t t)
+static void subframe(pinheck_dmd * const d, uint64_t t)
 {
 	int i, k;
 	if (d->on_sub) d->on_sub(d->ctx, d->sub, d->sublevel, t);
@@ -81,7 +81,7 @@ static void subframe(pinheck_dmd *d, uint64_t t)
 }
 
 /* P19 rising: the row driver shifts, starting over at the first row while P20 is high */
-static void row_clock(pinheck_dmd *d, uint32_t now, uint64_t t)
+static void row_clock(pinheck_dmd * const d, uint32_t now, uint64_t t)
 {
 	if (now & DMD_P20) {
 		d->row = 0;
@@ -93,7 +93,7 @@ static void row_clock(pinheck_dmd *d, uint32_t now, uint64_t t)
 	if (d->row == DMD_H - 1) subframe(d, t);
 }
 
-void pinheck_dmd_pins(pinheck_dmd *d, uint64_t t, uint32_t out, uint32_t dir)
+void pinheck_dmd_pins(pinheck_dmd * const d, uint64_t t, uint32_t out, uint32_t dir)
 {
 	const uint32_t now = out & dir & (d->full ? DMD_ALL_PINS : DMD_ROW_PINS), rise = now & ~d->level;
 	const int on = (dir & DMD_ROW_PINS) == DMD_ROW_PINS;

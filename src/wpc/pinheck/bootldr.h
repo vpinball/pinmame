@@ -1,7 +1,6 @@
 // license:BSD-3-Clause
 
-#ifndef PINHECK_BOOTLDR_H
-#define PINHECK_BOOTLDR_H
+#pragma once
 
 #include <stdint.h>
 
@@ -9,13 +8,13 @@
 extern "C" {
 #endif
 
-#define BOOT_BIT      688u
-#define BOOT_WINDOW   240000000ull
-#define BOOT_POLL     80000u
-#define BOOT_LATENCY  8000u
-#define BOOT_PROGRAM  160000u
-#define BOOT_EDGES    1024
-#define BOOT_FRAME    600
+#define BOOT_BIT     688u
+#define BOOT_WINDOW  240000000ull
+#define BOOT_POLL    80000u
+#define BOOT_LATENCY 8000u
+#define BOOT_PROGRAM 160000u
+#define BOOT_EDGES   1024
+#define BOOT_FRAME   600
 
 enum { BOOT_WAIT, BOOT_HOST, BOOT_APP };
 
@@ -42,7 +41,7 @@ typedef struct pic32_boot {
 	boot_log_fn log;
 	void *log_ctx;
 	uint32_t unknown_logged[8];
-	unsigned long frames, programmed, read, errors;
+	unsigned int frames, programmed, read, errors;
 } pic32_boot;
 
 void boot_init(pic32_boot *b, uint8_t *flash, uint32_t flash_size, boot_tx_fn tx, void *tx_ctx);
@@ -56,6 +55,4 @@ uint64_t boot_hold(const pic32_boot *b, uint64_t pic_cycle);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

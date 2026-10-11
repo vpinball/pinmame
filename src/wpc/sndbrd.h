@@ -16,6 +16,7 @@ extern int sndbrd_ctrl_r(int board);
 extern void sndbrd_ctrl_cb(int board, int data);
 extern void sndbrd_data_cb(int board, int data);
 void sndbrd_setManCmd(int board, WRITE_HANDLER((*manCmd)));
+void sndbrd_logData(int board, int on);
 void sndbrd_manCmd(int board, int cmd);
 extern void sndbrd_0_init(int brdType, int cpuNo, UINT8 *romRegion,
                           WRITE_HANDLER((*data_cb)),WRITE_HANDLER((*ctrl_cb)));

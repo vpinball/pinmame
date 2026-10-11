@@ -1,7 +1,6 @@
 // license:BSD-3-Clause
 
-#ifndef PINHECK_AUDIO_H
-#define PINHECK_AUDIO_H
+#pragma once
 
 #include <stdint.h>
 
@@ -34,15 +33,13 @@ typedef struct audio {
 	void *log_ctx;
 } audio;
 
-void audio_init(audio *a, double sample_rate, audio_log_fn log, void *ctx);
-void audio_reset(audio *a, uint64_t t);
-void audio_ctr(audio *a, uint64_t t, int cog, int ctr, uint32_t ctr_reg, uint32_t frq);
-void audio_pins(audio *a, uint64_t t, uint32_t out, uint32_t dir);
-double audio_level(audio *a, int ch, uint64_t t0, uint64_t t1);
-void audio_render(audio *a, int16_t *out_stereo, int n, uint64_t t_end);
+void audio_init(audio * const a, double sample_rate, audio_log_fn log, void *ctx);
+void audio_reset(audio * const a, uint64_t t);
+void audio_ctr(audio * const a, uint64_t t, int cog, int ctr, uint32_t ctr_reg, uint32_t frq);
+void audio_pins(audio * const a, uint64_t t, uint32_t out, uint32_t dir);
+double audio_level(audio * const a, int ch, uint64_t t0, uint64_t t1);
+void audio_render(audio * const a, float * const out_stereo, int n, uint64_t t_end);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

@@ -656,6 +656,10 @@ static READ_HANDLER(pia4a_r)
 /*-- Sound board sound command--*/
 static WRITE_HANDLER(pia5b_w) {
   locals.sndCmd = data; sndbrd_1_data_w(0,data);
+  /* with the sound overlay board, 00-1F drive the overlay's solenoids and are not strobed
+     to the sound board (pia5cb2_w): log the sound commands only (data log off, see init) */
+  if ((core_gameData->hw.gameSpecific1 & S11_SNDOVERLAY) && (data & 0xe0))
+    snd_cmd_log(1, data);
 }
 
 /*-- Sound board sound command available --*/
@@ -847,6 +851,8 @@ static MACHINE_INIT(s11) {
     case GEN_S11X:
       sndbrd_0_init(SNDBRD_S11XS, 2, memory_region(S11XS_ROMREGION), NULL, NULL);
       sndbrd_1_init(SNDBRD_S11CS, 1, memory_region(S11CS_ROMREGION), pia_5_cb1_w, NULL);
+      if (core_gameData->hw.gameSpecific1 & S11_SNDOVERLAY)
+        sndbrd_logData(1, 0); // pia5b_w logs the sound commands
       break;
     case GEN_S11B2:
       sndbrd_0_init(SNDBRD_S11BS, 2, memory_region(S11XS_ROMREGION), NULL, NULL);

@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /************************************************************************************************
  Recel System III
  ----------------
@@ -6,6 +8,7 @@
    IO:      11696 PIO (24 out), 10788 GPKD (displays), RRIOT I/O (lamps, NVRAM, printer)
    SOUND:   discrete TTL driven by PIO outputs 0-5
 ************************************************************************************************/
+
 #include "driver.h"
 #include "core.h"
 #include "sim.h"
@@ -13,7 +16,7 @@
 #include "cpu/pps4/pps4.h"
 
 /* logerror() only writes when the emulator was started with -log <file>, so
-   this is free in normal runs and is how the tests capture I/O. */
+   this is free in normal runs and is how the tests capture I/O */
 #define RECEL_TRACE 1
 #if RECEL_TRACE
 #define TRACE(x) logerror x
@@ -21,16 +24,16 @@
 #define TRACE(x)
 #endif
 
-#define RECEL_SENSE_OPEN  0x0f  /* both comparators high: nothing drawing */
-#define RECEL_SENSE_NORM  0x0d  /* return B drops: normal coil consumption */
+#define RECEL_SENSE_OPEN  0x0f /* both comparators high: nothing drawing */
+#define RECEL_SENSE_NORM  0x0d /* return B drops: normal coil consumption */
 
 static struct {
   int vblankCount;
   UINT8 accu;
   int cmd;
   int strobe;
-  UINT8 coilSense;  /* returns read at strobe 10; §5.4. Recomputed from PIO
-                        state by pio_set() -- see the comment there. */
+  UINT8 coilSense; /* returns read at strobe 10; §5.4. Recomputed from PIO
+                      state by pio_set() -- see the comment there. */
   /* GPKD (10788) state: two independent 16 x 4-bit registers, scanned in
      lockstep. */
   UINT8 dispA[16], dispB[16];
@@ -43,7 +46,7 @@ static struct {
      6-bit value rather than individual bits; the bonus BCD nibble has no
      such consumer and is read straight off ((solenoids >> 16) & 0xF). */
   UINT8 pio[6];
-  UINT8 pioPrevWrite;  /* group write returns the pre-write value; §5 table */
+  UINT8 pioPrevWrite; /* group write returns the pre-write value; §5 table */
   UINT8 sound;
   UINT32 solenoids;
   /* A17xx RRIOT I/O (B1 and B2): one holding F/F per line. 1 = released, so
@@ -77,14 +80,12 @@ static void recel_decode_prom(void) {
   UINT8 *raw = memory_region(RECEL_MEMREG_PROM);
   UINT8 *cpu = memory_region(RECEL_MEMREG_CPU);
   int size, i;
-  /* The `recel` BIOS parent set (RECEL_BIOS_ROMSTART) ships no game PROM, so
-     it has no REGION_USER1 at all. Nothing to decode. */
+  /* The `recel` BIOS parent set (RECEL_BIOS_ROMSTART) ships no game PROM, so it has no REGION_USER1 at all. Nothing to decode */
   if (!raw || !cpu) return;
   size = (core_gameData->hw.gameSpecific1 == 2) ? 0x800 : 0x100;
   for (i = 0; i < size; i++)
     cpu[0x800 + i] = ~raw[size - 1 - i];
-  /* Hardware version 2: the upper half of the decoded image replaces the
-     A1762 ROM section, which the board disables. */
+  /* Hardware version 2: the upper half of the decoded image replaces the A1762 ROM section, which the board disables */
   if (size == 0x800)
     memcpy(cpu + 0x400, cpu + 0xC00, 0x400);
 }

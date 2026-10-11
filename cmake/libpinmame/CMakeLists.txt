@@ -862,6 +862,11 @@ if(BUILD_SHARED)
          src/libpinmame/test.cpp
       )
       target_link_libraries(pinmame_test PUBLIC pinmame_shared)
+
+      add_executable(pinmame_test_paths
+         src/libpinmame/test_paths.cpp
+      )
+      target_link_libraries(pinmame_test_paths PUBLIC pinmame_shared)
    endif()
 endif()
 

@@ -76,6 +76,7 @@
 #include "machine/6821pia.h"
 #include "core.h"
 #include "sndbrd.h"
+#include "snd_cmd.h"
 #include "by35snd.h"
 #include "wmssnd.h"
 #include "by6803.h"
@@ -118,6 +119,7 @@ static struct {
   int lampadr;
   int old_lampadr;
   UINT16 lampCol; // latched lamp column (0..14)
+  int sndData, sndStb;   // last port 1 byte and sound strobe (port 2 bit 4), see port2_w
 } locals;
 
 static NVRAM_HANDLER(by6803);
@@ -519,6 +521,7 @@ static MACHINE_INIT(by6803) {
   memset(&locals, 0, sizeof(locals));
   locals.old_lampadr = 0x0f;
   sndbrd_0_init(core_gameData->hw.soundBoard,1,memory_region(REGION_SOUND1),NULL,by6803_soundLED);
+  sndbrd_logData(0, 0); // port2_w logs the sound commands
   pia_config(BY6803_PIA0, PIA_STANDARD_ORDERING, &piaIntf[0]);
   pia_config(BY6803_PIA1, PIA_STANDARD_ORDERING, &piaIntf[1]);
   locals.vblankCount = 1;
@@ -597,7 +600,18 @@ static WRITE_HANDLER(port2_w) {
   locals.enablePhaseAEdgeSense = (data & 0x02) == 0;
   by6803_update_phaseAEdgeSense();
   coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x02) | ((data>>2) & 0x01);
+  /* The game writes the command to port 1, then pulls the sound strobe low and high again;
+     the Squawk & Talk, Cheap Squeak, Sounds Deluxe and Turbo Cheap Squeak then also get
+     the high nibble on port 1. Log the byte the strobe went out with (sound command log,
+     AltSound), not every write of port 1. */
+  if (locals.sndStb && !(data & 0x10))
+    snd_cmd_log(0, locals.sndData);
+  locals.sndStb = (data & 0x10) != 0;
   sndbrd_0_ctrl_w(0, (data & 0x10) >> 4);
+}
+static WRITE_HANDLER(port1_w) {
+  locals.sndData = data;
+  sndbrd_0_data_w(0, data);
 }
 
 /*-----------------------------------
@@ -645,7 +659,7 @@ static PORT_READ_START( by6803_readport )
 PORT_END
 
 static PORT_WRITE_START( by6803_writeport )
-  { M6803_PORT1, M6803_PORT1, sndbrd_0_data_w }, // PB0-3 connected on schem
+  { M6803_PORT1, M6803_PORT1, port1_w }, // PB0-3 connected on schem
   { M6803_PORT2, M6803_PORT2, port2_w },
 PORT_END
 

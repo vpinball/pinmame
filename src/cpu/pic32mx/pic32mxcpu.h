@@ -1,7 +1,6 @@
 // license:BSD-3-Clause
 
-#ifndef PIC32MXCPU_H
-#define PIC32MXCPU_H
+#pragma once
 
 #include "pic32mx.h"
 
@@ -27,5 +26,3 @@ unsigned pic32cpu_dasm(char *buffer, unsigned pc);
 
 void pic32cpu_set_board(const pic32mx_board *board);
 pic32mx *pic32cpu_soc(void);
-
-#endif

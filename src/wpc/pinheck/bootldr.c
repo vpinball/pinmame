@@ -6,7 +6,7 @@
 
 #define PAGE 4096u
 
-static void logf1(pic32_boot *b, const char *fmt, unsigned long v)
+static void logf1(pic32_boot *b, const char *fmt, unsigned int v)
 {
 	char msg[80];
 	if (!b->log) return;
@@ -122,7 +122,7 @@ static void handle(pic32_boot *b, uint32_t size, uint64_t t, uint64_t now)
 		out[2] = 8;
 		memcpy(out + 3, "STK500_2", 8);
 		len = 11;
-		if (b->state == BOOT_WAIT) logf1(b, "boot: sign-on %lu", 0);
+		if (b->state == BOOT_WAIT) logf1(b, "boot: sign-on %u", 0);
 		b->state = BOOT_HOST;
 		break;
 	case 0x06:
@@ -153,7 +153,7 @@ static void handle(pic32_boot *b, uint32_t size, uint64_t t, uint64_t now)
 		out[1] = 0xC0;
 		if (!(b->unknown_logged[cmd >> 5] & (1u << (cmd & 31)))) {
 			b->unknown_logged[cmd >> 5] |= 1u << (cmd & 31);
-			logf1(b, "boot: unsupported STK500v2 command %02lx", cmd);
+			logf1(b, "boot: unsupported STK500v2 command %02x", cmd);
 		}
 		break;
 	}
@@ -162,7 +162,7 @@ static void handle(pic32_boot *b, uint32_t size, uint64_t t, uint64_t now)
 	send(b, t > now ? t : now, out, len, f[1]);
 	if (leave) {
 		b->app_at = b->tx_free;
-		logf1(b, "boot: leave, %lu bytes programmed", b->programmed);
+		logf1(b, "boot: leave, %u bytes programmed", b->programmed);
 	}
 }
 
@@ -223,7 +223,7 @@ void boot_advance(pic32_boot *b, uint64_t now)
 /* the machine stops (a restart or the end of a run) with the PIC32 held for programming */
 void boot_stop(pic32_boot *b)
 {
-	if (b->state == BOOT_HOST && !b->app_at) logf1(b, "boot: stopped in programming mode, %lu bytes programmed", b->programmed);
+	if (b->state == BOOT_HOST && !b->app_at) logf1(b, "boot: stopped in programming mode, %u bytes programmed", b->programmed);
 }
 
 uint64_t boot_hold(const pic32_boot *b, uint64_t now)

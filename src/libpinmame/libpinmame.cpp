@@ -14,6 +14,7 @@
 #include <vector>
 #include <algorithm>
 #include <format>
+#include <map>
 
 #if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || defined(__ia64__) || defined(__x86_64__)
  #define SSE_DISPLAY_OPT
@@ -76,6 +77,22 @@ static float _audioData[PINMAME_ACCUMULATOR_SAMPLES * 2];
 static int _nvramInit = 0;
 static uint8_t _nvram[CORE_MAXNVRAM];
 static PinmameNVRAMState _nvramState[CORE_MAXNVRAM];
+
+// The file types PinmameSetPath() can override, indexed by PINMAME_FILE_TYPE, with the folder each one defaults to
+// below PinmameConfig::vpmPath. An override replaces that default and outlives later PinmameSetConfig() calls
+static const struct {
+	int fileType;
+	const char* defaultFolder;
+} _pathTypes[] = {
+	{ FILETYPE_ROM, "roms" },
+	{ FILETYPE_NVRAM, "nvram" },
+	{ FILETYPE_SAMPLE, "samples" },
+	{ FILETYPE_CONFIG, "cfg" },
+	{ FILETYPE_HIGHSCORE, "hi" },
+};
+static constexpr int PINMAME_FILE_TYPE_COUNT = sizeof(_pathTypes) / sizeof(_pathTypes[0]);
+static_assert(PINMAME_FILE_TYPE_COUNT == PINMAME_FILE_TYPE_HIGHSCORE + 1, "_pathTypes must cover every PINMAME_FILE_TYPE");
+static char* _pathOverrides[PINMAME_FILE_TYPE_COUNT] = {};
 
 typedef struct {
 	PinmameDisplayLayout layout;
@@ -292,6 +309,10 @@ static struct MsgLocals
    };
    char memMapStringBuffer[256];
    std::vector<MemMapState> memMapStates;
+
+   // I/O names gathered from a machine definition provided through PinmameSetGameDef,
+   // keyed by state group id (PMPI_GROUP_SOLENOID/GI/LAMP/SWITCH/DIPSWITCH) and mappingId
+   std::map<std::pair<uint32_t, uint32_t>, std::string> gameDefStates;
 } msgLocals = {};
 
 
@@ -308,6 +329,30 @@ static char* ComposePath(const char* const path, const char* const file)
 	strcpy(newPath, path);
 	strcpy(newPath + pathLength, file);
 	return newPath;
+}
+
+/******************************************************
+ * CopyPath
+ ******************************************************/
+
+static char* CopyPath(const char* const path)
+{
+	char* const newPath = (char*)malloc(strlen(path) + 1);
+	strcpy(newPath, path);
+	return newPath;
+}
+
+/******************************************************
+ * ApplyPath
+ ******************************************************/
+
+static void ApplyPath(const PINMAME_FILE_TYPE fileType)
+{
+	// setPath() takes ownership of the string
+	if (_pathOverrides[fileType])
+		setPath(_pathTypes[fileType].fileType, CopyPath(_pathOverrides[fileType]));
+	else
+		setPath(_pathTypes[fileType].fileType, ComposePath(_p_Config ? _p_Config->vpmPath : "", _pathTypes[fileType].defaultFolder));
 }
 
 /******************************************************
@@ -1338,11 +1383,9 @@ PINMAMEAPI void PinmameSetConfig(const PinmameConfig* const p_config)
 	// 1 = default address range). Only effective in builds that compile a JIT in
 	options.at91jit = 1;
 
-	setPath(FILETYPE_ROM, ComposePath(_p_Config->vpmPath, "roms"));
-	setPath(FILETYPE_NVRAM, ComposePath(_p_Config->vpmPath, "nvram"));
-	setPath(FILETYPE_SAMPLE, ComposePath(_p_Config->vpmPath, "samples"));
-	setPath(FILETYPE_CONFIG, ComposePath(_p_Config->vpmPath, "cfg"));
-	setPath(FILETYPE_HIGHSCORE, ComposePath(_p_Config->vpmPath, "hi"));
+	// keeps the paths set with PinmameSetPath()
+	for (int fileType = 0; fileType < PINMAME_FILE_TYPE_COUNT; fileType++)
+		ApplyPath((PINMAME_FILE_TYPE)fileType);
 	setPath(FILETYPE_INPUTLOG, ComposePath(_p_Config->vpmPath, "inp"));
 	setPath(FILETYPE_MEMCARD, ComposePath(_p_Config->vpmPath, "memcard"));
 	setPath(FILETYPE_STATE, ComposePath(_p_Config->vpmPath, "sta"));
@@ -1356,34 +1399,39 @@ PINMAMEAPI void PinmameSetConfig(const PinmameConfig* const p_config)
  * PinmameSetPath
  ******************************************************/
 
-PINMAMEAPI void PinmameSetPath(const PINMAME_FILE_TYPE fileType, const char* const p_path)
+PINMAMEAPI PINMAME_STATUS PinmameSetPath(const PINMAME_FILE_TYPE fileType, const char* const p_path)
 {
-	if (!p_path)
-		return;
-
-	char* const newPath = (char*)malloc(strlen(p_path) + 1);
-	strcpy(newPath, p_path);
-
-	switch(fileType) {
-		case PINMAME_FILE_TYPE_ROMS:
-			setPath(FILETYPE_ROM, newPath);
-			break;
-		case PINMAME_FILE_TYPE_NVRAM:
-			setPath(FILETYPE_NVRAM, newPath);
-			break;
-		case PINMAME_FILE_TYPE_SAMPLES:
-			setPath(FILETYPE_SAMPLE, newPath);
-			break;
-		case PINMAME_FILE_TYPE_CONFIG:
-			setPath(FILETYPE_CONFIG, newPath);
-			break;
-		case PINMAME_FILE_TYPE_HIGHSCORE:
-			setPath(FILETYPE_HIGHSCORE, newPath);
-			break;
-		default:
-			free(newPath);
-			break;
+	if ((int)fileType < 0 || (int)fileType >= PINMAME_FILE_TYPE_COUNT) {
+		libpinmame_log_error("PinmameSetPath(): unknown file type %d", (int)fileType);
+		return PINMAME_STATUS_FILE_TYPE_INVALID;
 	}
+
+	// the game thread reads the paths whenever it opens a file
+	if (_isRunning) {
+		libpinmame_log_error("PinmameSetPath(): cannot change paths while a game is running");
+		return PINMAME_STATUS_GAME_ALREADY_RUNNING;
+	}
+
+	free(_pathOverrides[fileType]);
+	_pathOverrides[fileType] = (p_path && p_path[0]) ? CopyPath(p_path) : nullptr;
+
+	ApplyPath(fileType);
+
+	libpinmame_log_info("PinmameSetPath(): fileType=%d, path=%s", (int)fileType, getPath(_pathTypes[fileType].fileType));
+
+	return PINMAME_STATUS_OK;
+}
+
+/******************************************************
+ * PinmameGetPath
+ ******************************************************/
+
+PINMAMEAPI const char* PinmameGetPath(const PINMAME_FILE_TYPE fileType)
+{
+	if ((int)fileType < 0 || (int)fileType >= PINMAME_FILE_TYPE_COUNT)
+		return nullptr;
+
+	return getPath(_pathTypes[fileType].fileType);
 }
 
 /******************************************************
@@ -2449,13 +2497,20 @@ static void SetupMsgApiGameStates()
             for (uint16_t i = 33; i <= 36; i++)
                addPhysSol(fmtString("Whitestar Ext Sol #%02d", i - 32), nullptr, nullptr, i, GetSolenoid2State, GetSolenoid2VPMState, 1 << (i - 33 + 4), i - 1);
          }
-         // 33..36: pinHeck upper flipper solenoids, mirrored from the coils the game declares (FLIP_SOL)
-         else if ((core_gameData->gen & GEN_PINHECK) && coreGlobals.hasModulatedFlippers)
+         // 33..36: upper flippers pinHeck and Capcom mirror from the game's coils (where FLIP_SOL declares them); read from
+         // the integrated outputs like 45..48, so they switch with the coils and carry Capcom's flipper strength
+         else if ((core_gameData->gen & (GEN_PINHECK | GEN_CAPCOM)) && coreGlobals.hasModulatedFlippers)
          {
             for (uint16_t i = 33; i < 37; i++)
                if (core_gameData->hw.flippers & FLIP_SOL((i < 35) ? FLIP_UR : FLIP_UL))
-                  addPhysSol(fmtString("Upper %s Flipper: %s solenoid (CPU controlled)", (i < 35) ? "Right" : "Left", (i & 1) ? "Power" : "Hold"),
-                     nullptr, nullptr, i, GetSolenoid2State, GetSolenoid2VPMState, 1 << (i - 33 + 4), i - 1);
+               {
+                  const char* label = (core_gameData->gen & GEN_CAPCOM)
+                     ? fmtString("Upper %s Flipper: %s solenoid (mirrored from solenoids 11/12)", (i < 35) ? "Right" : "Left", (i & 1) ? "Power" : "Hold")
+                     : fmtString("Upper %s Flipper: %s solenoid (CPU controlled)", (i < 35) ? "Right" : "Left", (i & 1) ? "Power" : "Hold");
+                  const int type = core_get_pwm_output_type(CORE_MODOUT_SOL0 + i - 1) == 1 ? CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS : CTLPI_STATE_TYPE_CUSTOM;
+                  addDevice(PMPI_GROUP_SOLENOID, label, nullptr, i, CTLPI_STATE_FORMAT_FLOAT, type, GetPhysOutState, nullptr, CORE_MODOUT_SOL0 + i - 1);
+                  addDevice(PMPI_GROUP_VPM_SOLENOID, fmtString("%s", label), nullptr, i, CTLPI_STATE_FORMAT_UINT8, type, GetPhysOutVPMState, nullptr, CORE_MODOUT_SOL0 + i - 1);
+               }
          }
          // 33..36, WPC fliptronic board: upper flipper solenoids that may also be used as generic modulated outputs (Solenoids 29..32 in schematics)
          // Note: core_getSol returns each coil state while core_getAllSol will set hold coil if either of Hold/Power is set
@@ -2639,6 +2694,33 @@ static void SetupMsgApiGameStates()
       addDevice(PMPI_GROUP_GAMESTATE, fmtString("%s", msgLocals.memMapStates[i].name.c_str()), fmtString("%s", msgLocals.memMapStates[i].group.c_str()), i, msgLocals.memMapStates[i].type, CTLPI_STATE_TYPE_CUSTOM, GetMemMapState, nullptr, i);
    }
    setupGroup(PMPI_GROUP_GAMESTATE, "Game States", "Live game states gathered from internal machine memory");
+
+   // Overlay the names of the I/O states with the ones from the machine definition provided through PinmameSetGameDef (if any)
+   if (!msgLocals.gameDefStates.empty())
+   {
+      for (uint32_t groupId = PMPI_GROUP_SOLENOID; groupId <= PMPI_GROUP_VPM_MECH; groupId++)
+      {
+         // The VPinMAME backward compatible groups expose the same devices as the corresponding new groups
+         uint32_t defGroupId = groupId;
+         switch (groupId)
+         {
+         case PMPI_GROUP_VPM_SOLENOID: defGroupId = PMPI_GROUP_SOLENOID; break;
+         case PMPI_GROUP_VPM_GI: defGroupId = PMPI_GROUP_GI; break;
+         case PMPI_GROUP_VPM_LAMP: defGroupId = PMPI_GROUP_LAMP; break;
+         }
+         auto& group = msgLocals.stateGroups[groupId - PMPI_GROUP_SOLENOID];
+         for (auto& state : group.states)
+         {
+            if (const auto it = msgLocals.gameDefStates.find(std::make_pair(defGroupId, state.mappingId)); it != msgLocals.gameDefStates.end())
+            {
+               char* name = new char[it->second.size() + 1];
+               strcpy(name, it->second.c_str());
+               delete[] state.name;
+               state.name = name;
+            }
+         }
+      }
+   }
 
    msgLocals.stateProvider = std::make_unique<PinballPlugin::Controller::CtrlItemProvider<StateSrcId>>(msgLocals.msgApi, msgLocals.endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG);
    std::vector<StateSrcId> stateGroups;
@@ -3627,5 +3709,57 @@ PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t
 	catch (const std::exception& e) {
 		msgLocals.memMapStates.clear();
 		libpinmame_log_error("PinmameSetMemMap(): failed to parse memory map: %s", e.what());
+	}
+}
+
+static void SetGameDefImpl(uint8_t* game, size_t gameSize)
+{
+   msgLocals.gameDefStates.clear();
+   if (!game || gameSize == 0)
+      return;
+
+   // Machine definitions (see https://github.com/vpinball/pinmame-game-defs) declare their
+   // I/O devices in 'inputs'/'outputs' arrays. Each item binds to a group identifying the
+   // state group it belongs to and a device which is the public address reported as mappingId.
+   const json gameDef = json::parse(std::string(reinterpret_cast<char*>(game), gameSize));
+   static const std::pair<const char*, uint32_t> groupMap[] = {
+      { "pinmame.input.switch",    PMPI_GROUP_SWITCH },
+      { "pinmame.input.dip",       PMPI_GROUP_DIPSWITCH },
+      { "pinmame.output.solenoid", PMPI_GROUP_SOLENOID },
+      { "pinmame.output.gi",       PMPI_GROUP_GI },
+      { "pinmame.output.lamp",     PMPI_GROUP_LAMP },
+   };
+   for (const char* section : { "inputs", "outputs" })
+   {
+      if (!gameDef.contains(section) || !gameDef[section].is_array())
+         continue;
+      for (const json& item : gameDef[section])
+      {
+         if (!item.is_object() || !item.contains("label") || !item["label"].is_string()
+            || !item.contains("binding") || !item["binding"].is_object()
+            || !item["binding"].contains("group") || !item["binding"]["group"].is_string()
+            || !item["binding"].contains("device") || !item["binding"]["device"].is_number_integer())
+            continue;
+         for (const auto& [name, groupId] : groupMap)
+            if (item["binding"]["group"] == name)
+               msgLocals.gameDefStates[std::make_pair(groupId, static_cast<uint16_t>(static_cast<int16_t>(item["binding"]["device"].get<int>())))] = item["label"].get<std::string>();
+      }
+   }
+}
+
+/******************************************************
+ * PinmameSetGameDef
+ ******************************************************/
+
+PINMAMEAPI void PinmameSetGameDef(uint8_t* game, size_t gameSize)
+{
+	// Same failure containment as PinmameSetMemMap: the definition file is host-provided
+	// input that may be truncated or hand-edited, so parsing errors must not cross the C boundary.
+	try {
+		SetGameDefImpl(game, gameSize);
+	}
+	catch (const std::exception& e) {
+		msgLocals.gameDefStates.clear();
+		libpinmame_log_error("PinmameSetGameDef(): failed to parse game definition: %s", e.what());
 	}
 }

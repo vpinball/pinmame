@@ -1,7 +1,6 @@
 // license:BSD-3-Clause
 
-#ifndef P8X32AJIT_H
-#define P8X32AJIT_H
+#pragma once
 
 #include "p8x32a.h"
 
@@ -16,6 +15,4 @@ p8x32a_jblk *p8x32a_jit_build(void *jit, p8x32a_jblk *old, unsigned a, uint32_t 
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

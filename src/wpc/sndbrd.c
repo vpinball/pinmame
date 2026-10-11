@@ -22,6 +22,7 @@ static struct intfData {
   WRITE_HANDLER((*ctrl_cb));
   int type;
   int manCmdBuf; // if board requires 2 sound commands, keep last value here.
+  int noDataLog; // the main board logs the sound commands itself, see sndbrd_logData
 } intf[2];
 
 void sndbrd_init(int brdNo, int brdType, int cpuNo, UINT8 *romRegion,
@@ -29,6 +30,7 @@ void sndbrd_init(int brdNo, int brdType, int cpuNo, UINT8 *romRegion,
   const struct sndbrdIntf *b = allsndboards[brdType>>8];
   struct intfData *i = &intf[brdNo];
   struct sndbrdData brdData;
+  i->noDataLog = 0;
 #if HAS_SAMPLES
   if ((brdType != SNDBRD_NONE) &&
       ((b->flags & SNDBRD_NOTSOUND) ||
@@ -74,7 +76,7 @@ void sndbrd_diag(int board, int button) {
 
 void sndbrd_data_w(int board, int data) {
   const struct sndbrdIntf *b = intf[board].brdIntf;
-  if(b && (b->flags & SNDBRD_NOTSOUND)==0) {
+  if(b && (b->flags & SNDBRD_NOTSOUND)==0 && !intf[board].noDataLog) {
 	snd_cmd_log(board, data);
 #if defined(LISY_SUPPORT)
 	lisy_sound_handler( board, data );
@@ -138,6 +140,11 @@ void sndbrd_manCmd(int board, int cmd) {
       { intf[board].manCmdBuf = cmd; return; }
     b->manCmd_w(intf[board].manCmdBuf, cmd); intf[board].manCmdBuf = -1;
   }
+}
+/* By default every data write is logged as a sound command (snd_cmd_log). A main board whose
+   data lines are not only used for sound commands logs the commands itself and turns this off. */
+void sndbrd_logData(int board, int on) {
+  intf[board].noDataLog = !on;
 }
 void sndbrd_setManCmd(int board, WRITE_HANDLER((*manCmd))) {
   struct sndbrdIntf *b = (struct sndbrdIntf *)intf[board].brdIntf;

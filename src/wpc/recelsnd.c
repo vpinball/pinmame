@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /************************************************************************************************
  Recel System III discrete sound
  --------------------------------
@@ -11,14 +13,13 @@
 
    Topology confirmed by observation: tracing dev=0xD writes against driven game events shows
    the six lines summing rather than selecting -- e.g. registers #1 and #2 go high together for one frame
-   at the start of a coil kick, and #4/#5 are held together for the ~2s of a ball-serve buzz.  A
-   mutually-exclusive tone selector could not produce that overlap, so this is six independent
-   gated taps added together. What is *not* confirmed is
-   which physical division ratio belongs to which line; F0/2..F0/64 in ascending register order is
-   a labelled guess, not a measurement.
+   at the start of a coil kick, and #4/#5 are held together for the ~2s of a ball-serve buzz.
+   A mutually-exclusive tone selector could not produce that overlap, so this is six independent
+   gated taps added together. What is *not* confirmed is which physical division ratio belongs to which line;
+   F0/2..F0/64 in ascending register order is a labelled guess, not a measurement.
 
    The one thing the self-check step 5 proves independently: registers #0-#5 are exercised one at
-   a time (0.4.7..5.4.7, recel.c's update_coil_sense comment) -- six lines, confirmed distinct.
+   a time (0.4.7..5.4.7, recel.c's update_coil_sense comment) -- six lines, confirmed distinct
 ************************************************************************************************/
 #include "driver.h"
 #include "core.h"
@@ -31,8 +32,7 @@
    an address decode, like a memory-mapped port, not a bitmask on the data value -- see
    disc_inp.c's dss_input_init). recel_snd_w() below writes each line's 0/1 state to its own
    offset so the six squarewaves gate independently; one shared multi-bit "value" input feeding
-   every SQUAREWAVE's ENAB would gate all six together on any bit, which is not what the trace
-   shows. */
+   every SQUAREWAVE's ENAB would gate all six together on any bit, which is not what the trace shows */
 DISCRETE_SOUND_START(recel_discInt)
   DISCRETE_INPUT(NODE_01, 0, 0x3f, 0)  /* PIO out 0 / register #0 */
   DISCRETE_INPUT(NODE_02, 1, 0x3f, 0)  /* PIO out 1 / register #1 */

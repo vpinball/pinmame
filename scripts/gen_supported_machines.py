@@ -936,7 +936,8 @@ def render(titles, orphans, other, stamp, cutoff, eol_years):
     w("Machines are matched to drivers by name, with a year and manufacturer "
       "guard. This is not exact: a machine listed as not emulated may have a "
       "driver under a name the matcher missed. Check the ROM set list above "
-      "before concluding a machine is absent.")
+      "before concluding a machine is absent. Also take a look at https://www.vpforums.org/index.php?showtopic=47 "
+      "for a list of pinball (or related) machines and prototypes that are not emulated yet.")
     return "\n".join(wrap(L)) + "\n"
 
 

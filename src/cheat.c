@@ -845,13 +845,13 @@ const char	* cheatfile = NULL;
 /**** Local Globals **********************************************************/
 
 static CheatEntry			* cheatList = NULL;
-static INT32				cheatListLength = 0;
+static UINT32				cheatListLength = 0;
 
 static WatchInfo			* watchList = NULL;
-static INT32				watchListLength = 0;
+static UINT32				watchListLength = 0;
 
 static SearchInfo			* searchList = NULL;
-static INT32				searchListLength = 0;
+static UINT32				searchListLength = 0;
 static INT32				currentSearchIdx = 0;
 
 static CPUInfo				cpuInfoList[MAX_CPU];

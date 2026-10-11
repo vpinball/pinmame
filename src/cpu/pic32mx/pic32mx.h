@@ -1,7 +1,6 @@
 // license:BSD-3-Clause
 
-#ifndef PIC32MX_H
-#define PIC32MX_H
+#pragma once
 
 #include "../mips32/mips32.h"
 
@@ -77,5 +76,3 @@ void pic32mx_uncertain(pic32mx *p, uint32_t mask, uint32_t token); /* from port_
 int pic32mx_irq_vector(int irq);
 uint32_t pic32mx_sfr_peek(const pic32mx *p, uint32_t va);
 int pic32mx_peek(pic32mx *p, uint32_t pa, int size, uint32_t *v); /* RAM and flash only, no side effects; 0: not RAM or flash */
-
-#endif

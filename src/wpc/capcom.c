@@ -38,24 +38,24 @@
   11/10/03          - Seem to have found decent IRQ4 freq. to allow KP & FF to fire sols 1 & 2 properly
   11/15/03          - 68306 optimized & true address mappings implemented, major speed improvements!
 
-  Hacks & Issues that need to be looked into:
-  #2) U16 Needs to be better understood and emulated more accurately (should fix IRQ4 timing problems)
-  #3) IRQ4 appears to somehow control timing for 50V solenoids & Lamps in FF&KP, unknown effect in other games
-  #4) Handle opto switches internally? Is this needed?
-  #5) Handle EOS switches internally? Is this needed?
+  Hacks & Issues that needed to be looked into:
+  #2) DONE: U16 Needs to be better understood and emulated more accurately (should fix IRQ4 timing problems): its interrupt controller is
+      emulated since 2024 (u16_r/u16_w), the IRQ4 lines run at the frequencies the game programs; its BLANK signal is still open, see below
+  #3) DONE: IRQ4 appears to somehow control timing for 50V solenoids & Lamps in FF&KP: it is U16's interrupt (#2), set up by the game itself
+      instead of a guessed frequency
+  #4) Not needed: Handle opto switches internally? They are read through the inverted switch mask of each game (capInvSw in capgames.c)
+  #5) Not needed: Handle EOS switches internally? The flippers work without them (tables don't drive them), tables may do so for the switch tests
   #6) More complete M68306 emulation (although it's fairly good already) - could use some optimization
-  #7) Lamps will eventually come on in Kingpin/Flipper Football, why does it take so long? Faster IRQ4 timing will improve response time ( cycles of 2000 for example, but screws up solenoids )
-  #8) Not sure best way to emulate 50V line, see TEST50V_TRYx macros below
-  #9) Firing of 50V solenoids seems sometimes inconsistent in FF&KP, but IRQ4 timing helps correct it
-  #10)How to get varying flipper solenoid strength included and wired to the outside? 
-      i.e. KingPin power meter: http://www.krellan.com/pinball/kingpin/ & http://www.freepatentsonline.com/5655770.html
-      Capcom only used one single type of coils and was able to set the strength by software: It was a nice feature to ease maintenance.
-      This was way better than B/W used to do because you always needed one type of coils and not 5 or 6 different ones.
-      The PowerMeter in King Pin works that way. The lower the power is on the display the lower the strength the flippers is applied.
-      Also see https://m.facebook.com/story.php?story_fbid=2088173937889558&id=1034214746618821
-      -> suggestion: Find mem location (as it's only one machine/ROM version after all!) and use that directly instead of trying to track/map it?
-  #11) Flippers are not implemented.  VPinMAME appears to pass flipper switches through to flipper solenoids (always on).   Actual flipper solenoids
-       seem to give one very latent pulse instead of staying on.
+  #7) DONE: Lamps will eventually come on in Kingpin/Flipper Football, why does it take so long? Since the 2024 rework they come on with
+      the boot, some 4s after power on, so the slam tilt that VPX tables pulse once at the start (for flickering/late lamps) is not needed anymore
+  #8) DONE: Not sure best way to emulate 50V line: since 2024 the 5V/50V lines are measured through their RC filter and comparator as on the
+      board (cc_porta_r), the TEST50V_TRYx experiments are gone
+  #9) DONE: Firing of 50V solenoids seems sometimes inconsistent in FF&KP: with #2 and #8 they fire as the game commands them
+  #10) DONE: How to get varying flipper solenoid strength included and wired to the outside? (i.e. KingPin power meter:
+       http://www.krellan.com/pinball/kingpin/ & http://www.freepatentsonline.com/5655770.html): the flipper coils and their mirrors report the
+       strength while on, for all games, Kingpin's power meter included, see CC_FLIP_BYTE32/CC_FLIP_PATTERN16
+  #11) DONE: Flippers are not implemented: the flipper coils are solenoids 9..12 (power/hold, with their strength), mirrored to PinMAME's
+       flipper outputs, see io_w
 
  [VB 02/01/2024]
  After diving into the schematics and some 68000 disassembler, some changes:
@@ -106,13 +106,14 @@
 // Breakshot has a modified hardware with a single lamp matrix (B), the hardware of the other lamp matrix being used as a switch matrix, allowing to spare the switch board
 #define HAS_SWITCH_BOARD (core_gameData->hw.lampCol > 1)
 
-// Mirror of the flipper coils to PinMAME's flipper outputs (see io_w): 1 keeps the legacy mapping, solenoids 9/10/11/12 to
-// the lower right/lower left/upper right/upper left outputs, as existing DOF configs expect; 0 mirrors them to the matching
-// side. In all Capcom games 9 is the left flipper and 10 the right (the solenoid tests' names); 11 is the upper right
-// flipper in Breakshot, Pool Player and Big Bang Bar, while in Flipper Football 11 is the upper left and 12 the upper right
-// (its flipper descriptors in ROM), see MACHINE_INIT(cc)
+// Mirror of the flipper coils to PinMAME's flipper outputs (see io_w): 0 (default) mirrors them to the matching side, as
+// tables expect (SolCallback(sLRFlipper) is the right flipper); 1 restores the mapping of the 3.7 development builds,
+// solenoids 9/10/11/12 to the lower right/lower left/upper right/upper left outputs (PinMAME 3.6 reported none of them).
+// In all Capcom games 9 is the left flipper and 10 the right (the solenoid tests' names); 11 is the upper right flipper
+// in Breakshot, Pool Player and Big Bang Bar, while in Flipper Football 11 is the upper left and 12 the upper right (its
+// flipper descriptors in ROM), see MACHINE_INIT(cc). 11/12 are only mirrored where capgames.c declares the upper flipper
 #ifndef CAPCOM_LEGACY_FLIPPER_SWAP
-#define CAPCOM_LEGACY_FLIPPER_SWAP 1
+#define CAPCOM_LEGACY_FLIPPER_SWAP 0
 #endif
 
 // Flipper strength, the duty of the power stroke, reported as the flipper outputs' value while on. Newer firmware (Kingpin,
@@ -146,6 +147,7 @@ static struct {
   UINT16 lampA, lampB;
   UINT32 flipStrengthAddr[4]; // where the strength of solenoids 9..12 is (see CC_FLIP_BYTE32), 0 if unknown
   int flipStrengthKind[4];    // CC_FLIP_BYTE32 or CC_FLIP_PATTERN16
+  UINT32 flipStrengthProg[4]; // CC_FLIP_BYTE32: the strength in the coil's generated power stroke code (what it really uses), 0 if unknown
   int flipMirror[4];          // PinMAME flipper output each of solenoids 9..12 is mirrored to (CAPCOM_LEGACY_FLIPPER_SWAP)
 
   mame_timer* u16DMDtimer;
@@ -179,13 +181,19 @@ static INTERRUPT_GEN(cc_vblank) {
         strength = (float)n / 16.f;
       }
       else {
-        const int n = (ramptr[a >> 1] >> ((a & 1) ? 0 : 8)) & 0xFF;
+        // the game compiles the strength into the coil's power stroke code (move.b #n,...) whenever it (re-)registers the coil,
+        // also from other sources than the adjustment (Kingpin's power meter), so prefer that one
+        const UINT32 p = locals.flipStrengthProg[i];
+        const int n = (p && ramptr[(p >> 1) - 1] == 0x11fc) ? (ramptr[p >> 1] & 0xFF) : ((ramptr[a >> 1] >> ((a & 1) ? 0 : 8)) & 0xFF);
         strength = (float)(n < 2 ? 2 : n > 32 ? 32 : n) / 32.f; // as the ROM clamps it
       }
-      if (strength <= 0.f) // not set up yet
-        strength = 1.f;
+      if (strength <= 0.f) // not set up yet, or caught while the game rewrites it: keep the last value
+        continue;
       coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 9 - 1 + i].state.sol.onValue = strength;
-      coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + locals.flipMirror[i] - 1].state.sol.onValue = strength;
+      if (locals.flipMirror[i]) {
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + locals.flipMirror[i] - 1].state.sol.onValue = strength; // power
+        coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + locals.flipMirror[i]    ].state.sol.onValue = strength; // hold
+      }
     }
 
   /*-- flipper bits from the flipper outputs, integrated like the other coils' binary state (on above 0: the strength may
@@ -706,12 +714,14 @@ static WRITE16_HANDLER(io_w) {
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00FF00FFu) | ((UINT32)(soldata & 0x00ff)<<24) | (soldata & 0xff00);
       core_write_pwm_output_8b(CORE_MODOUT_SOL0 + 24,  soldata       & 0xFF);
       core_write_pwm_output_8b(CORE_MODOUT_SOL0 +  8, (soldata >> 8) & 0xFF);
-      // Mirror solenoids 8..11 to PinMAME standard flipper solenoids outputs (8/9 are used for lower flippers and 10/11 are either used for flippers or modulated lights)
-      // This should be removed as this push the legacy PinMAME specific mapping forward while it does not correspond to manuals or any other reference
-      // System using this driver must use the native output 8..11. But as it breaks existing DOF config, we still maintain this hack for the sake of backward compatibility.
-      // Which output each goes to: locals.flipMirror (CAPCOM_LEGACY_FLIPPER_SWAP)
+      // Mirror the flipper coils (solenoids 9..12) to PinMAME's flipper outputs, which tables (sLRFlipper etc.) and DOF use;
+      // the coils stay on 9..12 too. Each goes to the power output locals.flipMirror (0: none, see CAPCOM_LEGACY_FLIPPER_SWAP)
+      // and the hold output after it, as binary mode reports the hold coil on with either coil
       for (int i = 0; i < 4; i++)
-        core_write_pwm_output(CORE_MODOUT_SOL0 + locals.flipMirror[i] - 1, 1, (soldata >> (8 + i)) & 0x01);
+        if (locals.flipMirror[i]) {
+          core_write_pwm_output(CORE_MODOUT_SOL0 + locals.flipMirror[i] - 1, 1, (soldata >> (8 + i)) & 0x01);
+          core_write_pwm_output(CORE_MODOUT_SOL0 + locals.flipMirror[i]    , 1, (soldata >> (8 + i)) & 0x01);
+        }
       break;
 
     ////////////////////////////// SWITCH0 => 16 Cabinet switches
@@ -800,31 +810,35 @@ static MACHINE_INIT(cc) {
   // which is very similar to what Williams uses on WPC hardware, so just uses CORE_MODOUT_BULB_89_20V_DC_WPC
   if (strncasecmp(gn, "abv", 3) == 0) { // Airborne
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 9, CORE_MODOUT_BULB_89_20V_DC_WPC);
-    // "FLIPPER STRENGTH" (2..16, factory 12) as the power pattern of the left and right flipper descriptors; 1.06 only
-    if (strcmp(set, "abv106") == 0)
-      cc_set_flip_strength(CC_FLIP_PATTERN16, 0x397e, 0x3996, 0, 0);
+    // "FLIPPER STRENGTH" (2..16, factory 12) as the power pattern of the left and right flipper descriptors
+    cc_set_flip_strength(CC_FLIP_PATTERN16, 0x397e, 0x3996, 0, 0);
   }
   else if (strncasecmp(gn, "bbb", 3) == 0) { // Big Bang Bar
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 6, CORE_MODOUT_BULB_89_20V_DC_WPC);
-    // "FLIPPER STRENGTH" (2..16, factory 13) as the power pattern of the left, right and upper flipper descriptors; 1.09 only
-    if (strcmp(set, "bbb109") == 0)
-      cc_set_flip_strength(CC_FLIP_PATTERN16, 0x39a4, 0x39bc, 0x39d4, 0);
+    // "FLIPPER STRENGTH" (2..16, factory 13) as the power pattern of the left, right and upper flipper descriptors
+    cc_set_flip_strength(CC_FLIP_PATTERN16, 0x39a4, 0x39bc, 0x39d4, 0);
   }
   else if (strncasecmp(gn, "bsv", 3) == 0) { // Breakshot (and its clone Pool Player)
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 1, CORE_MODOUT_BULB_89_20V_DC_WPC); // Center pocket Flasher
     // core_set_pwm_output_type(CORE_MODOUT_SOL0 + 27 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC); // Plunger Flasher (appears in doc but was not kept in production)
     // "FLIPPER STRENGTH" and "U.R. FLIPPER STRENGTH" (2..16, factory 13) as the power pattern of the left/right and upper
-    // right flipper descriptors; Breakshot 1.03 and Pool Player 1.0 only
-    if (strcmp(set, "bsv103") == 0 || strcmp(set, "pp100") == 0)
+    // right flipper descriptors; the beta 1.05 has them elsewhere, and one setting for all three
+    if (strcmp(set, "bsb105") == 0)
+      cc_set_flip_strength(CC_FLIP_PATTERN16, 0x3996, 0x39ae, 0x39c6, 0);
+    else
       cc_set_flip_strength(CC_FLIP_PATTERN16, 0x39a2, 0x39ba, 0x39d2, 0);
   }
   else if (strncasecmp(gn, "ffv", 3) == 0) { // Flipper Football
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 28 - 1, 5, CORE_MODOUT_BULB_89_20V_DC_WPC);
-    // Flipper strength adjustments "L./R./L.UPR./R.UPR. Flipper Strength" (4..32, lower ones factory 18), the power stroke's
-    // duty in 32nds, read by the flipper descriptors in ROM at 0x10ce8de4 (solenoid 9, left), 0x10ce8e00 (10, right),
-    // 0x10ce8df2 (11, upper left) and 0x10ce8e0e (12, upper right); found in 1.04 only, the other versions are unchecked
+    // Flipper strength adjustments "L./R./L.UPR./R.UPR. Flipper Strength" (4..32, factory 18 and 14), the power stroke's
+    // duty in 32nds, read by the flipper descriptors in ROM (1.04: 0x10ce8de4 solenoid 9 left, 0x10ce8e00 10 right,
+    // 0x10ce8df2 11 upper left, 0x10ce8e0e 12 upper right); each version keeps them at another address
     if (strcmp(set, "ffv104") == 0)
       cc_set_flip_strength(CC_FLIP_BYTE32, 0x40458, 0x40459, 0x4045a, 0x4045b);
+    else if (strcmp(set, "ffv103") == 0)
+      cc_set_flip_strength(CC_FLIP_BYTE32, 0x4045c, 0x4045d, 0x4045e, 0x4045f);
+    else if (strcmp(set, "ffv101") == 0)
+      cc_set_flip_strength(CC_FLIP_BYTE32, 0x4141e, 0x4141f, 0x41420, 0x41421);
     // 11 is the upper left flipper, 12 the upper right
     locals.flipMirror[2] = CAPCOM_LEGACY_FLIPPER_SWAP ? sURFlipPow : sULFlipPow;
     locals.flipMirror[3] = CAPCOM_LEGACY_FLIPPER_SWAP ? sULFlipPow : sURFlipPow;
@@ -834,15 +848,23 @@ static MACHINE_INIT(cc) {
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 18 - 1,  2, CORE_MODOUT_BULB_89_20V_DC_WPC);
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 11, CORE_MODOUT_BULB_89_20V_DC_WPC);
     // Flipper strength adjustments B1.16A/B "L./R. Flipper Strength" (4..32, factory 25), the power stroke's duty in 32nds;
-    // read by the flipper descriptors in ROM at 0x100b8470 (solenoid 9, left) and 0x100b847e (solenoid 10, right)
+    // read by the flipper descriptors in ROM at 0x100b8470 (solenoid 9, left) and 0x100b847e (solenoid 10, right).
+    // The power meter (0x10068982) registers RAM copies of them, pointing to its own draining strength (0x5e50/0x5e51),
+    // so the strength is read from the coils' power stroke code at 0x4d8/0x730 (+0x0a), where the registration
+    // (0x10092516) compiles it in as move.b #n,... (the immediate at +0x24)
     cc_set_flip_strength(CC_FLIP_BYTE32, 0x40866, 0x40867, 0, 0);
+    locals.flipStrengthProg[0] = 0x4d8 + 0x24;
+    locals.flipStrengthProg[1] = 0x730 + 0x24;
   }
   else if (strncasecmp(gn, "pmv", 3) == 0) { // Pinball Magic
     core_set_pwm_output_type(CORE_MODOUT_SOL0 + 21 - 1, 12, CORE_MODOUT_BULB_89_20V_DC_WPC);
-    // "FLIPPER STRENGTH" (2..16, factory 10) as the power pattern of the left and right flipper descriptors; 1.12 only
-    if (strcmp(set, "pmv112") == 0)
-      cc_set_flip_strength(CC_FLIP_PATTERN16, 0x3958, 0x3970, 0, 0);
+    // "FLIPPER STRENGTH" (2..16, factory 10) as the power pattern of the left and right flipper descriptors
+    cc_set_flip_strength(CC_FLIP_PATTERN16, 0x3958, 0x3970, 0, 0);
   }
+  // No mirror to an upper flipper the game doesn't declare (capgames.c): 11/12 drive other devices there
+  for (int i = 2; i < 4; i++)
+    if (!(core_gameData->hw.flippers & FLIP_SOL(locals.flipMirror[i] == sURFlipPow ? FLIP_UR : FLIP_UL)))
+      locals.flipMirror[i] = 0;
   // Defaults to 2 state legacy integrator for better backward compatibility, but keep the
   // per-game #89 flasher bulbs on the bulb integrator so they don't strobe
   if ((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) == 0)
