@@ -12,12 +12,25 @@
  #include <stdarg.h>
 #endif
 
+#ifdef __cplusplus
+#define PINMAME_EXTERN_C extern "C"
+#else
+#define PINMAME_EXTERN_C
+#endif
+
 #ifdef _MSC_VER
-#define PINMAMEAPI extern "C" __declspec(dllexport)
+#define PINMAMEAPI PINMAME_EXTERN_C __declspec(dllexport)
 #define PINMAMECALLBACK __stdcall
 #else
-#define PINMAMEAPI extern "C" __attribute__((visibility("default")))
+#define PINMAMEAPI PINMAME_EXTERN_C __attribute__((visibility("default")))
 #define PINMAMECALLBACK
+#endif
+
+// enums with a fixed underlying type: C++11, Clang in any C mode, C23 (not yet in MSVC's C compiler)
+#if defined(__cplusplus) || defined(__clang__) || (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L && !defined(_MSC_VER))
+#define PINMAME_FIXED_ENUMS 1
+#else
+#define PINMAME_FIXED_ENUMS 0
 #endif
 
 #define PINMAME_MAX_PATH 512
@@ -27,7 +40,7 @@
 #define UINT32 uint32_t
 #define UINT8  uint8_t
 
-#include "plugins/MsgPlugin.h"
+typedef struct MsgPluginAPI MsgPluginAPI;
 
 
 typedef enum {
@@ -43,7 +56,8 @@ typedef enum {
 	PINMAME_STATUS_GAME_ALREADY_RUNNING = 3,
 	PINMAME_STATUS_EMULATOR_NOT_RUNNING = 4,
 	PINMAME_STATUS_MECH_HANDLE_MECHANICS = 5,
-	PINMAME_STATUS_MECH_NO_INVALID = 6
+	PINMAME_STATUS_MECH_NO_INVALID = 6,
+	PINMAME_STATUS_FILE_TYPE_INVALID = 7
 } PINMAME_STATUS;
 
 typedef enum {
@@ -99,13 +113,17 @@ typedef enum {
 } PINMAME_DISPLAY_TYPE;
 
 typedef enum {
-	PINMAME_MOD_OUTPUT_TYPE_SOLENOID = 0,  // Solenoid output type
-	PINMAME_MOD_OUTPUT_TYPE_LAMP = 1,      // Lamp output type
-	PINMAME_MOD_OUTPUT_TYPE_GI = 2,        // Global Illumination output type
-	PINMAME_MOD_OUTPUT_TYPE_ALPHASEG = 3,  // Alpha Numeric segment output type
+	PINMAME_MOD_OUTPUT_TYPE_SOLENOID = 0, // Solenoid output type
+	PINMAME_MOD_OUTPUT_TYPE_LAMP = 1,     // Lamp output type
+	PINMAME_MOD_OUTPUT_TYPE_GI = 2,       // Global Illumination output type
+	PINMAME_MOD_OUTPUT_TYPE_ALPHASEG = 3, // Alpha Numeric segment output type
 } PINMAME_MOD_OUTPUT_TYPE;
 
+#if PINMAME_FIXED_ENUMS
 typedef enum : uint64_t {
+#else
+enum { // GCC gives values above 32 bits a wider type; MSVC's C compiler truncates them
+#endif
 	PINMAME_HARDWARE_GEN_WPCALPHA_1 = 0x0000000000001,  // Alpha-numeric display S11 sound, Dr Dude 10/90
 	PINMAME_HARDWARE_GEN_WPCALPHA_2 = 0x0000000000002,  // Alpha-numeric display,  - The Machine BOP 4/91
 	PINMAME_HARDWARE_GEN_WPCDMD = 0x0000000000004,      // Dot Matrix Display, Terminator 2 7/91 - Party Zone 10/91
@@ -144,6 +162,7 @@ typedef enum : uint64_t {
 	PINMAME_HARDWARE_GEN_GTS80 = 0x0000200000000,       // GTS80
 	PINMAME_HARDWARE_GEN_GTS80A = PINMAME_HARDWARE_GEN_GTS80,
 	PINMAME_HARDWARE_GEN_GTS80B = 0x0000400000000,      // GTS80B
+	PINMAME_HARDWARE_GEN_RECEL = 0x0000800000000,       // Recel System III
 	PINMAME_HARDWARE_GEN_WS = 0x0004000000000,          // Whitestar
 	PINMAME_HARDWARE_GEN_WS_1 = 0x0008000000000,        // Whitestar with extra RAM
 	PINMAME_HARDWARE_GEN_WS_2 = 0x0010000000000,        // Whitestar with extra DMD
@@ -158,12 +177,19 @@ typedef enum : uint64_t {
 	PINMAME_HARDWARE_GEN_WICO = 0x2000000000000,        // Wico Hardware
 	PINMAME_HARDWARE_GEN_SPA = 0x4000000000000,         // Stern PA
 	PINMAME_HARDWARE_GEN_P2K = 0x8000000000000,         // Midway Pinball 2000
+	PINMAME_HARDWARE_GEN_PINHECK = 0x10000000000000,    // Spooky pinHeck
+	PINMAME_HARDWARE_GEN_CAPCOM = 0x20000000000000,     // Capcom
 	PINMAME_HARDWARE_GEN_ALLWPC = 0x00000000000ff,      // All WPC
 	PINMAME_HARDWARE_GEN_ALLS11 = 0x000008000ff00,      // All Sys11
 	PINMAME_HARDWARE_GEN_ALLBY35 = 0x0000047e00000,     // All Bally35 and derivatives
 	PINMAME_HARDWARE_GEN_ALLS80 = 0x0000600000000,      // All GTS80
-	PINMAME_HARDWARE_GEN_LLWS = 0x001c000000000,       // All Whitestar
+	PINMAME_HARDWARE_GEN_LLWS = 0x001c000000000,        // All Whitestar
+#if PINMAME_FIXED_ENUMS
 } PINMAME_HARDWARE_GEN;
+#else
+};
+typedef uint64_t PINMAME_HARDWARE_GEN;
+#endif
 
 typedef enum {
 	PINMAME_GAME_DRIVER_FLAGS_ORIENTATION_MASK = 0x0007,
@@ -198,7 +224,11 @@ typedef enum {
 	PINMAME_MECH_FLAGS_LENGTHSW = 0x100
 } PINMAME_MECH_FLAGS;
 
+#if PINMAME_FIXED_ENUMS
 typedef enum : unsigned int {
+#else
+typedef enum { // same size as unsigned int
+#endif
 	PINMAME_KEYCODE_A = 0,
 	PINMAME_KEYCODE_B = 1,
 	PINMAME_KEYCODE_C = 2,
@@ -439,7 +469,13 @@ typedef struct {
 PINMAMEAPI PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGameCallback callback, void* const p_userData);
 PINMAMEAPI PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback, void* const p_userData);
 PINMAMEAPI void PinmameSetConfig(const PinmameConfig* const p_config);
-PINMAMEAPI void PinmameSetPath(const PINMAME_FILE_TYPE fileType, const char* const p_path);
+// Overrides the folder searched for a file type, which otherwise is a folder below PinmameConfig::vpmPath ("roms",
+// "nvram", ...). Several folders can be given separated by ';'. The override is kept across PinmameSetConfig() calls,
+// NULL or "" removes it again. Paths can't be changed while a game is running
+PINMAMEAPI PINMAME_STATUS PinmameSetPath(const PINMAME_FILE_TYPE fileType, const char* const p_path);
+// The folder(s) currently searched for a file type, or NULL for an unknown type. Owned by libpinmame and valid until
+// the next PinmameSetPath() or PinmameSetConfig()
+PINMAMEAPI const char* PinmameGetPath(const PINMAME_FILE_TYPE fileType);
 PINMAMEAPI int PinmameGetCheat();
 PINMAMEAPI void PinmameSetCheat(const int cheat);
 PINMAMEAPI int PinmameGetHandleKeyboard();
@@ -464,6 +500,8 @@ PINMAMEAPI PINMAME_MOD_OUTPUT_TYPE PinmameGetModOutputType(const int output, con
 PINMAMEAPI void PinmameSetModOutputType(const int output, const int no, const PINMAME_MOD_OUTPUT_TYPE type);
 PINMAMEAPI void PinmameSetTimeFence(const double timeInS);
 PINMAMEAPI int PinmameGetMaxSolenoids();
+// With modulated or physical outputs (PinmameSetSolenoidMask(2, ...)) a solenoid's state is a level; a coil may report
+// less than full while on (Capcom's flippers report their strength setting), so treat any state above 0 as on
 PINMAMEAPI int PinmameGetSolenoid(const int solNo);
 PINMAMEAPI int PinmameGetChangedSolenoids(PinmameSolenoidState* const p_changedStates);
 PINMAMEAPI int PinmameGetMaxLamps();
@@ -496,3 +534,6 @@ PINMAMEAPI void PinmameSetMsgAPI(MsgPluginAPI* msgPluginAPI, unsigned int endpoi
 
 // Provide a 'Pinball Memory Maps' (see https://github.com/tomlogic/pinmame-nvram-maps) to expose additional internal game states
 PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t* game, size_t gameSize);
+
+// Provide a 'PinMAME game definition' (see https://github.com/vpinball/pinmame-game-defs) to name the emulated machine's I/O states
+PINMAMEAPI void PinmameSetGameDef(uint8_t* game, size_t gameSize);

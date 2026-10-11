@@ -325,7 +325,7 @@ double TMS5110_clock(const struct MachineSound *msound) { return ((struct TMS511
 #if (HAS_TMS5220)
 double TMS5220_clock(const struct MachineSound *msound) { return ((struct TMS5220interface*)msound->sound_interface)->baseclock; }
 #endif
-#if (HAS_YM2151 || HAS_YM2151_ALT || HAS_YM2151_NUKED || HAS_YM2151_YMFM)
+#if (HAS_YM2151 || HAS_YM2151_ALT || HAS_YM2151_NUKED || HAS_YM2151_YMFM || HAS_YM2151_LLE)
 double YM2151_clock(const struct MachineSound *msound) { return ((struct YM2151interface*)msound->sound_interface)->baseclock; }
 int YM2151_num(const struct MachineSound *msound) { return ((struct YM2151interface*)msound->sound_interface)->num; }
 #endif
@@ -366,7 +366,7 @@ int cem3394_num(const struct MachineSound *msound) { return ((struct cem3394_int
 #if (HAS_QSOUND)
 double qsound_clock(const struct MachineSound *msound) { return ((struct QSound_interface*)msound->sound_interface)->clock; }
 #endif
-#if (HAS_SAA1099)
+#if (HAS_SAA1099 || HAS_SAA1099_VB)
 int saa1099_num(const struct MachineSound *msound) { return ((struct SAA1099_interface*)msound->sound_interface)->numchips; }
 #endif
 #if (HAS_IREMGA20)
@@ -510,7 +510,7 @@ struct snd_interface sndintf[] =
 		YM2203_sh_reset
 	},
 #endif
-#if (HAS_YM2151 || HAS_YM2151_ALT || HAS_YM2151_NUKED || HAS_YM2151_YMFM)
+#if (HAS_YM2151 || HAS_YM2151_ALT || HAS_YM2151_NUKED || HAS_YM2151_YMFM || HAS_YM2151_LLE)
 	{
 		SOUND_YM2151,
 		"YM2151",
@@ -1004,7 +1004,7 @@ struct snd_interface sndintf[] =
 		qsound_sh_reset
 	},
 #endif
-#if (HAS_SAA1099)
+#if (HAS_SAA1099 || HAS_SAA1099_VB)
 	{
 		SOUND_SAA1099,
 		"SAA1099",

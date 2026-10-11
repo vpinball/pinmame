@@ -69,7 +69,7 @@ jobs:
           cmake \
              -DCMAKE_BUILD_TYPE=Release \
              -B build/Release
-          cmake --build build/Release
+          cmake --build build/Release -j$(getconf _NPROCESSORS_ONLN)
       - run: |
           mkdir tmp
           cp build/Release/${{ matrix.exe }} tmp

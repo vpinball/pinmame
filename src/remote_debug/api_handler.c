@@ -21,6 +21,7 @@
 #include "wpc/wpc.h"
 #include "cpuintrf.h"
 #include "cpu/m6809/m6809.h"
+#include "cpu/m6800/m6800.h"
 #include "cpu/adsp2100/adsp2100.h"
 #include "memory.h"
 
@@ -178,6 +179,11 @@ static int resolve_register_id(int cpu_idx, const char *name)
 		{"B", M6809_B}, {"U", M6809_U}, {"X", M6809_X},
 		{"Y", M6809_Y}, {"DP", M6809_DP}
 	};
+	static const struct { const char *name; int id; } m6800_regs[] = {
+		{"PC", M6800_PC}, {"S", M6800_S}, {"SP", M6800_S},
+		{"CC", M6800_CC}, {"FLAGS", M6800_CC}, {"A", M6800_A},
+		{"B", M6800_B}, {"X", M6800_X}
+	};
 	static const struct { const char *name; int id; } adsp_regs[] = {
 		{"PC", ADSP2100_PC}, {"AX0", ADSP2100_AX0}, {"AX1", ADSP2100_AX1},
 		{"AY0", ADSP2100_AY0}, {"AY1", ADSP2100_AY1}, {"AR", ADSP2100_AR},
@@ -208,6 +214,12 @@ static int resolve_register_id(int cpu_idx, const char *name)
 		for (i = 0; i < sizeof(adsp_regs) / sizeof(adsp_regs[0]); i++) {
 			if (strcasecmp(name, adsp_regs[i].name) == 0)
 				return adsp_regs[i].id;
+		}
+	}
+	else if (remote_debug_is_m6800_family(cpu_type)) {
+		for (i = 0; i < sizeof(m6800_regs) / sizeof(m6800_regs[0]); i++) {
+			if (strcasecmp(name, m6800_regs[i].name) == 0)
+				return m6800_regs[i].id;
 		}
 	}
 	else {
@@ -492,10 +504,12 @@ static void handle_api_debugger_control(const http_request_t *req, http_response
 		remote_debug_step_over();
 	else if (strcmp(cmd_buf, "stepout") == 0)
 		remote_debug_step_out();
+	else if (strcmp(cmd_buf, "reset") == 0)
+		remote_debug_reset();
 	else if (strcmp(cmd_buf, "exit") == 0)
 		remote_debug_quit();
 	else {
-		respond_error(resp, 400, "cmd must be pause|resume|step|stepover|stepout|exit");
+		respond_error(resp, 400, "cmd must be pause|resume|step|stepover|stepout|reset|exit");
 		return;
 	}
 	respond_ok(resp);
@@ -832,28 +846,28 @@ static void handle_api_debugger_dasm(const http_request_t *req, http_response_t 
 
 static void handle_api_debugger_nvram_dump(const http_request_t *req, http_response_t *resp)
 {
+	char *body = NULL;
+	int len = 0;
 	(void)req;
-	remote_debug_lock();
-	if (Machine && Machine->drv && Machine->drv->nvram_handler && wpc_ram) {
-		char *body = malloc(0x2000);
-		if (body) {
-			memcpy(body, wpc_ram, 0x2000);
-			remote_debug_unlock();
-			respond_owned(resp, body, 0x2000, "application/octet-stream");
-			return;
-		}
-		remote_debug_unlock();
-		respond_error(resp, 500, "out of memory");
-		return;
-	}
-	remote_debug_unlock();
-	respond_error(resp, 404, "no WPC NVRAM available");
+	remote_debug_get_nvram_dump(&body, &len);
+	if (body)
+		respond_owned(resp, body, len, "application/octet-stream");
+	else
+		respond_error(resp, 404, "no NVRAM available");
 }
 
 static void handle_api_debugger_nvram(const http_request_t *req, http_response_t *resp)
 {
 	char cmd_buf[32];
 	get_query_param(req->query, "cmd", cmd_buf, (int)sizeof(cmd_buf));
+	if (!cmd_buf[0]) {
+		/* no command: describe where the NVRAM is */
+		char *body = NULL;
+		int len = 0;
+		remote_debug_get_nvram_info(&body, &len);
+		respond_owned(resp, body, len, "application/json");
+		return;
+	}
 	if (strcmp(cmd_buf, "clear") != 0) {
 		respond_error(resp, 400, "cmd must be clear");
 		return;
@@ -934,8 +948,10 @@ static void handle_api_debugger_state_write(const http_request_t *req, http_resp
 static void append_cpu_registers(int i, char **p)
 {
 	int type = Machine->drv->cpu[i].cpu_type;
-	*p += sprintf(*p, "\"type\": %d, \"pc\": %u, \"sp\": %u",
-	              type, cpunum_get_reg(i, REG_PC), cpunum_get_reg(i, REG_SP));
+	/* the numeric type depends on which CPU cores a build includes; the name
+	   is what a client can rely on */
+	*p += sprintf(*p, "\"type\": %d, \"name\": \"%s\", \"pc\": %u, \"sp\": %u",
+	              type, cputype_name(type), cpunum_get_reg(i, REG_PC), cpunum_get_reg(i, REG_SP));
 	if (type == CPU_M6809) {
 		*p += sprintf(*p,
 			", \"a\": %u, \"b\": %u, \"x\": %u, \"y\": %u, \"u\": %u, \"dp\": %u, \"cc\": %u",
@@ -943,6 +959,11 @@ static void append_cpu_registers(int i, char **p)
 			cpunum_get_reg(i, M6809_X), cpunum_get_reg(i, M6809_Y),
 			cpunum_get_reg(i, M6809_U), cpunum_get_reg(i, M6809_DP),
 			cpunum_get_reg(i, M6809_CC));
+	}
+	else if (remote_debug_is_m6800_family(type)) {
+		*p += sprintf(*p, ", \"a\": %u, \"b\": %u, \"x\": %u, \"cc\": %u",
+			cpunum_get_reg(i, M6800_A), cpunum_get_reg(i, M6800_B),
+			cpunum_get_reg(i, M6800_X), cpunum_get_reg(i, M6800_CC));
 	}
 	else if (type == CPU_ADSP2105) {
 		*p += sprintf(*p,
@@ -1066,6 +1087,36 @@ static void handle_api_input_port(const http_request_t *req, http_response_t *re
 		respond_ok(resp);
 	else
 		respond_error(resp, 400, "port out of range");
+}
+
+/* List the cabinet/operator buttons the running driver defines. */
+static void handle_api_input_buttons(const http_request_t *req, http_response_t *resp)
+{
+	char *body = NULL;
+	int len = 0;
+	(void)req;
+	remote_debug_get_buttons(&body, &len);
+	respond_owned(resp, body, len, "application/json");
+}
+
+/* Press or release one cabinet/operator button, addressed by its bit mask
+ * from /api/input/buttons. Unlike /api/input/port this changes only the
+ * given bits and can time the press. */
+static void handle_api_input_button(const http_request_t *req, http_response_t *resp)
+{
+	char mask_buf[32], val_buf[32], pulse_buf[32];
+	get_query_param(req->query, "mask", mask_buf, (int)sizeof(mask_buf));
+	get_query_param(req->query, "val", val_buf, (int)sizeof(val_buf));
+	get_query_param(req->query, "pulse", pulse_buf, (int)sizeof(pulse_buf));
+	if (!mask_buf[0] || !val_buf[0]) {
+		respond_error(resp, 400, "missing parameters: mask, val");
+		return;
+	}
+	if (remote_debug_set_button((int)parse_hex(mask_buf), parse_int(val_buf),
+	                            pulse_buf[0] ? parse_int(pulse_buf) : 0) == 0)
+		respond_ok(resp);
+	else
+		respond_error(resp, 400, "machine not running, or mask out of range");
 }
 
 /* Write a switch-matrix column directly, bypassing core_setSw/sw2m, so a
@@ -1507,9 +1558,10 @@ static const api_route_t api_routes[] = {
 	 "?pattern=HEXBYTES[&addr=HEX][&size=N][&cpu=N][&bank=HEX] - search memory"},
 	{"/api/debugger/trace", handle_api_debugger_trace,
 	 "memory access trace; ?cmd=add&addr=HEX[&bank=HEX] | ?cmd=clear"},
-	{"/api/debugger/nvram", handle_api_debugger_nvram, "?cmd=clear - wipe NVRAM"},
+	{"/api/debugger/nvram", handle_api_debugger_nvram,
+	 "NVRAM blocks with size and, if mapped, CPU and address; ?cmd=clear - wipe NVRAM"},
 	{"/api/debugger/nvram/dump", handle_api_debugger_nvram_dump,
-	 "raw 8KB WPC CMOS RAM dump"},
+	 "raw dump of the NVRAM (all blocks, one after the other)"},
 	{"/api/debugger/instrument", handle_api_debugger_instrument,
 	 "PC hit counting; ?cmd=add&addr=HEX[&bank=HEX][&cpu=N] | ?cmd=clear | list"},
 	{"/api/debugger/exectrace", handle_api_debugger_exectrace,
@@ -1542,6 +1594,10 @@ static const api_route_t api_routes[] = {
 	 "?sw=N&val=0|1[&pulse=MS] - set a switch, optionally as a timed pulse"},
 	{"/api/input/port", handle_api_input_port,
 	 "?port=N&val=HEX - force bits high/low in a raw input port (reaches dedicated buttons like ADVANCE)"},
+	{"/api/input/buttons", handle_api_input_buttons,
+	 "cabinet/operator buttons of the running driver (coins, start, service buttons) with bit mask, name, state"},
+	{"/api/input/button", handle_api_input_button,
+	 "?mask=HEX&val=0|1[&pulse=MS] - press/release a cabinet/operator button, optionally as a timed press"},
 	{"/api/input/matrix", handle_api_input_matrix,
 	 "?col=N&val=HEX - write a switch-matrix column directly, bypassing core_setSw/sw2m"},
 	{"/ui", handle_ui, "the web UI"},

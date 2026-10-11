@@ -176,8 +176,7 @@ static WRITE_HANDLER(de1s_ym2151Port) {
 /* by Steve Ellenoff, Martin Adrian, and Aaron Giles
 
  BSMT Clock rate of 24Mhz is confirmed to match the pitch on the real machines (10/31/04)
- There are some special effects the BSMT is programmed to do, but we don't know how, this
- can be heard on the BSMT 2000 Logo (for early games like DE - Star Wars, command 0x77)
+ The special effect of the BSMT 2000 Logo (command 0x77) is voice 1 modulating voice 0's pitch, see bsmt2000_update
 
  Missing things
  When a sound command is written from the Main CPU it generates a BUF-FULL signal
@@ -363,11 +362,12 @@ static WRITE_HANDLER(de2s_bsmtcmdLo_w)
 
 static READ_HANDLER(de2s_bsmtready_r) { return 0x80; } // BSMT is always ready
 
-/* Writing 0x80 here resets BSMT ?*/
+/* D7 is the BSMT reset line: the sound program sets it, writes the mode register (e.g. 1), then clears it.
+   The chip restarts on the release (1->0) and reads its mode from that register select latch (as MAME's decobsmt).
+   Resetting on the 0->1 edge picked up a stale register instead (e.g. 0 on Batman, Star Trek 25th, Hook) */
 static WRITE_HANDLER(de2s_bsmtreset_w) {
 	static data8_t last_data = 0;
-	//Watch for 0->1 transition in 8th bit to force a reset
-	if (!(last_data & 0x80) && (data & 0x80))
+	if ((last_data & 0x80) && !(data & 0x80))
 		BSMT2000_sh_reset();
 	last_data = data;
 }

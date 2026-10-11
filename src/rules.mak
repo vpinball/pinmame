@@ -1513,6 +1513,14 @@ else
 SOUNDDEFS += -DHAS_SAA1099=0
 endif
 
+SOUND=$(strip $(findstring SAA1099_VB@,$(SOUNDS)))
+ifneq ($(SOUND),)
+SOUNDDEFS += -DHAS_SAA1099_VB=1
+SOUNDOBJS += $(OBJ)/sound/saa1099.o
+else
+SOUNDDEFS += -DHAS_SAA1099_VB=0
+endif
+
 SOUND=$(strip $(findstring IREMGA20@,$(SOUNDS)))
 ifneq ($(SOUND),)
 SOUNDDEFS += -DHAS_IREMGA20=1
@@ -1675,6 +1683,19 @@ DBGOBJS += $(OBJ)/cpu/at91/at91dasm.o
 $(OBJ)/cpu/at91/at91.o: src/cpu/at91/at91.c src/cpu/at91/at91.h
 else
 CPUDEFS += -DHAS_AT91=0
+endif
+
+CPU=$(strip $(findstring PIC32MX@,$(CPUS)))
+ifneq ($(CPU),)
+OBJDIRS += $(OBJ)/cpu/mips32 $(OBJ)/cpu/pic32mx
+CPUDEFS += -DHAS_PIC32MX=1
+CPUOBJS += $(OBJ)/cpu/mips32/mips32.o $(OBJ)/cpu/mips32/mips32dasm.o $(OBJ)/cpu/pic32mx/pic32mx.o $(OBJ)/cpu/pic32mx/pic32mxcpu.o
+$(OBJ)/cpu/mips32/mips32.o: src/cpu/mips32/mips32.c src/cpu/mips32/mips32.h
+$(OBJ)/cpu/mips32/mips32dasm.o: src/cpu/mips32/mips32dasm.c src/cpu/mips32/mips32.h
+$(OBJ)/cpu/pic32mx/pic32mx.o: src/cpu/pic32mx/pic32mx.c src/cpu/pic32mx/pic32mx.h src/cpu/mips32/mips32.h
+$(OBJ)/cpu/pic32mx/pic32mxcpu.o: src/cpu/pic32mx/pic32mxcpu.c src/cpu/pic32mx/pic32mxcpu.h src/cpu/pic32mx/pic32mx.h
+else
+CPUDEFS += -DHAS_PIC32MX=0
 endif
 
 CPU=$(strip $(findstring MEDIAGX@,$(CPUS)))

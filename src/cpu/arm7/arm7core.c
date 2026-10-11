@@ -265,11 +265,65 @@ static const char* GetModeText( int cpsr )
 #define GetSavedRegister(mode, rIndex)  ARMREG(sRegisterTable[mode][rIndex])
 #define SetSavedRegister(mode, rIndex, value) (ARMREG(sRegisterTable[mode][rIndex]) = value)
 
-// Mode register access: read/write a register in the bank for the given mode.  If the
-// given mode is the current mode, these read/write the active registers.  Otherwise,
-// these read/write the saved bank for the given mode.
-#define GetModeRegister(mode, rIndex)  ((mode) == GET_MODE ? GetActiveRegister(rIndex) : GetSavedRegister(mode, rIndex))
-#define SetModeRegister(mode, rIndex, value)  ((mode) == GET_MODE ? SetActiveRegister(rIndex, value) : SetSavedRegister(mode, rIndex, value))
+// Is register 'rIndex' of mode 'mode' the SAME PHYSICAL register that the active window
+// currently holds?
+//
+// This is the crux of mode-register access.  While we are running in mode M, the LIVE
+// values of R8-R14 sit in the active window; the saved slots sRegisterTable[M][8..14]
+// hold only a stale copy, which SwitchMode() overwrites from the active window on the way
+// out of M.  So writing a saved slot that is currently swapped in is silently discarded,
+// and reading one returns a stale value.
+//
+// That is not just the mode == GET_MODE case: the banking is per register, not per mode.
+// R8-R12 are shared by EVERY mode except FIQ, so while we are in SVC/IRQ/ABT/UND the
+// user-bank slots eR8_User..eR12_User are exactly the slots swapped into the active window
+// - a user bank transfer (LDM^/STM^) touching R8-R12 from one of those modes has to go to
+// the ACTIVE window.  Comparing the two sRegisterTable entries answers this in general:
+// equal entries mean the same physical register, hence "currently active".
+//
+// (mode) == GET_MODE is kept as a short-circuit because it is the hot path - normal LDM/STM
+// passes GET_MODE, and only the rare ^ forms pass eARM7_MODE_USER.
+//
+// NB: macro arguments are evaluated more than once; all call sites pass simple variables.
+#define ModeRegisterIsActive(mode, rIndex) \
+	((mode) == GET_MODE || sRegisterTable[mode][rIndex] == sRegisterTable[GET_MODE][rIndex])
+
+// Mode register access: read/write register 'rIndex' as seen by mode 'mode', whether that
+// register currently lives in the active window or in a saved bank.
+#define GetModeRegister(mode, rIndex)  \
+	(ModeRegisterIsActive(mode, rIndex) ? GetActiveRegister(rIndex) : GetSavedRegister(mode, rIndex))
+#define SetModeRegister(mode, rIndex, value)  \
+	(ModeRegisterIsActive(mode, rIndex) ? SetActiveRegister(rIndex, value) : SetSavedRegister(mode, rIndex, value))
+
+// The seven architecturally defined processor modes, as a bit set indexed by the 4-bit
+// GET_MODE value (CPSR bit 4 is ignored here, as everywhere in this core).
+#define ARM7_VALID_MODES \
+	((1u << eARM7_MODE_USER) | (1u << eARM7_MODE_FIQ) | (1u << eARM7_MODE_IRQ) | (1u << eARM7_MODE_SVC) \
+	 | (1u << eARM7_MODE_ABT) | (1u << eARM7_MODE_UND) | (1u << eARM7_MODE_SYS))
+
+// Sanitize a value that is about to be written to the CPSR from GUEST-SUPPLIED data - an MSR,
+// or a restore of the SPSR on exception return.
+//
+// Writing one of the reserved mode encodings is UNPREDICTABLE on real hardware, which simply
+// ignores the mode field of such a write. Here it is not merely undefined but destructive:
+// GET_MODE indexes sRegisterTable[], whose rows for the reserved modes are all-zero filler, so
+// the next SwitchMode() would alias every banked register onto R0 and shred the register file.
+// So keep the current mode bits and take the rest of the value (upstream MAME cd60f3a2).
+//
+// Only the guest-controlled CPSR writes need this. The flag-update macros and the internal
+// "set/clear one bit" writes preserve the existing mode bits by construction, and the hot path
+// (every S-bit ALU op) must not pay for a check it can never need.
+INLINE data32_t sanitize_cpsr_mode(data32_t val)
+{
+	if (((ARM7_VALID_MODES >> (val & MODE_FLAG)) & 1) == 0)
+	{
+		#if ARM7_DEBUG_CORE
+			LOG(("%08x: attempt to set invalid CPSR mode %02x (CPSR %08x), ignored\n", R15, val & 0x1fu, GET_CPSR));
+		#endif
+		val = (val & ~0x1fu) | (GET_CPSR & 0x1fu);
+	}
+	return val;
+}
 
 INLINE void SwitchMode (int cpsr_mode_val)
 {
@@ -698,7 +752,7 @@ static uint32_t arm7_aj_exc_return(uint32_t newpc)
 	// no SPSR in User or System mode: leave the CPSR alone (see HandleALU / HandleLDMS_ModeChange)
 	if (GET_MODE != eARM7_MODE_USER && GET_MODE != eARM7_MODE_SYS)
 	{
-		SET_CPSR(GET_REGISTER(SPSR));
+		SET_CPSR(sanitize_cpsr_mode(GET_REGISTER(SPSR)));
 		SwitchMode(GET_MODE);
 	}
 	R15 = newpc & ~3;
@@ -1668,9 +1722,14 @@ static void HandleMSR(int spsr, data32_t val, data32_t fields)
 	// force valid mode
 	newval |= 0x10;
 #endif
-	// Update the Register
+	// Update the Register. An MSR to the CPSR is guest-supplied data, so a reserved mode
+	// encoding has to be rejected before it reaches SwitchMode() below (the SPSR can hold
+	// anything - it is sanitized on the exception return that restores it)
 	if (reg == eCPSR)
+	{
+		newval = sanitize_cpsr_mode(newval);
 		SET_CPSR(newval);
+	}
 	else
 		SET_REGISTER(reg, newval);
 	
@@ -1875,7 +1934,7 @@ static void HandleALU( data32_t insn )
 				if (GET_MODE != eARM7_MODE_USER && GET_MODE != eARM7_MODE_SYS)
 				{
 					// Update CPSR from SPSR
-					SET_CPSR(GET_REGISTER(SPSR));
+					SET_CPSR(sanitize_cpsr_mode(GET_REGISTER(SPSR)));
 					SwitchMode(GET_MODE);
 				}
 
@@ -2089,9 +2148,40 @@ static void HandleLDMS_ModeChange(void)
 	// UNPREDICTABLE there, so leave the CPSR alone (upstream MAME cd60f3a2)
 	if (GET_MODE != eARM7_MODE_USER && GET_MODE != eARM7_MODE_SYS)
 	{
-		SET_CPSR(GET_REGISTER(SPSR));
+		SET_CPSR(sanitize_cpsr_mode(GET_REGISTER(SPSR)));
 		SwitchMode(GET_MODE);
 	}
+}
+
+// "A LDM will always overwrite the updated base if the base is in the list" - but that only
+// holds when the list really loads the SAME PHYSICAL register as the base.
+//
+// In a user bank transfer (LDM ^ with the S bit and R15 NOT in the list) executed from a
+// privileged mode, the list loads the USER copies of the registers. If the base is one of the
+// registers banked by the current mode (R13/R14, or R8-R14 in FIQ) it is then a different
+// physical register: the load does NOT clobber it, and the write-back has to happen as usual.
+// The classic exception-return pair "LDMFD R13!,{R0-R14}^ / LDMFD R13!,{R15}^" depends on this -
+// the second load must see the stack pointer updated by the first (upstream MAME da1b03d6).
+//
+// "Does the list load the base?" is exactly "does the USER copy of rb alias the register the
+// base names in the current mode?", which is what ModeRegisterIsActive() answers - and it is
+// the very same test the transfer itself uses to pick its destination, so the two cannot
+// disagree.  That also covers User and System mode for free: there the user bank IS the active
+// bank, so every register aliases and the base is loaded as in a plain LDM (LDM ^ from user mode
+// is UNPREDICTABLE anyway).
+//
+// Returns nonzero if the transfer loads the base register (so the write-back must be suppressed).
+static int ldm_loads_base(data32_t insn, data32_t rb)
+{
+	if (((insn >> rb) & 1) == 0)
+		return 0;						// base isn't in the transfer list at all
+
+	// (rb == 15 cannot reach the test below: it would need bit 15 both set - to get past the
+	// check above - and clear, for this to be a user bank transfer)
+	if ((insn & INSN_BDT_S) && ((insn & 0x8000) == 0))
+		return ModeRegisterIsActive(eARM7_MODE_USER, rb);	// user bank transfer
+
+	return 1;
 }
 
 static void HandleMemBlock( data32_t insn)
@@ -2178,9 +2268,9 @@ static void HandleMemBlock( data32_t insn)
 					if(rb==15)
 						LOG(("%08x:  Illegal LDRM writeback to r15\n",R15));
 				#endif
-				// "A LDM will always overwrite the updated base if the base is in the list." (also for a user bank transfer?)
+				// "A LDM will always overwrite the updated base if the base is in the list." (see ldm_loads_base)
 				// GBA "V-Rally 3" expects R0 not to be overwritten with the updated base value [BP 8077B0C]
-				if (((insn >> rb) & 1) == 0)
+				if (!ldm_loads_base(insn, rb))
 				{
 					SET_REGISTER(rb,GET_REGISTER(rb)+result*4);
 				}
@@ -2227,8 +2317,8 @@ static void HandleMemBlock( data32_t insn)
 				if (rb == 0xf)
 					LOG(("%08x:  Illegal LDRM writeback to r15\n",R15));
 			#endif
-				// "A LDM will always overwrite the updated base if the base is in the list." (also for a user bank transfer?)
-				if (((insn >> rb) & 1) == 0)
+				// "A LDM will always overwrite the updated base if the base is in the list." (see ldm_loads_base)
+				if (!ldm_loads_base(insn, rb))
 				{
 					SET_REGISTER(rb,GET_REGISTER(rb)-result*4);
 				}

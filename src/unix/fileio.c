@@ -478,8 +478,12 @@ osd_file *osd_fopen(int pathtype, int pathindex, const char *filename, const cha
 	file->fileptr = fopen(fullpath, mode);
 	if (file->fileptr == NULL)
 	{
-		/* if it's read-only, or if the path exists, then that's final */
-		if (!(strchr(mode, 'w')) || errno != EACCES)
+		/* if it's read-only, or if the path exists, then that's final.
+		   fopen() reports a missing directory as ENOENT, not EACCES, so
+		   testing EACCES here meant the create-and-retry below never ran
+		   for the one case it is there for. The Windows port tests the
+		   equivalent ERROR_PATH_NOT_FOUND */
+		if (!(strchr(mode, 'w')) || errno != ENOENT)
 			return NULL;
 
 		/* create the path and try again */

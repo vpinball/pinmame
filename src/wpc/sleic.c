@@ -64,10 +64,12 @@ static struct {
    * from PCS0 bit 1, Bike Race toggles it per write (these use different peripheral write handlers, so serves both) */
   UINT8  ymA0;
 
-  /* ---- Io Moon (SLEIC2) only, from here down ---------------------------------------
+  /* ---- Io Moon (SLEIC2) only, from here down, except spBall -------------------------
    * Io Moon runs its own interrupt generator, peripheral handlers and Z80 port map, so
-   * none of the members above serve it; these are its equivalents. MACHINE_INIT's memset zeroes
-   * them at every machine start, and MACHINE_INIT(SLEIC2) then fills only the non-zero values
+   * none of the members above serve it; these are its equivalents (spBall is Sleic
+   * Pin-Ball's, kept next to iomBalls for comparison rather than moved out of order).
+   * MACHINE_INIT's memset zeroes them at every machine start, and MACHINE_INIT(SLEIC2)
+   * then fills only the non-zero values
    * (see it for the 0x28 PCS0 shadow and the trough/coin resets) */
 
   /* Interrupt-rate accumulators and the one-deep pending latch per source, see iomoon_irq_gen */
@@ -101,8 +103,19 @@ static struct {
     int seeded;      /* the model is ON and the complement has been taken from the port  */
   } iomBalls;
 
+  /* Sleic Pin-Ball ball-exit model, see the block comment above sleic1_ball_update */
+  struct { int atExit, kick, drainHeld, seeded; } spBall;
+
   /* Coin mechanism pulse train, see the block comment above iomoon_coin_reset */
   struct { int pending, phase; UINT16 lastKeys; } iomCoin;
+
+  /* Derived solenoid pulses, in VBLANKs.  The manual's coils 17 (Salida de
+   * Bolas) and 18 (Bancada de Dianas) are on the expansion board and no Z80 port
+   * drives them (F17), so they are reported from the firmware's own commands:
+   * 0xE9 is the serve, 0xF3 arms the ball-over monitor immediately after it
+   * (sub_DC74B at DC779) and is therefore ball start, which the sim reports as
+   * the drop-bank reset per the manual's rules -- the real drive path is open (F17) */
+  struct { int serve, bankReset; } iomDerivedSol;
 } locals;
 
 #ifdef DEBUG_SLEIC
@@ -235,21 +248,8 @@ static INTERRUPT_GEN(sleic1_irq_gen) {
  * FM tempo and the outbound queue all scale with this, hence one named constant */
 #define IOMOON_INT0_HZ 72.5
 
-/* I/O Z80 clock.  The INHERITED Bike Race / Sleic Pin-Ball figure, not an Io Moon reading,
- * named here only so it stops being invisible: the SLEIC2 block used to reach the Z80
- * through MDRV_CPU_MODIFY, which leaves the base MDRV_CPU_ADD_TAG's 2.5 MHz standing while
- * the comment beside it talks about an 8 MHz crystal.
- *
- * The likely correction is 4 MHz: IC1 on the I/O board is a Goldstar Z8400A, a Z80A, whose
- * speed GRADE is 4 MHz, so the inventory's "8 MHz" cannot be the CPU clock - it is X10, the
- * board crystal, and halving it is the ordinary arrangement (the same crystal over 8192
- * gives the ~977 Hz Z80 IRQ already stated here).  Neither ROM mentions either figure.
- *
- * Deliberately NOT changed yet: everything measured for the J1 link - switch scan cadence,
- * handshake spins, byte rates - was measured at 2.5 MHz, and a 1.6x change re-times all of
- * it at once.  Revisit against the real machine or a scope on X10 as its own step, with
- * switch-delivery testing re-run either side */
-#define IOMOON_Z80_CLOCK 2500000
+/* I/O Z80 clock: X10's 8 MHz halved by IC11A into GCLK, the net on IC1 pin 6 (011-030-02) */
+#define IOMOON_Z80_CLOCK 4000000
 
 /* One periodic generator drives both sources, and it has to tick a good deal faster than
  * their sum: a request that comes due while the firmware is inside an ISR can only be
@@ -270,11 +270,11 @@ static INTERRUPT_GEN(sleic1_irq_gen) {
 
 /* YM3812 (IC60) master clock phi-M.  No ROM mentions it; the board (011-029A inventory,
  * IC60 row, sheet 011-029-06/07) feeds it from YACLK off the IC20 74LS393 in the 8 MHz
- * domain - the same chain whose /8192 tap is the ~977 Hz Z80 IRQ - so the taps are 4, 2, 1
- * or 0.5 MHz.  4 MHz is the YM3812's rated ceiling, the only tap near its 3.58 MHz
- * nominal, and the usual OPL2 clock in pinball (Alvin G.; PinMAME's own SLEIC interface
- * already used it).  A WIRING INFERENCE - only a scope on IC60 pin 24 or the IC7 PAL dump
- * confirms the strap.  Music an octave low means /4, and this line is the whole fix.
+ * domain, so the taps are 4, 2, 1 or 0.5 MHz.  4 MHz is the YM3812's rated ceiling, the
+ * only tap near its 3.58 MHz nominal, and the usual OPL2 clock in pinball (Alvin G.;
+ * PinMAME's own SLEIC interface already used it).  A WIRING INFERENCE - only a scope on
+ * IC60 pin 24 confirms the strap; IC7's dump does not carry YACLK.  Music an octave low
+ * means /4, and this line is the whole fix.
  *
  * Pitch and envelope scale with this; TEMPO does not.  Tempo is the sequencer tick, which
  * F8 puts on the INT0 handler's odd branch: IOMOON_INT0_HZ / 2 = 36.25 Hz, the half being
@@ -288,46 +288,43 @@ static INTERRUPT_GEN(sleic1_irq_gen) {
 /* Io Moon OKI MSM6376 (IC51) playback rate, handed to the core as the voice stream's
  * sample rate, so it sets speech pitch and duration.
  *
- * MEASURED from the firmware and the sample ROMs, so no crystal need be traced.  The
- * firmware pairs each phrase with a playing time - oki_trigger_a/b (F9) load the duration
- * table at CS:0C1F+2*(n-1) and the timer-0 ISR counts it down at IOMOON_TIMER0_HZ - and
- * the ROMs state the same length in ADPCM nibbles (table entry n*4, see the region note in
- * sleic.h).  One over the other across all 28 phrases lands inside 31 526 - 32 176 Hz,
- * aggregate 31 747; the long phrases, where +-0.5 tick rounding is negligible, cluster at
- * 31 700 - 31 770.  That is 0.8% under 32 kHz and 1.6% over 31.25 kHz, the two rates a
- * 6376 is normally strapped for, and the residual is inside the error IOMOON_TIMER0_HZ
- * carries from IOMOON_CPU_CLOCK - a 10.08 MHz part fits 32 000 exactly.  32 kHz is also
- * what scripts/extract-oki-msm6376.py defaults to.
+ * MEASURED from the firmware and the sample ROMs, so no crystal need be traced: the firmware
+ * pairs each phrase with a playing time (oki_trigger_a/b, F9, load the duration table at
+ * CS:0C1F+2*(n-1), counted down by the timer-0 ISR at IOMOON_TIMER0_HZ) and the ROMs state
+ * the same length in ADPCM nibbles (table entry n*4, see the region note in sleic.h).  One
+ * over the other across all 28 phrases lands inside 31 526 - 32 176 Hz, aggregate 31 747,
+ * the long phrases - where +-0.5 tick rounding is negligible - clustering at 31 700 - 31 770.
+ * That is 0.8% under 32 kHz and 1.6% over 31.25 kHz, the two rates a 6376 is normally
+ * strapped for, and the residual is inside the error IOMOON_TIMER0_HZ carries from
+ * IOMOON_CPU_CLOCK - a 10.08 MHz part fits 32 000 exactly, which is also what
+ * scripts/extract-oki-msm6376.py defaults to.
  *
  * The other error branch is a factor of two, not a trim: being measured in timer-0 ticks,
- * this inherits IOMOON_T0_MAXCOUNT's open ALT-mode assumption.  If the part interrupts
- * only on max count B, IOMOON_TIMER0_HZ halves, every duration doubles and the rate lands
- * near 16 000 - itself a standard 6376 strapping.  By ear:
+ * this inherits IOMOON_T0_MAXCOUNT's open ALT-mode assumption.  If the part interrupts only
+ * on max count B, IOMOON_TIMER0_HZ halves, every duration doubles and the rate lands near
+ * 16 000 - itself a standard 6376 strapping.  By ear:
  *     slightly sharp            -> clock branch; trim 32000 -> 31250
- *     an octave high, half long -> ALT-mode branch; ~16000 here AND revisit
- *                                  IOMOON_TIMER0_HZ, wrong by the same factor everywhere
- *                                  else.  That would be a finding about the timer.
+ *     an octave high, half long -> ALT-mode branch; ~16000 here AND revisit IOMOON_TIMER0_HZ,
+ *                                  which would then be wrong by the same factor everywhere
  *
  * Not shared with SLEIC_okim6376_intf2: its 4000000/132 is the OKIM6295 pin-7 divisor,
  * belongs to Bike Race, is 4.7% slow here, and sharing would retune Bike Race with it */
 #define IOMOON_OKI_SAMPLE_RATE 32000
 
-/* Fractional tick accumulators, and one held request per source.  The hold is needed
- * because of how this i86 core delivers interrupts: cpu_set_irq_line_and_vector does not
- * touch the CPU, it appends to a per-CPU event queue and schedules a TIME_NOW timer, and
- * cpu_empty_event_queue (src/cpuint.c) asserts the line - still before the CPU executes
- * another instruction, which is why testing IF here is a valid proxy for IF at delivery.
- * i86_set_irq_line then takes the interrupt if IF is set and otherwise does nothing at all:
- * the execute loop never re-examines irq_state, so HOLD_LINE holds nothing and a request
- * raised during an ISR would vanish.
+/* Fractional tick accumulators, and one held request per source.  The hold is needed because
+ * of how this i86 core delivers interrupts: cpu_set_irq_line_and_vector only appends to a
+ * per-CPU event queue and schedules a TIME_NOW timer, and cpu_empty_event_queue (cpuint.c)
+ * asserts the line - still before the CPU executes another instruction, which is why testing
+ * IF here is a valid proxy for IF at delivery.  i86_set_irq_line then takes the interrupt if
+ * IF is set and otherwise does nothing at all: the execute loop never re-examines irq_state,
+ * so HOLD_LINE holds nothing and a request raised during an ISR would vanish.
  *
- * The 80188's controller latches instead, and serves on re-enable.  Measured on Io Moon the
- * difference is not cosmetic: the INT0 handler's DMD work is long enough that raising both
- * sources blind loses about two thirds of the timer-0 ticks, stretching every firmware
- * timeout by the same factor.  So integrate time every tick, latch at most one request per
- * source (as the hardware does - a second before the first is served is lost, not queued),
- * and hand it over on the first tick where IF is set -> locals.iomInt0Acc / iomT0Acc and
- * locals.iomInt0Pend / iomT0Pend */
+ * The 80188's controller latches instead, and serves on re-enable.  On Io Moon the difference
+ * is not cosmetic: the INT0 handler's DMD work is long enough that raising both sources blind
+ * loses about two thirds of the timer-0 ticks, stretching every firmware timeout to match.
+ * So integrate time every tick, latch at most one request per source (as the hardware does -
+ * a second before the first is served is lost, not queued), and hand it over on the first
+ * tick where IF is set -> locals.iomInt0Acc / iomT0Acc and iomInt0Pend / iomT0Pend */
 
 /* The panel raster rides on the same tick (F13): IC23 free-runs and sends the 80188 no
  * frame signal at all, so the DMD is sampled on a clock of its own rather than on
@@ -382,8 +379,9 @@ static INTERRUPT_GEN(sleic3_irq_gen) {
  * P1.0-P1.5 = frame-RAM row and field address VA4-VA9 (VA9 shares RAM A9 with the 80188's
  * A11 on an HC157, so raster field 2 reads +0x800), P1.6 = CLRLIN, P1.7 = VSYNC,
  * P2.4 = RDATA, P2.5 = DE (active high through a 7407 to J2), P2.6 = RCLK,
- * P2.7 = COLLATCH, T1 = VGT1.  DE is the light gate, driven differently per field by the
- * two display ROMs (S = the 128-dot shift time):
+ * P2.7 = COLLATCH, T1 = VGT1.
+ *
+ * DE is the light gate, and the two display ROMs drive it differently (S = 128-dot shift):
  *   sp01-1_1.rom (Pin-Ball): field 1 DE high before the shift ($015) and through a
  *     48-iteration dwell ($028); field 2 clears it before its shift ($052, ANL P2,#$D0)
  *     and raises it only for a 46-iteration dwell ($065).  S+108 against 104.
@@ -392,30 +390,25 @@ static INTERRUPT_GEN(sleic3_irq_gen) {
  * Not P1.7: its 48/46 dwells look like "equal fields" if mistaken for the gate, but it is
  * VSYNC, raised once per frame after the 33rd row clock - as a gate it would show nothing.
  *
- * Whether the panel emits during the COLLATCH-low shift window is open and decides the
- * weighting: if it does, Pin-Ball's planes sit near 0.70/0.30 at the sheet's 625 kHz dot
- * clock (PCLK = OCLK/32; OCLK unprinted, 20 MHz on the sister board); if not, 108 against
- * 104, i.e. equal.  Video favours equal: the same 1-dot text ("CREDITOS: 1" over the
- * attract watermark) is +0x000-only in its upper rows and both planes in its lower, the
- * lower measuring about twice the upper (clipped, so a lower bound) where a shift-lit
- * panel cannot exceed 1.43; and the +0x800-only watermark matches +0x000-only text within
- * ten percent.  So both single-plane levels are about half a both-plane pixel and the
+ * Whether the panel emits during the COLLATCH-low shift window is open, and it decides the
+ * weighting: if it does, Pin-Ball's planes sit near 0.70/0.30; if not, 108 against 104, i.e.
+ * equal.  Video favours equal - both single-plane levels measure about half a both-plane
+ * pixel, and the +0x800-only watermark matches +0x000-only text within ten percent - so the
  * fields are modelled EQUAL: sleic1_irq_i8039 hands each plane over as a 1-bit field, the
  * WPC_PH two-tap integrator averages them (0, 1/2, 1/2, 1), and COMBINER_SUM_2_1 keeps the
- * raw frame at (p0 << 1) | p1 for the colorizers.  The readings differ mainly in the
+ * raw frame at (p0 << 1) | p1 for the colorizers.  The two readings differ mainly in the
  * +0x800-only level (0.30 against 0.5), so if fills, shadows and the watermark look too
  * bright, that is the number to revisit; a scope on DE and COLLATCH with a photodiode, or
- * an unclipped photo of a static screen, would pin it.
+ * an unclipped photo of a static screen, would settle it.
  *
- * Do NOT emulate the brightness ramp the same video shows - text clipping white while
- * drawn or blinked and settling dim once static, over ten-frame ramps a two-level display
- * cannot produce.  That is the phone's processing: nothing on 011-026 can light a fresh
- * pixel longer than a static one (the I8039 waits only on VGT1, and blinking text is
- * written to +0x000 alone).
+ * Do NOT emulate the brightness ramp the same video shows - text clipping white while drawn
+ * and settling dim once static, over ten-frame ramps a two-level display cannot produce.
+ * That is the phone's processing: nothing on 011-026 can light a fresh pixel longer than a
+ * static one (the I8039 waits only on VGT1, and blinking text goes to +0x000 alone).
  *
- * Bike Race keeps the pre-integrated (p0 << 1) | p1 frame through LINEAR_4, its fields
- * being asymmetric under either reading.  Io Moon's PIC holds plane 0 for 200 counts
- * against 30 - see MACHINE_INIT(SLEIC2) */
+ * Bike Race keeps the pre-integrated (p0 << 1) | p1 frame through LINEAR_4, its fields being
+ * asymmetric under either reading.  Io Moon's PIC holds plane 0 for 200 counts against 30 -
+ * see MACHINE_INIT(SLEIC2) */
 
 /* Decode one 128x32 two-bitplane frame -- 32 rows x 16 bytes per plane, MSB = leftmost
  * pixel, 1 = lit -- into the brightness grid core_dmd_submit_frame takes.  The two planes
@@ -565,6 +558,9 @@ static INTERRUPT_GEN(sleic1_irq_i8039) {
 static void iomoon_submit_dmd_frame(void) {
   const UINT8 * const stage = memory_region(SLEIC_MEMREG_CPU) + IOMOON_DMD_STAGE;
   sleic_build_dmd_frame(locals.rawDMD, stage, stage + 0x200, 0x10);
+#ifdef DEBUG_SLEIC
+  sleic_dmd_dump(locals.rawDMD);
+#endif
   core_dmd_submit_frame(core_gameData->lcdLayout->importedLayout ? core_gameData->lcdLayout->importedLayout : core_gameData->lcdLayout, locals.rawDMD, 1);
 }
 
@@ -584,6 +580,8 @@ static INTERRUPT_GEN(SLEIC_interface_update) {
 
   /*-- solenoids --*/
   coreGlobals.solenoids = locals.solenoids;
+  if (locals.iomDerivedSol.serve)     locals.iomDerivedSol.serve--;
+  if (locals.iomDerivedSol.bankReset) locals.iomDerivedSol.bankReset--;
 
   core_updateSw(TRUE);
 }
@@ -734,29 +732,26 @@ static WRITE_HANDLER(pic_w) {
  * 6376 as TWO concurrent channels.  (Io Moon has its own iomoon_oki_strobe, where the
  * channel really is latch bit 7.)
  *
- * The channel is not a bit of the phrase byte here - Bike Race masks every 0xA0300 write
+ * The channel is NOT a bit of the phrase byte here - Bike Race masks every 0xA0300 write
  * with AND AL,07F (E0CCE / E0CF9), Pin-Ball never sets bit 7 (its 63 phrase stubs are
  * 0x01-0x3F), and bit 7 of the IC45 phrase latch is unconnected on the board.  It is PCS0
  * bit 3, IC32 4Q = 2CH (sheet 3, OKI pin 63 on sheet 4), sampled at the /ST rising edge
  * (bit 4, IC32 5Q):
- *   Bike Race -- channel-1 trigger sub_E0CBF leaves 2CH high; channel-2 sub_E0CEA clears
- *                it (E0D0C-E0D14) around the /ST pulse and restores it after
- *                (E0D1B-E0D23).
- *   Pin-Ball  -- one trigger (sp03 E000:1B26-1B6A) alternates on a toggle at [0x27c]:
- *                even calls strobe with 2CH high, odd clear it (0x1B4F/0x1B55), strobe
- *                (0x1B6B), restore (0x1B60/0x1B66).
+ *   Bike Race -- channel-1 trigger sub_E0CBF leaves 2CH high; channel-2 sub_E0CEA clears it
+ *                (E0D0C-E0D14) around the /ST pulse and restores it after (E0D1B-E0D23).
+ *   Pin-Ball  -- one trigger (sp03 E000:1B26-1B6A) alternates on a toggle at [0x27c]: even
+ *                calls strobe with 2CH high, odd clear it (0x1B4F/0x1B55), strobe (0x1B6B),
+ *                restore (0x1B60/0x1B66).
  * Both reach the core's two 6376 voices (adpcm.c: bit 4 = voice 0, bit 5 = voice 1 on
- * data >> 4).  Collapsing them onto one voice, as the old model did, made adpcm.c refuse
- * the second of every overlapping pair (OKIM6376_data_w drops a start on a busy voice):
+ * data >> 4).  Collapsing them onto one voice, as the old model did, made adpcm.c refuse the
+ * second of every overlapping pair, since OKIM6376_data_w drops a start on a busy voice:
  * Bike Race's START issues phrase 19, the 4.7 s motor sample in BK03, on channel 2 while
- * phrase 1 still runs on channel 1; Pin-Ball's START issues 0x16 then 0x2f, its tilt 0x21,
- * 0x37, 0x2b.
+ * phrase 1 still runs on channel 1, and Pin-Ball's START issues 0x16 then 0x2f.
  *
- * Abort-before-start as in iomoon_oki_strobe.  Bike Race's only busy model is a software
- * counter per channel ([01BE] / [01C1]) that can expire slightly before the emulated
- * sample ends; Pin-Ball has none at all - no BUSY read, no counters, no drop rule - so its
- * n-th phrase goes to channel n mod 2 regardless.  Either way a re-issue must restart, not
- * be refused.
+ * Abort-before-start as in iomoon_oki_strobe: Bike Race's only busy model is a software
+ * counter per channel ([01BE] / [01C1]) that can expire slightly before the emulated sample
+ * ends, and Pin-Ball has none at all - no BUSY read, no counters, no drop rule - so a
+ * re-issue must restart rather than be refused.
  *
  * Phrase 0 is a stop-all: Bike Race's sub_E0D2D (latch 0, /ST held low, released two timer
  * ticks later by sub_E0D7E), and Pin-Ball's E000:1AEF, which strobes phrase 0 once per
@@ -1233,6 +1228,9 @@ static void iomoon_oki_strobe(void) {
   const UINT8 phrase = locals.iomOkiLatch & 0x7f;
   /* CH2 -> the core's voice bit: bit 4 = voice 0, bit 5 = voice 1 (adpcm.c, data >> 4) */
   const UINT8 voice  = (locals.iomOkiLatch & 0x80) ? 1 : 0;
+#ifdef DEBUG_SLEIC
+  if (getenv("SLEIC_TRACE_SND")) fprintf(stderr, "[oki] phrase %02x ch%d\n", phrase, voice + 1);
+#endif
 
   /* The test is on the PHRASE, not on the whole latch, and the two are the same test here:
    * the only latch value with phrase 0 that sub_D0CB8 can leave is 0x00 itself, because the
@@ -1303,12 +1301,18 @@ static WRITE_HANDLER(sleic2_periph_w) {
                  * carried on PCS0 bit 1 (locals.ymA0).  Three machines, three conventions;
                  * this one is the only one the Io Moon ROM supports, and F8 confirms these
                  * are the only two accesses to either address in the whole ROM */
+#ifdef DEBUG_SLEIC
+      if (getenv("SLEIC_TRACE_SND")) fprintf(stderr, "[ym] reg  %02x\n", data);
+#endif
       YM3812_control_port_0_w(0, data);
       return;
     case 0x281: /* PCS5 with A0 = 1: the YM3812's data port (F8).  The firmware's settling
                  * delay between the two writes (ym3812_settle_delay D0DA9, 10 iterations)
                  * is a real-chip timing requirement with no emulated equivalent -- the core
                  * accepts the pair back to back -- so nothing here waits */
+#ifdef DEBUG_SLEIC
+      if (getenv("SLEIC_TRACE_SND")) fprintf(stderr, "[ym] data %02x\n", data);
+#endif
       YM3812_write_port_0_w(0, data);
       return;
     case 0x300: /* PCS6: the OKI MSM6376's data/CH2 latch (F9).  Latching alone starts
@@ -1344,12 +1348,12 @@ static READ_HANDLER(sleic2_periph_r) {
                  * index port (A0 = 0) exactly as on any OPL2.
                  *
                  * The Io Moon firmware never reads it -- F8 finds only the two writes in
-                 * ym3812_write, and busy is handled by the software settling delay instead
-                 * of by polling bit 7 -- so this line changes no behaviour today.  It is
-                 * here because the hardware answers here: leaving the address to the
-                 * function's default 0 would quietly invent a chip that reports "no timer
-                 * overflow, not busy" for ever, and a patched or later ROM that does poll
-                 * would then hang against a lie rather than run against the core */
+                 * ym3812_write, and busy is handled by a software settling delay rather
+                 * than by polling bit 7 -- so this line changes no behaviour for the ROMs
+                 * we have.  It is here because the hardware answers here: leaving the
+                 * address to the function's default 0 would invent a chip that reports "no
+                 * timer overflow, not busy" for ever, and a patched or later ROM that does
+                 * poll would hang against that lie rather than run against the core */
       return YM3812_status_port_0_r(0);
   }
   return 0;
@@ -1736,7 +1740,12 @@ MEMORY_END
  *     to 0xFF, not mapping a switch, since bit 5 = 1 is what puts the 0xED handler on its
  *     real "wait for the balls" path.
  *   - anything mapped into swMatrix[10] bit 7 pulls that bit low and hangs
- *     selftest_wait_reset.  Nothing writes row 10 today; keep it that way */
+ *     selftest_wait_reset.  Nothing writes row 10 today; keep it that way
+ *
+ * Consequence of bit 0 = 1: the boot-time country-DIP round trip (F11) folds this same
+ * bit into [413C:00D9] and latches it there for the rest of the run, which makes the
+ * SOLENOID FAIL / CUT OR / SEPARATE-BROKEN fault family permanently unreachable -- not a
+ * driver bug, since the input this bit stands in for is one of F5's open gaps */
 #define IOMOON_PORT04_IDLE 0xff
 
 /* Bits 1-3 of port 0x04 are the SW40 country switches SW2-SW4 - not idle bits: the
@@ -1755,20 +1764,19 @@ MEMORY_END
  * SW2/SW4 is the low bit is settled by the presets, not by the UK and Spain rows (both
  * palindromes, which survive a reversal); sleic.h carries the eight-row comparison.
  *
- * Bit 5 is SW40-5, the manual's "servicio: no se dispensan bolas".  The 0xED handler 2BEB
- * reads it (IN ($04) / BIT 5 / JP Z,2C17) and with the bit LOW answers 0x45 without
- * looking at a contact - "do not dispense balls", the SERVICE position.  Normal play is
- * the bit HIGH, where 2BEB strobes column 0, tests the trough (sub_2C1F) and answers 0x45
- * through sub_2851 when the balls are home, or 0x46 and the eject sequence when not.  That
- * branch used to hang, which is why the bit was held low; with the trough modelled it does
- * not.  Measured both ways: bit high answers 0x45 in one frame at boot and the whole
- * coin/credit/START/serve chain runs identically to bit low */
+ * Bit 5 is SW40-6, the manual's "servicio: no se dispensan bolas" - the manual names that
+ * function SW5, but the block is wired switch n -> bit n-1, so the bit the firmware reads
+ * is switch 6.  The 0xED handler 2BEB reads it (IN ($04) / BIT 5 / JP Z,2C17) and with the
+ * bit LOW answers 0x45 without looking at a contact - "do not dispense balls", the SERVICE
+ * position.  Normal play is the bit HIGH, where 2BEB strobes column 0, tests the trough
+ * (sub_2C1F) and answers 0x45 through sub_2851 when the balls are home, or 0x46 and the
+ * eject sequence when not */
 static UINT8 iomoon_port04(void) {
-  /* DIP 0x10 is SW40-5 and its two settings are named for the switch, not for the bit:
-   * "On" (DIP 0) = the service position = port-04 bit 5 LOW, "Off" (DIP 0x10) = normal
-   * play = bit 5 HIGH.  Default is Off */
-  return (UINT8)((IOMOON_PORT04_IDLE & ~0x2e) | (core_getDip(0) & 0x0e)
-                 | ((core_getDip(0) & 0x10) ? 0x20 : 0x00));
+  /* The DIP word is the switch block: switch n is bit n-1, so SW2-SW4 are 0x0e and SW40-6
+   * is 0x20 and both pass straight through.  SW40-6's settings are named for the switch,
+   * not the bit: "On" (DIP 0) = the service position = bit 5 LOW, "Off" (DIP 0x20) =
+   * normal play = bit 5 HIGH */
+  return (UINT8)((IOMOON_PORT04_IDLE & ~0x2e) | (core_getDip(0) & 0x2e));
 }
 
 static READ_HANDLER(iomoon_z80_read) {
@@ -1814,6 +1822,9 @@ static WRITE_HANDLER(iomoon_z80_write) {
                      locals.iomJ1.to188, locals.iomJ1.latch);
           locals.iomJ1.latch = locals.iomJ1.to188;
           locals.iomJ1.latchFull = 1;
+#ifdef DEBUG_SLEIC
+          if (getenv("SLEIC_TRACE_SW")) fprintf(stderr, "[SW->188] code=%02x\n", locals.iomJ1.latch);
+#endif
           cpu_set_irq_line(SLEIC_MAIN_CPU, IRQ_LINE_NMI, PULSE_LINE); /* handler D000:016D */
         }
       }
@@ -1828,7 +1839,13 @@ static WRITE_HANDLER(iomoon_z80_write) {
                 * matrix is refreshed every 8 Z80 interrupts) writes the row byte to 0x84
                 * FIRST and pulses the column here second, so the pair commits on this
                 * strobe with the row latched by the preceding 0x84 */
-      if (data) coreGlobals.tmpLampMatrix[core_BitColToNum(data & -data)] = sleic_io.lampRow;
+      if (data) {
+#ifdef DEBUG_SLEIC
+        if (getenv("SLEIC_TRACE_LAMP") && sleic_io.lampRow)
+          fprintf(stderr, "[lamp] col=%d row=%02x\n", core_BitColToNum(data & -data), sleic_io.lampRow);
+#endif
+        coreGlobals.tmpLampMatrix[core_BitColToNum(data & -data)] = sleic_io.lampRow;
+      }
       break;
     case 0x04: /* port 0x84: lamp-matrix ROW data, ACTIVE HIGH -- no inversion.  The byte is
                 * one of C10F..C116, which sub_353A fills either verbatim from the "lit" bank
@@ -1849,15 +1866,22 @@ static WRITE_HANDLER(iomoon_z80_write) {
                 * singles (F7).  Each pair is one dual-wound flipper driven a winding at a
                 * time: sub_1292 / sub_12D8 choose on that flipper's EOS contact (C0DB bit
                 * 6 / bit 7) - one winding while travelling, the other to hold - and
-                * sub_064D / sub_06C2 release both.  WHICH coil sits on each bit is in
-                * neither ROM, so the mapping is the plain driver bit b -> solenoid b+1 and
-                * no coil is named, unlike Sleic Pin-Ball whose manual numbering is verified */
+                * sub_064D / sub_06C2 release both.  Driver bit b is the manual's coil b+1
+                * (F17): 0/1 left flipper power/hold, 2/3 right, 4/5 upper, 6 Bumper 1, 7
+                * Tragabolas 1.  The pairs are the dual-wound flippers, and the manual's
+                * power/medium circuit split lands on the even/odd bits, which is the third
+                * source that agrees */
       locals.solenoids = (locals.solenoids & ~(UINT32)0x00ff) | (UINT32)(data ^ 0xff);
       break;
     case 0x06: /* port 0x86: driver latch B -> solenoids 9-16.  Same active-low convention
                 * (boot_port_init 042C also writes 0xFF), but all eight bits are independent:
                 * fired at 0706-07D1, released at 081B-0892, plus the timed auto-release path
-                * at 0ADA-0C51 inside the Z80's IRQ handler (F7) */
+                * at 0ADA-0C51 inside the Z80's IRQ handler (F7).  Bit b is coil b+9 (F17):
+                * 0-3 Bumpers 2-5, 4 Taca, 5/6 Expulsor 1/2, 7 Sueltabolas de Jupiter.  The
+                * manual's coils 17-21 and its three flashes are the expansion board's
+                * channels and NO Z80 port drives them -- every bit of 0x80-0x87 is
+                * accounted for (F17).  Two of them matter to the simulator and are derived
+                * from the firmware's own commands instead; see iomoon_getSol */
       locals.solenoids = (locals.solenoids & ~(UINT32)0xff00) | ((UINT32)(data ^ 0xff) << 8);
       break;
     case 0x07: /* port 0x87: NOT a driver output.  Low nibble = direct_input_scan's 16-way
@@ -1911,6 +1935,9 @@ static MACHINE_INIT(SLEIC) {
    * and the keys above are only for standalone testing */
 }
 
+/* The ball-exit model (defined further down, with the block comment above sleic1_ball_update) */
+static void sleic1_ball_reset(void);
+
 /* Sleic Pin-Ball: two equal raster fields integrated by the core instead of a
  * pre-integrated level frame -- see sleic1_irq_i8039 and the field-weighting note above
  * sleic_build_dmd_frame.  core_dmd_pwm_init allocates the state it is handed, so it is
@@ -1918,6 +1945,10 @@ static MACHINE_INIT(SLEIC) {
 static MACHINE_INIT(SLEIC1) {
   sleic_init_locals();
   core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_FILTER_WPC_PH, CORE_DMD_PWM_COMBINER_SUM_2_1, 0);
+  /* sleic_init_locals has already zeroed locals, spBall included, so this call covers a
+   * "Balls" change at runtime rather than machine init.  MACHINE_INIT(SLEIC2) calls
+   * iomoon_ball_reset() beside its own memset for the same reason */
+  sleic1_ball_reset();
 }
 
 /* Io Moon: point the segment-6000 graphics bank somewhere valid before the first
@@ -2013,10 +2044,13 @@ static const struct { int key; UINT8 col; UINT8 bit; } iomoon_pf_keys[] = {
 /  "FALTA 1 BOLA" until something closes its trough contacts, which is exactly right.
 /
 /  So the four contacts below are ORDINARY SWITCHES unless the operator asks for the
-/  model.  The knob is the standard simulator port's "Balls" setting, which every PinMAME
-/  driver already carries (sim.h, and SLEIC2_INPUT_PORTS_START in sleic.h):
+/  model, and the model itself now applies only when no simulator is registered -- with
+/  one present it stands down (iomoon_ball_update) and "Balls" is the simulator's own ball
+/  complement instead.  Otherwise the knob is the standard simulator port's "Balls"
+/  setting, which every PinMAME driver already carries (sim.h, and
+/  SLEIC2_SIM_INPUT_PORTS_START in sleic.h):
 /
-/    Balls = 0   DEFAULT.  The model is off.  swMatrix[1] bits 0-3 are driven only by the
+/    Balls = 0   The model is off.  swMatrix[1] bits 0-3 are driven only by the
 /                matrix inputs -- the Q/W/E/R test keys, or a VPinMAME table script.  No
 /                seeding, no kicker, and the "Drain ball in play" and "Shoot Ball" inputs
 /                do nothing at all (iomoon_ball_update returns before it reads them).
@@ -2166,6 +2200,18 @@ static void iomoon_ball_command(UINT8 cmd) {
   if (cmd == 0xe9 && locals.iomBalls.seeded && !locals.iomBalls.atExit && !locals.iomBalls.kick
       && locals.iomBalls.inTrough > 0)
     locals.iomBalls.kick = IOMOON_KICK_FRAMES;
+
+  if (cmd == 0xe9) locals.iomDerivedSol.serve     = 4;
+  if (cmd == 0xf3) locals.iomDerivedSol.bankReset = 4;
+}
+
+/* Custom solenoids 51 and 52, reported through core_gameData->hw.getSol.  Both are
+ * DERIVED, not read from a pin: the coils they stand for are on the driver
+ * expansion board and no Z80 output reaches it (F17) */
+int iomoon_getSol(int solNo) {
+  if (solNo == CORE_CUSTSOLNO(1)) return locals.iomDerivedSol.serve     > 0;
+  if (solNo == CORE_CUSTSOLNO(2)) return locals.iomDerivedSol.bankReset > 0;
+  return 0;
 }
 
 /* Called once a frame from SWITCH_UPDATE(SLEIC2) AFTER the playfield key loop, and it ORs
@@ -2177,6 +2223,10 @@ static void iomoon_ball_command(UINT8 cmd) {
  * play", balls = its "Balls" setting.  balls = 0 is the DEFAULT and means model off */
 static void iomoon_ball_update(int balls, int shoot, int drain) {
   UINT8 bits;
+  /* A simulator owns the balls.  With one registered, "Balls" is its ball
+   * complement -- which is what it means in every other PinMAME game -- and the
+   * trough contacts are its to drive, so this model must not also drive them */
+  if (coreGlobals.simAvail) { iomoon_ball_reset(); return; }
   /* MODEL OFF -- the default, and the only behaviour a frontend ever sees.  Return before
    * anything is seeded, before the kicker is stepped and before "shoot" or "drain" is
    * looked at, so those two inputs are inert rather than half-live, and swMatrix[1] bits
@@ -2249,8 +2299,7 @@ static void iomoon_ball_update(int balls, int shoot, int drain) {
 /    sub_DD03D   divides the accumulated pulses by each coin value in turn, LARGEST FIRST
 /                (413C:00AF, then 00AE, then 00AD; the country-5 routine starts one higher
 /                at 00B0), multiplies each whole coin it finds by that coin's credit value
-/                (00AB / 00AA / 00A9, and 00AC), banks it through sub_DD1C1 and keeps the
-/                remainder.
+/                (00AB / 00AA / 00A9, and 00AC), banks it through sub_DD1C1 and keeps the remainder.
 /
 /  Cross-check the pulse counts against the manual's coin table and the unit is obvious:
 /
@@ -2281,18 +2330,15 @@ static void iomoon_ball_update(int balls, int shoot, int drain) {
 /
 /  The BURST TIMING is the Z80's, not a guess.  sub_0D15 debounces the contact for 0x32
 /  ticks of the C046 counter before it sends the code, and that counter is stepped from the
-/  Z80's own periodic interrupt (SLEIC2 runs it at 8000000/8192 = 977 Hz), so a pulse must
-/  hold the contact for 50/977 = 51 ms = about 3.1 frames.  Measured on this driver: a
-/  3-frame hold sends NOTHING and a 4-frame hold sends every pulse, so 5 frames closed is
-/  the shortest hold with real margin.  The contact must then open again before the next
-/  pulse, because sub_33FA latches the input into the C0F8 mask on the way out and
-/  input_port03_read only clears it once the contact physically opens (F5: one press, one
-/  code, no auto-repeat); 3 frames open is comfortably enough.  8 frames per pulse is also
-/  about what the mechanism itself does -- a validator of this class pulses at roughly
-/  100 ms -- so the coin sound and the credit ticking up land at a plausible rate */
+/  Z80's own periodic interrupt (SLEIC2 runs it at 2000000/4096 = 488.28 Hz), so a pulse
+/  must hold the contact for at least 50/488.28 = 102 ms, and 10 frames is the shortest
+/  hold with a frame of margin over the measured threshold.  The contact must then open
+/  again before the next pulse, because sub_33FA latches the input into the C0F8 mask on
+/  the way out and input_port03_read only clears it once the contact physically opens
+/  (F5: one press, one code, no auto-repeat); 3 frames open is comfortably enough */
 #define IOMOON_COIN_VALUES 0x4146d /* 413C:00AD, the three coin values in PULSES (00AF is
                                     * the largest; country 5 has a fourth at 00B0)  */
-#define IOMOON_COIN_HOLD   5       /* frames the contact is closed, per pulse       */
+#define IOMOON_COIN_HOLD   10      /* frames the contact is closed, per pulse       */
 #define IOMOON_COIN_GAP    3       /* frames it is open again before the next pulse */
 #define IOMOON_CAB_COIN    0x0200  /* the COIN bit of the cabinet inport (sleic.h)  */
 
@@ -2338,43 +2384,39 @@ static SWITCH_UPDATE(SLEIC2) {
     const UINT16 in = inports[CORE_COREINPORT];
     /* The ball trough's three inputs, acted on after the key loop below.  "Balls" and
      * "Shoot Ball" are the standard simulator port the game already carries (sim.h,
-     * SLEIC2_INPUT_PORTS_START); "Drain ball in play" is Io Moon's own cabinet bit
+     * SLEIC2_SIM_INPUT_PORTS_START); "Drain ball in play" is Io Moon's own cabinet bit
      * 0x1000 (sleic.h), which is how a run gets through a whole ball.  "Balls" is the
-     * opt-in: 0 (the DEFAULT) leaves the trough contacts to the frontend and makes the other two inert */
+     * opt-in: 0 leaves the trough contacts to the frontend and makes the other two inert */
     balls = SIM_BALLS(inports[CORE_SIMINPORT]);
     shoot = (inports[CORE_SIMINPORT] & SIM_SHOOTERKEY) ? 1 : 0;
     drain = (in & 0x1000) ? 1 : 0;
     /* Cabinet inputs -> swMatrix[9] = Z80 port 0x03, one bit per input.  The bit -> CODE map
-     * is exact (F5/F14, see iomoon_z80_read); the bit -> BUTTON map is fixed for four of the
-     * six by what the 80188 firmware does with each code - and for COIN and TILT that is the
-     * OPPOSITE of what this driver assumed until now.  Traced from the consuming code:
+     * is exact (F5/F14, see iomoon_z80_read); the bit -> BUTTON map is derived from what the
+     * 80188 firmware does with each code, and for COIN and TILT it comes out the OPPOSITE way
+     * round from the obvious reading - do not "correct" it back.  Traced from the consumers:
      *
      *   bit 5 -> COIN.  Code 0x32 is the one code the NMI does not queue: D000:0190 tests for
-     *            it and counts it in [4000:1144].  sub_D800A folds that into the pulse
-     *            accumulator 413C:00D5 and hands it to the per-country pricing routine
-     *            (sub_DCD9E / sub_DD03D, chosen on country byte [4000:1001]), which divides by
-     *            the coin values at 413C:00AD/00AE/00AF, multiplies by the credit values at
-     *            413C:00A9/00AA/00AB and banks the result via sub_DCFAB / sub_DD1C1.  A coin
-     *            validator emitting a pulse train per coin, and the only path in the ROM that
-     *            adds credits from a switch.  The award is nvstore_write_triple_83 (F10), the
-     *            running total cached in 413C:00D4, sub_D0B70(0x0A) the coin sound.  So the
-     *            bit is not driven from the key directly: one press is one COIN, and
-     *            iomoon_coin_update turns it into that coin's pulse train.
+     *            it and counts it in [4000:1144], sub_D800A folds that into the pulse
+     *            accumulator 413C:00D5, and the per-country pricing routine (sub_DCD9E /
+     *            sub_DD03D, chosen on country byte [4000:1001]) divides by the coin values at
+     *            413C:00AD-00AF, multiplies by the credit values at 413C:00A9-00AB and banks
+     *            the result via sub_DCFAB / sub_DD1C1 - the only path in the ROM that adds
+     *            credits from a switch.  So the bit is not driven from the key directly: one
+     *            press is one COIN, and iomoon_coin_update turns it into that coin's pulse
+     *            train (award nvstore_write_triple_83 / F10, coin sound sub_D0B70(0x0A)).
      *   bit 0 -> TILT ("falta").  Code 0x3E dispatches through the in-game table at CS:0527
-     *            (entry 48) to sub_D9EBB, which counts down [4134:0033] - loaded each ball
-     *            start from NVRAM byte 0x42 minus one (DBE17, DBF7F), the FALTA adjustment -
-     *            and on the last stops the music (fm_song_select(0)), clears both planes,
-     *            plays sound 0x0E and pushes driver-disable 0xF2.  The Z80's 3000-tick lockout
-     *            in sub_125B is the tilt debounce, not a coin lockout.  Bike Race puts tilt on
-     *            the same port-0x03 bit 0.
+     *            (entry 48) to sub_D9EBB, which counts down [4134:0033] - the FALTA adjustment,
+     *            reloaded each ball from NVRAM byte 0x42 minus one (DBE17, DBF7F) - and on the
+     *            last stops the music, clears both planes, plays sound 0x0E and pushes
+     *            driver-disable 0xF2.  The Z80's 3000-tick lockout in sub_125B is the tilt
+     *            debounce, not a coin lockout.  Bike Race uses the same port-0x03 bit 0.
      *   bit 1 -> TEST: code 0x3F opens the service menu (F14).
      *   bit 4 -> START: code 0x40 reaches sub_D8066, which refuses in attract, at 4 players
-     *            and on zero credits, then decrements the NVRAM credit triple and, on the
-     *            first player, calls sub_D8154 -> mode 3 -> the in-game song.
+     *            and on zero credits, then decrements the NVRAM credit triple.
      *   bits 3/2 -> left/right flipper: sub_1292 / sub_12D8 fire the port-0x85 coil pairs
      *            directly (sub_05C7 / sub_05ED), and Pin-Ball's verified map puts the left
      *            flipper on the first pair.  WHICH is left remains inferred; that they are the
-     *            flipper buttons is not.  Codes 0x41/0x42 are also the service menu's scroll
+     *            flipper buttons is not.  Codes 0x41/0x42 double as the service menu's scroll
      *            and select (sub_DD480 dispatch at DD501) */
     CORE_SETKEYSW(in >> 10, 0x01, 9); /* TILT   0x0400 -> bit0 (code 0x3E) */
     CORE_SETKEYSW(in >> 10, 0x02, 9); /* TEST   0x0800 -> bit1 (code 0x3F) */
@@ -2387,15 +2429,26 @@ static SWITCH_UPDATE(SLEIC2) {
     if (iomoon_coin_update(in)) coreGlobals.swMatrix[9] |=  0x20;
     else                        coreGlobals.swMatrix[9] &= ~0x20;
   }
-  for (i = 0; i < sizeof(iomoon_pf_keys)/sizeof(iomoon_pf_keys[0]); i++) {
-    if (keyboard_pressed(iomoon_pf_keys[i].key))
-      coreGlobals.swMatrix[iomoon_pf_keys[i].col] |=  iomoon_pf_keys[i].bit;
-    else
-      coreGlobals.swMatrix[iomoon_pf_keys[i].col] &= ~iomoon_pf_keys[i].bit;
+  /* One key per matrix position, so the service menu's CONTACTOS test can exercise
+   * all 48.  Live only when the simulator keys are switched OFF, which is the same
+   * condition core.c uses for its own row+column manual switch keys (Del toggles
+   * it, SIM_SWITCHKEY).  Without the gate these keys and the simulator's shot keys
+   * fight over the same letters */
+  if (!coreGlobals.simAvail || !inports || (inports[CORE_SIMINPORT] & SIM_SWITCHKEY)) {
+    for (i = 0; i < sizeof(iomoon_pf_keys)/sizeof(iomoon_pf_keys[0]); i++) {
+      if (keyboard_pressed(iomoon_pf_keys[i].key))
+        coreGlobals.swMatrix[iomoon_pf_keys[i].col] |=  iomoon_pf_keys[i].bit;
+      else
+        coreGlobals.swMatrix[iomoon_pf_keys[i].col] &= ~iomoon_pf_keys[i].bit;
+    }
   }
   /* After the key loop, because it ORs its four contacts in on top: a key held on one of
    * them is a contact stuck closed and the model must not override it */
   iomoon_ball_update(balls, shoot, drain);
+#ifdef DEBUG_SLEIC
+  /* Last, so the injections survive the COIN bit's else-branch clear above */
+  sleic_debug_switches(IOMOON_TROUGH_COL, IOMOON_TROUGH_BITS);
+#endif
 }
 
 /* Bike Race (SLEIC3) playfield-matrix test keys. The 40 matrix positions (Z80 codes
@@ -2483,7 +2536,7 @@ static SWITCH_UPDATE(SLEIC3) {
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 10, 0x01, 9); /* TILT(T) 0x400 -> bit0 (C17 tilt, code 0x32) */
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 10, 0x02, 9); /* TEST(7) 0x800 -> bit1 (C4 Test, code 0x33 = menu ENTER) */
     CORE_SETKEYSW(inports[CORE_COREINPORT] << 1,  0x04, 9); /* R-Shift 0x002 -> bit2 (C5 right flipper) */
-    CORE_SETKEYSW(inports[CORE_COREINPORT] << 3,  0x08, 9); /* L-Shift 0x001 -> bit3 (C1 left flipper)  */
+    CORE_SETKEYSW(inports[CORE_COREINPORT] << 3,  0x08, 9); /* L-Shift 0x001 -> bit3 (C1 left flipper) */
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 4,  0x10, 9); /* START   0x100 -> bit4 (C2) */
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 4,  0x20, 9); /* COIN    0x200 -> bit5 (C3) */
   }
@@ -2515,22 +2568,123 @@ static const struct { int key; UINT8 col; UINT8 bit; } sleic1_pf_keys[] = {
                      {KEYCODE_4_PAD,8,0x02},{KEYCODE_5_PAD,8,0x04},{KEYCODE_6_PAD,8,0x08}, /* comun7: C26,C22,C5 */
 };
 
+/*-------------------------------------------------------------------------------------
+/  Sleic Pin-Ball (SLEIC1) ball-exit model.
+/
+/  Active when "Balls" is non-zero and no simulator is registered; sleicpin ships
+/  "Balls" at 1, so it is active in a standalone build.  Under a frontend a table
+/  script owns the contacts, and the simAvail test below stands the model down;
+/  setting "Balls" to 0 also disables it, leaving C29 driven only by its matrix test key.
+/
+/  The trough here is a single contact --
+/  C29 Salida Bolas, comun 0 retorno 2, swMatrix[1] bit 2 -- and a single coil, bobina
+/  11 Bobina Salida Bolas on port 0x86 bit 6, fire routine sp04:0x032a, which sleic1_z80_write
+/  maps to locals.solenoids bit 10.  So the sequence the firmware runs can be followed exactly:
+/
+/    ball at the exit  ->  C29 closed
+/    coil 11 energised ->  kick countdown starts
+/    countdown expires ->  C29 opens, the ball is in play
+/    the drain key     ->  C29 closes again, ball back at the exit
+/
+/  The model holds no ball count: the trough is one contact, so the ball is either at
+/  the exit or in play.  The drain is the cabinet port's "Ball out of trough" key, which on
+/  this machine RETURNS the ball rather than taking one away -- the opposite polarity to
+/  Bike Race, where the same key lifts a ball off the ball-present optos.  The shared
+/  SLEIC_CABPORT label is worded for that machine; this comment is the one that applies here.
+/
+/  The model does not distinguish a coil fire during play from one in the service
+/  menu's BOBINAS coil test: either serves the ball.  atExit clears, nothing but a
+/  BACKSPACE press returns it, and a CONTACTOS run afterwards shows C29 open --
+/  which is what the same coil test does on the machine
+/-----------------------------------------------------------------------------------*/
+#define SLEIC1_TROUGH_COL  1     /* swMatrix index of Z80 comun 0                                */
+#define SLEIC1_TROUGH_BIT  0x04  /* retorno 2 = C29 Salida Bolas                                 */
+#define SLEIC1_SERVE_SOL   0x400 /* locals.solenoids bit 10 = bobina 11, port 0x86 bit 6         */
+#define SLEIC1_KICK_FRAMES 8     /* coil fires -> the ball has left the contact (~0.13 s);
+                                  * decremented on the arming frame too, so 8 means seven frames */
+
+/* Called from MACHINE_INIT. Also the whole of the model-off path, same as Io Moon's */
+static void sleic1_ball_reset(void) {
+  memset(&locals.spBall, 0, sizeof locals.spBall);
+}
+
+/* Called from SWITCH_UPDATE(SLEIC1) AFTER the playfield key loop, and it ORs its bit in
+ * rather than assigning it: a matrix test key held on C29 is a contact stuck closed,
+ * which is what the CONTACTOS self-test wants to see.
+ *
+ * balls = the simulator port's "Balls" setting; 0 disables the model.
+ * out   = the cabinet port's "Ball out of trough", which here RETURNS the ball */
+static void sleic1_ball_update(int balls, int out) {
+  if (balls <= 0) { sleic1_ball_reset(); return; }
+  if (coreGlobals.simAvail) { sleic1_ball_reset(); return; }
+
+  if (!locals.spBall.seeded) { /* the model comes up with the ball at the exit */
+    locals.spBall.seeded = 1;
+    locals.spBall.atExit = 1;
+  }
+
+  /* The firmware energised the serve coil while a ball was waiting: it is on its way */
+  if (locals.spBall.atExit && (locals.solenoids & SLEIC1_SERVE_SOL)
+      && !locals.spBall.kick)
+    locals.spBall.kick = SLEIC1_KICK_FRAMES;
+
+  if (locals.spBall.kick && --locals.spBall.kick == 0)
+    locals.spBall.atExit = 0;    /* clear of the contact, in play */
+
+  /* One press of the drain key returns one ball, so edge-detect it */
+  if (out && !locals.spBall.drainHeld) locals.spBall.atExit = 1;
+  locals.spBall.drainHeld = out ? 1 : 0;
+
+  if (locals.spBall.atExit)
+    coreGlobals.swMatrix[SLEIC1_TROUGH_COL] |= SLEIC1_TROUGH_BIT;
+}
+
+#ifdef DEBUG_SLEIC
+/* Dump the 8 KB of 80188 work RAM (physical 0, MRA_RAM) at each frame named in
+ * SLEIC_RAMAT, as <SLEIC_RAMDUMP>.<frame>.bin.  Diffing two dumps taken either side
+ * of an event locates the variables it changed */
+static void sleic1_ramdump(void) {
+  const char *pfx = getenv("SLEIC_RAMDUMP"), *at = getenv("SLEIC_RAMAT");
+  static int frame = 0;
+  char fn[512];
+  FILE *fp;
+  const char *p;
+  frame++;
+  if (!pfx || !at) return;
+  for (p = at; *p; ) {
+    const int f = strtol(p, (char **)&p, 10);
+    if (f == frame) {
+      snprintf(fn, sizeof fn, "%s.%06d.bin", pfx, frame);
+      if ((fp = fopen(fn, "wb"))) {
+        fwrite(memory_region(REGION_CPU1), 1, 0x2000, fp);
+        fclose(fp);
+      }
+    }
+    while (*p && *p != ',') p++;
+    if (*p == ',') p++;
+  }
+}
+#endif
+
 static SWITCH_UPDATE(SLEIC1) {
   unsigned i;
+  int balls = 0, out = 0;
+#ifdef DEBUG_SLEIC
+  sleic1_ramdump();
+#endif
   if (inports) {
+    balls = SIM_BALLS(inports[CORE_SIMINPORT]);
+    out   = (inports[CORE_COREINPORT] & 0x1000) ? 1 : 0;
     /* Cabinet/direct buttons on Z80 port 0x03 (swMatrix[9]).  port-0x03 bit -> code ->
      * contact CONFIRMED against the sp04 cabinet dispatcher (sub_0978/sub_09fe..0a70)
      * and the sp03 code handlers:
-     *   bit0 -> code 0x01 = C35 Pendulo de Falta (tilt): handler acts only in-game
-     *           ([0x103]!=0) with a warning counter.
-     *   bit1 -> code 0x02 = C36 Pulsador de Test: handler enters the service menu
-     *           (F000:567F sets the [0x4d1] menu-active flag).
+     *   bit0 -> code 0x01 = C35 Pendulo de Falta (tilt): handler acts only in-game ([0x103]!=0) with a warning counter.
+     *   bit1 -> code 0x02 = C36 Pulsador de Test: handler enters the service menu (F000:567F sets the [0x4d1] menu-active flag).
      *   bit2 -> code 0x03 = C32 Flipper Derecho: fires coil 03 (Flipper Der Fuerza).
      *   bit3 -> code 0x04 = C31 Flipper Izquierdo: fires coil 01 (Flipper Izq Fuerza).
      *   bit4 -> code 0x05 = C33 Pulsador Start (start key '1').
      *   bit5 -> code 0x06 = C34 Monedero / coin (coin key '5').
-     * (Flippers also fire their coils in real time; codes 0x03/0x04 are only sent in
-     * menu mode for navigation) */
+     * (Flippers also fire their coils in real time; codes 0x03/0x04 are only sent in menu mode for navigation) */
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 10, 0x01, 9); /* TILT  -> bit0 (C35 Falta)       */
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 10, 0x02, 9); /* TEST  -> bit1 (C36 Test)        */
     CORE_SETKEYSW(inports[CORE_COREINPORT] << 1,  0x04, 9); /* R-flip-> bit2 (C32 Flipper Der) */
@@ -2544,6 +2698,7 @@ static SWITCH_UPDATE(SLEIC1) {
     else
       coreGlobals.swMatrix[sleic1_pf_keys[i].col] &= ~sleic1_pf_keys[i].bit;
   }
+  sleic1_ball_update(balls, out);/* after the key loop: it ORs its bit in on top */
 #ifdef DEBUG_SLEIC
   sleic_debug_switches(1, 0x04); /* comun0 bit2 = C29 Salida Bolas (ball trough) */
 #endif
@@ -2646,11 +2801,8 @@ MACHINE_DRIVER_START(SLEIC2)
   // this map does not reference
   MDRV_NVRAM_HANDLER(SLEIC2)
 
-  // I/O Z80 periodic IRQ, ~977 Hz - not derived from the Z80's own clock but from the 8 MHz
-  // board crystal divided by 8192 in the IC20/IC21 (74LS393) + IC22 (74LS27) chain on the
-  // 16-bit board, delivered over J3, so it is written as 8000000/8192 to keep that visible.
-  // Both ROMs are silent on it, the source being external to each, so this is the board
-  // inventory's reading.  Replaces the inherited 2500000/2048 Bike Race figure.
+  // I/O Z80 periodic IRQ: ZCLK (2 MHz) clocks the free-running CD4040 at IC12, whose twelve
+  // outputs feed the IC13 13-input NAND, setting the IC14A/B /INT latch (sheet 011-030-02)
   //
   // The Z80 also gets its own port map: the J1 byte-port link to the 80188 (port 0x80 data
   // plus the port-0x81 strobes in, port 0x00 and the PCS1/PCS4 pair out) and the switch
@@ -2658,12 +2810,10 @@ MACHINE_DRIVER_START(SLEIC2)
   // on in selftest_wait_reset, and 0 for port 0x01, whose bit 1 every J1 send waits for -
   // either alone hangs the I/O board before it can announce itself.
   //
-  // REPLACE rather than MODIFY purely so the clock is stated: REPLACE sets type and clock and
-  // nothing else (driver.h), so map, ports and IRQ are unaffected - but MODIFY left the Z80
-  // silently on the base block's 2.5 MHz Bike Race figure, three lines under a comment about
-  // an 8 MHz crystal.  The value is unchanged; IOMOON_Z80_CLOCK is where it now lives
+  // REPLACE rather than MODIFY so the clock is stated: REPLACE sets type and clock and
+  // nothing else (driver.h), so map, ports and IRQ are unaffected
   MDRV_CPU_REPLACE("icpu", Z80, IOMOON_Z80_CLOCK)
-  MDRV_CPU_PERIODIC_INT(SLEIC_irq_z80, 8000000/8192.)
+  MDRV_CPU_PERIODIC_INT(SLEIC_irq_z80, 2000000/4096.)
   MDRV_CPU_PORTS(SLEIC2_Z80_readport, SLEIC2_Z80_writeport)
 
   // Sound: two chips, both driven by the 80188 through the PACS block, and NO third device.

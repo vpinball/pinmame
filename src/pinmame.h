@@ -57,6 +57,7 @@
 #define HAS_I8752    1
 #define HAS_TMS7000  1
 #define HAS_AT91     1
+#define HAS_PIC32MX  1
 #define HAS_ARM7     1
 #define HAS_CDP1802  1
 #define HAS_TMS9980  1
@@ -74,7 +75,9 @@
 #else
 #define HAS_YM2151_YMFM 1
 #endif // mingw
-//#define HAS_YM2151_NUKED 1
+//#define HAS_YM2151_NUKED 1 // has speed issues (at least) with DE and WPC, too 'fast'
+// nukeykt's YM2151-LLE. NOTE: that core is GPLv2
+//#define HAS_YM2151_LLE 1   // WPC sounds mostly great, DE keeps resetting
 #define HAS_HC55516    1
 #define HAS_MC3417     1
 #define HAS_SAMPLES    1
@@ -114,7 +117,11 @@
 #define HAS_YMF262_YMFM 1
 #endif // mingw
 #define HAS_MEA8000    1
+// two SAA1099 cores, pick exactly one: the MAME derived one (MAME timing, libVGM's
+// bipolar mixer), or Valley Bell's, which was written against NewRisingSun's recordings
+// from real hardware. Affects ebalchmb, cobrapb and comeback
 #define HAS_SAA1099    1
+//#define HAS_SAA1099_VB 1
 #define HAS_QSOUND     1
 #endif /* _MSC_VER */
 

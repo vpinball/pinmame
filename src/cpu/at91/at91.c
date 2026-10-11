@@ -118,12 +118,19 @@ static void timer_trigger_event(int timer_num);
 #define WRITE16(addr,data)	at91_cpu_write16(addr,data)
 #define READ32(addr)		at91_cpu_read32(addr)
 #define WRITE32(addr,data)	at91_cpu_write32(addr,data)
+// Function-pointer forms of the accessors above, for the legacy JIT's generated code
+// (jit_set_mem_callbacks).  These MUST be the at91_* variants, exactly like the READ*/WRITE*
+// macros: only those route addresses >= 0xFFC00000 to internal_read/internal_write for the
+// on-chip peripherals.  The 8- and 16-bit pointers used to name the generic arm7_cpu_*
+// functions, so byte and halfword accesses to a peripheral register read/wrote raw memory
+// when they came from translated code but went through the peripheral handler when
+// interpreted - the JIT and the interpreter disagreed about live hardware registers.
 #define PTR_READ32			&at91_cpu_read32
 #define PTR_WRITE32			&at91_cpu_write32
-#define PTR_READ16			&arm7_cpu_read16
-#define PTR_WRITE16			&arm7_cpu_write16
-#define PTR_READ8			&arm7_cpu_read8
-#define PTR_WRITE8			&arm7_cpu_write8
+#define PTR_READ16			&at91_cpu_read16
+#define PTR_WRITE16			&at91_cpu_write16
+#define PTR_READ8			&at91_cpu_read8
+#define PTR_WRITE8			&at91_cpu_write8
 
 /* Macros that need to be defined according to the cpu implementation specific need */
 #define ARMREG(reg)			at91.sArmRegister[reg]

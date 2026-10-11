@@ -1435,6 +1435,14 @@ SOURCE=.\src\input.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\keyscript.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\keyscript.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\legacy.h
 # End Source File
 # Begin Source File
@@ -2180,6 +2188,14 @@ SOURCE=.\src\wpc\sims\se\prelim\monopoly.c
 # End Source File
 # End Group
 # End Group
+# Begin Group "sleic"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\wpc\sims\sleic\iomoon.c
+# End Source File
+# End Group
 # End Group
 # Begin Source File
 
@@ -2612,6 +2628,22 @@ SOURCE=.\src\wpc\rfrancogames.c
 # Begin Source File
 
 SOURCE=.\src\wpc\rotation.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\recel.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\recelgames.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\recelsnd.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\recel.h
 # End Source File
 # Begin Source File
 

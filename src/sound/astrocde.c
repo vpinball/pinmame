@@ -1,6 +1,6 @@
 /***********************************************************
 
-     Astrocade custom 'IO' chip sound chip driver
+	 Astrocade custom 'IO' chip sound chip driver
 	 Frank Palazzolo
 
 	 Portions copied from the Pokey emulator by Ron Fries
@@ -82,7 +82,7 @@ static void astrocade_update(int num, int newpos)
 		int data, data16;
 		if (current_count_N[i] == 0)
 		{
-			randbyte = rand() & 0xff;
+			randbyte = (rand() >> 7) & 0xff;
 		}
 
 		current_size_V[num] = 32768*vibrato_speed[num]/div_by_N_factor;
@@ -113,7 +113,7 @@ static void astrocade_update(int num, int newpos)
 
 		if (noise_am[num])
 		{
-			randbit = rand() & 1;
+			randbit = (rand() >> 14) & 1;
 			data = data + randbit*vol_noise4[num];
 		}
 
@@ -180,6 +180,15 @@ int astrocade_sh_start(const struct MachineSound *msound)
 	emulation_sample_rate = (int)(emulation_sample_rate_d + 0.5);
 
 	channel = mixer_allocate_channels(intf->num,intf->volume);
+
+	/* mixer_allocate_channels() defaults to the legacy point sampler, which exists for the
+	   drivers that retune a channel on the fly or loop just a handful of samples (old Sterns,
+	   Bally -32, Game Plan, Hankin).  Neither applies here: whole buffers go out at a fixed emulation_sample_rate of half
+	   Machine->sample_rate, so the legacy path was only duplicating every sample on the way
+	   back up.  Ask for the real resampler instead, as the streams system does, too */
+	for (i = 0;i < intf->num;i++)
+		mixer_set_channel_legacy_resample(channel+i,0);
+
 	/* reserve buffer */
 	for (i = 0;i < intf->num;i++)
 	{

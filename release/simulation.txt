@@ -84,3 +84,43 @@ Cirqus Voltaire (CV)
 On startup, CV will test the ringmaster and it will not go into attract mode
 if the test fails. One way to bypass it, is to disable the ringmaster
 (adjustment A2 30).
+
+Io Moon (iomoon)
+----------------
+Sleic's 1996 machine.  Three balls.  The simulator keys are:
+
+  +-    Left/Right Shooter (the manual's Expulsor 1/2)
+  +R    Ramp 1 / Ramp 2
+  +H    Hole 1 / Hole 2 (Tragabolas 1/2)
+  +B    Bull Eye 1 / Bull Eye 2 (Diana 1/2)
+  WEDFG Bumpers 1-5
+  J     Jupiter entrance
+  I     Inner Bank (Fondo Bancada)
+  O     Lane 10, the orbit shot
+  K     Lane 11 (Autodrop)
+  ZXCVN Drop targets Bank A-E
+  YUAS  Lanes 1-4
+  MLDot Lanes 5-7   (M, L, comma)
+  ./    Lanes 8-9   (period, slash)
+  Q     Drain
+  Space Plunge the served ball (the cabinet has a manual shooter rod)
+  Down  Follow the next ball -- press it once after each drain, or the shot keys
+        go on being refused because the cursor still points at the drained ball
+
+Del switches between these keys and the per-contact matrix test keys, which is
+how the service menu's CONTACTOS test is driven; the matrix keys are listed in
+sleic.c.  Those keys assign the whole matrix, so a Del round-trip also clears the
+drop targets.
+
+The drop targets otherwise only rise on ball start: the sim models the manual's
+rule that the bank resets at ball start and not again mid-ball, since the reset
+coil is on the driver expansion board, which no Z80 port is seen driving --
+the real drive path is open (F17). So a mode that needs the bank cannot be
+completed if targets were already down.
+
+Hole 2 and Jupiter's two ball locks free the ball themselves after five seconds.
+Hole 2 has no kicker at all -- the manual's coil list names one for Tragabolas 1
+only -- and Jupiter's release coil is not seen firing in ordinary play, which
+matches manual 3.3.7: without every ORBITS lamp lit Jupiter holds no ball.  So a
+ball passing straight through either of them is the ordinary case, not a fault.
+Hole 1 is different: it has a real coil and waits for it.

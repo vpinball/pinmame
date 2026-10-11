@@ -2160,10 +2160,6 @@ void OPM_Clock(opm_t* const chip, int16_t * const output, bool * const sh1, bool
 
 void OPM_Write(opm_t* const chip, const uint8_t port, const uint8_t data)
 {
-#ifdef PINMAME
-    vgm_write(chip->vgm_idx, 0x00, port, data);
-#endif
-
     chip->write_data = data;
     if (chip->ic)
     {
@@ -2171,10 +2167,20 @@ void OPM_Write(opm_t* const chip, const uint8_t port, const uint8_t data)
     }
     if (port & 0x01)
     {
+#ifdef PINMAME
+        /* VGM wants (register, data) pairs, but port here is only 0 = address / 1 = data,
+           and mode_address is not latched until the next OPM_Clock - so pair the data byte
+           with the address byte we saw go past. Logging on the data write also keeps the
+           buffered writes in OPM_WriteBuffered in order */
+        vgm_write(chip->vgm_idx, 0x00, chip->vgm_lastreg, data);
+#endif
         chip->write_d = 1;
     }
     else
     {
+#ifdef PINMAME
+        chip->vgm_lastreg = data;
+#endif
         chip->write_a = 1;
     }
 }

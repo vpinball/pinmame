@@ -637,7 +637,7 @@ static core_tGameData harlGameData = {
 static void init_harl(void) {
   core_gameData = &harlGameData;
   /* initialize random seed: */
-  srand ( (unsigned int)time(NULL) );
+  srand ( (unsigned int)rtc_now() );
 }
 
 

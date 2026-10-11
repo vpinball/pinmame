@@ -586,10 +586,10 @@ INPUT_PORTS_START(afv)
   PORT_START /* 0 */ \
     /* These go into column 0 */ \
     COREPORT_BIT(     0x0001, "Coin Drop",      KEYCODE_5) \
-    COREPORT_BIT(     0x0010, "Enter",          KEYCODE_7) \
-    COREPORT_BIT(     0x0020, "Up",             KEYCODE_8) \
-    COREPORT_BIT(     0x0040, "Down",           KEYCODE_9) \
-    COREPORT_BIT(     0x0080, "Escape",         KEYCODE_0) \
+    COREPORT_BIT(     0x0010, "Escape",         KEYCODE_7) \
+    COREPORT_BIT(     0x0020, "Down",           KEYCODE_8) \
+    COREPORT_BIT(     0x0040, "Up",             KEYCODE_9) \
+    COREPORT_BIT(     0x0080, "Enter",          KEYCODE_0) \
     /* Common switches */ \
     COREPORT_BITTOG(  0x0100, "Coin Door",      KEYCODE_END)  \
     COREPORT_BIT   (  0x0200, "Punch Button",   KEYCODE_1)  \

@@ -35,7 +35,7 @@
 
 static struct {
   UINT8 sndCmd;
-  int clockDiv, initDone, fifoSize, timerCnt, trg3;
+  int clockDiv, initDone, fifoSize, timerCnt, trg3, bank;
   UINT8 fifo[16];
 } sndlocals;
 
@@ -82,6 +82,8 @@ static void init(void) {
     sndlocals.initDone = 1;
     sndlocals.clockDiv = 1;
     sndlocals.sndCmd = 0xff; // pulled high if no data present
+    sndlocals.bank = 3; // banking lines are pulled high
+    cpu_setbank(1, memory_region(REGION_USER1) + 0x8000 * sndlocals.bank);
     z80ctc_init(&ctc_intf);
   }
 }
@@ -150,10 +152,9 @@ const struct sndbrdIntf zsuIntf = {
 };
 
 static WRITE_HANDLER(ay8910_0_a_w) {
-  static int bank;
-  if ((data & 3) != bank) {
-    bank = data & 3;
-    cpu_setbank(1, memory_region(REGION_USER1) + 0x8000 * bank);
+  if ((data & 3) != sndlocals.bank) {
+    sndlocals.bank = data & 3;
+    cpu_setbank(1, memory_region(REGION_USER1) + 0x8000 * sndlocals.bank);
   }
 }
 

@@ -644,7 +644,7 @@ static core_tGameData nggGameData = {
 #define NGG_SPEED 48
 
 static mech_tInitData mechnggWheel = {
-	-sWheelRev, -sWheelFwd, MECH_CIRCLE | MECH_LINEAR | MECH_TWODIRSOL | MECH_FAST | MECH_ACC(48) | MECH_RET(6),12 * NGG_WHEELRES,96 * NGG_WHEELRES,
+	-sWheelRev, -sWheelFwd, MECH_CIRCLE | MECH_LINEAR | MECH_TWODIRSOL | MECH_FAST | MECH_ACC(48) | MECH_RET(6),12 * NGG_WHEELRES,64 * NGG_WHEELRES,
 	{ { swInnerWheel, (MARKER_POS_START-1)*NGG_WHEELRES, (MARKER_POS_END+1)*NGG_WHEELRES},
 	{ swInnerWheel, (0)*NGG_WHEELRES, ((MARKER_POS_END-64) + 1)*NGG_WHEELRES},
 	{ swOuterWheel,0  * NGG_WHEELRES,1  * NGG_WHEELRES }, 

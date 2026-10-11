@@ -166,6 +166,7 @@ typedef struct {
   void (*drawStatic)(BMTYPE **line);     /* draw game specific static data */
   int manShooter; /* true if a manual shooter should be simulated */
   int (*keyCond)(int cond, int ballState, int *inports); /* advanced key conditions */
+  int autoBall;   /* true: while the selected ball is off the playfield, the keys move the first ball on it; one press moves one ball */
 } sim_tSimData;
 
 /*-----------------------------

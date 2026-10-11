@@ -460,7 +460,7 @@ typedef struct {
 
 typedef void (*core_tPhysOutputIntegrator)(const double, const int, const int, const int);
 
-#define FLIP_BUFFER_SIZE 32               /* Number of state considered for PWM integration. Must be even (and should a power of 2 for performance reason) */
+#define FLIP_BUFFER_SIZE 32               /* Number of flips kept for PWM integration. Must be a power of 2 (flip positions are free running counters) */
 typedef struct {
    int type;                              /* Type of modulation from CORE_MODOUT_ definitions */
    float value;                           /* Last computed output main physical characteristic (relative brightness for bulbs, strength for solenoids,...) */
@@ -486,11 +486,16 @@ typedef struct {
          int fastOn;
          double lastFlipTimestamp;
          float switchDownLatency;
+         float onValue;                   /* value while on: 1, or a drive strength the driver sets (Capcom flippers) */
       } sol; // Physical model of a solenoid
    } state;
    double flipTimeStamps[FLIP_BUFFER_SIZE];
-   unsigned int flipBufferPos;
-   unsigned int lastIntegrationFlipPos;
+   unsigned int flipBufferPos;            /* Writer: free running flip count; parity is the binary state, % FLIP_BUFFER_SIZE the buffer index */
+   unsigned int flipSeq;                  /* Writer: odd while a flip is being recorded */
+   double onTime;                         /* Writer: total ON time up to the last flip */
+   unsigned int lastIntegrationFlipPos;   /* Reader: last integrated flip */
+   double readTime;                       /* Reader: time of the last integration */
+   double readOnTime;                     /* Reader: total ON time up to readTime */
 } core_tPhysicOutput;
 
 #ifdef LSB_FIRST
@@ -608,6 +613,7 @@ extern void core_getAllPhysicSols(float* const state);
 
 /*-- AC sync and PWM integration --*/
 extern void core_update_pwm_outputs(const int startIndex, const int count);
+extern void core_update_pwm_output_sol_2_state(const double now, const int index, const int isFlip, const int state);
 INLINE void core_update_pwm_gis(void) { if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_GI)) core_update_pwm_outputs(CORE_MODOUT_GI0, coreGlobals.nGI); }
 INLINE void core_update_pwm_solenoids(void) { if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) core_update_pwm_outputs(CORE_MODOUT_SOL0, coreGlobals.nSolenoids); }
 INLINE void core_update_pwm_segments(void) { if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS)) core_update_pwm_outputs(CORE_MODOUT_SEG0, coreGlobals.nAlphaSegs); }
@@ -634,6 +640,7 @@ INLINE void core_zero_cross(void) { coreGlobals.lastACPositiveZeroCrossTimeStamp
 #define CORE_DMD_PWM_FILTER_ALVG2                7
 #define CORE_DMD_PWM_FILTER_CAPCOM_128x32        8
 #define CORE_DMD_PWM_FILTER_CAPCOM_256x64        9
+#define CORE_DMD_PWM_FILTER_PINHECK_16           10
 
 // note that the following are only used to support the pre-PWM legacy path (e.g. for old colorizations)
 #define CORE_DMD_PWM_COMBINER_GTS3_4C_A          0
@@ -646,6 +653,7 @@ INLINE void core_zero_cross(void) { coreGlobals.lastACPositiveZeroCrossTimeStamp
 #define CORE_DMD_PWM_COMBINER_SUM_4              7
 #define CORE_DMD_PWM_COMBINER_SUM_1_2_1          8
 #define CORE_DMD_PWM_COMBINER_1                  9
+#define CORE_DMD_PWM_COMBINER_SUM_16             10
 
 #define CORE_DMD_PWM_PREINTEGRATED_LINEAR_4  0x100
 #define CORE_DMD_PWM_PREINTEGRATED_SAM       0x101

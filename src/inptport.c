@@ -11,8 +11,10 @@ TODO:	remove the 1 analog device per port limitation
 ***************************************************************************/
 
 #include <math.h>
+#include <ctype.h>
 #include "driver.h"
 #include "config.h"
+#include "keyscript.h"
 
 #ifdef MESS
 #include "inputx.h"
@@ -1615,6 +1617,242 @@ static void save_default_keys(void)
 }
 
 
+#ifdef PINMAME
+/***************************************************************************
+
+	Command-line DIP switch overrides: -dip "<DIP switch name>=<setting>"
+
+***************************************************************************/
+
+#define MAX_DIP_OVERRIDES 16
+
+/* never freed: every run in the process applies them */
+static struct { char *spec; int priority; } dip_overrides[MAX_DIP_OVERRIDES];
+static int dip_override_count;
+
+/* case-insensitive compare of a driver string against arg[0..len),
+   leading and trailing whitespace ignored on both sides */
+static int dip_name_matches(const char *name, const char *arg, size_t len)
+{
+	size_t i;
+
+	if (!name) return 0;
+	while (len && isspace((UINT8)*arg)) { arg++; len--; }
+	while (len && isspace((UINT8)arg[len-1])) len--;
+	while (isspace((UINT8)*name)) name++;
+	for (i = 0; i < len; i++)
+		if (!name[i] || tolower((UINT8)name[i]) != tolower((UINT8)arg[i]))
+			return 0;
+	while (isspace((UINT8)name[i])) i++;
+	return name[i] == 0;
+}
+
+/* the setting after in, which is either a DIPSWITCH_NAME or one of its
+   settings; PORT_SERVICE puts an IPT_EXTENSION between the two */
+static const struct InputPort *dip_next_setting(const struct InputPort *in)
+{
+	in++;
+	while ((in->type & ~IPF_MASK) == IPT_EXTENSION) in++;
+	return ((in->type & ~IPF_MASK) == IPT_DIPSWITCH_SETTING) ? in : NULL;
+}
+
+/* number of DIP switches called arg[0..len); the nth (1-based) in *found, or NULL */
+static int dip_find(const char *arg, size_t len, int nth, struct InputPort **found)
+{
+	struct InputPort *in;
+	int n = 0;
+
+	*found = NULL;
+	for (in = Machine->input_ports; in->type != IPT_END; in++)
+		if ((in->type & ~IPF_MASK) == IPT_DIPSWITCH_NAME &&
+			dip_name_matches(input_port_name(in), arg, len) && ++n == nth)
+			*found = in;
+	return n;
+}
+
+/* a shared name is listed as "<name>#<n>", the form -dip accepts for it */
+static void dip_list_names(void)
+{
+	struct InputPort *in, *prev, *unused;
+
+	fprintf(stderr, "       %s has these DIP switches:\n", Machine->gamedrv->name);
+	for (in = Machine->input_ports; in->type != IPT_END; in++)
+		if ((in->type & ~IPF_MASK) == IPT_DIPSWITCH_NAME && input_port_name(in))
+		{
+			const char *name = input_port_name(in);
+			int nth = 1;
+
+			if (dip_find(name, strlen(name), 0, &unused) < 2)
+			{
+				fprintf(stderr, "         %s\n", name);
+				continue;
+			}
+			for (prev = Machine->input_ports; prev != in; prev++)
+				if ((prev->type & ~IPF_MASK) == IPT_DIPSWITCH_NAME &&
+					dip_name_matches(input_port_name(prev), name, strlen(name)))
+					nth++;
+			fprintf(stderr, "         %s#%d\n", name, nth);
+		}
+}
+
+static void dip_list_settings(const struct InputPort *dip)
+{
+	const struct InputPort *in;
+
+	fprintf(stderr, "       \"%s\" has these settings:\n", input_port_name(dip));
+	for (in = dip_next_setting(dip); in; in = dip_next_setting(in))
+		fprintf(stderr, "         %-24s 0x%04x\n",
+				input_port_name(in) ? input_port_name(in) : "(unnamed)",
+				in->default_value & dip->mask);
+}
+
+static int dip_override_one(const char *spec)
+{
+	const char *eq = strchr(spec, '=');
+	const char *value, *p, *hash = NULL;
+	struct InputPort *dip;
+	const struct InputPort *set;
+	char *end;
+	long numeric;
+	size_t len;
+	int count, nth = 0;
+
+	if (!eq)
+	{
+		fprintf(stderr, "error: -dip \"%s\": expected <DIP switch name>=<setting>\n", spec);
+		return -1;
+	}
+	value = eq + 1;
+	len = eq - spec;
+
+	count = dip_find(spec, len, 1, &dip);
+
+	/* "<name>#<n>": the nth DIP switch called <name>, unless one is called that in full */
+	for (p = spec; p < eq; p++)
+		if (*p == '#') hash = p;
+	if (!count && hash && hash != spec)
+	{
+		nth = (int)strtol(hash + 1, &end, 10);
+		while (end < eq && isspace((UINT8)*end)) end++;
+		if (end == eq && end != hash + 1 && nth > 0)
+		{
+			len = hash - spec;
+			count = dip_find(spec, len, nth, &dip);
+		}
+		else
+			nth = 0;
+	}
+
+	if (!count)
+	{
+		fprintf(stderr, "error: -dip \"%s\": no DIP switch called \"%.*s\"\n",
+				spec, (int)(eq - spec), spec);
+		dip_list_names();
+		return -1;
+	}
+	if (!dip)
+	{
+		fprintf(stderr, "error: -dip \"%s\": only %d DIP switch%s called \"%.*s\"\n",
+				spec, count, count == 1 ? " is" : "es are", (int)len, spec);
+		dip_list_names();
+		return -1;
+	}
+	if (count > 1 && !nth)
+	{
+		fprintf(stderr, "error: -dip \"%s\": %d DIP switches are called \"%.*s\", "
+				"pick one with \"%.*s#1\" to \"%.*s#%d\"\n",
+				spec, count, (int)len, spec, (int)len, spec, (int)len, spec, count);
+		dip_list_names();
+		return -1;
+	}
+
+	for (set = dip_next_setting(dip); set; set = dip_next_setting(set))
+		if (dip_name_matches(input_port_name(set), value, strlen(value)))
+		{
+			dip->default_value = set->default_value & dip->mask;
+			fprintf(stderr, "dip: %s = %s (0x%04x)\n",
+					input_port_name(dip), input_port_name(set), dip->default_value);
+			return 0;
+		}
+
+	numeric = strtol(value, &end, 0);
+	while (isspace((UINT8)*end)) end++;
+	if (end != value && *end == 0)
+	{
+		if ((unsigned long)numeric & ~(unsigned long)dip->mask)
+		{
+			fprintf(stderr, "error: -dip \"%s\": %s has bits outside \"%s\"'s mask 0x%04x\n",
+					spec, value, input_port_name(dip), dip->mask);
+			dip_list_settings(dip);
+			return -1;
+		}
+		dip->default_value = (UINT16)numeric;
+		fprintf(stderr, "dip: %s = 0x%04x\n", input_port_name(dip), dip->default_value);
+		return 0;
+	}
+
+	fprintf(stderr, "error: -dip \"%s\": \"%s\" is not a setting of \"%s\"\n",
+			spec, value, input_port_name(dip));
+	dip_list_settings(dip);
+	return -1;
+}
+
+int dip_override_add(const char *spec, int priority)
+{
+	char *copy;
+
+	if (!spec || strchr(spec, '=') == NULL || strchr(spec, '=') == spec)
+	{
+		fprintf(stderr, "error: -dip \"%s\": expected <DIP switch name>=<setting>\n",
+				spec ? spec : "");
+		return -1;
+	}
+	if (dip_override_count >= MAX_DIP_OVERRIDES)
+	{
+		fprintf(stderr, "error: -dip \"%s\": more than %d given\n", spec, MAX_DIP_OVERRIDES);
+		return -1;
+	}
+	copy = malloc(strlen(spec) + 1);
+	if (!copy)
+	{
+		fprintf(stderr, "error: -dip \"%s\": out of memory\n", spec);
+		return -1;
+	}
+	strcpy(copy, spec);
+	dip_overrides[dip_override_count].spec = copy;
+	dip_overrides[dip_override_count].priority = priority;
+	dip_override_count++;
+	return 0;
+}
+
+int dip_override_apply(void)
+{
+	int i, p, lo, hi, err = 0;
+
+	if (!dip_override_count)
+		return 0;
+	if (Machine->input_ports == NULL)
+	{
+		fprintf(stderr, "error: -dip: %s has no input ports\n", Machine->gamedrv->name);
+		return -1;
+	}
+
+	/* lowest rc priority first, so for the same DIP switch the command line beats an ini; equal priorities in the order given */
+	lo = hi = dip_overrides[0].priority;
+	for (i = 1; i < dip_override_count; i++)
+	{
+		if (dip_overrides[i].priority < lo) lo = dip_overrides[i].priority;
+		if (dip_overrides[i].priority > hi) hi = dip_overrides[i].priority;
+	}
+	for (p = lo; p <= hi; p++)
+		for (i = 0; i < dip_override_count; i++)
+			if (dip_overrides[i].priority == p && dip_override_one(dip_overrides[i].spec))
+				err = -1;
+	return err;
+}
+#endif /* PINMAME */
+
+
 int load_input_port_settings(void)
 {
 	config_file *cfg;
@@ -2381,7 +2619,7 @@ ScanJoysticks( struct InputPort *in )
 				 *
 				 * For now, just resolve randomly.
 				 */
-				if( rand()&1 )
+				if((rand() >> 14) & 1)
 				{
 					mJoy4Way[i] &= 0x3; /* eliminate horizontal component */
 				}
@@ -2408,6 +2646,7 @@ void update_input_ports(void)
 	int player;
 #endif /* MAME_NET */
 
+	keyscript_tick();
 
 profiler_mark(PROFILER_INPUT);
 
@@ -2959,6 +3198,7 @@ void seq_set_string(InputSeq* a, const char *buf)
 	char *lbuf;
 	char *arg;
 	int j;
+	int dropped;
 	struct ik *pik;
 
 	// create a locale buffer to be parsed by strtok
@@ -2972,6 +3212,7 @@ void seq_set_string(InputSeq* a, const char *buf)
 
 	arg = strtok(lbuf, " \t\r\n");
 	j = 0;
+	dropped = 0;
 	while( arg != NULL )
 	{
 		int found = 0;
@@ -2985,8 +3226,8 @@ void seq_set_string(InputSeq* a, const char *buf)
 				// this entry is only valid if it is a KEYCODE
 				if (pik->type == IKT_STD)
 				{
-					(*a)[j] = pik->val;
-					j++;
+					if (j < SEQ_MAX) { (*a)[j] = pik->val; j++; }
+					else if (!dropped) { logerror("seq_set_string: sequence longer than %d tokens, rest dropped\n", SEQ_MAX); dropped = 1; }
 					found = 1;
 				}
 			}
@@ -3004,27 +3245,27 @@ void seq_set_string(InputSeq* a, const char *buf)
 					switch (pik->type)
 					{
 						case IKT_STD:
-							(*a)[j] = pik->val;
-							j++;
+							if (j < SEQ_MAX) { (*a)[j] = pik->val; j++; }
+							else if (!dropped) { logerror("seq_set_string: sequence longer than %d tokens, rest dropped\n", SEQ_MAX); dropped = 1; }
 							found = 1;
 						break;
 
 						case IKT_OSD_KEY:
-							(*a)[j] = keyoscode_to_code(pik->val);
-							j++;
+							if (j < SEQ_MAX) { (*a)[j] = keyoscode_to_code(pik->val); j++; }
+							else if (!dropped) { logerror("seq_set_string: sequence longer than %d tokens, rest dropped\n", SEQ_MAX); dropped = 1; }
 							found = 1;
 						break;
 
 						case IKT_OSD_JOY:
-							(*a)[j] = joyoscode_to_code(pik->val);
-							j++;
+							if (j < SEQ_MAX) { (*a)[j] = joyoscode_to_code(pik->val); j++; }
+							else if (!dropped) { logerror("seq_set_string: sequence longer than %d tokens, rest dropped\n", SEQ_MAX); dropped = 1; }
 							found = 1;
 						break;
 
 #if defined(PINMAME) && defined(PROC_SUPPORT)
 						case IKT_OSD_PROC:
-							(*a)[j] = procoscode_to_code(pik->val);
-							j++;
+							if (j < SEQ_MAX) { (*a)[j] = procoscode_to_code(pik->val); j++; }
+							else if (!dropped) { logerror("seq_set_string: sequence longer than %d tokens, rest dropped\n", SEQ_MAX); dropped = 1; }
 							found = 1;
 						break;
 #endif /* PINMAME && PROC_SUPPORT */

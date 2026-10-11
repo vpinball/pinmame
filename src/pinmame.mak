@@ -62,6 +62,15 @@ DRVLIBS += $(PINOBJ)/gp.o $(PINOBJ)/gpsnd.o
 DRVLIBS += $(PINOBJ)/atari.o $(PINOBJ)/atarisnd.o
 DRVLIBS += $(PINOBJ)/taito.o $(PINOBJ)/taitos.o
 DRVLIBS += $(PINOBJ)/gts1.o
+DRVLIBS += $(PINOBJ)/recel.o $(PINOBJ)/recelsnd.o
+DRVLIBS += $(PINOBJ)/pinheck.o
+DRVLIBS += $(PINOBJ)/pinheck/dmd.o
+DRVLIBS += $(PINOBJ)/pinheck/hexload.o
+DRVLIBS += $(PINOBJ)/pinheck/board.o
+DRVLIBS += $(PINOBJ)/pinheck/audio.o
+DRVLIBS += $(PINOBJ)/pinheck/display.o
+DRVLIBS += $(PINOBJ)/pinheck/sd.o $(PINOBJ)/pinheck/vfat.o $(PINOBJ)/pinheck/zipsrc.o
+DRVLIBS += $(PINOBJ)/pinheck/prop.o $(PINOBJ)/pinheck/eeprom.o $(PINOBJ)/pinheck/rtc.o $(PINOBJ)/pinheck/bootldr.o $(OBJ)/cpu/p8x32a/p8x32a.o
 DRVLIBS += $(PINOBJ)/alvg.o $(PINOBJ)/alvgdmd.o $(PINOBJ)/alvgs.o
 DRVLIBS += $(PINOBJ)/bingo.o
 DRVLIBS += $(PINOBJ)/techno.o
@@ -127,6 +136,12 @@ PINGAMES += $(PINOBJ)/atarigames.o
 PINGAMES += $(PINOBJ)/taitogames.o
 PINGAMES += $(PINOBJ)/capgames.o
 PINGAMES += $(PINOBJ)/gts1games.o
+PINGAMES += $(PINOBJ)/recelgames.o
+PINGAMES += $(PINOBJ)/pinheckgames.o
+PINGAMES += $(PINOBJ)/sims/pinheck/amh.o
+PINGAMES += $(PINOBJ)/sims/pinheck/jetsons.o
+PINGAMES += $(PINOBJ)/sims/pinheck/rzspook.o
+PINGAMES += $(PINOBJ)/sims/pinheck/dominos.o
 PINGAMES += $(PINOBJ)/alvggames.o
 PINGAMES += $(PINOBJ)/spinbgames.o
 PINGAMES += $(PINOBJ)/mrgamegames.o
@@ -148,6 +163,7 @@ PINGAMES += $(PINOBJ)/sims/s11/full/dd.o
 PINGAMES += $(PINOBJ)/sims/se/prelim/monopoly.o
 PINGAMES += $(PINOBJ)/sims/se/prelim/elvis.o
 PINGAMES += $(PINOBJ)/sims/se/prelim/harley.o
+PINGAMES += $(PINOBJ)/sims/sleic/iomoon.o
 PINGAMES += $(PINOBJ)/sims/wpc/full/afm.o
 PINGAMES += $(PINOBJ)/sims/wpc/full/bop.o
 PINGAMES += $(PINOBJ)/sims/wpc/full/br.o
@@ -227,6 +243,7 @@ CPUS += TMS7000@
 CPUS += SCAMP@
 CPUS += ARM7@
 CPUS += AT91@
+CPUS += PIC32MX@
 # The MediaGX core lives in src/p2k/, so only register it when that is built - otherwise
 # cpuintrf's table references symbols nothing provides and a plain build fails to link.
 ifdef P2K
@@ -239,6 +256,7 @@ CPUS += COP420@
 
 SOUNDS += DAC@
 SOUNDS += YM2151_ALT@
+#SOUNDS += YM2151_LLE@  # GPLv2
 ifdef ISVER6300
 SOUNDS += YM2610@ #to avoid compile errors
 SOUNDS += YM2610B@
@@ -273,10 +291,13 @@ SOUNDS += Y8950@
 SOUNDS += ASTROCADE@
 SOUNDS += YMF262@
 SOUNDS += MEA8000@
+# pick one SAA1099 core (see pinmame.h)
 SOUNDS += SAA1099@
+#SOUNDS += SAA1099_VB@
 SOUNDS += QSOUND@
 
 OBJDIRS += $(PINOBJ)
+OBJDIRS += $(PINOBJ)/pinheck $(OBJ)/cpu/p8x32a
 OBJDIRS += $(PINOBJ)/sims
 OBJDIRS += $(PINOBJ)/sims/wpc
 OBJDIRS += $(PINOBJ)/sims/wpc/prelim
@@ -288,6 +309,8 @@ OBJDIRS += $(PINOBJ)/sims/s7
 OBJDIRS += $(PINOBJ)/sims/s7/full
 OBJDIRS += $(PINOBJ)/sims/se
 OBJDIRS += $(PINOBJ)/sims/se/prelim
+OBJDIRS += $(PINOBJ)/sims/sleic
+OBJDIRS += $(PINOBJ)/sims/pinheck
 
 $(OBJ)/allgames.a: $(PINGAMES)
 #

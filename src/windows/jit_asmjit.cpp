@@ -1145,6 +1145,9 @@ bool emit_arm_blocktransfer(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn
     const bool     L    = (insn >> 20) & 1u;
     const uint32_t Rn   = (insn >> 16) & 0xFu;
     const uint32_t list = insn & 0xFFFFu;
+    // S=1 also covers LDM ^ with the base in the list, where whether the load clobbers the
+    // base depends on the run-time mode (ldm_loads_base() in arm7core.c) -- another reason
+    // this must stay with the interpreter if the S cases are ever translated
     if (S)         return false; // user-mode banks / SPSR restore -> defer
     if (Rn == 15u) return false; // PC base -> defer
     int count = 0;
@@ -2042,7 +2045,7 @@ bool emit_arm_blocktransfer(a64::Assembler& a, const a64::Gp& ctx, uint32_t insn
     const bool     L    = (insn >> 20) & 1u;
     const uint32_t Rn   = (insn >> 16) & 0xFu;
     const uint32_t list = insn & 0xFFFFu;
-    if (S)         return false;
+    if (S)         return false; // see the x86 twin (incl. the ldm_loads_base note)
     if (Rn == 15u) return false;
     int count = 0;
     for (int i = 0; i < 16; ++i) if (list & (1u << i)) ++count;

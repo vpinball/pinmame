@@ -402,6 +402,7 @@ INLINE void pulx (void)
 /* $39 RTS inherent ----- */
 INLINE void rts( void )
 {
+	DEBUG_POP_CALL();
 	PULLWORD(pPC);
 	CHANGE_PC();
 }
@@ -415,6 +416,7 @@ INLINE void abx( void )
 /* $3b RTI inherent ##### */
 INLINE void rti( void )
 {
+	DEBUG_POP_CALL();
 	PULLBYTE(CC);
 	PULLBYTE(B);
 	PULLBYTE(A);
@@ -459,6 +461,7 @@ INLINE void wai( void )
 /* $3f SWI absolute indirect ----- */
 INLINE void swi( void )
 {
+	DEBUG_PUSH_CALL(m6800.ppc.w.l, RM16(0xfffa));
 	PUSHWORD(pPC);
 	PUSHWORD(pX);
 	PUSHBYTE(A);
@@ -1115,6 +1118,7 @@ INLINE void bsr( void )
 {
 	UINT8 t;
 	IMMBYTE(t);
+	DEBUG_PUSH_CALL(m6800.ppc.w.l, PC + SIGNED(t));
 	PUSHWORD(pPC);
 	PC += SIGNED(t);
 	CHANGE_PC();	 /* TS 971002 */
@@ -1279,6 +1283,7 @@ INLINE void cpx_di( void )
 INLINE void jsr_di( void )
 {
 	DIRECT;
+	DEBUG_PUSH_CALL(m6800.ppc.w.l, EA);
 	PUSHWORD(pPC);
     PC = EA;
 	CHANGE_PC();
@@ -1443,6 +1448,7 @@ INLINE void cpx_ix( void )
 INLINE void jsr_ix( void )
 {
 	INDEXED;
+	DEBUG_PUSH_CALL(m6800.ppc.w.l, EA);
 	PUSHWORD(pPC);
     PC = EA;
 	CHANGE_PC();
@@ -1607,6 +1613,7 @@ INLINE void cpx_ex( void )
 INLINE void jsr_ex( void )
 {
 	EXTENDED;
+	DEBUG_PUSH_CALL(m6800.ppc.w.l, EA);
 	PUSHWORD(pPC);
     PC = EA;
 	CHANGE_PC();

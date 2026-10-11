@@ -310,6 +310,9 @@ static MACHINE_INIT(se3) {
    coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
    core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
    core_set_pwm_output_type(CORE_MODOUT_SOL0 + 15 - 1, 2, CORE_MODOUT_PULSE); // Fake solenoids for fast flip
+   // Solenoids 33..36 (aux boards: magnets, ASTB): not fast on, which would write slot & 31 of solenoids2, the lower
+   // flipper bits; the driver sets 33..36 itself, at bits 4..7
+   core_set_pwm_output_type(CORE_MODOUT_SOL0 + 33 - 1, 4, CORE_MODOUT_LEGACY_SOL_2_STATE);
    coreGlobals.nGI = 1;
    core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_BULB_44_5_7V_AC);
    const struct GameDriver* rootDrv = Machine->gamedrv;
@@ -427,6 +430,9 @@ static MACHINE_INIT(se) {
   coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
   core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
   core_set_pwm_output_type(CORE_MODOUT_SOL0 + 15 - 1, 2, CORE_MODOUT_PULSE); // Fake solenoids for fast flip
+  // Solenoids 33..36 (aux boards: magnets, ASTB): not fast on, which would write slot & 31 of solenoids2, the lower
+  // flipper bits; the driver sets 33..36 itself, at bits 4..7
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 33 - 1, 4, CORE_MODOUT_LEGACY_SOL_2_STATE);
   coreGlobals.nGI = 1;
   core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_BULB_44_5_7V_AC);
   // Game specific hardware

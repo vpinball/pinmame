@@ -43,6 +43,7 @@ DRIVERNV(wldtexas)      // Wild Texas (Firepower II clone)
 // ALLIED LEISURE INC.
 // --------------------
 // early Allied solid-state games don't use a CPU!
+DRIVERNV(allied)        // System (not a game)
 DRIVERNV(suprpick)      // 01/77 Roy Clark Super Picker
 DRIVERNV(thndbolt)      // 11/77 Thunderbolt
 DRIVERNV(hoedown)       // 03/78 Hoe Down
@@ -510,6 +511,7 @@ DRIVER(trek,120)        //               01/92 Star Trek 25th Anniversary (1.20)
 DRIVER(trek,200)        //               04/92 Star Trek 25th Anniversary (2.00)
 DRIVER(trek,201)        //               04/92 Star Trek 25th Anniversary (2.01)
 DRIVER(trek,300)        //               04/20 Star Trek 25th Anniversary (3.00 unofficial MOD)
+DRIVER(trek,301)        //               09/26 Star Trek 25th Anniversary (3.01 unofficial MOD)
 DRIVER(hook,401p)       //Data East MPU: 11/91 Hook (4.01 with Prototype Sound)
 DRIVER(hook,400)        //               01/92 Hook (4.01, Display 4.00)
 DRIVER(hook,f401)       //               01/92 Hook (4.01, French Display 4.01)
@@ -596,6 +598,7 @@ DRIVERNV(erosone)       // 03/79 Eros One
 // GAME PLAN GAMES
 // -------------------
 /*Games below are Cocktail #110 Model*/
+DRIVERNV(gp_110)        //Model 110 (not a game)
 DRIVERNV(foxylady)      //Foxy Lady (May 1978)
 DRIVERNV(blvelvet)      //Black Velvet (May 1978)
 DRIVERNV(camlight)      //Camel Lights (May 1978)
@@ -629,6 +632,8 @@ DRIVERNV(cyclopes)      //Cyclopes (December 1985)
 // GOTTLIEB GAMES
 // ------------------
 //System 1
+DRIVERNV(gts1)          //System 1 (not a game)
+DRIVERNV(gts1s)         //System 1 with sound board (not a game)
 DRIVERNV(cleoptra)      //S1-409    11/77 Cleopatra
 DRIVERNV(sinbad)        //S1-412    05/78 Sinbad
 DRIVERNV(sinbadn)       //S1-412NO1 05/78 Sinbad (Norway)
@@ -648,6 +653,8 @@ DRIVERNV(roldisco)      //S1-440    02/80 Roller Disco
 DRIVERNV(astannie)      //S1-442    12/80 Asteroid Annie and the Aliens
 DRIVERNV(sys1test)      //S1-T      ??    System1 test prom
 //System 80
+DRIVERNV(gts80)         //System 80 with speech board (not a game)
+DRIVERNV(gts80s)        //System 80 (not a game)
 DRIVERNV(spidermn)      //S80-653:  05/80 Amazing Spider-Man, The
 DRIVERNV(spiderm7)      //          01/08 Amazing Spider-Man, The (7-digit conversion)
 DRIVERNV(panthera)      //S80-652:  06/80 Panthera
@@ -698,6 +705,8 @@ DRIVERNV(eclipse)       //S80-671:  ??/82 Eclipse
 DRIVERNV(eclipse7)      //          01/08 Eclipse (7-digit conversion)
 DRIVERNV(s80tst)        //S80: Text Fixture
 //System 80a
+DRIVERNV(gts80a)        //System 80A with speech board (not a game)
+DRIVERNV(gts80as)       //System 80A (not a game)
 DRIVERNV(dvlsdre)       //S80a-670: 08/82 Devil's Dare (Sound & Speech)
 DRIVERNV(dvlsdre2)      //                Devil's Dare (Sound Only)
 DRIVERNV(dvlsdrea)      //                Devil's Dare (Sound & Speech alternate set)
@@ -984,8 +993,6 @@ DRIVERNV(pp100)         //Pool Player v1.0 (2000)
 // ----------------
 // INDER GAMES
 // ----------------
-                        //Hot and Cold (1978)
-                        //Screech (1978)
 DRIVERNV(centauri)      //Centaur (1979)
 DRIVERNV(centaurj)      //Centaur (1979, alternate set)
 DRIVERNV(topazi)        //Topaz (1979)
@@ -1010,6 +1017,27 @@ DRIVERNV(larana2 )      //La Rana (1990, alternate set)
 DRIVERNV(atleta  )      //Atleta (1991)
 DRIVERNV(ind250cc)      //250 CC (1992)
 DRIVERNV(metalman)      //Metal Man (1992)
+
+// ----------------
+// RECEL GAMES
+// ----------------
+DRIVERNV(recel)         //System III (not a game)
+DRIVERNV(r_fairfght)    //Fair Fight (1978)
+DRIVERNV(r_mrevil)      //Mr. Evil (1978)
+DRIVERNV(r_mrdoom)      //Mr. Doom (1979)
+DRIVERNV(r_screech)     //Screech (1978)
+DRIVERNV(r_pokrplus)    //Poker Plus (1978)
+DRIVERNV(r_alaska)      //Alaska (1978)
+DRIVERNV(r_hotcold)     //Hot & Cold (1978)
+DRIVERNV(r_swash)       //Swash Buckler (1979)
+DRIVERNV(r_cavalier)    //Cavalier (1979)
+DRIVERNV(r_quijote)     //Don Quijote (1979)
+DRIVERNV(r_torneo)      //Torneo (1978)
+DRIVERNV(r_torneoa)     //Torneo (corrected dump, 3 balls)
+DRIVERNV(r_crzyrace)    //Crazy Race (1978)
+DRIVERNV(r_flipper)     //Flipper Game, The (1980)
+DRIVERNV(r_blackmag)    //Black Magic (1980)
+DRIVERNV(r_blackm4)     //Black Magic 4 (1980)
 
 // ----------------
 // JAC VAN HAM
@@ -1389,10 +1417,13 @@ DRIVER  (harl,l13)      //           10/99 Harley-Davidson (Sega, 1.03 Spanish)
 DRIVERNV(bikerace)      // 1992 - Bike Race
 DRIVERNV(bikerac2)      // 1992 - Bike Race (2-ball play)
 DRIVERNV(bikerac3)      // 1992 - Bike Race (V4.1)
+DRIVERNV(bikerc3f)      // 1992 - Bike Race (V4.1, press start MOD, free play)
 DRIVERNV(sleicpin)      // 1993 - Sleic Pin-Ball
+DRIVERNV(sleicpnf)      // 1993 - Sleic Pin-Ball (end-of-game scores MOD, free play)
 DRIVERNV(iomoon)        // 1994 - Io Moon
 DRIVERNV(iomoona)       // 1994 - Io Moon (earlier ROM revision)
 DRIVERNV(iomoont)       // 1994 - Io Moon (PRESS START tournament MOD)
+DRIVERNV(iomoontf)      // 1994 - Io Moon (tournament MOD, free play)
                         // 1996 - Dona Elvira 2
 
 // ----------------
@@ -1437,6 +1468,16 @@ DRIVERNV(michnew)       // 19?? - Michigan Bingo New (Bingo)
 DRIVERNV(montana)       // 19?? - Montana Bingo Stake 6/10 (Bingo)
 DRIVERNV(topgame)       // 19?? - Top Game Laser L10 (Bingo)
 DRIVERNV(topgamet)      // 19?? - Top Game Turbo (Bingo)
+
+// ---------------
+// SPOOKY PINBALL
+// ---------------
+DRIVERNV(pinheck)       // PinHeck System (not a game)
+DRIVERNV(amh_022)       // 2014 - America's Most Haunted (V22)
+DRIVERNV(amh_023)       // 2014 - America's Most Haunted (V23)
+DRIVERNV(dominos_006)   // 2016 - Domino's Spectacular Pinball Adventure (V6)
+DRIVERNV(rzspook_026)   // 2016 - Rob Zombie's Spookshow International (V26)
+DRIVERNV(jetsons_004)   // 2017 - Jetsons, The (V4)
 
 // ---------------
 // SPORT MATIC

@@ -164,19 +164,19 @@ Guest side, for anyone going further: `RTCLocationManagerClass` owns the hardwar
 integers, and `timestamp_clock_last_set_data` at `0x0025e400` holds the 1 Jan 1999 12:00:00 default
 that the console messages date from.
 
-## Old sets lose sound if the coin door is open
+## Old sets lost sound if the coin door was open (fixed)
 
 On **XINA 1.12 and older** - `rfm_010`, `rfm_070`, `rfm_071`, `rfm_080`, `rfm_084`-`rfm_087`,
-`rfm_120` and `swep1_040`, and only those - powering up with the coin door open produces
+`rfm_120` and `swep1_040`, and only those - powering up with the coin door open produced
 
 ```
 *** NonFatal: DCS2 board SRAM test failed: 0xee07
 DCS2 board init failed - retrying...
 ```
 
-three times, and then sound is dead for that boot.
+three times, and then sound was dead for that boot.
 
-It is a one-shot race at DCS bring-up, about four seconds in, and the coin door loses it: the
+It was a one-shot race at DCS bring-up, about four seconds in, and the coin door lost it: the
 door-open message is a display effect, the effect makes sound requests, and they land on top of
 XINA's SRAM test. `P2K_DOORCLOSE` shows it cleanly - shut the door by about frame 120 and it never
 happens, leave it past roughly frame 300 and it always does. Closing the door *afterwards* does not
@@ -184,12 +184,13 @@ repair it: the failures land at identical cycle counts whether the door shuts at
 never, so the three are a fixed retry budget, not something the door recovers. Swapping the
 prototype sound flash for the stock one changes nothing, so it is not a dump problem.
 
-Probably a real machine behaviour rather than an emulation one, because the boundary is not
-arbitrary: XINA 1.13's changelog is where *"Fixed the DCS system to avoid new requests if the DSP is
-dead"* and *"Fixed a problem in the resource system to eliminate a deadlock"* appear, in a release
-that also *"Added coin door open timestamp"*. So the fault stops at exactly the version that fixed
-the DCS request path. Not verified against hardware - the emulated DCS handshake could be more
-fragile than the real one - so treat it as probable. No set needs a sound flag for it either way.
+It was an emulation fault. The host status register's ready bit (0x40) was always set, and the
+firmware polls it before every command word, so the door effect's requests went straight onto XINA's
+SRAM test. Reporting ready only once the DSP has taken the last word and none is queued
+(`dcs_p2k_status_r()` in `wmssnd.c`, as Encore's live DSP engine does) makes a door-open boot of
+`rfm_120` and `rfm_080` look exactly like a door-closed one. `rfm_260` and an SWE1 game send identical
+commands either way; XINA 1.13's *"Fixed the DCS system to avoid new requests if the DSP is dead"* is
+presumably why the later sets never showed it.
 
 ## The PUB card installer packages added nothing (checked)
 

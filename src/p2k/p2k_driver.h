@@ -174,8 +174,14 @@ private:
 	int m_prism_ee_read_word = 0;   // word address the last READ asked for, which the read side starts at
 
 	// Intel-style flash command state for the update flash at 0x12000000
-	int m_flash_mode = 0;
-	int m_buffer_counter = 0;
+	u8 m_flash_cmd = 0xff;          // the mode reads answer in: 0xff array, 0x70 status, 0x90 ID, 0x98 CFI, else status
+	u8 m_flash_status = 0x80;       // status register: 0x80 ready, 0x10 program error, 0x30 command sequence error
+	int m_flash_buf_phase = 0;      // write to buffer: 0 idle, 1 word count next, 2 data, 3 confirm
+	u32 m_flash_buf_block = 0;      // byte address of the 128 KB block the buffer belongs to
+	unsigned m_flash_buf_words = 0; // words announced
+	unsigned m_flash_buf_loaded = 0;
+	u32 m_flash_buf_off[16] = {};   // word offsets and data, 16 words being the part's 32 byte buffer
+	u16 m_flash_buf_data[16] = {};
 
 	// Pinball driver board on the parallel port at 0x3bc, and the printer port at 0x378
 	u8 m_pdb_index = 0;          // the board's index register, clocked in from the data port
@@ -281,6 +287,8 @@ private:
 
 	u8 nvram_updates_r(offs_t offset) const;
 	void nvram_updates_w(offs_t offset, u16 data);
+	bool flash_program_word(offs_t offset, u16 data);
+	void flash_enter_status(u8 status);
 	void seed_error_log();   // the CMOS error-log header a machine in the field already has
 	// run any zero-delay timer the guest just scheduled, so an interrupt controller change takes
 	// effect at the next instruction rather than at the end of the CPU's slice

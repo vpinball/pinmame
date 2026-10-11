@@ -116,6 +116,7 @@ int CLIB_DECL mame_fprintf(mame_file *f, const char *fmt, ...);
 
 #ifdef LIBPINMAME
 void setPath(int type, const char* path); 
+const char* getPath(int type);
 #endif
 
 #ifdef __cplusplus

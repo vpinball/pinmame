@@ -105,6 +105,8 @@ static int ecd_find_sig (char *buffer, int buflen, int *offset)
    out:
      zip->ecd, zip->ecd_length ecd data
 */
+#define ECD_MAX (22 + 0xFFFF) /* the end of central dir record with the longest comment */
+
 static int ecd_read(ZIP* zip) {
 	char* buf;
 	int buf_length = 1024; /* initial buffer length */
@@ -113,7 +115,7 @@ static int ecd_read(ZIP* zip) {
 		int offset;
 
 		if (buf_length > zip->length)
-			buf_length = zip->length;
+			buf_length = (int)zip->length;
 
 		if (osd_fseek(zip->fp, zip->length - buf_length, SEEK_SET) != 0) {
 			return -1;
@@ -147,9 +149,9 @@ static int ecd_read(ZIP* zip) {
 
 		free(buf);
 
-		if (buf_length < zip->length) {
+		if (buf_length < zip->length && buf_length < ECD_MAX) {
 			/* double buffer */
-			buf_length = 2*buf_length;
+			buf_length = 2*buf_length < ECD_MAX ? 2*buf_length : ECD_MAX;
 
 			logerror("Retry reading of zip ecd for %d bytes\n",buf_length);
 
@@ -441,9 +443,8 @@ void rewindzip(ZIP* zip) {
 	==0 success
 	<0 error
 */
-int seekcompresszip(ZIP* zip, struct zipent* ent) {
+INT64 offsetcompresszip(ZIP* zip, struct zipent* ent) {
 	char buf[ZIPNAME];
-	long offset;
 
 	if (!zip->fp) {
 		if (!revivezip(zip))
@@ -460,18 +461,32 @@ int seekcompresszip(ZIP* zip, struct zipent* ent) {
 		return -1;
 	}
 
-	{
-		UINT16 filename_length = read_word (buf+ZIPFNLN);
-		UINT16 extra_field_length = read_word (buf+ZIPXTRALN);
+	/* the data follows the local header, its file name and extra field */
+	return (INT64)ent->offset_lcl_hdr_frm_frst_disk + ZIPNAME + read_word (buf+ZIPFNLN) + read_word (buf+ZIPXTRALN);
+}
 
-		/* calculate offset to data and osd_fseek() there */
-		offset = ent->offset_lcl_hdr_frm_frst_disk + ZIPNAME + filename_length + extra_field_length;
+int seekcompresszip(ZIP* zip, struct zipent* ent) {
+	const INT64 offset = offsetcompresszip(zip, ent);
+	if (offset < 0)
+		return -1;
 
-		if (osd_fseek(zip->fp, offset, SEEK_SET) != 0) {
-			errormsg ("Seeking to compressed data", ERROR_CORRUPT, zip->zip);
+	if (osd_fseek(zip->fp, offset, SEEK_SET) != 0) {
+		errormsg ("Seeking to compressed data", ERROR_CORRUPT, zip->zip);
+		return -1;
+	}
+
+	return 0;
+}
+
+int readzipat(ZIP* zip, INT64 offset, char* data, UINT32 length) {
+	if (!zip->fp) {
+		if (!revivezip(zip))
 			return -1;
-		}
+	}
 
+	if (osd_fseek(zip->fp, offset, SEEK_SET) != 0 || osd_fread(zip->fp, data, length) != length) {
+		errormsg ("Reading data", ERROR_CORRUPT, zip->zip);
+		return -1;
 	}
 
 	return 0;

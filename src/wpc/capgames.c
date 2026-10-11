@@ -5,7 +5,7 @@
 #include "sndbrd.h"
 
 // CPU controlled flipper coils. Fast flips are also provided but are not 100% correct since the hardware is CPU controlled and pulse modulated
-#define FLIP    (FLIP_SWNO(5,6) + FLIP_SOL(FLIP_LL | FLIP_LR | FLIP_UR | FLIP_UL))
+#define FLIP(x) (FLIP_SWNO(5,6) + FLIP_SOL(x))
 
 /*-- DMD 128 X 32 --*/
 static core_tLCDLayout cc_dispDMD128x32[] = {
@@ -36,9 +36,24 @@ static core_tLCDLayout cc_dispDMD256x64[] = {
 #define capInvSw12 {0, 0x0f, 0x0f, 0x8c, 0x80}
 #define capInvSw13 {0, 0x00, 0x00, 0x38, 0x00, 0x30, 0x00, 0x01}
 
+// flippers by game number; upper ones only where the game has them, as capcom.c mirrors solenoids 11/12 to these
+#define capFlip1  FLIP(FLIP_L)
+#define capFlip2  FLIP(FLIP_L)
+#define capFlip3  FLIP(FLIP_L)
+#define capFlip4  FLIP(FLIP_L)
+#define capFlip5  FLIP(FLIP_L | FLIP_UR)
+#define capFlip6  FLIP(FLIP_L | FLIP_UR)
+#define capFlip7  FLIP(FLIP_L | FLIP_UR)
+#define capFlip8  FLIP(FLIP_L | FLIP_UR)
+#define capFlip9  FLIP(FLIP_L | FLIP_U)
+#define capFlip10 FLIP(FLIP_L | FLIP_UR)
+#define capFlip11 FLIP(FLIP_L)
+#define capFlip12 FLIP(FLIP_L | FLIP_U)
+#define capFlip13 FLIP(FLIP_L | FLIP_UR)
+
 #define INITGAME(name, gameno, disp, balls, sb, lamps) \
 	CC_INPUT_PORTS_START(name, balls) CC_INPUT_PORTS_END \
-	static core_tGameData name##GameData = {0,disp,{FLIP,0,lamps,0,sb,0,gameno},NULL,{"", capInvSw##gameno}}; \
+	static core_tGameData name##GameData = {GEN_CAPCOM,disp,{capFlip##gameno,0,lamps,0,sb,0,gameno},NULL,{"", capInvSw##gameno}}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}
@@ -68,7 +83,7 @@ static core_tLCDLayout cc_dispDMD256x64[] = {
    static int name##_getsol(int solNo) { \
       return (memory_region(REGION_CPU1)[fastflipaddr] > 0); \
    } \
-   static core_tGameData name##GameData = {0,disp,{FLIP,0,lamps,1,sb,0,gameno,0, name##_getsol},NULL,{"", capInvSw##gameno}}; \
+   static core_tGameData name##GameData = {GEN_CAPCOM,disp,{capFlip##gameno,0,lamps,1,sb,0,gameno,0, name##_getsol},NULL,{"", capInvSw##gameno}}; \
    static void init_##name(void) { \
       core_gameData = &name##GameData; \
    }

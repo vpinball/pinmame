@@ -33,7 +33,7 @@ Nuova Bell, Inder, Juegos Populares, LTD, Peyper, Sonic, Allied Leisure, Fascina
 Sleic, Playmatic, NSM, Grand Products, Jac van Ham, Videodens, Astro, Micropin,
 Christian Tabart, Jeutel, Valley Manufacturing, MAC / CICPlay, Stargame, Barni,
 Seeben/Sirmo, Splin Bingo, Playbar, Cirsa, Nondum / CIFA, Maibesa, ManilaMatic, Joctronic, Mirco,
-Sport Matic, Regama, Recreativos Franco, Illinois Pinball.
+Sport Matic, Regama, Recel, Interflip, Recreativos Franco, Illinois Pinball, Spooky Pinball PinHeck.
 
 *Note: Emulation is not 100% working and correct for all hardware, but very close for the vast majority.*
 
@@ -47,7 +47,7 @@ record/playback, command line switches etc.).
 
 In addition to the built-in debugger, it also includes an **Advanced Remote Debugger** module, providing a thread-safe REST API and a high-fidelity web dashboard for headless or remote analysis.
 Features include real-time DMD/Alphanumeric rendering, hardware breakpoints, memory pattern search, and interactive matrix visualization. See the [README](src/remote_debug/README.md) for full documentation and API reference.
-For the moment, it's mostly useful for debugging WPC/6809-based machines, but is applicable to all machines.
+For the moment, it's mostly useful for debugging WPC/Sys11/6809-based machines, but is applicable to all machines.
 
 In addition, there is special compile time support for the [P-ROC](http://www.pinballcontrollers.com),
 to drive (at least) real WPC machines with PinMAME/P-ROC, [PPUC](https://github.com/PPUC) and LISY
@@ -65,6 +65,8 @@ Before you start to add the ROMs from your favorite pinball machine please note:
 and listen to/record the pinball game sounds with the pure PinMAME package itself.
 
 ## Games supported (incomplete)
+
+See [SUPPORTED_MACHINES.md](SUPPORTED_MACHINES.md) for a more complete, machine-by-machine list.
 
 - *Midway Pinball 2000* - All games from Revenge From Mars (1999) to Star Wars Episode I (1999)
 - *Williams/Bally WPC* - All games from Dr. Dude (1990) to Cactus Canyon (1998)
@@ -103,11 +105,13 @@ and listen to/record the pinball game sounds with the pure PinMAME package itsel
 - *Mr. Game* - Dakar, Motor Show (1988), World Cup '90 (1990)
 - *Spinball* - Mach 2 (1995), Jolly Park (1996)
 - *Nuova Bell* - all available Bally clones, also Future Queen (1987), F1 Grand Prix (1987), U-Boat 65 (1988)
-- *Inder* - Brave Team (1985), Canasta 86 (1986), Clown (1988), Corsario (1989), Atleta (1991), 250cc (1992), Bushido (1993)
+- *Inder* - Hot & Cold, Screech (both 1978), Brave Team (1985), Canasta 86 (1986), Clown (1988), Corsario (1989), Atleta (1991), 250cc (1992), Bushido (1993)
 - *Juegos Populares* - Petaco (1984), Faeton (1985), America 1492, Aqualand (both 1987)
 - *LTD* - Atlantis, Black Hole, Zephy, Cowboy Eight Ball, Mr. & Mrs. Pec-Men, Al Capone (1980-1983)
+- *Interflip* - Alaska (1978)
 - *Peyper* - Odisea Paris-Dakar (1987)
-- *Recreativos Franco* - Super Star (1986, rev. 1 and rev. 2)
+- *Recel* - Crazy Race, Poker Plus, Fair Fight, Mr. Evil (all 1978), Mr. Doom, Cavalier, SwashBuckler, Don Quijote (all 1979), The Flipper Game, Black Magic, Black Magic 4 (all 1980)
+- *Recreativos Franco* - Super Star (1986)
 - *Sonic* - Odin DeLuxe (1985), Pole Position (1987), Star Wars (1987)
 - *Allied Leisure* - All games from Super Picker (1977) to Star Shooter (1979)
 - *Fascination, Int.* - Roy Clark - The Entertainer (1977), Eros One, and Circa 1933 (both 1979)
@@ -135,6 +139,7 @@ and listen to/record the pinball game sounds with the pure PinMAME package itsel
 - *Mirco*
 - *Sport Matic*
 - *Regama* - Trebol
+- *Spooky Pinball (PinHeck)* - America's Most Haunted (2014), Domino's Spectacular Pinball Adventure (2016), Rob Zombie's Spookshow International (2016), The Jetsons (2017)
 - **Prototype games and modifications**
   - Dave Nutting's Flicker (Sep 1974)
   - Bally's Bow & Arrow (Jan 1976)

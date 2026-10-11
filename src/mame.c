@@ -445,6 +445,12 @@ static int init_machine(void)
 	/* load input ports settings (keys, dip switches, and so on) */
 	settingsloaded = load_input_port_settings();
 
+#ifdef PINMAME
+	/* -dip overrides, on top of both the driver default and the saved cfg */
+	if (dip_override_apply())
+		goto cant_apply_dips;
+#endif /* PINMAME */
+
 	/* multi-session safety - set spriteram size to zero before memory map is set up */
 	spriteram_size = spriteram_2_size = 0;
 
@@ -471,6 +477,9 @@ static int init_machine(void)
 
 	return 0;
 
+#ifdef PINMAME
+cant_apply_dips:
+#endif /* PINMAME */
 cant_init_memory:
 cant_load_roms:
 	input_port_free(Machine->input_ports_default);
@@ -525,7 +534,7 @@ static int run_machine(void)
 
 						/* invalidate contents to avoid subtle bugs */
 						for (i = 0; i < memory_region_length(region); i++)
-							memory_region(region)[i] = rand();
+							memory_region(region)[i] = (rand() >> 7) & 0xff;
 						free(Machine->memory_region[region].base);
 						Machine->memory_region[region].base = 0;
 					}

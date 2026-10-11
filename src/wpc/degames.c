@@ -624,6 +624,14 @@ DE2S_SOUNDROM022(  "trek.u7"  ,CRC(f137abbb) SHA1(11731170ed4f04dd8af05d8f79ad72
 DE_ROMEND
 CORE_CLONEDEF(trek,300,201,"Star Trek 25th Anniversary (3.00 unofficial MOD)",2020,"Data East",de_mDEDMD16S2A,0)
 
+DE_ROMSTARTx0(trek_301,"trekcpuu.301",CRC(02EE89EC) SHA1(f8dd222b5237cf4bd8bc00f32980d68d339032f9))
+DE_DMD16ROM2(   "trekdspa.300",CRC(d312f92e) SHA1(eebcc697b89bbe62b0450fdec6226a8396308f37)) // same as 3.00
+DE2S_SOUNDROM022(  "trek.u7"  ,CRC(f137abbb) SHA1(11731170ed4f04dd8af05d8f79ad727b0e0104d7),
+                   "trek.u17" ,CRC(531545da) SHA1(905f34173db0e04eaf5236191186ea209b8a0a34),
+                   "trek.u21" ,CRC(6107b004) SHA1(1f9bed9b06d5b19fbc0cc0bef2e493eb1a3f1aa4))
+DE_ROMEND
+CORE_CLONEDEF(trek,301,201,"Star Trek 25th Anniversary (3.01 unofficial MOD)",2026,"Data East",de_mDEDMD16S2A,0)
+
 /*-------------------------------------------------------------
 / Hook - CPU Rev 3 /DMD  Type 1 128K Rom - CPU Rom
 /------------------------------------------------------------*/

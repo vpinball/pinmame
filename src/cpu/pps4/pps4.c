@@ -382,7 +382,10 @@ INLINE void execute_one(UINT8 opcode)
 			change_pc16(I.PC.d);
 			break;
 
-		/* LB */
+		/* LB. Only the first of a consecutive run of LB/LBL executes. Unlike
+		   LBL above, a suppressed LB steps over nothing: LB is one word and
+		   takes its operand from a page-0 table, not from the instruction
+		   stream, so there is no operand byte to skip. */
 		case 0xc0: case 0xc1: case 0xc2: case 0xc3: case 0xc4: case 0xc5: case 0xc6: case 0xc7:
 		case 0xc8: case 0xc9: case 0xca: case 0xcb: case 0xcc: case 0xcd: case 0xce: case 0xcf:
 			if (!wasLB) {
@@ -397,9 +400,6 @@ INLINE void execute_one(UINT8 opcode)
 				I.PC = tmpPair;
 				I.SA = I.SB;
 				I.SB = tmpPair;
-			} else {
-				I.PC.w.l++;
-				change_pc16(I.PC.d);
 			}
 			wasLB = 2;
 			break;

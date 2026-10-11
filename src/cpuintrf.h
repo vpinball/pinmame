@@ -36,6 +36,9 @@ enum
 #if defined(PINMAME) && (HAS_MEDIAGX)
 	CPU_MEDIAGX,
 #endif
+#if defined(PINMAME) && (HAS_PIC32MX)
+	CPU_PIC32MX,
+#endif
 #if defined(PINMAME) && (HAS_PPS4)
 	CPU_PPS4,
 #endif

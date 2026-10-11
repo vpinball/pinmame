@@ -127,11 +127,11 @@ static int p2k_pwmwatch(void)  { static int on = -1; return p2k_watch("P2K_PWMWA
 
 /* Diff a bit array against the last call's copy and print what changed, by name. Bit b of byte i
    is device number base + i * stride + b, which is the only thing that differs between the three:
-   lamps run 0,8,16.. (base 0, stride 8), solenoids 1,9,17.. (base 1, stride 8), and switches are
-   PinMAME's column*10 + row (base 1, stride 10). All three are the inverse of what the core does
-   with the number - core_getSw() reads (n/10)*8 + (n%10-1) as a flat bit index, and lamp n is
-   physicOutputState[CORE_MODOUT_LAMP0 + n] - so a name that does not match the machine's own test
-   menu means the table is wrong, not the arithmetic. Devices with no table entry print as
+   lamps and solenoids both run 1,9,17.. (base 1, stride 8) and switches are PinMAME's
+   column*10 + row (base 1, stride 10). All three are the inverse of what the core does with the
+   number - core_getSw() reads (n/10)*8 + (n%10-1) as a flat bit index, and lamp n is matrix
+   position n - 1, i.e. physicOutputState[CORE_MODOUT_LAMP0 + n - 1] - so a name that does not
+   match the machine's own test menu means the table is wrong, not the arithmetic. Devices with no table entry print as
    "(unnamed)" rather than being skipped: an unnamed one firing is itself worth seeing */
 static void p2k_watch_bits(const char *tag, const UINT8 *bits, int nbytes, UINT8 *prev, const p2k_name_t *names, int base, int stride) {
   int i, any = 0;
@@ -344,7 +344,7 @@ static void p2k_sync_io(void) {
        has the arithmetic and how it was measured */
     if (p2k_lampwatch()) {
       static UINT8 prev[16];
-      p2k_watch_bits("lamp", (const UINT8 *)coreGlobals.lampMatrix, 16, prev, p2k_lamp_names(game), 0, 8);
+      p2k_watch_bits("lamp", (const UINT8 *)coreGlobals.lampMatrix, 16, prev, p2k_lamp_names(game), 1, 8);
     }
 
     /* What the integrator makes of the coils, as a fraction rather than a bit. A flasher driven in
@@ -368,24 +368,25 @@ static void p2k_sync_io(void) {
       }
     }
 
-    /* And the same for the lamps, indexed by matrix position - byte * 8 + bit, which is what
-       p2k_lampPwm() writes and how the lamp names are numbered. A lit lamp settles near 0.4 here,
-       not 1.0, for the reason given at p2k_lampPwm(); one the game strobes on alternate passes
-       settles proportionally lower, and that difference is the whole point of this over the on/off matrix above */
+    /* And the same for the lamps. Lamp numbers run from 1, the way PinMAME hands them to a
+       table, so the matrix position that indexes physicOutputState[] is one below - see the
+       numbering note in p2k_names.h. A lit lamp settles near 0.4 rather than 1.0, for the reason
+       given at p2k_lampPwm(); one the game strobes on alternate passes settles proportionally
+       lower, and that difference is the whole point of this over the on/off matrix above */
     if (p2k_pwmwatch() && P2K_PWM_LAMP) {
       static float prevl[128];
       const p2k_name_t * const lamps = p2k_lamp_names(game);
       int k;
       for (k = 0; lamps[k].name; k++) {
-        const int n = lamps[k].num;
-        if (n < 0 || n >= (int)(sizeof(prevl) / sizeof(prevl[0]))) continue;
+        const int pos = lamps[k].num - 1;
+        if (pos < 0 || pos >= (int)(sizeof(prevl) / sizeof(prevl[0]))) continue;
         {
-          const float v = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + n].value;
-          const float d = v > prevl[n] ? v - prevl[n] : prevl[n] - v;
+          const float v = coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + pos].value;
+          const float d = v > prevl[pos] ? v - prevl[pos] : prevl[pos] - v;
           if (d > 0.05f) {
-            printf("[p2k lampv] frame %d: %3d %-30s %.3f\n", p2k_bringupFrame, n, lamps[k].name, (double)v);
+            printf("[p2k lampv] frame %d: %3d %-30s %.3f\n", p2k_bringupFrame, lamps[k].num, lamps[k].name, (double)v);
             fflush(stdout);
-            prevl[n] = v;
+            prevl[pos] = v;
           }
         }
       }
@@ -637,12 +638,12 @@ static void p2k_dumpNames(void) {
     printf("[p2k names] switches (PinMAME number = column*10 + row):\n");
     for (t = p2k_switch_names(game), i = 0; t[i].name; i++)
       printf("   sw %3d  %s\n", t[i].num, t[i].name);
-    printf("[p2k names] coils (driver number, solenoid bit = driver - 1):\n");
+    printf("[p2k names] coils (driver number; PinMAME solenoid is 1-32, then 45-48, then 51-62):\n");
     for (t = p2k_coil_names(game), i = 0; t[i].name; i++)
       printf("   coil %2d  %s\n", t[i].num, t[i].name);
-    printf("[p2k names] lamps:\n");
+    printf("[p2k names] lamps (PinMAME number, matrix position = lamp - 1):\n");
     for (t = p2k_lamp_names(game), i = 0; t[i].name; i++)
-      printf("   lamp %2d  %s\n", t[i].num, t[i].name);
+      printf("   lamp %3d  %s\n", t[i].num, t[i].name);
     fflush(stdout);
   }
 }
@@ -706,7 +707,7 @@ MACHINE_DRIVER_START(p2k)
 	MDRV_SWITCH_UPDATE(p2k)
 	MDRV_SWITCH_CONV(p2k_sw2m, p2k_m2sw)
 	MDRV_NVRAM_HANDLER(p2k)
-	MDRV_CPU_ADD_TAG("mcpu", MEDIAGX, 233000000/3) //!! sync with p2k_pinmame.cpp
+	MDRV_CPU_ADD_TAG("mcpu", MEDIAGX, 233000000/3) //!! sync with p2k_pinmame.cpp (233/5 would fix SWE1's missing intro scroll speech, see there)
 	MDRV_CPU_MEMORY(p2k_readmem, p2k_writemem)
 	/* Once per frame, and it does not interrupt the CPU - MEDIAGX has no vblank line wired here.
 	   It is a scheduler callback, which is exactly what wpc.c and se.c use theirs for */
@@ -724,10 +725,12 @@ MACHINE_DRIVER_END
    coin door's diagnostic buttons - so they are carried in PinMAME's dedicated columns 10, 11 and a
    twelfth column for the diagnostics, and p2k_switch_update() below fills them.
 
-   Bit assignments are MAME's (src/mame/drivers/pinball2k.cpp, its keyboard handler); keys follow
-   PinMAME's WPC convention instead of MAME's, so 7/8/9/0 are Enter/Up/Down/Escape and END toggles
-   the coin door. The board's own coin door bit reads "closed" when set - the machine reports COIN
-   DOOR IS OPEN with the bit clear, which is the state it powers up */
+   Bit assignments are MAME's (src/mame/drivers/pinball2k.cpp, its keyboard handler), but the keys
+   follow PinMAME's coin door convention (wpc.h, VPMKeys.vbs) rather than MAME's 7 = Enter / 0 = Escape:
+   7/8/9/0 = Escape/Down/Up/Enter, with END toggling the coin door. 8/9 are Down/Up as on WPC (wpc.h,
+   WPC.vbs swDown = 6, swUp = 7), which is what P2K expects from them. p2k.vbs is kept in step with this.
+   The board's own coin door bit reads "closed" when set - the machine reports COINDOOR IS OPEN with the
+   bit clear, which is the state it powers up */
 INPUT_PORTS_START(rfm)
 	CORE_PORTS
 	/* SIM_PORTS(1) - PinMAME's built-in ball simulator, commented out rather than removed so it is
@@ -744,10 +747,10 @@ INPUT_PORTS_START(rfm)
 		COREPORT_BITDEF(  0x0002, IPT_COIN2,        IP_KEY_DEFAULT)
 		COREPORT_BITDEF(  0x0004, IPT_COIN3,        KEYCODE_3)
 		COREPORT_BITDEF(  0x0008, IPT_COIN4,        KEYCODE_4)
-		COREPORT_BIT(     0x0010, "Enter",          KEYCODE_7)
-		COREPORT_BIT(     0x0020, "Up",             KEYCODE_8)
-		COREPORT_BIT(     0x0040, "Down",           KEYCODE_9)
-		COREPORT_BIT(     0x0080, "Escape",         KEYCODE_0)
+		COREPORT_BIT(     0x0010, "Escape",         KEYCODE_7)
+		COREPORT_BIT(     0x0020, "Down",           KEYCODE_8)
+		COREPORT_BIT(     0x0040, "Up",             KEYCODE_9)
+		COREPORT_BIT(     0x0080, "Enter",          KEYCODE_0)
 		COREPORT_BITTOG(  0x0100, "Coin Door",      KEYCODE_END)
 		COREPORT_BITDEF(  0x0200, IPT_START1,       IP_KEY_DEFAULT)
 		COREPORT_BIT(     0x0400, "Plumb Tilt",     KEYCODE_INSERT)
@@ -900,11 +903,12 @@ static SWITCH_UPDATE(p2k) {
 			((in   & 0x2000) ? P2K_CAB_RACTION   : 0) |
 			((in   & 0x1000) ? P2K_CAB_LACTION   : 0);
 
+		/* Keys 7/8/9/0 are Escape/Down/Up/Enter, matching p2k.vbs - see the note above the port */
 		coreGlobals.swMatrix[10] =
-			((in   & 0x0080) ? P2K_DIAG_ESCAPE   : 0) |
-			((in   & 0x0020) ? P2K_DIAG_UP       : 0) |
-			((in   & 0x0040) ? P2K_DIAG_DOWN     : 0) |
-			((in   & 0x0010) ? P2K_DIAG_ENTER    : 0);
+			((in   & 0x0010) ? P2K_DIAG_ESCAPE   : 0) |
+			((in   & 0x0040) ? P2K_DIAG_UP       : 0) |
+			((in   & 0x0020) ? P2K_DIAG_DOWN     : 0) |
+			((in   & 0x0080) ? P2K_DIAG_ENTER    : 0);
 
 		core_setSw(swStartButton, in & 0x0200);
 		core_setSw(swLaunchButton, (in & 0x4000) ? 1 : 0);
@@ -1807,11 +1811,9 @@ ROM_END
    header stores major and minor separately and "Software version: %d.%d" prints the minor as a
    plain number - the same reason rfm_010 displays 0.1.
 
-   Power up with the coin door open and these six print "DCS2 board SRAM test failed" and lose
-   sound for that boot. Nothing to do with this flash - the stock one does it too - and nothing to
-   do with being prototypes: it is every set on XINA 1.12 and older and only those, rfm_010,
-   rfm_080, rfm_120 and swep1_040 included. Written up under "Old sets lose sound if the coin door
-   is open" in src/p2k/README.md; none of the ten needs a sound flag for it.
+   Powered up with the coin door open these six, like every set on XINA 1.12 and older, used to print
+   "DCS2 board SRAM test failed" and lose sound for that boot - an emulation fault, the sound board
+   reporting itself always ready, since fixed in wmssnd.c. Written up in src/p2k/PAST_FAILURES.md.
 
    The revision history in the same archive covers 0.5 (07/03/99, "Release for Waukegan startup"),
    0.6 (16/03/99, "Release for samples", XINA 1.01), 0.7 (26/03/99, XINA 1.02), 0.8 (30/03/99,

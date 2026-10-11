@@ -38,7 +38,7 @@ What is it?
   Sleic, Playmatic, NSM, Grand Products, Jac van Ham, Videodens, Astro, Micropin,
   Christian Tabart, Jeutel, Valley Manufacturing, MAC / CICPlay, Stargame, Barni,
   Seeben/Sirmo, Splin Bingo, Playbar, Cirsa, Nondum / CIFA, Maibesa, ManilaMatic, Joctronic, Mirco,
-  Sport Matic, Regama, Illinois Pinball.
+  Sport Matic, Regama, Recel, Interflip, Recreativos Franco, Illinois Pinball, Spooky Pinball PinHeck.
 
   *Note: Emulation is not 100% working and correct for all hardware, but very close for the vast majority.
 
@@ -113,10 +113,13 @@ Games supported (incomplete) (a bit outdated, at least since version 2.1 :/ )
   Mr. Game: Dakar, Motor Show (1988), World Cup '90 (1990)
   Spinball: Mach 2 (1995), Jolly Park (1996)
   Nuova Bell: all available Bally clones, also Future Queen (1987), F1 Grand Prix (1987), U-Boat 65 (1988)
-  Inder: Brave Team (1985), Canasta 86 (1986), Clown (1988), Corsario (1989), Atleta (1991), 250cc (1992), Bushido (1993)
+  Inder: Hot & Cold, Screech (both 1978), Brave Team (1985), Canasta 86 (1986), Clown (1988), Corsario (1989), Atleta (1991), 250cc (1992), Bushido (1993)
   Juegos Populares: Petaco (1984), Faeton (1985), America 1492, Aqualand (both 1987)
   LTD: Atlantis, Black Hole, Zephy, Cowboy Eight Ball, Mr. & Mrs. Pec-Men, Al Capone (1980-1983)
+  Interflip: Alaska (1978)
   Peyper: Odisea Paris-Dakar (1987)
+  Recel: Crazy Race, Poker Plus, Fair Fight, Mr. Evil (all 1978), Mr. Doom, Cavalier, SwashBuckler, Don Quijote (all 1979), The Flipper Game, Black Magic, Black Magic 4 (all 1980)
+  Recreativos Franco: Super Star (1986)
   Sonic: Odin DeLuxe (1985), Pole Position (1987), Star Wars (1987)
   Allied Leisure: All games from Super Picker (1977) to Star Shooter (1979)
   Fascination, Int.: Roy Clark - The Entertainer (1977), Eros One, and Circa 1933 (both 1979)
@@ -144,6 +147,7 @@ Games supported (incomplete) (a bit outdated, at least since version 2.1 :/ )
   Mirco:
   Sport Matic:
   Regama: Trebol
+  Spooky Pinball (PinHeck): America's Most Haunted (2014), Domino's Spectacular Pinball Adventure (2016), Rob Zombie's Spookshow International (2016), The Jetsons (2017)
   Prototype games and modifications:
     Dave Nutting's Flicker (Sep 1974),
     Bally's Bow & Arrow (Jan 1976),
@@ -267,6 +271,35 @@ PinMAME Specific Command line switches
                          the WPC serial port of the Printer Kit or WPC95 AV board)
   -sound_mode 0-3       (Sound processing mode; 0=PinMAME, 1=Alternative, 2=PinSound,
                          3=PinSound + Recordings)
+
+Headless and scripted runs
+--------------------------
+  For unattended, reproducible runs, e.g. capturing a game's DMD output, or automated testing.
+  Also settable in an ini file; the command line wins.
+
+  -[no]headless         (Unix only: run without a display)
+  -[no]skip_gamewarnings
+                        (Skip the game warnings screen; needed to run a game
+                         marked as not working headless)
+  -frames_to_run n      (-ftr: end the run after n frames)
+  -key_script <file>    (Scripted key presses, one per line, '#' comments:
+                           <frame> down <KEY>[,<KEY>...]   hold from this frame
+                           <frame> up   <KEY>[,<KEY>...]   release
+                           <frame> tap  <n> <KEY>[,...]    hold for n frames
+                           <frame> mark <text>             log to <file>.marks
+                           <frame> quit                    end the run
+                         <KEY> is a MAME key name, e.g. KEYCODE_5. Mistakes go
+                         to stderr. Details in src/keyscript.h)
+  -dmd_dump_dir <dir>   (Write every DMD frame to <dir>/<game>.txt, plus .raw
+                         for GTS3, WPC and Alvin G.; each run starts afresh)
+  -dip "<name>=<value>" (Set a DIP switch, repeatable: -dip "Country=Germany".
+                         Case-insensitive; the value may be a number (0x20).
+                         Pick one of several same-named switches as "<name>#<n>".
+                         A wrong name or value lists the valid ones and aborts.
+                         Saved to the game's cfg, like a change in the TAB menu)
+  -rtc "YYYY-MM-DD HH:MM[:SS]"
+                        (Start the emulated real-time clock here instead of at
+                         the host's time; it advances with emulated time)
 
 VGM sound file dump
 -------------------

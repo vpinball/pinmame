@@ -19,7 +19,7 @@ static int output[MAX_DAC];
 
 /* DC offset correction, a one-pole high-pass y[n] = R*y[n-1] + (x[n] - x[n-1]) to convert unipolar signals (=0..MAX range instead of centered around 0).
    Opt-in per channel (if written once through DAC_DC_offset_correction_data_16_w()).
-   Currently: Gottlieb System 80B/Techno's, Taito's sintetizador, and Mr. Game's stereo pair (Bingo is left alone deliberately - there the main CPU pokes the DAC port directly and it is not clear the value is a waveform rather than a level).
+   Currently: Gottlieb System 80B/Techno's, Taito's sintetizador, Mr. Game's stereo pair, and the Williams System 3-7, 9/11 and WPC89 sound boards (Bingo is left alone deliberately - there the main CPU pokes the DAC port directly and it is not clear the value is a waveform rather than a level).
    NOTE: A channel stays enabled once set; do not mix the plain DAC_*_w entry points with this one on the same channel!
 
    Filtering per output sample pins it to DAC_SAMPLE_RATE, so the cutoff below is what you actually get.
