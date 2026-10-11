@@ -416,10 +416,10 @@ ROM_START(xforce)
     ROM_LOAD("sound.bin", 0x8000, 0x8000, NO_DUMP)
     ROM_RELOAD(0, 0x8000)
   NORMALREGION(0x40000, REGION_USER1)
-  ROM_REGION(0x20000, REGION_SOUND1, ROMREGION_ERASEFF) // sample ROMs ic8-ic11, not dumped
+  ROM_REGION(0x20000, REGION_SOUND1, ROMREGION_ERASEFF) // sample ROMs ic8-ic11, not dumped yet
 ROM_END
 #define input_ports_xforce input_ports_tecno
-CORE_GAMEDEFNV(xforce, "X Force", 1987, "Tecnoplay", tecno, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(xforce, "X Force", 1987, "Tecnoplay", tecno, GAME_IMPERFECT_SOUND) //!! X Force's game program does send DAC sounds 40, 4C and 4D, remains to be seen if our DAC code outputs these correctly!
 
 static core_tLCDLayout disp2[] = {
   {0, 0, 0, 1,CORE_SEG16S}, {0, 2,32,15,CORE_SEG16S},
@@ -438,7 +438,7 @@ ROM_START(spcteam)
     ROM_LOAD("sound.bin", 0x8000, 0x8000, CRC(6a87370f) SHA1(51e055dcf23a30e337ff439bba3c40e5c51c490a))
     ROM_RELOAD(0, 0x8000)
   NORMALREGION(0x40000, REGION_USER1)
-  ROM_REGION(0x20000, REGION_SOUND1, ROMREGION_ERASEFF) // sample ROMs ic8-ic11, not dumped
+  ROM_REGION(0x20000, REGION_SOUND1, ROMREGION_ERASEFF) // sample ROMs ic8-ic11, (maybe) not dumped (most likely empty)
 ROM_END
 #define input_ports_spcteam input_ports_tecno
-CORE_GAMEDEFNV(spcteam, "Space Team", 1988, "Tecnoplay", tecno, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(spcteam, "Space Team", 1988, "Tecnoplay", tecno, GAME_IMPERFECT_SOUND) //!! In theory, sound should be correct now, BUT: DAC sounds may still be incorrect, unknown until ic8-ic11 shows up (or proven that these are empty). The game itself does not seem to trigger DAC sounds 40..7F. Also: TKY2016 is only assumed to be a Y8950, not proven.
