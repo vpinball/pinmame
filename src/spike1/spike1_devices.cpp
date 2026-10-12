@@ -738,11 +738,11 @@ void spike1_devices::node_bus_frame(const uint8_t *frame, uint32_t len, uint64_t
 		if (m_cfg.trace) note = "node bus: node " + std::to_string(node) + " motor " + std::to_string(frame[3]) + " go " + std::to_string(target);
 		return;
 	}
-	case 0x56: { // stop: [motor]
+	case 0x56: { // stop: [motor] - it stays where the move has taken it
 		if (len <= 4) break;
 		motor &m = m_motors[(uint32_t(node) << 8) | frame[3]];
-		m.position = motor_position(m, now_ns);
-		m.end_ns = 0;
+		m.position = m.from = m.target = motor_position(m, now_ns);
+		m.start_ns = m.end_ns = 0;
 		return;
 	}
 	case 0x52: { // status: [motor] -> [position, u16][status, u16]
