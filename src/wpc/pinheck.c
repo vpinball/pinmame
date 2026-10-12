@@ -16,6 +16,7 @@
 
 #include "driver.h"
 #include <ctype.h>
+#include <math.h>
 #include "core.h"
 #include "cpu/pic32mx/pic32mxcpu.h"
 #include "pinheck/prop.h"
@@ -1027,6 +1028,13 @@ static void pinheck_wav_le(FILE *f, uint32_t v, int n)
 	while (n--) { fputc((int)(v & 0xFF), f); v >>= 8; }
 }
 
+/* a float sample converted to 16bit, scaled, rounded and clamped */
+static uint16_t pinheck_wav_s16(float y)
+{
+	const float v = floorf(y * 32767.0f + 0.5f);
+	return (uint16_t)(int16_t)(v > 32767.f ? 32767 : v < -32768.f ? -32768 : (int)v);
+}
+
 static void pinheck_wav_header(FILE *f, uint32_t rate, uint32_t bytes)
 {
 	fseek(f, 0, SEEK_SET);
@@ -1062,7 +1070,7 @@ static void pinheck_snd_update(int param, INT16 **buffer, int length)
 			((float**)buffer)[0][done + i] = tmp[2 * i];
 			((float**)buffer)[1][done + i] = tmp[2 * i + 1];
 #ifdef PINHECK_TEST_HOOKS
-			if (sndl.wav) { pinheck_wav_le(sndl.wav, (uint16_t)(tmp[2 * i]*32767.f), 2); pinheck_wav_le(sndl.wav, (uint16_t)(tmp[2 * i + 1]*32767.f), 2); } //!! clamp
+			if (sndl.wav) { pinheck_wav_le(sndl.wav, pinheck_wav_s16(tmp[2 * i]), 2); pinheck_wav_le(sndl.wav, pinheck_wav_s16(tmp[2 * i + 1]), 2); }
 #endif
 		}
 #ifdef PINHECK_TEST_HOOKS

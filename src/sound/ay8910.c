@@ -999,15 +999,15 @@ static void AY8910Update(int chip,
 	struct AY8910 *PSG = &AYPSG[chip];
 	int outn;
 
-	INT16 *buf1;
+	float *buf1;
 #ifdef SINGLE_CHANNEL_MIXER
 	INT32 tmp_buf;
-	buf1 = buffer;
+	buf1 = (float *)buffer;
 #else
-	INT16 *buf2,*buf3;
-	buf1 = buffer[0];
-	buf2 = buffer[1];
-	buf3 = buffer[2];
+	float *buf2,*buf3;
+	buf1 = (float *)buffer[0];
+	buf2 = (float *)buffer[1];
+	buf3 = (float *)buffer[2];
 #endif
 
 	/* hack to prevent us from hanging when starting filtered outputs */
@@ -1291,22 +1291,19 @@ static void AY8910Update(int chip,
 		tmp_buf = ((2*vola - STEP) * (int)PSG->VolA * (int)PSG->mix_vol[0] + (2*volb - STEP) * (int)PSG->VolB * (int)PSG->mix_vol[1] + (2*volc - STEP) * (int)PSG->VolC * (int)PSG->mix_vol[2])/(int)(2*100*STEP);
 		PSG->dcInteg[0] = PSG->dcInteg[0]*PSG->dcCoeff + (double)(tmp_buf - PSG->dcPrev[0]);
 		PSG->dcPrev[0] = tmp_buf;
-		tmp_buf = (INT32)PSG->dcInteg[0];
-		*(buf1++) = (tmp_buf < -32768) ? -32768 : ((tmp_buf > 32767) ? 32767 : tmp_buf);
+		*(buf1++) = (float)(PSG->dcInteg[0] * (1. / 32768.));
 #else
 		{
 			const INT32 raw[3] = { ((2*vola - STEP) * (int)PSG->VolA) / (2*STEP),
 			                       ((2*volb - STEP) * (int)PSG->VolB) / (2*STEP),
 			                       ((2*volc - STEP) * (int)PSG->VolC) / (2*STEP) };
-			INT16 * const dst[3] = { buf1, buf2, buf3 };
+			float * const dst[3] = { buf1, buf2, buf3 };
 			int c;
 			for (c = 0; c < 3; c++)
 			{
-				INT32 o;
 				PSG->dcInteg[c] = PSG->dcInteg[c]*PSG->dcCoeff + (double)(raw[c] - PSG->dcPrev[c]);
 				PSG->dcPrev[c] = raw[c];
-				o = (INT32)PSG->dcInteg[c];
-				*dst[c] = (o < -32768) ? -32768 : ((o > 32767) ? 32767 : o);
+				*dst[c] = (float)(PSG->dcInteg[c] * (1. / 32768.));
 			}
 			buf1++; buf2++; buf3++;
 		}
@@ -1467,7 +1464,7 @@ static int AY8910_init(const char *chip_name,int chip,
 	for (i = 0;i < 3;i++)
 		PSG->mix_vol[i] = MIXER_GET_LEVEL(volume);
 	sprintf(buf,"%s #%d",chip_name,chip);
-	PSG->Channel = stream_init(buf,MIXERG(100,gain,pan),sample_rate,chip,AY8910Update);
+	PSG->Channel = stream_init_float(buf,MIXERG(100,gain,pan),sample_rate,chip,AY8910Update,1);
 #else
 	for (i = 0;i < 3;i++)
 	{
@@ -1475,7 +1472,7 @@ static int AY8910_init(const char *chip_name,int chip,
 		name[i] = buf[i];
 		sprintf(buf[i],"%s #%d Ch %c",chip_name,chip,'A'+i);
 	}
-	PSG->Channel = stream_init_multi(3,name,vol,sample_rate,chip,AY8910Update);
+	PSG->Channel = stream_init_multi_float(3,name,vol,sample_rate,chip,AY8910Update,1);
 #endif
 
 	if (PSG->Channel == -1)
