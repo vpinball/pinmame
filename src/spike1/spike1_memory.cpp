@@ -55,20 +55,19 @@ spike1_memory::~spike1_memory()
 	release(m_low.mem, m_low.size);
 	release(m_stack.mem, m_stack.size);
 	release(m_kuser.mem, m_kuser.size);
-#if defined(_WIN32)
-	if (m_file_view) UnmapViewOfFile(m_file_view);
-	if (m_file_handle) CloseHandle(m_file_handle);
-#else
-	if (m_file_view) munmap(m_file_view, m_file_view_size);
-#endif
+	close_map(m_file_map);
+	for (view &v : m_views) close_map(v.map);
 }
 
 void spike1_memory::attach(address_space &space)
 {
 	m_space = &space;
 	space.clear_fast_windows();
-	for (const block *b : { &m_low, &m_stack, &m_kuser, &m_file })
+	for (const block *b : { &m_low, &m_stack, &m_kuser })
 		if (b->mem) space.add_fast_window(b->base, b->mem, b->size);
+	// read-only: a guest write there reaches unmapped_write() and stops the machine, as the
+	// game's own write to its read-only mapping would end it on the board
+	if (m_file.mem) space.add_fast_window(m_file.base, m_file.mem, m_file.size, false);
 }
 
 uint8_t *spike1_memory::host(uint32_t addr, uint32_t len, bool for_write)
@@ -80,21 +79,21 @@ uint8_t *spike1_memory::host(uint32_t addr, uint32_t len, bool for_write)
 			return b->mem + off;
 	}
 	if (!for_write)
-		for (block &v : m_views) {
-			const uint32_t off = addr - v.base;
-			if (off < v.size && len <= v.size - off)
-				return v.mem + off;
+		for (view &v : m_views) {
+			const uint32_t off = addr - v.b.base;
+			if (off < v.b.size && len <= v.b.size - off)
+				return v.b.mem + off;
 		}
 	return nullptr;
 }
 
 bool spike1_memory::read_view(uint32_t addr, uint32_t &value) const
 {
-	for (const block &v : m_views) {
-		const uint32_t off = addr - v.base;
-		if (off >= v.size) continue;
+	for (const view &v : m_views) {
+		const uint32_t off = addr - v.b.base;
+		if (off >= v.b.size) continue;
 		value = 0;
-		std::memcpy(&value, v.mem + off, std::min<uint32_t>(4, v.size - off));
+		std::memcpy(&value, v.b.mem + off, std::min<uint32_t>(4, v.b.size - off));
 		return true;
 	}
 	return false;
@@ -108,9 +107,9 @@ bool spike1_memory::place_file(uint32_t length)
 	return !m_view_free.empty() && m_view_free.front().base == FILE_BASE && m_view_free.front().size >= pages;
 }
 
-uint32_t spike1_memory::map_file(const std::string &host_path, uint64_t offset, uint32_t length)
+// The host's read-only mapping of [offset, offset + length) of a file; null when it cannot map it
+uint8_t *spike1_memory::open_map(const std::string &host_path, uint64_t offset, uint32_t length, host_map &map)
 {
-	if (!place_file(length)) return 0;
 #if defined(_WIN32)
 	SYSTEM_INFO si;
 	GetSystemInfo(&si);
@@ -121,45 +120,72 @@ uint32_t spike1_memory::map_file(const std::string &host_path, uint64_t offset, 
 	std::wstring wpath(size_t(wide), L'\0');
 	MultiByteToWideChar(CP_UTF8, 0, host_path.c_str(), -1, wpath.data(), wide);
 	HANDLE file = CreateFileW(wpath.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-	if (file == INVALID_HANDLE_VALUE) return 0;
+	if (file == INVALID_HANDLE_VALUE) return nullptr;
 	HANDLE mapping = CreateFileMappingW(file, nullptr, PAGE_READONLY, 0, 0, nullptr);
 	CloseHandle(file); // the mapping keeps the file open
-	if (!mapping) return 0;
+	if (!mapping) return nullptr;
 	void *view = MapViewOfFile(mapping, FILE_MAP_READ, DWORD(start >> 32), DWORD(start), view_size);
-	if (!view) { CloseHandle(mapping); return 0; }
-	m_file_handle = mapping;
+	if (!view) { CloseHandle(mapping); return nullptr; }
+	map.handle = mapping;
 #else
 	const uint64_t start = offset - offset % GUEST_PAGE_SIZE;
 	const size_t view_size = size_t(offset - start) + length;
 	const int fd = open(host_path.c_str(), O_RDONLY);
-	if (fd < 0) return 0;
+	if (fd < 0) return nullptr;
 	void *view = mmap(nullptr, view_size, PROT_READ, MAP_PRIVATE, fd, off_t(start));
 	close(fd);
-	if (view == MAP_FAILED) return 0;
+	if (view == MAP_FAILED) return nullptr;
 #endif
-	m_file_view = view;
-	m_file_view_size = view_size;
-	m_file = { FILE_BASE, length, static_cast<uint8_t *>(view) + (offset - start) };
-	take_span(m_view_free, FILE_BASE, uint32_t((uint64_t(length) + GUEST_PAGE_SIZE - 1) & ~uint64_t(GUEST_PAGE_SIZE - 1)));
-	if (m_space) m_space->add_fast_window(m_file.base, m_file.mem, m_file.size);
-	return m_file.base;
+	map.view = view;
+	map.size = view_size;
+	return static_cast<uint8_t *>(view) + (offset - start);
+}
+
+void spike1_memory::close_map(host_map &map)
+{
+	if (!map.view) return;
+#if defined(_WIN32)
+	UnmapViewOfFile(map.view);
+	CloseHandle(map.handle);
+#else
+	munmap(map.view, map.size);
+#endif
+	map = host_map();
+}
+
+uint32_t spike1_memory::map_file(const std::string &host_path, uint64_t offset, uint32_t length)
+{
+	if (!length) return 0;
+	host_map map;
+	const uint8_t *data = open_map(host_path, offset, length, map);
+	if (!data) return 0;
+	const uint32_t base = place(data, length, map);
+	if (!base) close_map(map);
+	return base;
 }
 
 uint32_t spike1_memory::map_view(const uint8_t *data, uint32_t length)
 {
-	if (!data || !length) return 0;
+	return data && length ? place(data, length, host_map()) : 0;
+}
+
+// The file range when it is free (the CPU has one fast window left for it), else a view of its
+// own from the top of the space; the block owns `map` from here
+uint32_t spike1_memory::place(const uint8_t *data, uint32_t length, const host_map &map)
+{
+	const uint32_t pages = uint32_t((uint64_t(length) + GUEST_PAGE_SIZE - 1) & ~uint64_t(GUEST_PAGE_SIZE - 1));
 	if (place_file(length)) {
 		m_file = { FILE_BASE, length, const_cast<uint8_t *>(data) }; // host() never hands it out for writing
-		take_span(m_view_free, FILE_BASE, uint32_t((uint64_t(length) + GUEST_PAGE_SIZE - 1) & ~uint64_t(GUEST_PAGE_SIZE - 1)));
-		if (m_space) m_space->add_fast_window(m_file.base, m_file.mem, m_file.size);
+		m_file_map = map;
+		take_span(m_view_free, FILE_BASE, pages);
+		if (m_space) m_space->add_fast_window(m_file.base, m_file.mem, m_file.size, false);
 		return m_file.base;
 	}
-	const uint32_t pages = uint32_t((uint64_t(length) + GUEST_PAGE_SIZE - 1) & ~uint64_t(GUEST_PAGE_SIZE - 1));
 	for (auto it = m_view_free.rbegin(); pages && it != m_view_free.rend(); ++it) {
 		if (it->size < pages) continue;
 		const uint32_t base = it->base + it->size - pages; // from the top, clear of the asset image's place
 		take_span(m_view_free, base, pages);
-		m_views.push_back({ base, length, const_cast<uint8_t *>(data) });
+		m_views.push_back({ { base, length, const_cast<uint8_t *>(data) }, map });
 		return base;
 	}
 	return 0;
@@ -227,8 +253,9 @@ uint32_t spike1_memory::map(uint32_t length)
 void spike1_memory::unmap(uint32_t addr, uint32_t length)
 {
 	for (auto v = m_views.begin(); v != m_views.end(); ++v)
-		if (v->base == addr) {
-			release_span(m_view_free, addr, (v->size + GUEST_PAGE_SIZE - 1) & ~(GUEST_PAGE_SIZE - 1));
+		if (v->b.base == addr) {
+			release_span(m_view_free, addr, uint32_t((uint64_t(v->b.size) + GUEST_PAGE_SIZE - 1) & ~uint64_t(GUEST_PAGE_SIZE - 1)));
+			close_map(v->map);
 			m_views.erase(v);
 			return;
 		}

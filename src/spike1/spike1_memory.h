@@ -64,12 +64,11 @@ public:
 	uint32_t map(uint32_t length);
 	void unmap(uint32_t addr, uint32_t length);
 
-	// Maps `length` bytes of a host file from `offset` read-only into the file range and returns
-	// the guest address; 0 when the range is taken or the host cannot map the file. One file
-	// for now: the CPU's address space has one fast window left for it
+	// Maps `length` bytes of a host file from `offset` read-only and returns the guest address; 0
+	// when there is no room or the host cannot map the file. The first takes the file range,
+	// later ones a view of their own until unmap()
 	uint32_t map_file(const std::string &host_path, uint64_t offset, uint32_t length);
-	// The same for bytes the host already holds in memory; they must stay put while mapped. The
-	// first takes the file range, later ones a view of their own until unmap()
+	// The same for bytes the host already holds in memory; they must stay put while mapped
 	uint32_t map_view(const uint8_t *data, uint32_t length);
 	// A dword the CPU reads outside its fast windows: from a view (bytes past the view's end read
 	// as zero). False when no view holds addr
@@ -77,21 +76,25 @@ public:
 
 private:
 	struct block { uint32_t base; uint32_t size; uint8_t *mem; };
+	// A host file's mapping behind a block: its start can sit below the block's mem for offset
+	// alignment. Empty for bytes the host holds itself
+	struct host_map { void *view = nullptr; size_t size = 0; void *handle = nullptr; };
+	struct view { block b; host_map map; };
 	block m_low{}, m_stack{}, m_kuser{}, m_file{};
+	host_map m_file_map;
 	address_space *m_space = nullptr;
-	// the host view behind m_file: its start can sit below m_file.mem for offset alignment
-	void *m_file_view = nullptr;
-	size_t m_file_view_size = 0;
-	void *m_file_handle = nullptr;
 
 	uint32_t m_brk_base = 0, m_brk = 0;
 	struct span { uint32_t base, size; };
 	std::vector<span> m_free; // free mmap spans, sorted by address
-	std::vector<block> m_views;
+	std::vector<view> m_views;
 	std::vector<span> m_view_free; // free address space for views, sorted by address
 	static void release_span(std::vector<span> &list, uint32_t addr, uint32_t length);
 	static bool take_span(std::vector<span> &list, uint32_t addr, uint32_t length);
 	bool place_file(uint32_t length);
+	uint32_t place(const uint8_t *data, uint32_t length, const host_map &map);
+	static uint8_t *open_map(const std::string &host_path, uint64_t offset, uint32_t length, host_map &map);
+	static void close_map(host_map &map);
 
 	static uint8_t *allocate(size_t size);
 	static void release(uint8_t *mem, size_t size);

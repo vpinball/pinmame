@@ -25,10 +25,13 @@ system-call level, the way the program sees it.
   one low block, the main stack, the `0xffff0000` kernel helper page, and a read-only view of the
   asset image (over 1 GB; 1.9 GB for Heavy Metal), mapped from the host's file or memory instead
   of copied, at the start of the space between the low block and the stack. Each block is one fast
-  window of the shim's `address_space`. Further read-only views (WWE's LCD clips, up to 195 MB,
+  window of the shim's `address_space`; the asset image's is read-only, so a guest write there
+  stops the machine (as the game's write to its read-only mapping would end it on the board)
+  instead of faulting the host. Further read-only views (WWE's LCD clips, up to 195 MB,
   mapped one at a time as they play) take that space from its top down; the CPU reaches them
   through the bus callback (`read_view()`), as it has no fast window left. A read-only mapping of
-  1 MB or more of a file the host holds is such a view.
+  1 MB or more of a file the host holds, or of 16 MB or more of one on the host's disk (`--root`),
+  is such a view; without room for one it is copied like any other mapping.
 - `spike1_vfs.*` - the filesystem the game sees: the title's files, read-only (a host directory
   with the machine's extracted root, or files the host holds in memory - PinMAME's ROM regions),
   under an in-memory layer with everything the game writes. The board's `/data` and `/tmp` mounts

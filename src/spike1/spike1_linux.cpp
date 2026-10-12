@@ -191,7 +191,9 @@ size_t spike1_linux::thread_count() const
 void spike1_linux::fault(uint32_t addr, bool write)
 {
 	if (m_status != status::running) return;
-	stop(std::string("guest ") + (write ? "write to " : "read from ") + hex(addr) + " outside guest memory, thread " +
+	const bool read_only = write && m_mem.host(addr, 1, false); // the asset image or a file view
+	stop(std::string("guest ") + (write ? "write to " : "read from ") + hex(addr) +
+		(read_only ? " in a read-only mapping" : " outside guest memory") + ", thread " +
 		std::to_string(m_current ? m_current->tid : 0) + " pc " + hex(m_cpu.pc()));
 }
 
@@ -1292,14 +1294,14 @@ int32_t spike1_linux::sys_mmap(uint32_t addr, uint32_t len, uint32_t prot, uint3
 	uint32_t where;
 	if (!fixed && !anonymous && len >= (1u << 20) && !(prot & 2)) {
 		// a big read-only mapping (the asset image, WWE's LCD clips): a view of the file instead of
-		// a copy - of a file the host holds, or from 16 MB of one on the host's disk
+		// a copy - of a file the host holds, or from 16 MB of one on the host's disk. Without room
+		// for a view it is copied like any other mapping
 		auto f = get_fd(fd);
 		const bool in_memory = f && f->type == file::kind::memory && offset + len <= f->size;
 		if (in_memory || (f && f->type == file::kind::host && f->fp && len >= (16u << 20))) {
 			const uint32_t view = in_memory ? m_mem.map_view(f->data + offset, len) : m_mem.map_file(f->host, offset, len);
-			note = view ? "mapped " + f->guest + " (" + std::to_string(len) + " bytes) read-only at " + hex(view)
-			            : "could not map " + f->guest + " (" + std::to_string(len) + " bytes)";
-			return view ? int32_t(view) : -E_NOMEM;
+			if (view) { note = "mapped " + f->guest + " (" + std::to_string(len) + " bytes) read-only at " + hex(view); return int32_t(view); }
+			note = "no view for " + f->guest + " (" + std::to_string(len) + " bytes), a copy instead";
 		}
 	}
 	if (fixed) {
@@ -1308,7 +1310,11 @@ int32_t spike1_linux::sys_mmap(uint32_t addr, uint32_t len, uint32_t prot, uint3
 		std::memset(m_mem.host(addr, len), 0, len);
 	} else {
 		where = m_mem.map(len);
-		if (!where) { note = "out of mmap space for " + std::to_string(len) + " bytes"; return -E_NOMEM; }
+		if (!where) {
+			if (!note.empty()) note += "; ";
+			note += "out of mmap space for " + std::to_string(len) + " bytes";
+			return -E_NOMEM;
+		}
 	}
 	if (!anonymous) {
 		auto f = get_fd(fd);
