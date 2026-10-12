@@ -2735,7 +2735,7 @@ static int EnableDisableCheatMenu(struct mame_bitmap * bitmap, int selection, in
 			for(i = 0; i < cheatListLength; i++)
 				SaveCheat(&cheatList[i]);
 
-			usrintf_showmessage_secs(1, "%d cheats saved", cheatListLength);
+			usrintf_showmessage_secs(1, "%u cheats saved", cheatListLength);
 		}
 
 		if(input_ui_pressed(IPT_UI_ADD_CHEAT))
@@ -5412,7 +5412,7 @@ static int AddEditCheatMenu(struct mame_bitmap * bitmap, int selection)
 			for(i = 0; i < cheatListLength; i++)
 				SaveCheat(&cheatList[i]);
 
-			usrintf_showmessage_secs(1, "%d cheats saved", cheatListLength);
+			usrintf_showmessage_secs(1, "%u cheats saved", cheatListLength);
 		}
 		else
 		{

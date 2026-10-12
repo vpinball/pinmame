@@ -3445,7 +3445,7 @@ PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t
 	}
 }
 
-static void SetGameDefImpl(uint8_t* game, size_t gameSize)
+static void SetGameDefImpl(const uint8_t* game, size_t gameSize)
 {
    msgLocals.gameDefStates.clear();
    if (!game || gameSize == 0)
@@ -3454,7 +3454,7 @@ static void SetGameDefImpl(uint8_t* game, size_t gameSize)
    // Machine definitions (see https://github.com/vpinball/pinmame-game-defs) declare their
    // I/O devices in 'inputs'/'outputs' arrays. Each item binds to a group identifying the
    // state group it belongs to and a device which is the public address reported as mappingId.
-   const json gameDef = json::parse(std::string(reinterpret_cast<char*>(game), gameSize));
+   const json gameDef = json::parse(std::string(reinterpret_cast<const char*>(game), gameSize));
    static const std::pair<const char*, uint32_t> groupMap[] = {
       { "pinmame.input.switch",    PMPI_GROUP_SWITCH },
       { "pinmame.input.dip",       PMPI_GROUP_DIPSWITCH },
@@ -3473,9 +3473,13 @@ static void SetGameDefImpl(uint8_t* game, size_t gameSize)
             || !item["binding"].contains("group") || !item["binding"]["group"].is_string()
             || !item["binding"].contains("device") || !item["binding"]["device"].is_number_integer())
             continue;
+         // mappingIds are 16 bit (negative switch numbers as their uint16 pattern), skip what doesn't fit instead of wrapping onto another device
+         const long long device = item["binding"]["device"].get<long long>();
+         if (device < -32768 || device > 65535)
+            continue;
          for (const auto& [name, groupId] : groupMap)
             if (item["binding"]["group"] == name)
-               msgLocals.gameDefStates[std::make_pair(groupId, static_cast<uint16_t>(static_cast<int16_t>(item["binding"]["device"].get<int>())))] = item["label"].get<std::string>();
+               msgLocals.gameDefStates[std::make_pair(groupId, static_cast<uint16_t>(device))] = item["label"].get<std::string>();
       }
    }
 }
@@ -3484,8 +3488,14 @@ static void SetGameDefImpl(uint8_t* game, size_t gameSize)
  * PinmameSetGameDef
  ******************************************************/
 
-PINMAMEAPI void PinmameSetGameDef(uint8_t* game, size_t gameSize)
+PINMAMEAPI PINMAME_STATUS PinmameSetGameDef(const uint8_t* game, size_t gameSize)
 {
+	// the definition is applied when a game starts (SetupMsgApiGameStates), which reads it from the main thread
+	if (_isRunning) {
+		libpinmame_log_error("PinmameSetGameDef(): cannot change the game definition while a game is running");
+		return PINMAME_STATUS_GAME_ALREADY_RUNNING;
+	}
+
 	// Same failure containment as PinmameSetMemMap: the definition file is host-provided
 	// input that may be truncated or hand-edited, so parsing errors must not cross the C boundary.
 	try {
@@ -3495,4 +3505,5 @@ PINMAMEAPI void PinmameSetGameDef(uint8_t* game, size_t gameSize)
 		msgLocals.gameDefStates.clear();
 		libpinmame_log_error("PinmameSetGameDef(): failed to parse game definition: %s", e.what());
 	}
+	return PINMAME_STATUS_OK;
 }
