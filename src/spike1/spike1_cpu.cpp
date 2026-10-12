@@ -39,7 +39,8 @@ bool spike1_cpu_device::thumb() const
 
 int spike1_cpu_device::run(int cycles)
 {
+	m_unused = 0;
 	m_icount = cycles;
 	execute_run();
-	return cycles - m_icount;
+	return cycles - m_icount - m_unused;
 }

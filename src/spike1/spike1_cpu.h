@@ -37,12 +37,16 @@ public:
 
 	// Runs up to `cycles` cycles and returns how many were used
 	int run(int cycles);
-	// Ends the slice that is running at the next instruction boundary
-	void end_slice() { m_icount = 0; }
+	// Ends the slice that is running at the next instruction boundary; run() does not count the
+	// cycles it leaves, so a thread that blocks or yields uses only what it ran
+	void end_slice() { if (m_icount > 0) { m_unused += m_icount; m_icount = 0; } }
 	// Takes `cycles` from the slice that is running, e.g. for a system call that costs time
 	void eat(int cycles) { m_icount -= cycles; }
 
 	void set_swi(std::function<void (uint32_t)> handler) { set_swi_handler(std::move(handler)); }
+
+private:
+	int m_unused = 0; // the cycles end_slice() took from the slice that is running
 };
 
 DECLARE_DEVICE_TYPE(SPIKE1_CPU, spike1_cpu_device)
