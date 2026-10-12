@@ -37,12 +37,13 @@ system-call level, the way the program sees it.
   under an in-memory layer with everything the game writes. The board's `/data` and `/tmp` mounts
   start empty; the game keeps its NVRAM files under `/data/nv`.
 - `spike1_linux.*` - the program loader (ELF, initial stack with argv/envp/auxv) and the system
-  calls: files, memory, time, futexes, pipes, poll/select, and the game's threads. `nvram()` gives
-  everything the machine keeps across power cycles - the written files and the board's EEPROMs -
-  as one block for the host's NVRAM file; the next start takes it back in its config. Threads
-  are scheduled round robin on the one CPU, in quanta; when every thread is blocked, time skips
-  ahead to the next wake-up without running instructions. Time is emulated time - CPU cycles at
-  the configured clock.
+  calls: files, memory, time, futexes, pipes, poll/select (which sleep until a device's data is
+  due, or look again every millisecond when nothing gives that time), and the game's threads.
+  `nvram()` gives everything the machine keeps across power cycles - the written files and the
+  board's EEPROMs - as one block for the host's NVRAM file; the next start takes it back in its
+  config. Threads are scheduled round robin on the one CPU, in quanta; when every thread is
+  blocked, time skips ahead to the next wake-up without running instructions. Time is emulated
+  time - CPU cycles at the configured clock.
 - `spike1_pinmame.cpp`, `spike1_public.h` - the plain C contract with PinMAME's half,
   `src/wpc/spike1.c`; the subsystem includes no PinMAME header.
 - `spike1_boot.cpp` - the standalone harness.
@@ -101,7 +102,8 @@ saves the CPU board's LCD every s seconds as a PPM file in the state directory,
 `--poke <s>:<hex address>:<hex byte>` writes a byte of guest memory then (for experiments),
 `--slice <ms>` sets the emulated time per `run()` call (1 by
 default, the period PinMAME exchanges the I/O at). With `SPIKE1_NODE_STATS` set in the environment, it
-prints the node-bus frame count per command and board.
+prints the node-bus frame count per command and board (and per second), and how much of the time
+the wire carried bytes.
 
 `--root` is the machine's root filesystem extracted from its image (with `games/<name>/game` and
 `image.bin` in it). `--files` instead loads the game's folder (`games/<name>`: the program,
@@ -138,6 +140,16 @@ code (its symbols are in the program) rather than from any other emulator:
   below. Other queries are answered with zeros and logged once; other commands are logged once.
   A board counts time in ticks at the rate its GetVersion reports (1000 Hz here); the game
   converts coil and motor times from ms with it.
+- **The node bus wire**: the bytes take the wire's time at the rate and character frame the
+  game sets with TCSETS (460800 baud, 8 data bits, 2 stop bits: 23.9 us a byte). The link is half
+  duplex: a frame goes out once the bytes before it are through, and its answer follows it, so
+  `select()` returns, and `read()` finds the answer, once its last byte is in (the game sets
+  `ASYNC_LOW_LATENCY`, so the driver passes received bytes on at once). The bridge's relaying and
+  a board's time to answer are not known and count as nothing, so a transfer takes the least
+  time the wire allows. `tcdrain()` waits until the written bytes have gone out. The game's
+  node-bus loop polls every board, reads its switches, then sleeps 1 ms, so the wire sets its
+  pace: in attract mode a board's switches are read every 2.0 ms with two boards (Supreme,
+  Spider-Man) to every 4.6 ms with seven (Ghostbusters); WWE's six take 4.0 ms.
 - **Switches**: the title's own tables (`node_board_table`, `node_board_device_table`,
   `switch_table`, `switch_dedicated_table`) give each switch's board, position, number, name and
   polarity. A board's eight GetInputState bytes and the CPU board's 3-byte `/dev/spi1` transfer
@@ -282,10 +294,10 @@ code (its symbols are in the program) rather than from any other emulator:
   `<hex address> <size> <name>` lines.
 - **The CPU** (`CPU_SPIKE1`, `src/cpuintrf.c`) runs the machine for the cycles PinMAME gives it,
   at 400 MHz. Every millisecond (a PinMAME timer, `SPIKE1_IOFREQ`) the driver passes switch
-  changes in - the game reads a board's switches about every 1.4 ms, so a change reaches it as on
-  the machine - and takes coils, LEDs and a new DMD frame out. The core reports solenoid changes
-  to its hosts once a frame, so a coil stays on for a frame at least: a pulse that came and went
-  between two frames still shows.
+  changes in - the game reads a board's switches every 2 to 5 ms, at the node bus wire's pace
+  (above), so a change is there for its next read - and takes coils, LEDs and a new DMD frame
+  out. The core reports solenoid changes to its hosts once a frame, so a coil stays on for a
+  frame at least: a pulse that came and went between two frames still shows.
 - **Numbers** are the factory manual's: switches by their Switch Reference numbers (the flipper
   buttons and EOS switches in PinMAME's flipper column - each title's numbers, with its coin, tilt
   and slam switches, are in its `SPIKE1_SWITCHES`, or `SPIKE1_SWITCHES_UPPER` with the upper

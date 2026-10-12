@@ -73,6 +73,16 @@ constexpr uint16_t AUDIO_VOLUME_POT = 0x28, POT_FULL_SCALE = 0x80;
 // (PinMAME's docs/dmd.md, Stern Spike 1)
 constexpr uint64_t DMD_FRAME_NS = 15750000;
 
+// The node bus port's termios c_cflag (asm-generic/termbits.h, which ARM uses): the rate's code in
+// CBAUD (with CBAUDEX for the rates above 38400), the data bits in CSIZE, CSTOPB for two stop bits,
+// PARENB for a parity bit. A port starts as the serial core sets it up, 9600 baud with 8 data bits
+// and one stop bit (B9600 | CS8 | CREAD | HUPCL | CLOCAL), until the game sets its own
+constexpr uint32_t TERM_CBAUD = 0x100f, TERM_CBAUDEX = 0x1000, TERM_CSIZE = 0x30, TERM_CSTOPB = 0x40, TERM_PARENB = 0x100;
+constexpr uint32_t TERM_INITIAL_CFLAG = 0x0d | 0x30 | 0x80 | 0x400 | 0x800;
+constexpr uint32_t TERM_RATES[16] = { 0, 50, 75, 110, 134, 150, 200, 300, 600, 1200, 1800, 2400, 4800, 9600, 19200, 38400 };
+constexpr uint32_t TERM_RATES_EX[16] = { 0, 57600, 115200, 230400, 460800, 500000, 576000, 921600, 1000000, 1152000,
+	1500000, 2000000, 2500000, 3000000, 3500000, 4000000 };
+
 std::string hex(uint32_t v) { char b[16]; std::snprintf(b, sizeof(b), "0x%x", v); return b; }
 
 std::string bytes_hex(const uint8_t *p, uint32_t n, uint32_t limit = 16)
@@ -163,6 +173,12 @@ void spike1_devices::start(const config &cfg)
 	m_fb_frame_ns = 16666667;
 	m_fb_pans = 0;
 	m_fb_startup_seen = m_fb_background_asked = false;
+	m_nb_reply.clear();
+	m_nb_arriving.clear();
+	m_nb_line_free_ns = m_nb_sent_ns = m_nb_busy_ns = 0;
+	m_nb_cflag = 0;
+	std::string initial;
+	node_bus_settings(TERM_INITIAL_CFLAG, initial);
 	for (auto &c : m_insert) c = insert_channel();
 	if (m_cfg.read_game_file) m_cfg.read_game_file("lcdinsert.bin", m_insert_image);
 	const uint8_t *head = m_insert_image.data();
@@ -243,7 +259,7 @@ int32_t spike1_devices::read(handle &h, uint32_t buf, uint32_t len, uint64_t now
 	if (h.type == kind::adc)
 		return adc_read(buf, len, now_ns, wait_ns);
 	if (h.type == kind::node_bus) {
-		const int32_t r = node_bus_read(buf, len);
+		const int32_t r = node_bus_read(buf, len, now_ns, wait_ns);
 		if (r == 0 && m_cfg.trace) note = "node bus: no reply waiting";
 		return r;
 	}
@@ -251,11 +267,14 @@ int32_t spike1_devices::read(handle &h, uint32_t buf, uint32_t len, uint64_t now
 	return 0;
 }
 
-bool spike1_devices::readable(const handle &h, uint64_t now_ns) const
+uint64_t spike1_devices::readable_at(const handle &h, uint64_t now_ns) const
 {
-	if (h.type == kind::adc) return m_adc_next_ns && now_ns >= m_adc_next_ns;
-	if (h.type == kind::node_bus) return !m_nb_reply.empty();
-	return false;
+	if (h.type == kind::adc) return m_adc_next_ns ? m_adc_next_ns : NEVER; // the buffer being sampled
+	if (h.type == kind::node_bus) {
+		if (m_nb_reply.size() > node_bus_in_flight(now_ns)) return now_ns;
+		for (const nb_arrival &a : m_nb_arriving) if (a.at_ns > now_ns) return a.at_ns;
+	}
+	return NEVER;
 }
 
 int32_t spike1_devices::write(handle &h, uint32_t buf, uint32_t len, uint64_t now_ns, uint64_t &wait_ns, std::string &note)
@@ -315,11 +334,24 @@ int32_t spike1_devices::ioctl(handle &h, uint32_t req, uint32_t arg, uint64_t no
 		return 0;
 	if (h.type == kind::node_bus) {
 		switch (req) {
-		case 0x540b: // TCFLSH: the game drops stale input before every transfer
-			if (arg == 0 || arg == 2) m_nb_reply.clear();
+		case 0x540b: // TCFLSH: the game drops stale input before every transfer; a reply still on the wire comes in after it
+			if (arg == 0 || arg == 2) m_nb_reply.erase(m_nb_reply.begin(), m_nb_reply.end() - std::ptrdiff_t(node_bus_in_flight(now_ns)));
 			return 0;
-		case 0x5401: case 0x5402: case 0x5403: case 0x5404: // TCGETS, TCSETS[W|F]
-		case 0x540a: case 0x541e: case 0x541f:              // TCXONC, TIOCGSERIAL, TIOCSSERIAL
+		case 0x5402: case 0x5403: case 0x5404: { // TCSETS, and TCSETSW and TCSETSF, which first wait for the output to go
+			if (req != 0x5402 && now_ns < m_nb_sent_ns) { wait_ns = m_nb_sent_ns; return WAIT; }
+			uint32_t cflag = 0;   // struct termios: c_iflag, c_oflag, c_cflag, ...
+			if (!guest_read(arg + 8, &cflag, 4)) return -E_FAULT;
+			node_bus_settings(cflag, note);
+			if (req == 0x5404) m_nb_reply.erase(m_nb_reply.begin(), m_nb_reply.end() - std::ptrdiff_t(node_bus_in_flight(now_ns)));
+			return 0;
+		}
+		case 0x5409: // TCSBRK: tcdrain() when its argument is not 0 - it waits until what the game wrote has gone out
+			if (!arg) break; // a break on the line: not modelled
+			if (now_ns < m_nb_sent_ns) { wait_ns = m_nb_sent_ns; return WAIT; }
+			return 0;
+		// TCGETS, TCXONC, TIOCGSERIAL, and TIOCSSERIAL, with which the game sets ASYNC_LOW_LATENCY: the
+		// driver passes received bytes to the reader at once
+		case 0x5401: case 0x540a: case 0x541e: case 0x541f:
 			return 0;
 		}
 	}
@@ -481,6 +513,16 @@ int32_t spike1_devices::rgb_write(uint32_t buf, uint32_t len, uint64_t now_ns, u
 //           addr + n + cmd + data + checksum = 0 mod 256
 //   reply:  [data, reply length bytes][checksum][status], data + checksum = 0 mod 256, status
 //           bits 2 and 3 clear when the board accepted the frame
+//
+// The bytes take the wire's time, at the rate and character frame the game sets (WWE and the later
+// titles: 460800 baud, 8 data bits, 2 stop bits - 23.9 us a byte). The link is half duplex: a frame
+// goes out once the bytes before it, sent or answered, are through, and the answer follows its
+// last byte. The game waits for an answer with select() and reads until it has all of it
+// (ASYNCSERIAL_ReadBytes), so the wire sets the pace of its node-bus loop. The answer comes to the
+// reader whole once its last byte is in - the game sets ASYNC_LOW_LATENCY, so the driver passes
+// received bytes on at once. The bridge's relaying and a board's time to answer are not known and
+// count as nothing: a transfer takes the least time the wire allows. A board acts on a frame when
+// the game writes it, not when the frame's last byte has reached it
 
 // The title's boards, from its node_board_table: {entries, count, entry size}, each entry's
 // fourth word holding the bus address - in its upper half on newer SDKs (address << 16 | devices),
@@ -518,10 +560,22 @@ void spike1_devices::node_bus_reply(const uint8_t *data, uint32_t len, uint8_t s
 	m_nb_reply.push_back(status);
 }
 
-int32_t spike1_devices::node_bus_read(uint32_t buf, uint32_t len)
+uint32_t spike1_devices::node_bus_in_flight(uint64_t now_ns) const
 {
-	const uint32_t n = std::min<uint32_t>(len, uint32_t(m_nb_reply.size()));
-	if (!n) return 0;
+	uint32_t bytes = 0;
+	for (const nb_arrival &a : m_nb_arriving) if (a.at_ns > now_ns) bytes += a.bytes;
+	return bytes;
+}
+
+// What has come in; with nothing yet but an answer on its way, a read waits for it
+int32_t spike1_devices::node_bus_read(uint32_t buf, uint32_t len, uint64_t now_ns, uint64_t &wait_ns)
+{
+	const uint32_t in_flight = node_bus_in_flight(now_ns);
+	const uint32_t n = std::min<uint32_t>(len, uint32_t(m_nb_reply.size()) - in_flight);
+	if (!n) {
+		for (const nb_arrival &a : m_nb_arriving) if (a.at_ns > now_ns) { wait_ns = a.at_ns; return WAIT; }
+		return 0;
+	}
 	uint8_t *p = m_mem.host(buf, n);
 	if (!p) return -E_FAULT;
 	for (uint32_t i = 0; i < n; i++) { p[i] = m_nb_reply.front(); m_nb_reply.pop_front(); }
@@ -532,21 +586,48 @@ int32_t spike1_devices::node_bus_write(uint32_t buf, uint32_t len, uint64_t now_
 {
 	const uint8_t *p = m_mem.host(buf, len, false);
 	if (len && !p) return -E_FAULT;
+	const size_t queued = m_nb_reply.size();
 	if (len == 1 && p[0] == 0) { // poll
 		const auto &nodes = node_bus_nodes();
 		const uint8_t next = m_nb_poll < nodes.size() ? nodes[m_nb_poll++] : 0;
 		if (!next) m_nb_poll = 0;
 		m_nb_reply.push_back(next);
 		if (m_cfg.trace) note = "node bus poll -> " + std::to_string(next);
-		return 1;
-	}
-	if (len >= 5 && (p[0] & 0x80) && uint32_t(p[1]) + 3 == len)
+	} else if (len >= 5 && (p[0] & 0x80) && uint32_t(p[1]) + 3 == len)
 		node_bus_frame(p, len, now_ns, note);
 	else if (len >= 2 && !(p[0] & 0x80) && uint32_t(p[1]) + 2 == len)
 		node_bus_bridge(p, len, note);
 	else
 		note = "node bus: unframed write " + bytes_hex(p, len);
+	// on the wire once it is free, the answer after it
+	while (!m_nb_arriving.empty() && m_nb_arriving.front().at_ns <= now_ns) m_nb_arriving.pop_front();
+	const uint32_t answer = uint32_t(m_nb_reply.size() - queued);
+	m_nb_sent_ns = std::max(now_ns, m_nb_line_free_ns) + len * m_nb_char_ns;
+	m_nb_line_free_ns = m_nb_sent_ns + answer * m_nb_char_ns;
+	m_nb_busy_ns += (len + answer) * m_nb_char_ns;
+	if (answer) m_nb_arriving.push_back({ m_nb_line_free_ns, answer });
 	return int32_t(len);
+}
+
+// The game's TCSETS: the line's rate, and its character frame - a start bit, 5 to 8 data bits, a
+// parity bit with PARENB, and one or two stop bits
+void spike1_devices::node_bus_settings(uint32_t cflag, std::string &note)
+{
+	if (cflag == m_nb_cflag) return;
+	const uint32_t code = cflag & TERM_CBAUD;
+	const uint32_t baud = code & TERM_CBAUDEX ? TERM_RATES_EX[code & 0xf] : TERM_RATES[code];
+	if (!baud) { // B0 hangs the line up; BOTHER takes a rate only TCSETS2 gives
+		note = "node bus: line settings " + hex(cflag) + " not modelled; the line keeps its rate";
+		return;
+	}
+	m_nb_cflag = cflag;
+	const uint32_t data_bits = 5 + ((cflag & TERM_CSIZE) >> 4), stop_bits = cflag & TERM_CSTOPB ? 2 : 1;
+	const uint32_t bits = 1 + data_bits + (cflag & TERM_PARENB ? 1 : 0) + stop_bits;
+	m_nb_char_ns = (uint64_t(bits) * 1000000000ull + baud / 2) / baud;
+	char text[128];
+	std::snprintf(text, sizeof(text), "node bus: %u baud, %u data bits, %s, %u stop bit%s - %.1f us a byte", baud, data_bits,
+		cflag & TERM_PARENB ? "parity" : "no parity", stop_bits, stop_bits > 1 ? "s" : "", double(m_nb_char_ns) / 1000.0);
+	note = text;
 }
 
 // The board block array: sys_node_board_get_next_block_ptr(node) is base + node * stride, the base

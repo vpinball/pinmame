@@ -174,7 +174,9 @@ private:
 	bool set_nvram(const std::vector<uint8_t> &block);
 	int alloc_fd(std::shared_ptr<file> f, int lowest = 0);
 	std::shared_ptr<file> get_fd(int fd) const;
-	bool readable_now(int fd) const;
+	// When a read on fd finds data: at or before now if it would now, spike1_devices::NEVER when
+	// nothing tells (a pipe another thread may write)
+	uint64_t readable_at(int fd) const;
 
 	int32_t sys_open(const std::string &path, uint32_t flags, uint32_t mode, std::string &note);
 	int32_t sys_read(int fd, uint32_t buf, uint32_t len, std::string &note);

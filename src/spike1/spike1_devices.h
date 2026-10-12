@@ -76,8 +76,10 @@ public:
 	int32_t read(handle &h, uint32_t buf, uint32_t len, uint64_t now_ns, uint64_t &wait_ns, std::string &note);
 	int32_t write(handle &h, uint32_t buf, uint32_t len, uint64_t now_ns, uint64_t &wait_ns, std::string &note);
 	int32_t ioctl(handle &h, uint32_t req, uint32_t arg, uint64_t now_ns, uint64_t &wait_ns, std::string &note);
-	// Whether a read would return data now, for poll/select
-	bool readable(const handle &h, uint64_t now_ns) const;
+	// When a read finds data, for poll/select: at or before now_ns if it would now, NEVER if nothing
+	// is on its way (a later write may still bring something)
+	static constexpr uint64_t NEVER = UINT64_MAX;
+	uint64_t readable_at(const handle &h, uint64_t now_ns) const;
 
 	// Switches, as the title's own tables define them: the board (node) and position each one is
 	// wired to, its number in the game and its English name
@@ -174,6 +176,8 @@ public:
 	uint64_t rgb_frame_count() const { return m_rgb_frames; }
 	// Frames the game sent, per command byte and board, for bring-up statistics
 	const std::map<uint32_t, uint64_t> &node_bus_counts() const { return m_nb_counts; }
+	// The time the node bus wire has carried bytes, sent and answered
+	uint64_t node_bus_busy_ns() const { return m_nb_busy_ns; }
 	uint64_t dmd_frame_count() const { return m_dmd_frames; }
 	// Sees every addressed node-bus frame the game sends, for diagnostics
 	using frame_observer = std::function<void (uint64_t now_ns, const uint8_t *frame, uint32_t len)>;
@@ -222,7 +226,16 @@ private:
 	bool m_cpu_inputs_from_1 = false; // WWE's SDK: the CPU board's inputs at positions 1-15 a bit lower on the wire (wire_bytes())
 
 	// Node bus: the RS-485 link to the playfield and cabinet node boards
-	std::deque<uint8_t> m_nb_reply;          // reply bytes waiting for the game's read
+	std::deque<uint8_t> m_nb_reply;          // reply bytes for the game's read, the last ones maybe still on the wire
+	// The wire, half duplex at the rate and character frame the game sets (node_bus_settings()): a
+	// frame goes out once the bytes before it are through, and its reply comes back after it
+	struct nb_arrival { uint64_t at_ns; uint32_t bytes; };
+	std::deque<nb_arrival> m_nb_arriving;    // replies on the wire, oldest first: the tail of m_nb_reply
+	uint64_t m_nb_char_ns = 0;               // one character: start bit, data bits, parity and stop bits
+	uint64_t m_nb_line_free_ns = 0;          // when the last byte on the wire, sent or answered, is through
+	uint64_t m_nb_sent_ns = 0;               // when the last byte the game wrote has gone out (tcdrain)
+	uint64_t m_nb_busy_ns = 0;
+	uint32_t m_nb_cflag = 0;                 // the settings in force
 	std::vector<uint8_t> m_nb_nodes;         // bus addresses of the title's boards
 	bool m_nb_nodes_known = false;
 	size_t m_nb_poll = 0;
@@ -382,7 +395,9 @@ private:
 	int32_t adc_read(uint32_t buf, uint32_t len, uint64_t now_ns, uint64_t &wait_ns);
 	int32_t dmd_write(uint32_t buf, uint32_t len, uint64_t now_ns, uint64_t &wait_ns);
 	int32_t node_bus_write(uint32_t buf, uint32_t len, uint64_t now_ns, std::string &note);
-	int32_t node_bus_read(uint32_t buf, uint32_t len);
+	int32_t node_bus_read(uint32_t buf, uint32_t len, uint64_t now_ns, uint64_t &wait_ns);
+	void node_bus_settings(uint32_t cflag, std::string &note);
+	uint32_t node_bus_in_flight(uint64_t now_ns) const;   // bytes of m_nb_reply still on the wire
 	void node_bus_frame(const uint8_t *frame, uint32_t len, uint64_t now_ns, std::string &note);
 	void node_bus_bridge(const uint8_t *msg, uint32_t len, std::string &note);
 	void node_bus_reply(const uint8_t *data, uint32_t len, uint8_t status = 0);

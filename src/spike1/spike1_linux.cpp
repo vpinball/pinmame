@@ -33,7 +33,8 @@ enum : uint32_t {
 enum : uint32_t { S_IFDIR_ = 0040000, S_IFCHR_ = 0020000, S_IFREG_ = 0100000, S_IFLNK_ = 0120000 };
 
 constexpr int32_t AT_FDCWD_ = -100;
-// a thread waiting for input looks again this often: input has no wake-up of its own yet
+// a thread waiting for input that nothing gives a time for (a pipe another thread may write, a
+// device with nothing on its way) looks again this often
 constexpr uint64_t POLL_RECHECK_NS = 1000000;
 constexpr uint32_t PROGRAM_HWCAP = 0x97;        // swp, half, thumb, fast mult, edsp: ARMv5TE, no VFP
 
@@ -1418,15 +1419,15 @@ int32_t spike1_linux::sys_futex(const uint32_t a[7], std::string &note)
 	}
 }
 
-bool spike1_linux::readable_now(int fd) const
+uint64_t spike1_linux::readable_at(int fd) const
 {
 	auto f = get_fd(fd);
-	if (!f) return false;
+	if (!f) return spike1_devices::NEVER;
 	switch (f->type) {
-	case file::kind::pipe_read: return !f->pipe->empty();
-	case file::kind::device: return m_devices.readable(f->dev, now_ns());
-	case file::kind::console: return false; // no input yet
-	default: return true;
+	case file::kind::pipe_read: return f->pipe->empty() ? spike1_devices::NEVER : now_ns();
+	case file::kind::device: return m_devices.readable_at(f->dev, now_ns());
+	case file::kind::console: return spike1_devices::NEVER; // no input yet
+	default: return now_ns();
 	}
 }
 
@@ -1444,6 +1445,15 @@ int32_t spike1_linux::sys_poll(uint32_t nr, const uint32_t a[7], std::string &no
 	}
 
 	int32_t ready = 0;
+	// with nothing ready, the call sleeps until the first time something will be, or looks again
+	// soon when nothing tells that time
+	uint64_t look_again = UINT64_MAX;
+	auto readable = [&](int fd) {
+		const uint64_t at = readable_at(fd);
+		if (at <= now) return true;
+		look_again = std::min(look_again, at == spike1_devices::NEVER ? now + POLL_RECHECK_NS : at);
+		return false;
+	};
 	std::vector<uint32_t> in_r, in_w, out_r, out_w;
 	if (nr == 168) { // poll(fds, nfds, timeout_ms)
 		for (uint32_t i = 0; i < a[1]; i++) {
@@ -1455,7 +1465,7 @@ int32_t spike1_linux::sys_poll(uint32_t nr, const uint32_t a[7], std::string &no
 			if (fd >= 0) {
 				if (!get_fd(fd)) revents = 0x20;                       // POLLNVAL
 				else {
-					if ((events & 0x01) && readable_now(fd)) revents |= 0x01; // POLLIN
+					if ((events & 0x01) && readable(fd)) revents |= 0x01;    // POLLIN
 					if (events & 0x04) revents |= 0x04;                      // POLLOUT: writes never wait
 				}
 			}
@@ -1469,7 +1479,7 @@ int32_t spike1_linux::sys_poll(uint32_t nr, const uint32_t a[7], std::string &no
 		if (a[2] && !m_mem.read(a[2], in_w.data(), words * 4)) return -E_FAULT;
 		for (uint32_t fd = 0; fd < a[0]; fd++) {
 			const uint32_t bit = 1u << (fd & 31);
-			if ((in_r[fd / 32] & bit) && readable_now(int(fd))) { out_r[fd / 32] |= bit; ready++; }
+			if ((in_r[fd / 32] & bit) && readable(int(fd))) { out_r[fd / 32] |= bit; ready++; }
 			if ((in_w[fd / 32] & bit) && get_fd(int(fd))) { out_w[fd / 32] |= bit; ready++; }
 		}
 	}
@@ -1486,7 +1496,7 @@ int32_t spike1_linux::sys_poll(uint32_t nr, const uint32_t a[7], std::string &no
 		}
 		return ready;
 	}
-	block(std::min<uint64_t>(t.poll_deadline, now + POLL_RECHECK_NS), true); // look again soon
+	block(std::min(t.poll_deadline, look_again), true);
 	(void)note;
 	return 0;
 }

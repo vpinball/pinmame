@@ -388,9 +388,12 @@ int main(int argc, char **argv)
 		std::fclose(wav);
 		std::printf("sound: %.3f s at %u Hz -> %s\n", double(wav_frames) / (wav_rate ? wav_rate : 1), wav_rate, wav_path.c_str());
 	}
-	if (std::getenv("SPIKE1_NODE_STATS")) // node-bus frames per command and board
+	if (std::getenv("SPIKE1_NODE_STATS") && linux_os.now_ns()) { // node-bus frames per command and board, and the wire's load
+		const double seconds = double(linux_os.now_ns()) / 1e9;
 		for (const auto &c : linux_os.devices().node_bus_counts())
-			std::printf("node bus cmd %02x node %2u: %llu\n", c.first >> 8, c.first & 0xff, (unsigned long long)c.second);
+			std::printf("node bus cmd %02x node %2u: %llu (%.0f/s)\n", c.first >> 8, c.first & 0xff, (unsigned long long)c.second, double(c.second) / seconds);
+		std::printf("node bus: the wire carried bytes %.1f%% of the time\n", double(linux_os.devices().node_bus_busy_ns()) / seconds / 1e7);
+	}
 	const double wall = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
 
 	const char *state = linux_os.state() == spike1_linux::status::running ? "still running" :
