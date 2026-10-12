@@ -51,7 +51,7 @@
 
 #if HAS_SPIKE1
 
-#define SPIKE1_REGION     REGION_USER1   /* the game folder's files, one after another */
+#define SPIKE1_REGION     REGION_USER1   /* the game folder's files, mapped from the set on disk (ROMREGION_MAPPED) */
 #define SPIKE1_AUDIO_RATE 44100          /* the stream's rate until the game sets /dev/i2s to its own */
 #define SPIKE1_PEN0       (COL_COUNT + 48 + 48 + 48) /* the core's palette, then 32768 pens of RGB555 */
 #define SPIKE1_MAXCOILS   64
@@ -660,6 +660,7 @@ static MACHINE_INIT(spike1)
   spike1_file files[64];
   unsigned count = 0;
   const struct RomModule *region, *rom;
+  const char *missing = NULL, *inMemory = NULL;
   char error[256];
   int c;
 
@@ -674,21 +675,35 @@ static MACHINE_INIT(spike1)
   if ((core_gameData->lcdLayout->type & CORE_SEGALL) == CORE_DMD)
     core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_PREINTEGRATED_LINEAR_16, CORE_DMD_PWM_PREINTEGRATED_LINEAR_16, 0);
 
-  /* the title's files, as the ROM set lays them out in SPIKE1_REGION */
+  /* the title's files, which the ROM loader keeps mapped from the set on disk for the machine's
+     life: a stored zip entry or a file in the set's folder. One it holds in memory instead (a
+     compressed entry) costs its size in RAM */
   for (region = rom_first_region(Machine->gamedrv); region; region = rom_next_region(region)) {
     if (ROMREGION_GETTYPE(region) != SPIKE1_REGION) continue;
     for (rom = rom_first_file(region); rom && count < sizeof(files) / sizeof(files[0]); rom = rom_next_file(rom)) {
+      UINT32 length = 0;
+      int mapped = 0;
       files[count].name = ROM_GETNAME(rom);
-      files[count].data = memory_region(SPIKE1_REGION) + ROM_GETOFFSET(rom);
-      files[count].size = ROM_GETLENGTH(rom);
+      files[count].data = get_mapped_rom(rom, &length, &mapped);
+      files[count].size = length;
+      if (!files[count].data) missing = files[count].name;
+      else if (!mapped && !inMemory) inMemory = files[count].name;
       count++;
     }
+  }
+  if (missing) {
+    usrintf_showmessage_secs(30, "Spike 1: the ROM set's %s is not open", missing);
+    return;
   }
   if (!spike1_pinmame_start(spike1_game()->folder, files, count, spike1_game()->symbols, nvBlock, nvSize, error, sizeof(error))) {
     usrintf_showmessage_secs(30, "Spike 1: the game program does not start: %s", error);
     return;
   }
   locals.running = 1;
+  if (inMemory) {
+    logerror("Spike 1: %s is held in memory, not mapped from disk: a set's zip maps only what it stores uncompressed\n", inMemory);
+    usrintf_showmessage_secs(10, "Spike 1: %s is held in memory, not mapped from disk (a compressed zip?)", inMemory);
+  }
   spike1_provide_video_key();
   if (spike1_game()->displayLink) spike1_pinmame_display_link(spike1_game()->displayLink);
   for (c = 0; c < 2; c++) {
@@ -816,7 +831,7 @@ MACHINE_DRIVER_END
 /-------------------------------------------------------------------*/
 SPIKE1_INIT(gbust, "ghostbusters_le", spike1_dmd_insert, 165, SPIKE1_SWITCHES(9, 10, 11, 12, 81, 82, 83, 84, 86, 89))
 ROM_START(gbust_117h)
-  ROM_REGION(0x47c44000, SPIKE1_REGION, 0)
+  ROM_REGION(0x47c44000, SPIKE1_REGION, ROMREGION_MAPPED)
     ROM_LOAD("game", 0x00000000, 0x006c311a, CRC(0b6958ba) SHA1(6f94dbcdaa85e95073534032d74a2dab390b7a4a))
     ROM_LOAD("image.bin", 0x006c4000, 0x462dcb94, CRC(26796bf5) SHA1(fe9ddeb83ff128f2af13ef5db48c0d12dcc93d35))
     ROM_LOAD("accbridgenode-LPC1313-0_52_0.hex", 0x469a1000, 0x0000527e, CRC(c4a99441) SHA1(a87fb68db17a757c4cbd7edfc401a7dbdb7f0722))
@@ -844,7 +859,7 @@ CORE_GAMEDEF(gbust, 117h, "Ghostbusters (Limited Edition 1.17.0)", 2016, "Stern"
 /-------------------------------------------------------------------*/
 SPIKE1_INIT(wnbjm, "WN", spike1_dmd, 76, SPIKE1_SWITCHES(3, 4, 1, 2, 53, 54, 55, 56, 58, 60))
 ROM_START(wnbjm_155)
-  ROM_REGION(0x10bb7000, SPIKE1_REGION, 0)
+  ROM_REGION(0x10bb7000, SPIKE1_REGION, ROMREGION_MAPPED)
     ROM_LOAD("game", 0x00000000, 0x004115ac, CRC(67df0775) SHA1(fe018c240e4834abd07b3efed1d47d67017910c5))
     ROM_LOAD("image.bin", 0x00412000, 0x10756444, CRC(9c10415b) SHA1(74fc69297540ae4a49e90663293c9c867150eea3))
     ROM_LOAD("coil4node-LPC1112_101-0_28_0.hex", 0x10b69000, 0x00008487, CRC(29d48577) SHA1(2cef71c04de9d2ff8c4664fafaeab077532f6178))
@@ -864,7 +879,7 @@ CORE_GAMEDEF(wnbjm, 155, "Whoa Nellie! Big Juicy Melons (1.55.0)", 2015, "Stern"
 /-------------------------------------------------------------------*/
 SPIKE1_INIT(primus, "primus", spike1_dmd, 76, SPIKE1_SWITCHES(3, 4, 1, 2, 53, 54, 55, 56, 58, 60))
 ROM_START(primus_103)
-  ROM_REGION(0x2a4d2000, SPIKE1_REGION, 0)
+  ROM_REGION(0x2a4d2000, SPIKE1_REGION, ROMREGION_MAPPED)
     ROM_LOAD("game", 0x00000000, 0x0041372a, CRC(017178e5) SHA1(eae72f6251af2f4c7381c93c3ee1d48388c37967))
     ROM_LOAD("image.bin", 0x00414000, 0x2a06f114, CRC(cb499566) SHA1(d0a4b05a93ea9b73d6796393ce128df407766787))
     ROM_LOAD("coil4node-LPC1112_101-0_28_0.hex", 0x2a484000, 0x00008487, CRC(29d48577) SHA1(2cef71c04de9d2ff8c4664fafaeab077532f6178))
@@ -880,7 +895,7 @@ CORE_GAMEDEF(primus, 103, "Primus (1.03.0)", 2018, "Stern", spike1, 0)
 
 SPIKE1_INIT(pabst, "can_crusher", spike1_dmd, 76, SPIKE1_SWITCHES(3, 4, 1, 2, 53, 54, 55, 56, 58, 60))
 ROM_START(pabst_101)
-  ROM_REGION(0x39d5f000, SPIKE1_REGION, 0)
+  ROM_REGION(0x39d5f000, SPIKE1_REGION, ROMREGION_MAPPED)
     ROM_LOAD("game", 0x00000000, 0x004122e1, CRC(0a114c42) SHA1(f1179042ab49190e506d93d66028bd5404ba19f8))
     ROM_LOAD("image.bin", 0x00413000, 0x398fd2c4, CRC(424bb457) SHA1(4289990fc4991803fa72cb76508caa3e1f6402f4))
     ROM_LOAD("coil4node-LPC1112_101-0_28_0.hex", 0x39d11000, 0x00008487, CRC(29d48577) SHA1(2cef71c04de9d2ff8c4664fafaeab077532f6178))
@@ -903,7 +918,7 @@ CORE_GAMEDEF(pabst, 101, "Pabst Can Crusher (1.01.0)", 2016, "Stern", spike1, 0)
 /-------------------------------------------------------------------*/
 SPIKE1_INIT_EX(got, "GOT_LE", spike1_dmd, 265, FLIP_L | FLIP_U, SPIKE1_SWITCHES_UPPER(10, 11, 16, 5, 12, 13, 66, 67, 68, 69, 71, 75), SPIKE1_HOMES(10, 0, 88, 12, 0, 121), SPIKE1_NOLIMIT)
 ROM_START(got_137h)
-  ROM_REGION(0x2f27d000, SPIKE1_REGION, 0)
+  ROM_REGION(0x2f27d000, SPIKE1_REGION, ROMREGION_MAPPED)
     ROM_LOAD("game", 0x00000000, 0x005fa263, CRC(bd9d74e9) SHA1(41b028146e53e546dc6e88b31642ae45f6e266b7))
     ROM_LOAD("image.bin", 0x005fb000, 0x2ec129dc, CRC(8dbe0aa4) SHA1(ca03000c6a53cf9980774e2739c0277ab12b74b0))
     ROM_LOAD("accbridgenode-LPC1313-0_49_0.hex", 0x2f20e000, 0x0000529b, CRC(5f3ae3d6) SHA1(24a00f23fa0fbee9cf38ddf50e4cede0c96b4137))
@@ -929,7 +944,7 @@ CORE_GAMEDEF(got, 137h, "Game of Thrones (Limited Edition 1.37.0)", 2015, "Stern
 /-------------------------------------------------------------------*/
 SPIKE1_INIT_EX(gotp, "GOT", spike1_dmd, 265, FLIP_L, SPIKE1_SWITCHES(10, 11, 16, 17, 66, 67, 68, 69, 71, 75), SPIKE1_HOMES(12, 0, 121, 0, 0, 0), SPIKE1_NOLIMIT)
 ROM_START(got_137)
-  ROM_REGION(0x2f269000, SPIKE1_REGION, 0)
+  ROM_REGION(0x2f269000, SPIKE1_REGION, ROMREGION_MAPPED)
     ROM_LOAD("game", 0x00000000, 0x005e6954, CRC(8e5d0f49) SHA1(3b9f9d429b0406fb6488a5bcc3e47092c340768a))
     ROM_LOAD("image.bin", 0x005e7000, 0x2ec129dc, CRC(8dbe0aa4) SHA1(ca03000c6a53cf9980774e2739c0277ab12b74b0))
     ROM_LOAD("accbridgenode-LPC1313-0_49_0.hex", 0x2f1fa000, 0x0000529b, CRC(5f3ae3d6) SHA1(24a00f23fa0fbee9cf38ddf50e4cede0c96b4137))
@@ -955,7 +970,7 @@ SPIKE1_CLONEDEF(got, 137, got_137h, gotp, "Game of Thrones (Pro 1.37.0)", 2015, 
 /-------------------------------------------------------------------*/
 SPIKE1_INIT_EX(kiss15, "KISS_LE", spike1_dmd, 172, FLIP_L, SPIKE1_SWITCHES(10, 11, 65, 66, 67, 68, 69, 70, 72, 77), SPIKE1_NOHOMES, SPIKE1_LIMIT_MOTOR(169, 170, 53, 54, 1000))
 ROM_START(kiss15_141h)
-  ROM_REGION(0x3ee2e000, SPIKE1_REGION, 0)
+  ROM_REGION(0x3ee2e000, SPIKE1_REGION, ROMREGION_MAPPED)
     ROM_LOAD("game", 0x00000000, 0x004ee9ca, CRC(1c55a059) SHA1(9467d0dd243b61707223e1723882652cd46cb926))
     ROM_LOAD("image.bin", 0x004ef000, 0x3e8f02ec, CRC(d96ccf4c) SHA1(ac04430ffc184e2bdfe268f0f6ba91fa3fcc899e))
     ROM_LOAD("coil4node-LPC1112_101-0_28_0.hex", 0x3ede0000, 0x00008487, CRC(29d48577) SHA1(2cef71c04de9d2ff8c4664fafaeab077532f6178))
@@ -978,7 +993,7 @@ CORE_GAMEDEF(kiss15, 141h, "KISS (Limited Edition 1.41.0)", 2015, "Stern", spike
 /-------------------------------------------------------------------*/
 SPIKE1_INIT_EX(wwe, "WWE_LE", spike1_dmd_lcd, 102, FLIP_L | FLIP_U, SPIKE1_SWITCHES_UPPER(10, 11, 65, 66, 74, 75, 67, 68, 69, 70, 72, 77), SPIKE1_NOHOMES, SPIKE1_NOLIMIT)
 ROM_START(wwe_135h)
-  ROM_REGION(0xaae47000, SPIKE1_REGION, 0)
+  ROM_REGION(0xaae47000, SPIKE1_REGION, ROMREGION_MAPPED)
     ROM_LOAD("game", 0x00000000, 0x005685c2, CRC(edc2c801) SHA1(23e2936810e3869d52d39bc3ff7863d9de59951b))
     ROM_LOAD("image.bin", 0x00569000, 0x547598dc, CRC(aa528057) SHA1(f513c5afd07cee4bba97b38822f98943857dc824))
     ROM_LOAD("AJ.spv", 0x54cc3000, 0x008ca1fc, CRC(6fe0fc26) SHA1(2bc3a9b2d149416c421b9778f8f981e96be0b9b9))
@@ -1052,7 +1067,7 @@ static const spike1_symbol heavym20_102Symbols[] = {
 };
 SPIKE1_INIT_SYMBOLS(heavym20, "heavy_metal", spike1_dmd, 105, SPIKE1_SWITCHES(8, 10, 9, 11, 76, 77, 78, 79, 81, 84), heavym20_102Symbols)
 ROM_START(heavym20_102)
-  ROM_REGION(0x71fdb000, SPIKE1_REGION, 0)
+  ROM_REGION(0x71fdb000, SPIKE1_REGION, ROMREGION_MAPPED)
     ROM_LOAD("game", 0x00000000, 0x00364e7c, CRC(89dcf06c) SHA1(84e70db1ae9bdb54541c19afbcd960665af13b8a))
     ROM_LOAD("image.bin", 0x00365000, 0x71c08cbc, CRC(378ea9e2) SHA1(488d399d0d16fde42701014952ff5dbc9ea4c150))
     ROM_LOAD("coil4node-LPC1112_101-0_67_0.hex", 0x71f6e000, 0x00008784, CRC(3694f8a6) SHA1(056276be4ce185c4cfaf1dfcfe6b3adf028632af))
@@ -1076,7 +1091,7 @@ CORE_GAMEDEF(heavym20, 102, "Heavy Metal (1.02.0)", 2020, "Stern", spike1, 0)
 /-------------------------------------------------------------------*/
 SPIKE1_INIT(supreme, "supreme", spike1_dmd, 130, SPIKE1_SWITCHES(8, 10, 9, 11, 76, 77, 78, 79, 14, 84))
 ROM_START(supreme_101)
-  ROM_REGION(0x07454000, SPIKE1_REGION, 0)
+  ROM_REGION(0x07454000, SPIKE1_REGION, ROMREGION_MAPPED)
     ROM_LOAD("game", 0x00000000, 0x00462e0b, CRC(681a3c00) SHA1(dc9cbf0a4204a3bbaecede3a5f5f9b1f9a2269c2))
     ROM_LOAD("image.bin", 0x00463000, 0x06fa11ec, CRC(3eb2c19d) SHA1(23cf9140f30c15367c214503025962619a5937f6))
     ROM_LOAD("coil4node-LPC1112_101-0_22_0.hex", 0x07405000, 0x000082cd, CRC(22c8518e) SHA1(3961762f04c7ac0d5dfa12eb8e5f2a5c75a05bef))
@@ -1099,7 +1114,7 @@ CORE_GAMEDEF(supreme, 101, "Supreme (1.01.0)", 2018, "Stern", spike1, 0)
 /-------------------------------------------------------------------*/
 SPIKE1_INIT_RGB(smancp, "spiderman_cp", 130, SPIKE1_SWITCHES(8, 10, 9, 11, 0, 0, 0, 0, 14, 0), "rgbdotmatrix-0_1_1.hex")
 ROM_START(smancp_101)
-  ROM_REGION(0x10b03000, SPIKE1_REGION, 0)
+  ROM_REGION(0x10b03000, SPIKE1_REGION, ROMREGION_MAPPED)
     ROM_LOAD("game", 0x00000000, 0x00504aef, CRC(11a8c4e4) SHA1(015a8155da2179725bde3b91f131b74386654ee7))
     ROM_LOAD("image.bin", 0x00505000, 0x105bafbc, CRC(10f7f532) SHA1(b22fb9d40dd0ab71aaae4dbb96d4f99e9e068dc9))
     ROM_LOAD("coil4node-LPC1112_101-0_19_1.hex", 0x10ac0000, 0x00008705, CRC(4f7ee588) SHA1(8ae7da77e6725bed415b7209a0ab9559d7a6d0cb))

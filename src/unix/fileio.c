@@ -8,6 +8,9 @@
 #include "xmame.h"
 #include "osdutils.h"
 #include "unzip.h"
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <unistd.h>
 #ifdef MESS
 #include "image.h"
 #endif
@@ -667,6 +670,67 @@ void osd_fclose(osd_file *file)
 	if (file->fileptr)
 		fclose(file->fileptr);
 	file->fileptr = NULL;
+}
+
+
+
+/*============================================================ */
+/*	osd_fmap */
+/*============================================================ */
+
+struct osd_mapping
+{
+	void *view;
+	size_t size;
+};
+
+void *osd_fmap(int pathtype, int pathindex, const char *filename, UINT64 offset, UINT64 length, const UINT8 **data)
+{
+	struct osd_mapping *map;
+	char fullpath[1024];
+	UINT64 start;
+	int fd;
+
+	/* a view starts on a page at or below the offset */
+	start = offset - offset % (UINT64)sysconf(_SC_PAGESIZE);
+	if (!length || offset - start + length > (size_t)-1 || (UINT64)(off_t)start != start)
+		return NULL;
+
+	map = (struct osd_mapping *)malloc(sizeof(*map));
+	if (!map)
+		return NULL;
+
+	/* compose the full path and map the file; the mapping keeps it open */
+	compose_path(fullpath, pathtype, pathindex, filename);
+	fd = open(fullpath, O_RDONLY);
+	if (fd < 0)
+	{
+		free(map);
+		return NULL;
+	}
+	map->size = (size_t)(offset - start + length);
+	map->view = mmap(NULL, map->size, PROT_READ, MAP_PRIVATE, fd, (off_t)start);
+	close(fd);
+	if (map->view == MAP_FAILED)
+	{
+		free(map);
+		return NULL;
+	}
+	*data = (const UINT8 *)map->view + (offset - start);
+	return map;
+}
+
+
+
+/*============================================================ */
+/*	osd_funmap */
+/*============================================================ */
+
+void osd_funmap(void *mapping)
+{
+	struct osd_mapping *map = (struct osd_mapping *)mapping;
+	munmap(map->view, map->size);
+	free(map);
 }
 
 

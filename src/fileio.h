@@ -60,7 +60,8 @@ struct _mame_file
 	UINT32 debug_cookie;
 #endif
 	osd_file *file;
-	UINT8 *data;
+	UINT8 *data;            /* a MAPPED_FILE's points into its mapping: read-only */
+	void *map;              /* a MAPPED_FILE's mapping (osd_fmap()) */
 	UINT64 offset;
 	UINT64 length;
 	UINT8 eof;
@@ -72,12 +73,14 @@ struct _mame_file
 #define RAM_FILE				1
 #define ZIPPED_FILE				2
 #define UNLOADED_ZIPPED_FILE	3
+#define MAPPED_FILE				4
 
 typedef struct _mame_file mame_file;
 
 int mame_faccess(const char *filename, int filetype);
 mame_file *mame_fopen(const char *gamename, const char *filename, int filetype, int openforwrite);
 mame_file *mame_fopen_rom(const char *gamename, const char *filename, const char* exphash);
+mame_file *mame_fopen_rom_mapped(const char *gamename, const char *filename, const char* exphash);
 UINT32 mame_fread(mame_file *file, void *buffer, size_t length);
 UINT32 mame_fwrite(mame_file *file, const void *buffer, size_t length);
 UINT32 mame_fread_swap(mame_file *file, void *buffer, size_t length);
@@ -98,6 +101,8 @@ void mame_fclose(mame_file *file);
 int mame_fchecksum(const char *gamename, const char *filename, unsigned int *length, char* hash);
 UINT64 mame_fsize(mame_file *file);
 const char *mame_fhash(mame_file *file);
+const UINT8 *mame_fdata(mame_file *file);
+int mame_fmapped(mame_file *file);
 int mame_fgetc(mame_file *file);
 int mame_ungetc(int c, mame_file *file);
 char *mame_fgets(char *s, int n, mame_file *file);

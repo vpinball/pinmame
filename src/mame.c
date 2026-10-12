@@ -653,6 +653,9 @@ static void shutdown_machine(void)
 	for (i = 0; i < MAX_MEMORY_REGIONS; i++)
 		free_memory_region(i);
 
+	/* close the files of mapped ROM regions */
+	close_mapped_roms();
+
 	/* close all hard drives */
 	hard_disk_close_all();
 

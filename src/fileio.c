@@ -41,6 +41,7 @@
 #define FILEFLAG_REVERSE_SEARCH	0x08
 #define FILEFLAG_VERIFY_ONLY	0x10
 #define FILEFLAG_NOZIP			0x20
+#define FILEFLAG_MAP			0x40
 
 
 #ifdef MAME_DEBUG
@@ -55,6 +56,7 @@
 static mame_file *generic_fopen(int pathtype, const char *gamename, const char *filename, const char* hash, UINT32 flags);
 static const char *get_extension_for_filetype(int filetype);
 static int checksum_file(int pathtype, int pathindex, const char *file, UINT8 **p, UINT64 *size, char* hash);
+static int map_file(int pathtype, int pathindex, const char *name, UINT64 offset, UINT64 length, mame_file *file);
 
 
 /***************************************************************************
@@ -209,6 +211,20 @@ mame_file *mame_fopen_rom(const char *gamename, const char *filename, const char
 
 
 /***************************************************************************
+	mame_fopen_rom_mapped
+***************************************************************************/
+
+/* The same, but the file is mapped read-only from disk rather than loaded when the host can map
+   it and the set's zip stores it uncompressed (or the set is a folder): a MAPPED_FILE, whose hash
+   is only the zip directory's CRC (a folder's file has none, as it is not read). Otherwise it is
+   loaded as mame_fopen_rom() loads it */
+mame_file *mame_fopen_rom_mapped(const char *gamename, const char *filename, const char* exphash)
+{
+	return generic_fopen(FILETYPE_ROM, gamename, filename, exphash, FILEFLAG_OPENREAD | FILEFLAG_HASH | FILEFLAG_MAP);
+}
+
+
+/***************************************************************************
 	mame_fclose
 ***************************************************************************/
 
@@ -230,6 +246,10 @@ void mame_fclose(mame_file *file)
 		case RAM_FILE:
 			if (file->data)
 				free(file->data);
+			break;
+
+		case MAPPED_FILE:
+			osd_funmap(file->map);
 			break;
 	}
 
@@ -315,6 +335,7 @@ UINT32 mame_fread(mame_file *file, void *buffer, size_t length)
 
 		case ZIPPED_FILE:
 		case RAM_FILE:
+		case MAPPED_FILE:
 			if (file->data)
 			{
 				if (file->offset + length > file->length)
@@ -388,6 +409,7 @@ int mame_fseek(mame_file *file, INT64 offset, int whence)
 
 		case ZIPPED_FILE:
 		case RAM_FILE:
+		case MAPPED_FILE:
 			switch (whence)
 			{
 				case SEEK_SET:
@@ -456,6 +478,7 @@ UINT64 mame_fsize(mame_file *file)
 
 		case RAM_FILE:
 		case ZIPPED_FILE:
+		case MAPPED_FILE:
 			return file->length;
 	}
 
@@ -471,6 +494,29 @@ UINT64 mame_fsize(mame_file *file)
 const char* mame_fhash(mame_file *file)
 {
 	return file->hash;
+}
+
+
+
+/***************************************************************************
+	mame_fdata
+***************************************************************************/
+
+/* the file's bytes when they are in memory or mapped; NULL for a plain file */
+const UINT8 *mame_fdata(mame_file *file)
+{
+	return file->type == RAM_FILE || file->type == ZIPPED_FILE || file->type == MAPPED_FILE ? file->data : NULL;
+}
+
+
+
+/***************************************************************************
+	mame_fmapped
+***************************************************************************/
+
+int mame_fmapped(mame_file *file)
+{
+	return file->type == MAPPED_FILE;
 }
 
 
@@ -493,6 +539,7 @@ int mame_fgetc(mame_file *file)
 
 		case RAM_FILE:
 		case ZIPPED_FILE:
+		case MAPPED_FILE:
 			if (file->offset < file->length)
 				return file->data[file->offset++];
 			else
@@ -528,6 +575,7 @@ int mame_ungetc(int c, mame_file *file)
 
 		case RAM_FILE:
 		case ZIPPED_FILE:
+		case MAPPED_FILE:
 			if (file->eof)
 				file->eof = 0;
 			else if (file->offset > 0)
@@ -607,6 +655,7 @@ int mame_feof(mame_file *file)
 
 		case RAM_FILE:
 		case ZIPPED_FILE:
+		case MAPPED_FILE:
 			return (file->eof);
 	}
 
@@ -629,6 +678,7 @@ UINT64 mame_ftell(mame_file *file)
 
 		case RAM_FILE:
 		case ZIPPED_FILE:
+		case MAPPED_FILE:
 			return file->offset;
 	}
 
@@ -872,6 +922,19 @@ static mame_file *generic_fopen(int pathtype, const char *gamename, const char *
 			/* now look for path/gamename/filename.ext */
 			compose_path(name, gamename, filename, extension);
 
+			/* a file to map rather than load: it is not read, so it has no checksum */
+			if (flags & FILEFLAG_MAP)
+			{
+				osd_file *f = osd_fopen(pathtype, pathindex, name, "rb");
+				if (f != NULL)
+				{
+					const UINT64 size = osd_fsize(f);
+					osd_fclose(f);
+					if (map_file(pathtype, pathindex, name, 0, size, &file) == 0)
+						break;
+				}
+			}
+
 			/* if we need checksums, load it into RAM and compute it along the way */
 			if (flags & FILEFLAG_HASH)
 			{
@@ -950,6 +1013,29 @@ static mame_file *generic_fopen(int pathtype, const char *gamename, const char *
 				{
 					int err;
 
+					/* an entry the zip stores uncompressed, to map rather than load: its checksum is
+					   the zip directory's CRC. A compressed one is loaded below */
+					if (flags & FILEFLAG_MAP)
+					{
+						UINT8 crcs[4];
+						UINT64 offset;
+						unsigned int length, crc = 0;
+
+						if (hash && hash_data_extract_binary_checksum(hash, HASH_CRC, crcs) != 0)
+							crc = ((unsigned int)crcs[0] << 24) | ((unsigned int)crcs[1] << 16) | ((unsigned int)crcs[2] << 8) | (unsigned int)crcs[3];
+						if (locate_stored_zipped_file(pathtype, pathindex, name, tempname, &offset, &length, &crc) == 0 &&
+						    map_file(pathtype, pathindex, name, offset, length, &file) == 0)
+						{
+							crcs[0] = (UINT8)(crc >> 24);
+							crcs[1] = (UINT8)(crc >> 16);
+							crcs[2] = (UINT8)(crc >> 8);
+							crcs[3] = (UINT8)(crc >> 0);
+							hash_data_clear(file.hash);
+							hash_data_insert_binary_checksum(file.hash, HASH_CRC, crcs);
+							break;
+						}
+					}
+
 					/* Try loading the file */
 					err = load_zipped_file(pathtype, pathindex, name, tempname, &file.data, &ziplength);
 
@@ -1005,6 +1091,28 @@ static mame_file *generic_fopen(int pathtype, const char *gamename, const char *
 	}
 
 	return newfile;
+}
+
+
+
+/***************************************************************************
+	map_file
+***************************************************************************/
+
+/* maps length bytes of a file from offset read-only into file, as a MAPPED_FILE */
+static int map_file(int pathtype, int pathindex, const char *name, UINT64 offset, UINT64 length, mame_file *file)
+{
+	const UINT8 *data;
+	void *map = osd_fmap(pathtype, pathindex, name, offset, length, &data);
+
+	if (!map)
+		return -1;
+	file->type = MAPPED_FILE;
+	file->map = map;
+	file->data = (UINT8 *)data; /* never written: mame_fwrite() writes RAM files only */
+	file->length = length;
+	file->offset = 0;
+	return 0;
 }
 
 

@@ -33,7 +33,7 @@ system-call level, the way the program sees it.
   1 MB or more of a file the host holds, or of 16 MB or more of one on the host's disk (`--root`),
   is such a view; without room for one it is copied like any other mapping.
 - `spike1_vfs.*` - the filesystem the game sees: the title's files, read-only (a host directory
-  with the machine's extracted root, or files the host holds in memory - PinMAME's ROM regions),
+  with the machine's extracted root, or files the host holds - PinMAME's mapped ROM files),
   under an in-memory layer with everything the game writes. The board's `/data` and `/tmp` mounts
   start empty; the game keeps its NVRAM files under `/data/nv`.
 - `spike1_linux.*` - the program loader (ELF, initial stack with argv/envp/auxv) and the system
@@ -105,7 +105,7 @@ prints the node-bus frame count per command and board.
 
 `--root` is the machine's root filesystem extracted from its image (with `games/<name>/game` and
 `image.bin` in it). `--files` instead loads the game's folder (`games/<name>`: the program,
-`image.bin`, `lcdinsert.bin`, the node firmware, WWE's `video/` clips) into memory, as PinMAME will hold it; the game
+`image.bin`, `lcdinsert.bin`, the node firmware, WWE's `video/` clips) into memory, as PinMAME hands them over; the game
 needs nothing else from the root. The state directory keeps the machine's NVRAM between runs as
 `spike1.nv`, and the `--insert` pictures. `--trace` logs every system call; without it, only noteworthy ones (device
 traffic, files not found, threads) are logged. From Git Bash, set `MSYS_NO_PATHCONV=1`, or it turns
@@ -247,12 +247,20 @@ code (its symbols are in the program) rather than from any other emulator:
 
 - **The set** is the title's game folder from Stern's update image - the program, `image.bin`,
   `lcdinsert.bin` if it has one, the node firmware, and WWE's 33 LCD clips (`.spv`) from the
-  folder's `video` directory - loaded one after another into one ROM region and audited like any
-  other set's ROMs. The region is over 1 GB (WWE's 2.9 GB), so the games need a 64-bit build.
-  `MACHINE_INIT` hands the files to the subsystem, which runs the program as
+  folder's `video` directory - in one ROM region and audited like any other set's ROMs. The region
+  is `ROMREGION_MAPPED` (`src/common.h`): the ROM loader does not load it but maps each file
+  read-only from the set on disk - an entry the set's zip stores uncompressed, or a file in a set
+  folder (`roms/<set>/`) - and keeps it until the machine shuts down, so the host pages the 0.1 to
+  2.9 GB in as the game reads it (WWE: about 175 MB of working set instead of 2.9 GB, and it
+  starts about 10 s sooner). The loader checks each file's length, and for a zip entry the CRC its
+  directory records; `-verifyroms` checks them in full. A file it cannot map - a zip that a ROM
+  manager recompressed, or a host that does not map files - it loads into memory as before, and
+  the driver says so. The files are over 1 GB, so the games need a 64-bit build. `MACHINE_INIT`
+  hands them to the subsystem (`get_mapped_rom()`), which runs the program as
   `/games/<folder>/game` and puts the clips in `video/` (a set's files sit side by side, as
-  PinMAME matches a ROM by its name alone); `image.bin` and the clips are mapped from the region,
-  not copied. `scripts/spike1/Build-Spike1RomSet.ps1` (or `Build ROM set.cmd` beside it, which
+  PinMAME matches a ROM by its name alone); `image.bin` and the clips are mapped into the guest
+  from there, not copied. While the machine runs, the set's zip stays mapped: replacing it then
+  fails on Windows, and on Linux truncating it would end the game with a bus error. `scripts/spike1/Build-Spike1RomSet.ps1` (or `Build ROM set.cmd` beside it, which
   opens a window) makes the set from Stern's SD-card image, `<title>-<version>.iso.zip` or the
   `.iso` inside it, or a card dump in a zip (Supreme's `.img`): it finds the game folder on the
   image's ext3 partitions, reads it straight out of the zip in a few forward passes (its own zip
