@@ -100,7 +100,7 @@ adds a limit motor as a set's `SPIKE1_LIMIT_MOTOR` does (KISS: `169:170:53:54:10
 saves the CPU board's LCD every s seconds as a PPM file in the state directory,
 `--poke <s>:<hex address>:<hex byte>` writes a byte of guest memory then (for experiments),
 `--slice <ms>` sets the emulated time per `run()` call (1 by
-default; PinMAME uses one frame, 16.7). With `SPIKE1_NODE_STATS` set in the environment, it
+default, the period PinMAME exchanges the I/O at). With `SPIKE1_NODE_STATS` set in the environment, it
 prints the node-bus frame count per command and board.
 
 `--root` is the machine's root filesystem extracted from its image (with `games/<name>/game` and
@@ -168,8 +168,8 @@ code (its symbols are in the program) rather than from any other emulator:
   34 from node firmware 0.28 to 0.52, 43 in Heavy Metal); up to three switches can trigger one
   coil (Heavy Metal's slings have two). `coil_level()` gives a driver's PWM duty (0-255) at a
   given time; the coil mask (a set bit switches a driver off) applies. `coil_output()` is what a
-  host shows, taken once a frame: a pulse that came and went between two frames shows at its
-  power, and a pulse shorter than 4 ms shows nothing. That is the game's power-on driver check:
+  host shows, taken every millisecond in PinMAME: a pulse that came and went between two takes
+  shows at its power, and a pulse shorter than 4 ms shows nothing. That is the game's power-on driver check:
   every title but WWE fires each driver alone for 1 ms and logs its current, too short to move
   anything (the shortest real pulse is 16 ms, Primus' slingshots).
 - **LEDs** (type 4, up to 96 channels a board, three for an RGB LED): `NODEBUS_SetLEDMultiple2`'s
@@ -273,7 +273,11 @@ code (its symbols are in the program) rather than from any other emulator:
   adds to the program's (empty) symbol table; `spike1boot --symbols <file>` takes the same list as
   `<hex address> <size> <name>` lines.
 - **The CPU** (`CPU_SPIKE1`, `src/cpuintrf.c`) runs the machine for the cycles PinMAME gives it,
-  at 400 MHz; once a frame the driver passes switch changes in and takes coils, LEDs and the DMD out.
+  at 400 MHz. Every millisecond (a PinMAME timer, `SPIKE1_IOFREQ`) the driver passes switch
+  changes in - the game reads a board's switches about every 1.4 ms, so a change reaches it as on
+  the machine - and takes coils, LEDs and a new DMD frame out. The core reports solenoid changes
+  to its hosts once a frame, so a coil stays on for a frame at least: a pulse that came and went
+  between two frames still shows.
 - **Numbers** are the factory manual's: switches by their Switch Reference numbers (the flipper
   buttons and EOS switches in PinMAME's flipper column - each title's numbers, with its coin, tilt
   and slam switches, are in its `SPIKE1_SWITCHES`, or `SPIKE1_SWITCHES_UPPER` with the upper
@@ -418,7 +422,6 @@ are the game's own, which its switch test shows, and its cabinet's are Supreme's
 4. PinMAME, what is left: VPinMAME (the COM controller) has not been checked; only CMake builds
    the subsystem (not the makefiles or the Visual Studio projects); the game lists do not name the
    set yet. A Visual Studio build of the subsystem runs at about half the speed of a GCC one.
-   Coils are taken once a frame, so a flipper's coil reaches the table up to a frame late.
 5. Signals: kill, tkill and tgkill deliver to a handler (a frame with siginfo and ucontext,
    rt_sigreturn back), but a signal to a thread blocked in a system call waits until the thread
    wakes instead of interrupting the call.

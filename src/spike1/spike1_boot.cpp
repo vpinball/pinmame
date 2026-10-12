@@ -144,7 +144,7 @@ int main(int argc, char **argv)
 		else if (arg == "--state") state_dir = next();
 		else if (arg == "--seconds") seconds = std::atof(next().c_str());
 		else if (arg == "--clock") cfg.clock_hz = uint32_t(std::strtoul(next().c_str(), nullptr, 0));
-		else if (arg == "--slice") slice_ms = std::atof(next().c_str()); // emulated ms per run() call (PinMAME: one frame, 16.7)
+		else if (arg == "--slice") slice_ms = std::atof(next().c_str()); // emulated ms per run() call (PinMAME exchanges the I/O every 1)
 		else if (arg == "--trace") cfg.trace = true;
 		else if (arg == "--dmd") dmd_every = std::atof(next().c_str());
 		else if (arg == "--insert") insert_every = std::atof(next().c_str()); // the LCD insert, as PPM files in the state directory

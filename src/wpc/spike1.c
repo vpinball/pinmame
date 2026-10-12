@@ -58,6 +58,7 @@
 #define SPIKE1_MAXLEDS    256
 #define SPIKE1_FIRSTCUSTSOL CORE_FIRSTCUSTSOL /* solenoid 51 */
 #define SPIKE1_NCUSTSOLS  (CORE_MODOUT_SOL_MAX - SPIKE1_FIRSTCUSTSOL + 1)
+#define SPIKE1_IOFREQ     1000           /* the I/O exchange: the node boards scan their switches far faster than a frame */
 
 /* The numbers a title's manual gives the switches PinMAME's keys reach; they differ between titles */
 typedef struct {
@@ -112,7 +113,8 @@ static struct {
   UINT8 swState[256];     /* each switch as last handed to the machine */
   int coilSol[SPIKE1_MAXCOILS]; /* the PinMAME solenoid of coil k, 0 if the game has no coil k */
   int coilOf[CORE_MODOUT_SOL_MAX + 1]; /* and back: the coil of solenoid s, -1 for none */
-  UINT8 coilLevel[SPIKE1_MAXCOILS]; /* coil k's output this frame, taken once (spike1_pinmame_coil_output) */
+  UINT8 coilLevel[SPIKE1_MAXCOILS]; /* coil k's output as last passed on (spike1_pinmame_coil_output) */
+  double coilOnAt[SPIKE1_MAXCOILS]; /* when coil k's output last came on */
   int flipCoil[2][2];     /* left, right: the flipper's coil and its separate hold coil (Whoa Nellie), -1 for none */
   int startSw;
   unsigned dmdFrames;
@@ -272,12 +274,18 @@ static SWITCH_UPDATE(spike1)
 }
 
 /*-------------------------------------------------
-/  the I/O, once a frame
+/  the I/O, every millisecond (SPIKE1_IOFREQ): the game reads a board's switches about every
+/  1.4 ms, so a change reaches it as on the machine. Coils, LEDs and the DMD go out as soon as the
+/  game sets them. The core reports solenoid changes to its hosts once a frame (core_updateSw), so
+/  a coil stays on for a frame at least: a pulse that came and went between two frames still
+/  shows. Shared state the host's thread reads is built here first and then stored once
 /-------------------------------------------------*/
 static void spike1_sync_io(void)
 {
   int i;
-  UINT32 sols = 0;
+  UINT32 sols = 0, sols2 = coreGlobals.solenoids2 & ~(UINT32)(CORE_LLFLIPSOLBITS | CORE_LRFLIPSOLBITS);
+  UINT8 lamps[CORE_MAXLAMPCOL];
+  const double now = timer_get_time(), frame = 1.0 / Machine->drv->frames_per_second;
   /* switches that changed, the DIP switches from the DIP settings */
   const int dips = core_getDip(0);
   for (i = 0; i < 8; i++) core_setSw(SPIKE1_SW_DIP1 + i, (dips >> i) & 1);
@@ -294,53 +302,57 @@ static void spike1_sync_io(void)
   for (i = 0; i < SPIKE1_MAXCOILS; i++) {
     const int sol = locals.coilSol[i];
     if (sol) {
-      const unsigned level = locals.coilLevel[i] = (UINT8)spike1_pinmame_coil_output(i);
+      unsigned level = spike1_pinmame_coil_output(i);
+      if (level && !locals.coilLevel[i]) locals.coilOnAt[i] = now;
+      else if (!level && now - locals.coilOnAt[i] <= frame) level = locals.coilLevel[i];
+      locals.coilLevel[i] = (UINT8)level;
       coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + sol - 1].value = level / 255.0f;
       if (level && sol <= 32) sols |= CORE_SOLBIT(sol);
     }
   }
-  coreGlobals.solenoids = coreGlobals.pulsedSolState = sols;
-  coreGlobals.solenoids2 &= ~(UINT32)(CORE_LLFLIPSOLBITS | CORE_LRFLIPSOLBITS);
   for (i = 0; i < 4; i++) {
     const int coil = locals.flipCoil[i >> 1][i & 1]; /* a flipper coil always has a solenoid, so its level is taken above */
-    if (coil >= 0 && locals.coilLevel[coil]) coreGlobals.solenoids2 |= (i >> 1) ? CORE_LRFLIPSOLBITS : CORE_LLFLIPSOLBITS;
+    if (coil >= 0 && locals.coilLevel[coil]) sols2 |= (i >> 1) ? CORE_LRFLIPSOLBITS : CORE_LLFLIPSOLBITS;
   }
+  coreGlobals.solenoids = coreGlobals.pulsedSolState = sols;
+  coreGlobals.solenoids2 = sols2;
   /* LEDs */
-  memset((void *)coreGlobals.lampMatrix, 0, sizeof(coreGlobals.lampMatrix));
+  memset(lamps, 0, sizeof(lamps));
   for (i = 0; i < (int)locals.nLeds; i++) {
     const int lamp = locals.ledLamp[i] - 1;
     if (lamp >= 0) {
       const unsigned level = spike1_pinmame_led_level(i);
       coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + lamp].value = level / 255.0f;
-      if (level) coreGlobals.lampMatrix[lamp / 8] |= 1 << (lamp % 8);
+      if (level) lamps[lamp / 8] |= 1 << (lamp % 8);
     }
   }
-  /* the sound stream at the game's rate */
-  {
-    const unsigned rate = spike1_pinmame_audio_rate();
-    if (spike1_stream >= 0 && rate && rate != locals.audioRate) {
-      stream_set_sample_rate(spike1_stream, rate);
-      stream_set_sample_rate(spike1_stream + 1, rate);
-      locals.audioRate = rate;
-    }
-  }
+  for (i = 0; i < CORE_MAXLAMPCOL; i++) coreGlobals.lampMatrix[i] = lamps[i];
   /* the DMD: a new frame when the game has sent one (a title with the RGB matrix instead draws it
      as video, spike1_rgb_video) */
-  if ((core_gameData->lcdLayout->type & CORE_SEGALL) == CORE_DMD) {
+  if ((core_gameData->lcdLayout->type & CORE_SEGALL) == CORE_DMD && spike1_pinmame_dmd(NULL) != locals.dmdFrames) {
     static UINT8 dots[SPIKE1_DMD_WIDTH * SPIKE1_DMD_HEIGHT];
-    const unsigned frames = spike1_pinmame_dmd(dots);
-    if (frames != locals.dmdFrames) {
-      locals.dmdFrames = frames;
-      core_dmd_submit_frame(core_gameData->lcdLayout, dots, 1);
-    }
+    locals.dmdFrames = spike1_pinmame_dmd(dots);
+    core_dmd_submit_frame(core_gameData->lcdLayout, dots, 1);
   }
+}
+
+static void spike1_io(int param)
+{
+  (void)param;
+  if (locals.running) spike1_sync_io();
 }
 
 static INTERRUPT_GEN(spike1_vblank)
 {
   char reason[128];
   if (locals.running) {
-    spike1_sync_io();
+    /* the sound stream at the game's rate */
+    const unsigned rate = spike1_pinmame_audio_rate();
+    if (spike1_stream >= 0 && rate && rate != locals.audioRate) {
+      stream_set_sample_rate(spike1_stream, rate);
+      stream_set_sample_rate(spike1_stream + 1, rate);
+      locals.audioRate = rate;
+    }
     if (diag.on && ++diag.frames % 300 == 0) {
       const cycles_t now = osd_cycles();
       const double wall = diag.since ? (double)(now - diag.since) / (double)osd_cycles_per_second() : 0.;
@@ -735,6 +747,7 @@ MACHINE_DRIVER_START(spike1)
   MDRV_CPU_ADD_TAG("mcpu", SPIKE1, SPIKE1_CPU_HZ)
   MDRV_CPU_MEMORY(spike1_readmem, spike1_writemem)
   MDRV_CPU_VBLANK_INT(spike1_vblank, 1)
+  MDRV_TIMER_ADD(spike1_io, SPIKE1_IOFREQ)
   MDRV_NVRAM_HANDLER(spike1)
   MDRV_SWITCH_UPDATE(spike1)
   MDRV_SWITCH_CONV(spike1_sw2m, spike1_m2sw)
