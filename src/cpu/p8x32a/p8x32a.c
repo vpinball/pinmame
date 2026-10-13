@@ -120,7 +120,9 @@ static void chk_write(const uint32_t a, const unsigned sz, const uint64_t t)
 #endif
 
 static void loop_notify(p8x32a *p, uint64_t t, uint32_t pins);
+#ifdef P8X32A_SPIN_LOOPS
 static void spin_log(p8x32a *p, int n, unsigned r, uint32_t v);
+#endif
 static void jit_written(p8x32a *p, int n, unsigned s, uint32_t old);
 P8_INLINE void jit_write(p8x32a * const p, const int n, const unsigned s, const uint32_t old)
 {
@@ -776,15 +778,18 @@ static void loop_notify(p8x32a * const p, const uint64_t t, const uint32_t pins)
 static int loop_nhub(const p8x32a * const p, const int n, const uint16_t **a, const uint8_t **sz, const uint32_t **v)
 {
 	const p8x32a_loop * const l = &p->loop[n];
+#ifdef P8X32A_SPIN_LOOPS
 	if (l->spin) {
 		const p8x32a_spin * const sp = &p->spin[n];
 		*a = sp->hub_a; *sz = sp->hub_n; *v = sp->hub_v;
 		return sp->nhub;
 	}
+#endif
 	*a = l->hub_a; *sz = l->hub_n; *v = l->hub_v;
 	return l->nhub;
 }
 
+#ifdef P8X32A_SPIN_LOOPS
 /* watch: the sleepers' hub longs */
 static void watch_add(p8x32a * const p, const int n)
 {
@@ -803,11 +808,14 @@ static void watch_rebuild(p8x32a * const p)
 	for (n = 0; n < 8; n++)
 		if (p->sleepers >> n & 1) watch_add(p, n);
 }
+#endif
 
 static void loop_hub_write(p8x32a * const p, const int writer, const unsigned a, const unsigned sz, const uint64_t h)
 {
 	int n, k;
+#ifdef P8X32A_SPIN_LOOPS
 	if (!(p->watch[a >> 5] >> (a >> 2 & 7) & 1)) return;
+#endif
 	for (n = 0; n < 8; n++) {
 		const uint16_t *ha;
 		const uint8_t *hn;
@@ -829,6 +837,7 @@ static void loop_hub_access(p8x32a * const p, const int n, const uint32_t a, con
 {
 	p8x32a_loop * const l = &p->loop[n];
 	const unsigned sz = op == 2 ? 4 : op == 1 ? 2 : 1;
+#ifdef P8X32A_SPIN_LOOPS
 	if (l->spin) {
 		p8x32a_spin * const sp = &p->spin[n];
 		const uint16_t ha = (uint16_t)(a & ~(sz - 1));
@@ -842,6 +851,7 @@ static void loop_hub_access(p8x32a * const p, const int n, const uint32_t a, con
 		sp->hub_v[sp->nhub++] = hub_value(p, ha, sz);
 		return;
 	}
+#endif
 	if (l->nhub == 4) { l->dirty = 1; return; }
 	l->hub_a[l->nhub] = (uint16_t)(a & ~(sz - 1));
 	l->hub_n[l->nhub] = (uint8_t)sz;
@@ -901,14 +911,19 @@ static void loop_resume(p8x32a * const p, const int n, const uint64_t w)
 {
 	p8x32a_cog * const c = &p->cog[n];
 	p8x32a_loop * const l = &p->loop[n];
+#ifdef P8X32A_SPIN_LOOPS
 	const p8x32a_spin * const sp = &p->spin[n];
 	const uint64_t * const snap_t = l->spin ? sp->snap_t : l->snap_t;
+#else
+	const uint64_t * const snap_t = l->snap_t;
+#endif
 	const uint64_t rel = w > l->t0 ? w - l->t0 : 0, off = rel % l->period;
 	uint64_t k = rel / l->period, shift;
 	int j = 0;
 	while (j < l->nsnap && snap_t[j] - snap_t[0] < off) j++;
 	if (j == l->nsnap) { j = 0; k++; }
 	shift = l->t0 - snap_t[0] + k * l->period;
+#ifdef P8X32A_SPIN_LOOPS
 	if (l->spin) {
 		/* the cog RAM is as at the start: replay the register writes up to event j */
 		int e;
@@ -919,6 +934,7 @@ static void loop_resume(p8x32a * const p, const int n, const uint64_t w)
 			if (o != sp->log_v[e]) { c->ram[r] = sp->log_v[e]; jit_write(p, n, r, o); }
 		}
 	} else
+#endif
 		memcpy(SNAP(c), l->snap[j], P8X32A_SNAP);
 	p->pins_ok = 0;
 	c->ev_t += shift;
@@ -926,7 +942,9 @@ static void loop_resume(p8x32a * const p, const int n, const uint64_t w)
 	if (l->hub) c->latch += shift;
 	p->sleepers &= (uint8_t)~(1u << n);
 	loop_reset(l);
+#ifdef P8X32A_SPIN_LOOPS
 	watch_rebuild(p);
+#endif
 }
 
 static void loop_wake(p8x32a * const p, const int n)
@@ -968,6 +986,7 @@ static void loop_edge(p8x32a * const p, const int n, const unsigned head, const 
 	l->nins = 0;
 }
 
+#ifdef P8X32A_SPIN_LOOPS
 /* Spin loops: the ROM's interpreter (loaded from $F004) about to fetch a bytecode at an address it fetched from a few
    bytecodes earlier records the iteration from there, event by event; if it comes back to that fetch with the cog as
    it was and nothing changed outside the cog, it sleeps like a polling loop */
@@ -1068,6 +1087,7 @@ static void spin_post(p8x32a * const p, const int n)
 	sp->snap_t[l->nsnap] = c->ev_t;
 	memcpy(sp->snap[l->nsnap++], SNAP(c), P8X32A_SNAP);
 }
+#endif
 
 /* after each event of a recording cog */
 static void loop_post(p8x32a * const p, const int n)
@@ -1078,7 +1098,9 @@ static void loop_post(p8x32a * const p, const int n)
 	uint32_t m = 0;
 	int k, same;
 
+#ifdef P8X32A_SPIN_LOOPS
 	if (l->spin) { spin_post(p, n); return; }
+#endif
 	if (!l->edge) {
 		if (l->dirty || l->nsnap == P8X32A_PAT || c->ev == EV_NONE || c->ev == EV_RESTART) { loop_reset(l); return; }
 		l->snap_t[l->nsnap] = c->ev_t;
@@ -1107,7 +1129,9 @@ static void loop_post(p8x32a * const p, const int n)
 	l->state = LOOP_SLEEP;
 	p->sleepers |= (uint8_t)(1u << n);
 	p->sleeps++;
+#ifdef P8X32A_SPIN_LOOPS
 	watch_add(p, n);
+#endif
 	c->ev = EV_SLEEP;
 	c->ev_t = loop_bound(p, n, p->now);
 }
@@ -1150,7 +1174,9 @@ static void complete(p8x32a * const p, const int n, const uint64_t m3, const uin
 				const uint32_t o = c->ram[DST(i)];
 				c->ram[DST(i)] = r;
 				p->loop[n].dirty |= DIRTY_REG;
+#ifdef P8X32A_SPIN_LOOPS
 				if (p->loop[n].spin) spin_log(p, n, DST(i), r);
+#endif
 				jit_write(p, n, DST(i), o);
 			}
 			if (DST(i) >= 0x1F0) { special_write(p, n, DST(i), r, m3); p->loop[n].dirty = 1; }
@@ -2084,7 +2110,9 @@ void p8x32a_run_until(p8x32a *p, uint64_t t)
 			else run_local(p, best, t, bk2, gen);
 			if (p->loop[best].state == LOOP_RECORD) loop_post(p, best);
 		}
+#ifdef P8X32A_SPIN_LOOPS
 		if (p->loop[best].state == LOOP_SEARCH && spin_at_fetch(b)) spin_search(p, best);
+#endif
 		/* run again while still the earliest */
 		if (gen == p->sched_gen && b->ev != EV_NONE && b->ev_t <= t && !p->stop && ev_key(b, best) < bk2) goto again;
 		/* best's new key moves back to its place */
@@ -2126,12 +2154,16 @@ void p8x32a_reset(p8x32a *p, uint64_t t)
 	memset(p->nco_lvl, 0, sizeof(p->nco_lvl));
 	p->pins_ok = 0;
 	p->sleepers = p->waiters = 0;
-	memset(p->watch, 0, sizeof(p->watch));
 	for (n = 0; n < 8; n++) {
 		loop_reset(&p->loop[n]);
+#ifdef P8X32A_SPIN_LOOPS
 		p->spin[n].nseen = 0;
 		p->spin[n].skip = p->spin[n].fails = 0;
+#endif
 	}
+#ifdef P8X32A_SPIN_LOOPS
+	memset(p->watch, 0, sizeof(p->watch));
+#endif
 	if (p->lz_on) {
 		jit_drop(p, p->lz);
 		if (p->bus.lazy) p->bus.lazy(p->bus.ctx, t, 0, 0, 0);

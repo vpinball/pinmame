@@ -669,6 +669,7 @@ static int direct_slot(const mips32_state * const s, const uint32_t pa, const ui
 	return -1;
 }
 
+#ifdef MIPS32_IDLE_LOOPS
 /* Idle loops. A taken backward branch that finds the registers as they were one iteration earlier, with no store in
    between that changed memory, starts that same iteration again, and until lim nothing outside fast_run can change
    what it reads: whole iterations up to lim are skipped, the rest runs as usual. */
@@ -700,6 +701,7 @@ static uint64_t loop_skip(mips32_state * const s, const uint32_t head, const uin
 	s->lp_wr0 = s->lp_wr;
 	return cyc;
 }
+#endif
 
 /* fast_run's dispatch. With GCC/Clang (labels as values) each handler ends in its own copy of write-back, fetch and
    dispatch; built with clang that is 16% faster on tight loops and 4% on branchy code than MSVC's switch. It needs tail
@@ -723,13 +725,21 @@ static uint64_t loop_skip(mips32_state * const s, const uint32_t head, const uin
 #define FR_NEXT() do { FR_SET(); FR_DISPATCH(); } while (0)
 #define FR_JMP() do { FR_JMPSET(); FR_DISPATCH(); } while (0)
 /* a jump that may close a loop */
+#ifdef MIPS32_IDLE_LOOPS
 #define FR_BJMP() do { FR_JMPSET(); if (t < pc) cyc = loop_skip(s, t, cyc, lim); FR_DISPATCH(); } while (0)
+#else
+#define FR_BJMP() FR_JMP()
+#endif
 #else
 #define FR_OP(n) case n
 #define FR_DEFAULT default
 #define FR_NEXT() goto set
 #define FR_JMP() goto jmp
+#ifdef MIPS32_IDLE_LOOPS
 #define FR_BJMP() goto bjmp
+#else
+#define FR_BJMP() goto jmp
+#endif
 #endif
 
 /* Runs instructions that raise no exception, touch only registers and direct memory and leave CP0 alone, until
@@ -758,12 +768,16 @@ static int fast_run(mips32_state * const s, const uint64_t lim)
 		&&FR_DEFAULT, &&FR_DEFAULT, &&FR_DEFAULT, &&FR_OP(0x33), &&FR_DEFAULT, &&FR_DEFAULT, &&FR_DEFAULT, &&FR_DEFAULT,
 		&&FR_DEFAULT, &&FR_DEFAULT, &&FR_DEFAULT, &&FR_DEFAULT, &&FR_DEFAULT, &&FR_DEFAULT, &&FR_DEFAULT, &&FR_DEFAULT
 	};
+#ifdef MIPS32_IDLE_LOOPS
 	/* an iteration with instructions outside fast_run (I/O) is never skipped */
 	s->lp_head = 1;
+#endif
 	FR_DISPATCH();
 	{
 #else
+#ifdef MIPS32_IDLE_LOOPS
 	s->lp_head = 1;
+#endif
 	while (cyc < lim) {
 		if (rotr_32(pc - fva, 2) >= fwords) break;
 		op = le32((const uint8_t *)(fbase + pc));
@@ -941,8 +955,10 @@ static int fast_run(mips32_state * const s, const uint64_t lim)
 			}
 			m = &s->region[k];
 			h = m->wr + (pa - m->base);
+#ifdef MIPS32_IDLE_LOOPS
 			if (h[0] != (uint8_t)rt || (sz > 1 && h[1] != (uint8_t)(rt >> 8)) || (sz > 2 && (h[2] != (uint8_t)(rt >> 16) || h[3] != (uint8_t)(rt >> 24))))
 				s->lp_wr++;
+#endif
 			h[0] = (uint8_t)rt;
 			if (sz > 1) h[1] = (uint8_t)(rt >> 8);
 			if (sz > 2) { h[2] = (uint8_t)(rt >> 16); h[3] = (uint8_t)(rt >> 24); }
@@ -959,10 +975,12 @@ static int fast_run(mips32_state * const s, const uint64_t lim)
 	set:
 		FR_SET();
 		continue;
+#ifdef MIPS32_IDLE_LOOPS
 	bjmp:
 		FR_JMPSET();
 		if (t < pc) cyc = loop_skip(s, t, cyc, lim);
 		continue;
+#endif
 	jmp:
 		FR_JMPSET();
 	}

@@ -9,6 +9,9 @@
 extern "C" {
 #endif
 
+/* the ROM Spin interpreter's polling loops sleep like PASM polling loops (p8x32a_spin); undefine to run them */
+#define P8X32A_SPIN_LOOPS
+
 #define P8X32A_NEVER 0xFFFFFFFFFFFFFFFFull
 #define P8X32A_PEND_COG(n) (1u << (n))       /* pend_what: cog n's OUTA or DIRA */
 #define P8X32A_PEND_CTR(j) (1u << (8 + (j))) /* pend_what: counter j (2 * cog + 0 for A, 1 for B) */
@@ -63,6 +66,7 @@ typedef struct p8x32a_loop {
 	unsigned char snap[P8X32A_PAT][P8X32A_SNAP];
 } p8x32a_loop;
 
+#ifdef P8X32A_SPIN_LOOPS
 /* A Spin loop: the ROM interpreter repeating bytecodes that change nothing, recorded per event like p8x32a_loop, with
    the cog RAM at the start and the register writes after it */
 #define P8X32A_SPIN_EV 512   /* events per iteration */
@@ -83,6 +87,7 @@ typedef struct p8x32a_spin {
 	uint64_t snap_t[P8X32A_SPIN_EV];
 	unsigned char snap[P8X32A_SPIN_EV][P8X32A_SNAP];
 } p8x32a_spin;
+#endif
 
 /* Translated runs of a cog's local instructions (p8x32ajit.cpp). fn runs a block and its successors, returns the
    instruction count and updates st as run_local would. A block ends after a taken jump or before a slot whose word
@@ -189,10 +194,12 @@ typedef struct p8x32a {
 	uint64_t jn_full, jn_writes;/* catch-ups forced by a full journal; entries made */
 	unsigned sched_gen; /* bumped when one cog changes another's next event */
 	uint64_t sleeps; /* idle loops entered */
-	uint64_t spin_sleeps; /* of them Spin loops */
 	p8x32a_loop loop[8];
+#ifdef P8X32A_SPIN_LOOPS
+	uint64_t spin_sleeps; /* of them Spin loops */
 	uint8_t watch[2048]; /* bit a / 4: a sleeper reads or writes hub long a */
 	p8x32a_spin spin[8];
+#endif
 	p8x32a_dec dec[8][512];
 	p8x32a_jit_fn jit_build;    /* NULL: no translation */
 	void *jit;
