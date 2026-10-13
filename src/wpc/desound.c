@@ -45,12 +45,16 @@ const struct sndbrdIntf de1sIntf = {
 
 static struct MSM5205interface de1s_msm5205Int = {
 /* chip          interrupt */
-     1, 384000,	{ de1s_msmIrq }, { MSM5205_S48_4B }, { 0 }, { 60 }
+     1, 384000,	{ de1s_msmIrq }, { MSM5205_S48_4B }, { 0 }, { 50 }
 };
 
+/* Levels measured over all 13 DE1S games (all sound commands): at the former 40/60, the YM2151 music was a median 3.5dB below the MSM5205
+   (Phantom of the Opera and Monday Night Football ~16dB) (also see https://github.com/vpinball/pinmame/pull/701).
+   At 55/50 the music is now just a median 1dB above, the MSM5205 peaks at -6dBFS and the YM2151 at -3..-12dBFS (the loudest games clip only slightly, i.e. King Kong 0.0007%).
+   BUT the overall loudness differs ~15dB between games (Time Machine being quietest), on the real machine that's the job for the volume pot, not compensated here for (yet) */
 static struct YM2151interface de1s_ym2151Int = {
   1, 3579545, /* Hz */
-  { YM3012_VOL(40,MIXER_PAN_LEFT,40,MIXER_PAN_RIGHT) },
+  { YM3012_VOL(55,MIXER_PAN_LEFT,55,MIXER_PAN_RIGHT) },
   { de1s_ym2151IRQ }, { de1s_ym2151Port }
 };
 

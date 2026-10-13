@@ -1090,13 +1090,13 @@ MEMORY_END
 /*----------------
 / Sound interface
 /-----------------*/
-/* TODO Level: since 2016 (044ecd7b) the DACs get volume*data (0..65025), twice the former DAC_data_16_w() level (data>>1).
-   Unlike GTS3_dacInt (halved in ce8775bb) this was never compensated, so it may(!) be 6dB too loud vs. the other chips:
-   if checked against a real machine, try {25,25} */
+/* At 50,50, Genesis peaked at +1.5dBFS and was ~7dB louder than the AY8910/SP0250. At 25,25 over 27 games of all three generations,
+   the DAC peaks at -4..-13dBFS and is in line with the AY8910/SP0250, and ~5dB above the YM2151 (median).
+   Matches also the handtuned volume from pre-2016 again like this */
 static struct DACinterface GTS80BS_dacInt =
 {
 	2,			/* 2 Chips - but it seems we only access 1, except for BoneBusters */
-	{50,50},	/* Volume */ //!! {25,25} ??
+	{25,25},	/* Volume */
 	{1,1}		/* DC offset correction */
 };
 
@@ -1733,12 +1733,12 @@ struct AY8910interface techno_ay8910Int = {
 	{ 25, 25 }	/* Volume */
 };
 
-/* TODO Level: DAC 0 gets volume*data, twice its pre-2016 level, and was never compensated (see GTS80BS_dacInt):
-   if checked against a real machine, try {25,50}. DAC 1 (TMS7000) should be fine, on the 0..32767 scale */
+/* DAC 0: At 50, Scramble peaked at +1.7dBFS, but was only slightly louder (RMS) than the other chips,
+   so it was reduced a bit less than on System 80B. DAC 1 (TMS7000) should be fine, on the 0..32767 scale */
 struct DACinterface techno_6502dacInt =
 {
 	2,			/* 2 chips */
-	{50,50},	/* Volume */ //!! {25,50} ??
+	{30,50},	/* Volume */
 	{1,1}		/* DC offset correction */
 };
 
@@ -1764,7 +1764,7 @@ MEMORY_WRITE_START( m6502_writemem )
   { 0x4000, 0x4000, techno_sound_control_w },
   { 0x8000, 0x8000, techno_ay8910_latch_w },
   { 0xa000, 0xa000, techno_nmi_rate_w },	/* set Y-CPU NMI rate */
-  { 0xb000, 0xb000, techno_cause_dac_nmi_w },	/* Trigger D-CPU NMI */
+  { 0xb000, 0xb000, techno_cause_dac_nmi_w }, /* Trigger D-CPU NMI */
 MEMORY_END
 
 //6502 #2 CPU

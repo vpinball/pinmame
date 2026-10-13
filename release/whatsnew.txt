@@ -86,6 +86,10 @@ Improved Tecnoplay (X Force & Space Team) sound emulation (incl. TMS7000 & Y8950
 Improved Zaccaria prototype games sound emulation (Strike, Ski Jump, Space City)
 Discrete sound emulation (Gottlieb Sys 1, Inder, JVH, LTD, Micropin, Playmatic, Recel, Zaccaria) now runs at 192kHz (much less aliasing) and removes the DC offset similar to a real output coupling capacitor (where needed/unknown-so-far)
 Gottlieb Sys 80/80A sound and Sound & Speech boards now oversample the DAC output, with the output filtering and coupling from the schematics (removes the DC offset and aliasing, and the old filter/fade workarounds)
+Rebalanced sound levels:
+ Gottlieb Sys 80B DAC (~6dB too loud since 2016 regression, incl. clipping :/)
+ Tecnoplay 6502 DAC (~same, could also clip)
+ and the Data East YM2151/MSM5205 board (Laser War to TMNT: music a bit louder vs. the speech/samples)
 Wired up sample rate selection for Verne's World and Jolly Park (potentially fixes some samples played)
 Fixed sound problems if a OKI6295 game is used after a OKI6376 game (e.g. GTS3 after Sleic)
 Added manual sound commands (sound commander) for the Bally Cheap Squeak and Turbo Cheap Squeak sound boards
