@@ -1,10 +1,18 @@
+// license:BSD-3-Clause
+
 /* Zaccaria Prototype Solid State machines */
 /* CPU: National Semiconductor SC/MP ISP-8A 500D */
 
+#include <math.h>
 #include "driver.h"
 #include "cpu/scamp/scamp.h"
 #include "core.h"
 #include "sim.h"
+
+/* Sound emulation: 1 = MAME (zac_proto.cpp): a 2MHz clock, divided by latch U36 (128..255, U44/U45),
+   clocks an 8 bit down counter (U46/U47), one of whose bits (selected by U37, which also mutes) drives the speaker;
+   0 = PinMAME's former guess, a discrete sine sweeping down from the command value */
+#define ZACPROTO_MAME_SOUND 1
 
 static struct {
   core_tSeg segments;
@@ -86,6 +94,74 @@ static WRITE_HANDLER(sol_w) {
     locals.solenoids = (locals.solenoids & 0xffff00ff) | (data << 8);
 }
 
+#if ZACPROTO_MAME_SOUND
+#define ZACPROTO_SND_CLOCK 2000000. /* 4MHz XTAL / 2 */
+#define ZACPROTO_SND_RATE (4*48000) /* the mixer then resamples it (band-limited) to the output rate */
+#define ZACPROTO_DC_CUTOFF_HZ 1.6   /* output coupling capacitor, as in the discrete output node (disc_out.c) */
+
+static struct {
+  int stream;
+  UINT8 u36;    /* preset divider for U44/U45 */
+  UINT8 u37;    /* bits 0-2: counter bit select (U48), bit 3: sound on */
+  UINT8 u44u45; /* divider counter */
+  UINT8 u46u47; /* frequency counter */
+  int level;    /* speaker level 0/1, updated on each divider reload (as MAME) */
+  double clk, clkStep; /* fractional 2MHz clocks per output sample */
+  double dcInteg, dcPrev, dcCoeff;
+} snd;
+
+static WRITE_HANDLER(sound_w) {
+  stream_update(snd.stream, 0);
+  data &= 0x3f;
+  if (offset) {
+    data ^= 0x0e;
+    /* the schematic labels bit 1 as enable, but the pin numbers show bit 4 (as MAME) */
+    snd.u37 = (data >> 1) & 0x0f;
+    snd.u36 = (snd.u36 & 0x3f) | ((data & 0x01) << 6) | 0x80;
+  } else
+    snd.u36 = (snd.u36 & 0x40) | data | 0x80;
+}
+
+static void zacProto_snd_update(int param, INT16 *buffer, int length) {
+  float * const out = (float *)buffer; /* float stream */
+  int i;
+  for (i = 0; i < length; i++) {
+    int n, k, high = 0;
+    double x;
+    snd.clk += snd.clkStep;
+    n = (int)snd.clk;
+    snd.clk -= n;
+    for (k = 0; k < n; k++) {
+      if (--snd.u44u45 == 0) {
+        snd.u44u45 = snd.u36;
+        snd.u46u47--;
+        snd.level = (snd.u37 & 0x08) && ((snd.u46u47 >> (snd.u37 & 0x07)) & 1); /* muted and low are both 0 */
+      }
+      high += snd.level;
+    }
+    x = n ? (double)high / n : snd.level; /* averaged over the sample (otherwise aliasing) */
+    snd.dcInteg = snd.dcInteg * snd.dcCoeff + (x - snd.dcPrev);
+    snd.dcPrev = x;
+    out[i] = (float)snd.dcInteg;
+  }
+}
+
+static void zacProto_sh_reset(void) {
+  snd.u36 = 0x80; snd.u37 = snd.u44u45 = snd.u46u47 = 0; snd.level = 0;
+  snd.clk = snd.dcInteg = snd.dcPrev = 0.;
+}
+
+static int zacProto_sh_start(const struct MachineSound *msound) {
+  const double w = (2.*M_PI*ZACPROTO_DC_CUTOFF_HZ) / ZACPROTO_SND_RATE;
+  zacProto_sh_reset();
+  snd.clkStep = ZACPROTO_SND_CLOCK / ZACPROTO_SND_RATE;
+  snd.dcCoeff = (1. - sin(w)) / cos(w);
+  snd.stream = stream_init_float("Zaccaria Prototype", 50, ZACPROTO_SND_RATE, 0, zacProto_snd_update, 1); /* 0/1 at 50, as MAME's speaker at 0.5 */
+  return snd.stream < 0;
+}
+
+static struct CustomSound_interface zacProto_custInt = {zacProto_sh_start, NULL, NULL, zacProto_sh_reset};
+#else
 static WRITE_HANDLER(sound_w) {
   if (data) {
     if (!offset) {
@@ -109,6 +185,7 @@ static void zacProto_sndTimer(int data) {
   } else
     discrete_sound_w(2, 0);
 }
+#endif
 
 static WRITE_HANDLER(lamp_w) {
   coreGlobals.tmpLampMatrix[offset] = data;
@@ -133,24 +210,18 @@ static MEMORY_WRITE_START(writemem)
   { 0x0e09, 0x0e16, lamp_w },
 MEMORY_END
 
+#if !ZACPROTO_MAME_SOUND
 static DISCRETE_SOUND_START(zacProto_discInt)
 	DISCRETE_INPUT(NODE_01,1,0x0003,0) // tone
 	DISCRETE_INPUT(NODE_02,2,0x0003,0) // enable
 	DISCRETE_MULTADD(NODE_05,1,NODE_01,2,90)
 	DISCRETE_SINEWAVE(NODE_10,NODE_02,NODE_05,20000,10000,0)
 	DISCRETE_GAIN(NODE_20,NODE_10,12)
-	/* TODO: needs a DISCRETE_CRFILTER before the output - the node below is unipolar,
-	   a sine of BIAS 10000 gained x12 (AMPL is peak-to-peak, so the mean is the bias),
-	   about +120000 of DC - far past the 32767 the output stage clamps to, so most of
-	   the waveform is lost in the clip, and it is there even in silence: a disabled
-	   wave node in disc_wav.c still outputs its BIAS.
-	   On the real board the output coupling capacitor removes that; by35snd.c is the
-	   one driver here that models it (DISCRETE_CRFILTER, "capacitor in series between
-	   pre-amp and output amp"). A plausible placeholder until the schematic is checked
-	   is RES_K(10)/CAP_U(10), i.e. a 10uF electrolytic into a ~10k amp input, which
-	   corners at ~1.6Hz - low enough to touch nothing audible */
-	DISCRETE_OUTPUT(NODE_20, 50)
+	/* Unipolar (a sine of BIAS 10000 x12, +120000 of DC even in silence: a disabled wave node outputs its BIAS),
+	   hence _AC to correct/center around 0. The remaining +-120000 is 3.7x 16bit full scale, so the final mix clips - the whole graph is a guess */
+	DISCRETE_OUTPUT_AC(NODE_20, 50)
 DISCRETE_SOUND_END
+#endif
 
 static core_tLCDLayout disp[] = {
   {0, 0, 4, 1,CORE_SEG8D},{0, 2, 5, 2,CORE_SEG7},{0, 6, 7, 1,CORE_SEG8D},{0, 8, 8, 3,CORE_SEG7},
@@ -172,8 +243,12 @@ MACHINE_DRIVER_START(zacProto)
   MDRV_CPU_VBLANK_INT(vblank, 1)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_DIPS(24)
+#if ZACPROTO_MAME_SOUND
+  MDRV_SOUND_ADD(CUSTOM, zacProto_custInt)
+#else
   MDRV_SOUND_ADD(DISCRETE, zacProto_discInt)
   MDRV_TIMER_ADD(zacProto_sndTimer, 250)
+#endif
 MACHINE_DRIVER_END
 
 INPUT_PORTS_START(strike) \

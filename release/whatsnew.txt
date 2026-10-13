@@ -82,6 +82,9 @@ Improved TMS52X0 sound emulation (more accurate, many previously needed hacks di
 Improved (slightly) the SN76496/SN76489(A)/SN76494 sound emulation (more accurate noise and fix lowest note)
 Improved MSM6585 sound emulation (accurate sample rate/prescale mapping)
 Improved Tecnoplay (X Force & Space Team) sound emulation (incl. TMS7000 & Y8950 emulation improvements)
+Improved Zaccaria prototype games sound emulation (Strike, Ski Jump, Space City)
+Discrete sound emulation (Gottlieb Sys 1, Inder, JVH, LTD, Micropin, Playmatic, Recel, Zaccaria) now runs at 192kHz (much less aliasing) and removes the DC offset similar to a real output coupling capacitor (where needed/unknown-so-far)
+Gottlieb Sys 80/80A sound and Sound & Speech boards now oversample the DAC output, with the output filtering and coupling from the schematics (removes the DC offset and aliasing, and the old filter/fade workarounds)
 Wired up sample rate selection for Verne's World and Jolly Park (potentially fixes some samples played)
 Fixed sound problems if a OKI6295 game is used after a OKI6376 game (e.g. GTS3 after Sleic)
 Added manual sound commands (sound commander) for the Bally Cheap Squeak and Turbo Cheap Squeak sound boards
