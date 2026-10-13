@@ -961,6 +961,8 @@ void spike1_devices::load_device_table()
 	m_coils.clear();
 	m_leds.clear();
 	std::memset(m_sw_closed, 0, sizeof(m_sw_closed));
+	std::memset(m_sw_read, 0, sizeof(m_sw_read));
+	std::memset(m_sw_changed, 0, sizeof(m_sw_changed));
 	std::memset(m_sw_active_high, 0, sizeof(m_sw_active_high));
 	if (!m_cfg.symbol) return;
 	auto desc = [&](const char *name, uint32_t out[3]) {
@@ -1078,16 +1080,29 @@ const spike1_devices::switch_info *spike1_devices::find_switch(const std::string
 void spike1_devices::set_switch(uint8_t node, uint8_t position, bool closed, uint64_t now_ns)
 {
 	uint8_t &b = m_sw_closed[node & 127][(position >> 3) & 7];
-	const uint8_t bit = uint8_t(1 << (position & 7));
+	const uint8_t bit = uint8_t(1 << (position & 7)), was = b;
 	b = closed ? uint8_t(b | bit) : uint8_t(b & ~bit);
+	m_sw_changed[node & 127][(position >> 3) & 7] |= uint8_t((was ^ b) & bit);
 	run_reflexes(node & 127, now_ns);
 }
 
-// Switches are active low on the wire unless the title marks them active high
-void spike1_devices::wire_bytes(uint8_t node, uint8_t *out, uint32_t len) const
+// Switches are active low on the wire unless the title marks them active high. The game takes
+// every change it reads - sys_node_board_device_switch_update_inputs() counts each edge between two
+// reads, and the switch code then handles each one, so a level one read sees is enough (a 2 ms
+// Start press starts a game when a read falls inside it) - but it reads a board only every 2 to
+// 5 ms, and a ball through a VPX trigger closes it for a few. So each read shows a switch's next
+// change: one that changed and changed back since the last read shows that change to this read,
+// and its level again to the next. The boards' own reflexes (flippers, slingshots) follow the
+// switch itself, at once
+void spike1_devices::wire_bytes(uint8_t node, uint8_t *out, uint32_t len)
 {
+	const uint8_t n = node & 127;
+	for (uint32_t i = 0; i < len && i < 8; i++) {
+		m_sw_read[n][i] ^= uint8_t((m_sw_closed[n][i] ^ m_sw_read[n][i]) | m_sw_changed[n][i]);
+		m_sw_changed[n][i] = 0;
+	}
 	for (uint32_t i = 0; i < len; i++)
-		out[i] = i < 8 ? uint8_t(~(m_sw_closed[node & 127][i] ^ m_sw_active_high[node & 127][i])) : 0xff;
+		out[i] = i < 8 ? uint8_t(~(m_sw_read[n][i] ^ m_sw_active_high[n][i])) : 0xff;
 	if (node == 0 && m_cpu_inputs_from_1 && len >= 2) { // positions 1-15 one bit lower (see load_device_table()); bit 15 idles high
 		const uint16_t w = uint16_t(out[0] | out[1] << 8);
 		const uint16_t board = uint16_t((w & 1) | ((w >> 1) & 0x7ffe) | 0x8000);

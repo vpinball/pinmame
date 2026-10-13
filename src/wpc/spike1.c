@@ -111,6 +111,9 @@ static struct {
   int sw[256];            /* the title's switch numbers, and how many */
   int nsw;
   UINT8 swState[256];     /* each switch as last handed to the machine */
+  int swM[256];           /* its matrix entry */
+  UINT32 swSeen[256];     /* the count of changes to it as of the last look */
+  UINT8 swAgain[256];     /* the last look found a change half made: the next one takes what it finds */
   int coilSol[SPIKE1_MAXCOILS]; /* the PinMAME solenoid of coil k, 0 if the game has no coil k */
   int coilOf[CORE_MODOUT_SOL_MAX + 1]; /* and back: the coil of solenoid s, -1 for none */
   UINT8 coilLevel[SPIKE1_MAXCOILS]; /* coil k's output as last passed on (spike1_pinmame_coil_output) */
@@ -274,12 +277,24 @@ static SWITCH_UPDATE(spike1)
 }
 
 /*-------------------------------------------------
-/  the I/O, every millisecond (SPIKE1_IOFREQ): the game reads a board's switches about every
-/  1.4 ms, so a change reaches it as on the machine. Coils, LEDs and the DMD go out as soon as the
-/  game sets them. The core reports solenoid changes to its hosts once a frame (core_updateSw), so
-/  a coil stays on for a frame at least: a pulse that came and went between two frames still
-/  shows. Shared state the host's thread reads is built here first and then stored once
+/  the I/O, every millisecond (SPIKE1_IOFREQ): the game reads a board's switches every 2 to 5 ms,
+/  at the node bus wire's pace, so a change is there for its next read. Coils, LEDs and the DMD go
+/  out as soon as the game sets them. The core reports solenoid changes to its hosts once a frame
+/  (core_updateSw), so a coil stays on for a frame at least: a pulse that came and went between two
+/  frames still shows. Shared state the host's thread reads is built here first and then stored once
 /-------------------------------------------------*/
+
+/* A table sets switches from its own thread, and VPX runs a frame's physics in a burst: a fast ball
+   through a trigger closes and opens it within a fraction of a millisecond, between two looks here.
+   The core counts each change it makes (core_swChangedHook), so such a closure still reaches the
+   machine - closed, then open */
+static volatile UINT32 spike1_swChanges[128];
+
+static void spike1_swChanged(int m)
+{
+  if (m >= 0 && m < 128) spike1_swChanges[m]++;
+}
+
 static void spike1_sync_io(void)
 {
   int i;
@@ -290,13 +305,29 @@ static void spike1_sync_io(void)
   const int dips = core_getDip(0);
   for (i = 0; i < 8; i++) core_setSw(SPIKE1_SW_DIP1 + i, (dips >> i) & 1);
   for (i = 0; i < locals.nsw; i++) {
+    /* the count, then the level. core_setSw sets the level (clearing the bit first) and then counts,
+       so a level that disagrees with the count's parity is a change half made, taken at the next
+       look - as is a change made without core_setSw (the core's flipper keys), taken then anyway */
+    const UINT32 changes = spike1_swChanges[locals.swM[i]];
     const UINT8 closed = core_getSw(locals.sw[i]) ? 1 : 0;
-    if (closed != locals.swState[i]) {
+    const int moved = closed != locals.swState[i];
+    if (moved != (int)((changes - locals.swSeen[i]) & 1) && !locals.swAgain[i]) {
+      locals.swAgain[i] = 1;
+      continue;
+    }
+    locals.swAgain[i] = 0;
+    if (moved) {
       locals.swState[i] = closed;
       spike1_pinmame_set_switch(locals.sw[i], closed);
       diag.switches++;
       if (diag.on) fprintf(stderr, "[spike1 driver] switch %d %s\n", locals.sw[i], closed ? "closed" : "opened");
+    } else if (changes != locals.swSeen[i]) { /* changed and changed back since the last look */
+      spike1_pinmame_set_switch(locals.sw[i], !closed);
+      spike1_pinmame_set_switch(locals.sw[i], closed);
+      diag.switches += 2;
+      if (diag.on) fprintf(stderr, "[spike1 driver] switch %d %s and back\n", locals.sw[i], closed ? "opened" : "closed");
     }
+    locals.swSeen[i] = changes;
   }
   /* coils */
   for (i = 0; i < SPIKE1_MAXCOILS; i++) {
@@ -652,6 +683,11 @@ static void spike1_map_switches(void)
     /* what is closed at rest - the trough with its balls, the door's power sense - starts closed in PinMAME too */
     core_setSw(number, closed);
   }
+  for (i = 0; i < locals.nsw; i++) {
+    locals.swM[i] = spike1_sw2m(locals.sw[i]);
+    locals.swSeen[i] = spike1_swChanges[locals.swM[i]];
+  }
+  core_swChangedHook = spike1_swChanged;
   locals.startSw = spike1_pinmame_find_switch("START BUTTON");
 }
 
@@ -735,6 +771,7 @@ static MACHINE_STOP(spike1)
       free(block);
   }
   locals.running = 0;
+  core_swChangedHook = NULL;
   spike1_pinmame_stop();
 }
 

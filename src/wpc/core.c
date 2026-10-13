@@ -2213,9 +2213,13 @@ int core_getSwCol(int colEn) {
 /*----------------------
 /  Set/reset a switch
 /-----------------------*/
+void (*core_swChangedHook)(int swMatrixNo) = NULL;
+
 void core_setSw(int swNo, int value) {
+  UINT8 was;
   if (coreData->sw2m) swNo = coreData->sw2m(swNo); else swNo = (swNo/10)*8+(swNo%10-1);
   //fprintf(stderr,"\nPinMAME switch %d",swNo);
+  was = coreGlobals.swMatrix[swNo/8];
   coreGlobals.swMatrix[swNo/8] &= ~(1<<(swNo%8)); /* clear the bit first */
 #ifdef PROC_SUPPORT
    if (coreGlobals.p_rocEn) {
@@ -2227,6 +2231,7 @@ void core_setSw(int swNo, int value) {
 #ifdef PROC_SUPPORT
    }
 #endif
+  if (core_swChangedHook && ((was ^ coreGlobals.swMatrix[swNo/8]) & (1<<(swNo%8)))) core_swChangedHook(swNo);
 }
 
 /*-------------------------

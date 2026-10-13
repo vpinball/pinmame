@@ -47,6 +47,7 @@ system-call level, the way the program sees it.
 - `spike1_pinmame.cpp`, `spike1_public.h` - the plain C contract with PinMAME's half,
   `src/wpc/spike1.c`; the subsystem includes no PinMAME header.
 - `spike1_boot.cpp` - the standalone harness.
+- `spike1_lptest.cpp` - runs a set through `pinmame64.dll` as VPX would (below).
 
 The kernel helpers at `0xffff0fa0..0xffff0fff` are real ARM code (the pre-v6 sequences from the
 kernel's `kernel_user_helpers.rst`), so no per-instruction hook is needed; `__kuser_get_tls` reads a
@@ -87,7 +88,10 @@ build/spike1boot/spike1boot --files <the game's folder> --game /games/<name>/gam
 ```
 
 Harness options: `--dmd <s>` prints the DMD every s seconds, `--list-switches` the switch, coil and LED maps,
-`--switch <s>:<name>[:<ms>]` toggles a switch by name for a while (e.g. `--switch "20:LEFT COIN:120"`),
+`--switch <s>:<name>[:<ms>]` toggles a switch by name for a while (e.g. `--switch "20:LEFT COIN:120"`;
+the time is emulated, in steps of `--slice`, and 0 ms toggles it and back at once, before the game
+can read it), `--led <name>` prints that LED channel's level as it changes, `--reads <file>` writes
+the time and board of every switch read (GetInputState) to a file,
 `--outputs` prints coil changes as they happen and the lit LEDs at the end, `--wav <file>` records
 the sound, `--insert <s>` saves
 the LCD insert every s seconds as a PPM file in the state directory (`--rgb <s>` the same for the
@@ -112,6 +116,21 @@ needs nothing else from the root. The state directory keeps the machine's NVRAM 
 `spike1.nv`, and the `--insert` pictures. `--trace` logs every system call; without it, only noteworthy ones (device
 traffic, files not found, threads) are logged. From Git Bash, set `MSYS_NO_PATHCONV=1`, or it turns
 `/games/...` into a Windows path.
+
+`spike1_lptest` (Windows; MinGW: `g++ -std=c++17 -O2 -static -o build/lptest/spike1_lptest.exe
+src/spike1/spike1_lptest.cpp`) runs a set through `pinmame64.dll` as a VPX table does:
+
+```sh
+spike1_lptest <pinmame64.dll> <vpm path> <set> [--seconds <n>] [--coin <switch>] [--coins <n>] [--coin-at <s>]
+              [--start <switch>] [--start-at <s>] [--press <s>:<switch>[:<ms>]]... [--lamp <n>]... [--frames <dir>]
+```
+
+The vpm path holds `roms/` and `nvram/`; the times are seconds of a running machine, and the
+defaults are Ghostbusters' LEFT COIN (81) and START BUTTON (78). A press shorter than 20 ms is
+timed exactly, from the tool's own thread as a table sets switches, and 0 ms closes and opens the
+switch back to back; a negative switch is one closed at rest, opened for the time. `--lamp` prints
+a lamp's level as it changes, `--frames` saves the video displays once a second, and the library's
+"Average FPS" line at the end gives the frame rate. `SPIKE1_LOG` passes the subsystem's log on.
 
 ## The devices (`spike1_devices.*`)
 
@@ -149,7 +168,8 @@ code (its symbols are in the program) rather than from any other emulator:
   time the wire allows. `tcdrain()` waits until the written bytes have gone out. The game's
   node-bus loop polls every board, reads its switches, then sleeps 1 ms, so the wire sets its
   pace: in attract mode a board's switches are read every 2.0 ms with two boards (Supreme,
-  Spider-Man) to every 4.6 ms with seven (Ghostbusters); WWE's six take 4.0 ms.
+  Spider-Man) to every 4.6 ms with seven (Ghostbusters); WWE's six take 4.0 ms, Whoa Nellie's
+  five 3.8 ms. A game in play reads at about the same pace (Ghostbusters 4.9 ms, at most 7.6).
 - **Switches**: the title's own tables (`node_board_table`, `node_board_device_table`,
   `switch_table`, `switch_dedicated_table`) give each switch's board, position, number, name and
   polarity. A board's eight GetInputState bytes and the CPU board's 3-byte `/dev/spi1` transfer
@@ -161,6 +181,20 @@ code (its symbols are in the program) rather than from any other emulator:
   board is the same: the game's own switch map for board 0 (`g_node_switch_map`) has DIP 1-8 on
   bits 0-7, ENTER, PLUS, MINUS and ESCAPE on 8-11 and the interlock on 16, so `wire_bytes()` puts
   that table's positions 1-15 a bit lower.
+- **Short switch closures**: a ball through a VPX trigger closes it for a few ms, and VPX runs a
+  frame's physics in a burst, so its Hit and UnHit can come within a fraction of a millisecond.
+  The game reads each change once: `sys_node_board_device_switch_update_inputs()` counts the edges
+  between two reads of a board and the switch code handles each one (the same code in all ten
+  programs with symbols; Heavy Metal's has none), so one read that sees a closure is enough - a
+  2 ms Start press that a read falls in starts a Ghostbusters game (a 1 ms one, Supreme), a 1 ms
+  one between two reads does not. So each read shows a switch's next
+  change (`wire_bytes()`): a switch that closed and opened again since the last read shows closed
+  to this read and open to the next, and every closure reaches the game, at most a read late. The
+  boards' reflexes (flippers, slingshots, pops) follow the switch itself, at once. A switch the
+  game also debounces in time keeps its time: Whoa Nellie's Start takes between 25 and 30 ms
+  held, however many reads see it (its playfield switches take one read). The CPU board's inputs are also read outside the node bus loop (the game's
+  immediate switch tests), and such a read takes the change too; those are the service buttons
+  and the coin door, which a person holds.
 - **Numbers** are the factory manual's, which the title's own tables hold (`apply_manual_numbers()`):
   `node_board_device_sw_table` gives the Switch Reference numbers, `node_board_device_cl_table_data`
   the Driver Reference numbers of the coils, `node_board_device_led_table` the Light Reference
@@ -298,6 +332,14 @@ code (its symbols are in the program) rather than from any other emulator:
   (above), so a change is there for its next read - and takes coils, LEDs and a new DMD frame
   out. The core reports solenoid changes to its hosts once a frame, so a coil stays on for a
   frame at least: a pulse that came and went between two frames still shows.
+- **Short switch closures** in PinMAME: a table sets switches from its own thread, so a closure
+  and its opening can both fall between two of the driver's looks at the switch matrix. The core
+  calls `core_swChangedHook` (`src/wpc/core.c`) with the matrix entry each time `core_setSw()`
+  changes a switch; the driver counts the changes, and a switch whose count moved while its level
+  did not reaches the machine as a change and a change back (then `wire_bytes()` above shows it to
+  the game). `core_setSw()` sets the level, clearing the bit first, before it counts, so a look
+  that finds a level the count's parity does not account for leaves that switch to the next look;
+  a change made without `core_setSw()` (the core's own flipper keys) is taken there too.
 - **Numbers** are the factory manual's: switches by their Switch Reference numbers (the flipper
   buttons and EOS switches in PinMAME's flipper column - each title's numbers, with its coin, tilt
   and slam switches, are in its `SPIKE1_SWITCHES`, or `SPIKE1_SWITCHES_UPPER` with the upper

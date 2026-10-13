@@ -364,10 +364,12 @@ private:
 	// Switches: closed bits per board and position, and the title's switch list
 	std::vector<switch_info> m_switches;
 	uint8_t m_sw_closed[128][8] = {};
+	uint8_t m_sw_read[128][8] = {};    // closed as the game reads them (wire_bytes())
+	uint8_t m_sw_changed[128][8] = {}; // changed since the game last read them
 	uint8_t m_sw_active_high[128][8] = {};
 	void load_device_table();
 	void apply_manual_numbers(const std::vector<std::pair<int, size_t>> &device);
-	void wire_bytes(uint8_t node, uint8_t *out, uint32_t len) const;
+	void wire_bytes(uint8_t node, uint8_t *out, uint32_t len);
 	int32_t cpu_spi_message(uint32_t req, uint32_t arg, std::string &note);
 
 	// Sound

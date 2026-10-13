@@ -129,6 +129,8 @@ int main(int argc, char **argv)
 	// --switch <seconds>:<name>[:<ms held, default 200>]: close a switch for a while, by its name
 	struct press { double at, held_ms; std::string name; bool down = false, up = false; };
 	std::vector<press> presses;
+	std::vector<std::string> watch_leds; // --led <name>: print that LED's level as it changes
+	std::string reads_path;
 	struct home_link { int node, stepper, number; };
 	std::vector<home_link> home_links;
 	struct limit_motor { int forward, backward, home, away; unsigned travel_ms; };
@@ -170,6 +172,8 @@ int main(int argc, char **argv)
 		else if (arg == "--list-switches") list_switches = true;
 		else if (arg == "--outputs") show_outputs = true; // coil changes as they happen, lit LEDs at the end
 		else if (arg == "--node-dump") node_dump = next(); // every node-bus frame except switch reads, to a file
+		else if (arg == "--reads") reads_path = next(); // the time and board of every switch read (GetInputState), to a file
+		else if (arg == "--led") watch_leds.push_back(next());
 		else if (arg == "--wav") wav_path = next(); // the sound, as a WAV file
 		else if (arg == "--switch") {
 			const std::string v = next();
@@ -278,11 +282,22 @@ int main(int argc, char **argv)
 	}
 	for (const auto &p : presses)
 		if (!linux_os.devices().find_switch(p.name)) { std::fprintf(stderr, "no switch named \"%s\"\n", p.name.c_str()); return 2; }
+	std::vector<size_t> watched; // the LED channels --led names, by index
+	for (const auto &w : watch_leds) {
+		auto upper = [](std::string n) { for (auto &c : n) c = char(std::toupper(uint8_t(c))); return n; };
+		const auto &leds = linux_os.devices().leds();
+		const size_t before = watched.size();
+		for (size_t i = 0; i < leds.size(); i++) if (upper(leds[i].name) == upper(w)) watched.push_back(i);
+		if (watched.size() == before) { std::fprintf(stderr, "no LED named \"%s\"\n", w.c_str()); return 2; }
+	}
+	std::vector<int> led_was(watched.size(), -1);
 
 	FILE *dump = node_dump.empty() ? nullptr : std::fopen(node_dump.c_str(), "w");
-	if (dump)
-		linux_os.devices().set_frame_observer([dump](uint64_t now_ns, const uint8_t *frame, uint32_t len) {
-			if (len > 2 && (frame[2] == 0x11 || frame[2] == 0xff)) return;
+	FILE *reads = reads_path.empty() ? nullptr : std::fopen(reads_path.c_str(), "w");
+	if (dump || reads)
+		linux_os.devices().set_frame_observer([dump, reads](uint64_t now_ns, const uint8_t *frame, uint32_t len) {
+			if (len > 2 && frame[2] == 0x11 && reads) std::fprintf(reads, "%10.6f %2u\n", double(now_ns) / 1e9, frame[0] & 0x7f);
+			if (!dump || (len > 2 && (frame[2] == 0x11 || frame[2] == 0xff))) return;
 			std::fprintf(dump, "%10.6f %2u %02x", double(now_ns) / 1e9, frame[0] & 0x7f, frame[2]);
 			for (uint32_t i = 3; i + 2 < len; i++) std::fprintf(dump, " %02x", frame[i]);
 			std::fprintf(dump, "\n");
@@ -303,7 +318,13 @@ int main(int argc, char **argv)
 		const double now_s = double(linux_os.now_ns()) / 1e9;
 		for (auto &p : presses) {
 			const auto *s = linux_os.devices().find_switch(p.name);
-			if (!p.down && now_s >= p.at) {
+			if (!p.down && now_s >= p.at && p.held_ms <= 0) { // 0 ms: changed and changed back before the game reads it
+				p.down = p.up = true;
+				const bool was = linux_os.devices().switch_closed(s->node, s->position);
+				linux_os.devices().set_switch(s->node, s->position, !was, linux_os.now_ns());
+				linux_os.devices().set_switch(s->node, s->position, was, linux_os.now_ns());
+				std::printf("[%10.6f] switch %s %s and back at once\n", now_s, s->name.c_str(), was ? "opened" : "closed");
+			} else if (!p.down && now_s >= p.at) {
 				p.down = true;
 				linux_os.devices().set_switch(s->node, s->position, !linux_os.devices().switch_closed(s->node, s->position), linux_os.now_ns());
 				std::printf("[%10.6f] switch %s %s\n", now_s, s->name.c_str(), linux_os.devices().switch_closed(s->node, s->position) ? "closed" : "opened");
@@ -323,6 +344,12 @@ int main(int argc, char **argv)
 						level ? ("on " + std::to_string(level * 100 / 255) + "%").c_str() : "off");
 				coil_levels[i] = level;
 			}
+		}
+		for (size_t k = 0; k < watched.size(); k++) {
+			const auto &l = linux_os.devices().leds()[watched[k]];
+			const int level = linux_os.devices().led_level(l.node, l.position, linux_os.now_ns());
+			if (level != led_was[k]) std::printf("[%10.6f] led %u %s %d\n", now_s, l.number, l.name.c_str(), level);
+			led_was[k] = level;
 		}
 		if (wav) {
 			wav_rate = linux_os.devices().audio_rate();
@@ -375,6 +402,7 @@ int main(int argc, char **argv)
 		if (FILE *f = std::fopen(nvram_path.c_str(), "wb")) { std::fwrite(nv.data(), 1, nv.size(), f); std::fclose(f); }
 	}
 	if (dump) std::fclose(dump);
+	if (reads) std::fclose(reads);
 	if (wav) { // RIFF header: PCM, 2 channels, 16 bits
 		auto u32 = [](uint8_t *p, uint32_t v) { for (int i = 0; i < 4; i++) p[i] = uint8_t(v >> (8 * i)); };
 		uint8_t h[44] = { 'R', 'I', 'F', 'F', 0, 0, 0, 0, 'W', 'A', 'V', 'E', 'f', 'm', 't', ' ', 16, 0, 0, 0, 1, 0, 2, 0,
