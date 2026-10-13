@@ -3796,7 +3796,7 @@ void core_dmd_submit_frame(const core_tLCDLayout* layout, const UINT8* frame, co
     // (if the compiler/CPU reorder this instruction we may have visual glitches)
     int nf = (dmd_state->nextFrame + 1) % dmd_state->nFrames;
     atomic_exchange_int(&dmd_state->nextFrame, nf);
-    atomic_increment(&dmd_state->frame_index);
+    atomic_increment((volatile int*)&dmd_state->frame_index);
   }
 }
 
