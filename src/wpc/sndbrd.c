@@ -76,16 +76,17 @@ void sndbrd_diag(int board, int button) {
 
 void sndbrd_data_w(int board, int data) {
   const struct sndbrdIntf *b = intf[board].brdIntf;
-  if(b && (b->flags & SNDBRD_NOTSOUND)==0 && !intf[board].noDataLog) {
-	snd_cmd_log(board, data);
+  if(b && (b->flags & SNDBRD_NOTSOUND)==0) {
+    if (!intf[board].noDataLog) // else the main board logs the commands itself, see sndbrd_logData
+      snd_cmd_log(board, data);
 #if defined(LISY_SUPPORT)
-	lisy_sound_handler( board, data );
+    lisy_sound_handler( board, data ); // LISY still gets every write, as before sndbrd_logData
 #endif
   }
   if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->data_w) {
 #if 0
     if((b->flags & SNDBRD_NOTSOUND)==0)
-		snd_cmd_log(board, data);
+      snd_cmd_log(board, data);
 #endif
     if (b->flags & SNDBRD_NODATASYNC)
       b->data_w(board, data);
