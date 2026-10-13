@@ -9,6 +9,9 @@
 extern "C" {
 #endif
 
+/* the ROM Spin interpreter's polling loops sleep like PASM polling loops (p8x32a_spin); undefine to run them */
+#define P8X32A_SPIN_LOOPS
+
 #define P8X32A_NEVER 0xFFFFFFFFFFFFFFFFull
 #define P8X32A_PEND_COG(n) (1u << (n))       /* pend_what: cog n's OUTA or DIRA */
 #define P8X32A_PEND_CTR(j) (1u << (8 + (j))) /* pend_what: counter j (2 * cog + 0 for A, 1 for B) */
@@ -52,7 +55,7 @@ typedef struct p8x32a_cog {
 
 /* a cog polling in a loop: a recorded iteration replays while its inputs stay the same */
 typedef struct p8x32a_loop {
-	uint8_t state, edge, dirty, hub;
+	uint8_t state, edge, dirty, hub, spin; /* spin: a Spin loop (p8x32a_spin) */
 	uint16_t head, edge_head, nins, nins0;
 	uint64_t head_t, edge_t, period, t0;
 	int nsnap, nin, nhub;
@@ -62,6 +65,29 @@ typedef struct p8x32a_loop {
 	uint64_t snap_t[P8X32A_PAT];
 	unsigned char snap[P8X32A_PAT][P8X32A_SNAP];
 } p8x32a_loop;
+
+#ifdef P8X32A_SPIN_LOOPS
+/* A Spin loop: the ROM interpreter repeating bytecodes that change nothing, recorded per event like p8x32a_loop, with
+   the cog RAM at the start and the register writes after it */
+#define P8X32A_SPIN_EV 512   /* events per iteration */
+#define P8X32A_SPIN_LOG 1024 /* register writes per iteration */
+#define P8X32A_SPIN_HUB 32   /* hub locations read or written */
+#define P8X32A_SPIN_SEEN 16  /* bytecode addresses remembered while searching */
+typedef struct p8x32a_spin {
+	uint32_t ram0[512];
+	uint32_t log_v[P8X32A_SPIN_LOG];
+	uint16_t log_r[P8X32A_SPIN_LOG], log_e[P8X32A_SPIN_LOG]; /* register, event after which it holds log_v */
+	int nlog, nhub, nseen;
+	unsigned skip, fails;   /* fetches not looked at after a recording failed; failures in a row */
+	uint16_t head;
+	uint16_t hub_a[P8X32A_SPIN_HUB];
+	uint8_t hub_n[P8X32A_SPIN_HUB];
+	uint32_t hub_v[P8X32A_SPIN_HUB];
+	uint16_t seen[P8X32A_SPIN_SEEN];
+	uint64_t snap_t[P8X32A_SPIN_EV];
+	unsigned char snap[P8X32A_SPIN_EV][P8X32A_SNAP];
+} p8x32a_spin;
+#endif
 
 /* Translated runs of a cog's local instructions (p8x32ajit.cpp). fn runs a block and its successors, returns the
    instruction count and updates st as run_local would. A block ends after a taken jump or before a slot whose word
@@ -169,6 +195,11 @@ typedef struct p8x32a {
 	unsigned sched_gen; /* bumped when one cog changes another's next event */
 	uint64_t sleeps; /* idle loops entered */
 	p8x32a_loop loop[8];
+#ifdef P8X32A_SPIN_LOOPS
+	uint64_t spin_sleeps; /* of them Spin loops */
+	uint8_t watch[2048]; /* bit a / 4: a sleeper reads or writes hub long a */
+	p8x32a_spin spin[8];
+#endif
 	p8x32a_dec dec[8][512];
 	p8x32a_jit_fn jit_build;    /* NULL: no translation */
 	void *jit;
