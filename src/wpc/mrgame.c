@@ -139,8 +139,9 @@ static ppi8255_interface ppi8255_intf =
 /-----------------*/
 struct DACinterface mrgame_dacInt =
 {
-  2,									/*2 Chips - Even though there's 3, only 2 used for actual output */
- { MIXER(50,MIXER_PAN_LEFT), MIXER(50,MIXER_PAN_RIGHT) }		/* Volume */
+  2,														/*2 Chips - Even though there's 3, only 2 used for actual output */
+ { MIXER(50,MIXER_PAN_LEFT), MIXER(50,MIXER_PAN_RIGHT) },	/* Volume */
+ { 1, 1 }													/* DC offset correction */
 };
 struct TMS5220interface mrgame_tms5220Int = { 640000, 100, 0 };
 struct M114Sinterface mrgame_m114sInt = {
