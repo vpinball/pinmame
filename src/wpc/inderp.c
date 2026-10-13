@@ -159,17 +159,9 @@ static DISCRETE_SOUND_START(inder_tones)
 	DISCRETE_ADDER4(NODE_90,1,NODE_10,NODE_20,NODE_30,NODE_40)
 	DISCRETE_ADDER4(NODE_91,1,NODE_50,NODE_60,NODE_70,NODE_80)
 
-	/* TODO: needs a DISCRETE_CRFILTER before the output - the node below is unipolar,
-	   four triangles with BIAS 10000 summed per side, so roughly +40000 of DC on
-	   each channel, which then clips against the 32767 the output stage clamps to -
-	   and it is there even in silence, a disabled wave node in disc_wav.c still
-	   outputs its BIAS.
-	   On the real board the output coupling capacitor removes that; by35snd.c is the
-	   one driver here that models it (DISCRETE_CRFILTER, "capacitor in series between
-	   pre-amp and output amp"). A plausible placeholder until the schematic is checked
-	   is RES_K(10)/CAP_U(10), i.e. a 10uF electrolytic into a ~10k amp input, which
-	   corners at ~1.6Hz - low enough to touch nothing audible */
-	DISCRETE_OUTPUT_STEREO(NODE_90,NODE_91,75)
+	/* Unipolar (four triangles of BIAS 10000 per side, +40000 of DC even in silence: disabled wave nodes output their
+	   BIAS), hence _AC to correct/center around 0. Peaks +-25000 per tone, about +-100000 (3x 16bit full scale) with all four - level unverified */
+	DISCRETE_OUTPUT_STEREO_AC(NODE_90,NODE_91,75)
 DISCRETE_SOUND_END
 
 // switches start at 30 for column 1, and each column adds 10.

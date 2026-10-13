@@ -165,6 +165,8 @@
 /*                                                                      */
 /* DISCRETE_OUTPUT(OPNODE)                                              */
 /* DISCRETE_OUTPUT_STEREO(OPNODEL,OPNODER)                              */
+/* DISCRETE_OUTPUT_AC(OPNODE)                                           */
+/* DISCRETE_OUTPUT_STEREO_AC(OPNODEL,OPNODER)                           */
 /*                                                                      */
 /************************************************************************/
 /*                                                                      */
@@ -1072,6 +1074,10 @@
 /*                                                                      */
 /*  Output stream will be generated from the NODE_02 output stream.     */
 /*                                                                      */
+/*  DISCRETE_OUTPUT_AC(name of output node,volume) does the same, but   */
+/*  removes the DC like an output coupling capacitor (1.6Hz high-pass), */
+/*  for unipolar graphs (wave node bias, 555s) that do not model it.    */
+/*                                                                      */
 /************************************************************************/
 /*                                                                      */
 /* DISCRETE_OUTPUT_STEREO - Single output node to Mame mixer and output */
@@ -1094,7 +1100,7 @@
 /*   DISCRETE_OUTPUT_STEREO(NODE_02,NODE12,100)                         */
 /*                                                                      */
 /*  Output stream will be generated from the NODE_02 and NODE_12        */
-/*  streams.                                                            */
+/*  streams. DISCRETE_OUTPUT_STEREO_AC removes the DC, see above.       */
 /*                                                                      */
 /************************************************************************/
 
@@ -1105,8 +1111,12 @@
 #define DISC_LOGADJ 1.0
 #define DISC_LINADJ 0.0
 
+/* The node graph runs at this fixed rate, not the output rate, so its ideal square/triangle/sawtooth and 555 generators
+   alias far less; the mixer resamples it (band-limited) to the output rate */
+#define DISCRETE_SAMPLE_RATE (4*48000)
+
 /* calculate charge exponent using discrete sample time */
-#define RC_CHARGE_EXP(rc)                       (1.0-exp(-1.0/((rc)*Machine->sample_rate)))
+#define RC_CHARGE_EXP(rc)                       (1.0-exp(-1.0/((rc)*DISCRETE_SAMPLE_RATE)))
 /* calculate charge exponent using given sample time */
 #define RC_CHARGE_EXP_DT(rc, dt)                (1.0 - exp(-(dt) / (rc)))
 #define RC_CHARGE_NEG_EXP_DT(rc, dt)            (1.0 - exp((dt) / (rc)))
@@ -1558,8 +1568,10 @@ enum {
 #define DISCRETE_SQUAREW566(NODE,ENAB,AMPL,V_IN,R,C,BIAS,SETUP)        { NODE, DSD_SQUAREW566  , 6, { ENAB,AMPL,V_IN,R,C,BIAS }, { ENAB,AMPL,V_IN,R,C,BIAS }, SETUP," Square Wave 566" },
 #define DISCRETE_TRIANGLEW566(NODE,ENAB,AMPL,V_IN,R,C,BIAS,SETUP)      { NODE, DSD_TRIANGLEW566, 6, { ENAB,AMPL,V_IN,R,C,BIAS }, { ENAB,AMPL,V_IN,R,C,BIAS }, SETUP," Triangle Wave 566" },
 
-#define DISCRETE_OUTPUT(OPNODE,VOL)                                    { NODE_OP, DSO_OUTPUT   , 3, { OPNODE,OPNODE,NODE_NC }, {0,0,VOL }, NULL, "Output Node" },
-#define DISCRETE_OUTPUT_STEREO(OPNODEL,OPNODER,VOL)                    { NODE_OP, DSO_OUTPUT   , 3, { OPNODEL,OPNODER,NODE_NC }, { 0,0,VOL }, NULL, "Stereo Output Node" },
+#define DISCRETE_OUTPUT(OPNODE,VOL)                                    { NODE_OP, DSO_OUTPUT   , 4, { OPNODE,OPNODE,NODE_NC,NODE_NC }, {0,0,VOL,0 }, NULL, "Output Node" },
+#define DISCRETE_OUTPUT_STEREO(OPNODEL,OPNODER,VOL)                    { NODE_OP, DSO_OUTPUT   , 4, { OPNODEL,OPNODER,NODE_NC,NODE_NC }, { 0,0,VOL,0 }, NULL, "Stereo Output Node" },
+#define DISCRETE_OUTPUT_AC(OPNODE,VOL)                                 { NODE_OP, DSO_OUTPUT   , 4, { OPNODE,OPNODE,NODE_NC,NODE_NC }, {0,0,VOL,1 }, NULL, "AC Coupled Output Node" },
+#define DISCRETE_OUTPUT_STEREO_AC(OPNODEL,OPNODER,VOL)                 { NODE_OP, DSO_OUTPUT   , 4, { OPNODEL,OPNODER,NODE_NC,NODE_NC }, { 0,0,VOL,1 }, NULL, "AC Coupled Stereo Output Node" },
 
 
 /************************************************************************/
