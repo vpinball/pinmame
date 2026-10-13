@@ -101,6 +101,9 @@ prints guest memory at the end, `--stepper-home <node>:<stepper>:<switch>` links
 home switch on another board as a PinMAME set's `SPIKE1_HOMES` does (Game of Thrones: `10:0:88`
 and `12:0:121`), `--limit-motor <forward LED>:<backward LED>:<home switch>:<away switch>:<ms>`
 adds a limit motor as a set's `SPIKE1_LIMIT_MOTOR` does (KISS: `169:170:53:54:1000`),
+`--encoder-motor <node>:<motor>:<low stop>:<high stop>:<counts a second>` links an encoder motor's
+mechanism as a set's `SPIKE1_ENCODER_MOTOR` does (Ghostbusters: `8:0:-6:96:50`; `--outputs` then
+prints the mechs' positions as they change),
 `--video-key <32 hex digits>` hands the game the key its LCD clips are encrypted with, `--lcd <s>`
 saves the CPU board's LCD every s seconds as a PPM file in the state directory,
 `--poke <s>:<hex address>:<hex byte>` writes a byte of guest memory then (for experiments),
@@ -122,15 +125,18 @@ src/spike1/spike1_lptest.cpp`) runs a set through `pinmame64.dll` as a VPX table
 
 ```sh
 spike1_lptest <pinmame64.dll> <vpm path> <set> [--seconds <n>] [--coin <switch>] [--coins <n>] [--coin-at <s>]
-              [--start <switch>] [--start-at <s>] [--press <s>:<switch>[:<ms>]]... [--lamp <n>]... [--frames <dir>]
+              [--start <switch>] [--start-at <s>] [--press <s>:<switch>[:<ms>]]... [--lamp <n>]... [--mech <n>]...
+              [--frames <dir>]
 ```
 
 The vpm path holds `roms/` and `nvram/`; the times are seconds of a running machine, and the
 defaults are Ghostbusters' LEFT COIN (81) and START BUTTON (78). A press shorter than 20 ms is
 timed exactly, from the tool's own thread as a table sets switches, and 0 ms closes and opens the
 switch back to back; a negative switch is one closed at rest, opened for the time. `--lamp` prints
-a lamp's level as it changes, `--frames` saves the video displays once a second, and the library's
-"Average FPS" line at the end gives the frame rate. `SPIKE1_LOG` passes the subsystem's log on.
+a lamp's level as it changes, `--mech` a mech's `GetMech()` value (Slimer is mech 0; the tool
+leaves `HandleMechanics` at its default, as a table does), `--frames` saves the DMD and the video
+displays as `display<n>_<second>.png`, each second's last frame, and the library's "Average FPS"
+line at the end gives the frame rate. `SPIKE1_LOG` passes the subsystem's log on.
 
 ## The devices (`spike1_devices.*`)
 
@@ -232,8 +238,27 @@ code (its symbols are in the program) rather than from any other emulator:
   and Game of Thrones also command 0xC0 for channels from 64 on (its start-up test sweeps all 96 a
   board drives): a 16-bit first channel, then a run in the same two forms. The model picks the
   packed form by that symbol.
-- **Motors**: home, go, stop and status, the move taking emulated time, so the game's encoder-motor
-  code (Slimer) finds the motor homed and ready instead of re-configuring it in a loop.
+- **Encoder motors** (Ghostbusters' Slimer, the game's `EncoderMotor`; commands 0x50-0x57): the
+  board runs the motor itself, and the model runs it as the board's firmware does (node firmware
+  0.52.0, `pinnode-LPC1313`; `motor_command()`, `motor_tick()`). A loop 1280 times a second drives
+  one of two outputs at a PWM duty, counts the encoder's two inputs once the motor is homed, and
+  stops on the home, away or limit input, on the exact count, or at a time-out (which the watch
+  input's edges restart). Home drives down until the home input is active, away up until the away
+  input is; a go needs a homed motor, ramps the duty up a step a tick to its speed (the step is
+  `51200 / ramp` of the configuration, scaled by the speed), holds it, ramps it down to the least
+  duty from as far before the target as the ramp up took (or from half way), and stops on the
+  count. The status (0x52) is the count and the firmware's bits: 0 driving, 1 down, 2 holding, 3
+  homed, 4 away found, 5 target switch found, 6 time-out, 7 limit, 8 a go without an encoder. An
+  input id names the board's input in bits 0-5, bit 6 marks it used and bit 7 makes it active high.
+  The game homes twice: first with the outputs swapped and the home input's polarity turned (up,
+  until out of the home zone), then as configured (down, until into it), so its zero is the zone's
+  edge, reached from above. The host links the mechanism (`link_encoder_motor()`): its end stops in
+  counts from that edge, the home zone reaching from there down to the lower stop, and the counts
+  a second it makes at full drive (a duty of 255); it stands just inside the zone at power-on, and
+  the home switch and the encoder's two phases follow its position. Without one it has no stops and
+  makes 50 counts a second. Which way an output turns the motor comes from its LED channel's name
+  (SLIMER MOTOR FORWARD, BACKWARD). The brake output (no title configures it) and a go to a target
+  switch without an encoder are not modelled.
 - **Steppers** (Whoa Nellie's score and credit reels, Game of Thrones' dragons,
   `NODEBUS_Stepper*`): configure (0x32: steps a turn, home switch input), go (0x31: a target,
   forward or with bit 15 backward, at a time per step; a target past the turn goes once round),
@@ -353,9 +378,12 @@ code (its symbols are in the program) rather than from any other emulator:
   credit reels of Whoa Nellie, Primus and Pabst Can Crusher - one hardware, one set of switch
   numbers - are mechs 0-4, as steps 0-199; Game of Thrones' dragon and topper dragon are mechs 0
   and 1, as steps 0-199, the wings at 23, 80, 125 or 180; then a limit motor, KISS's Starchild as
-  mech 0, from 0 at home to 100 away). A title's stepper home switches on other boards are its
-  `SPIKE1_HOMES`, its limit motor its `SPIKE1_LIMIT_MOTOR`. Coil and LED levels are modulated
-  outputs.
+  mech 0, from 0 at home to 100 away). Slimer's mech is its encoder count, 0 at the home zone's
+  edge. The driver takes the mechs' positions on the machine's thread at each I/O exchange, so
+  `GetMech()` from the host's thread reads the last ones taken. A title's stepper home switches on
+  other boards are its `SPIKE1_HOMES`, its limit motor its `SPIKE1_LIMIT_MOTOR`, its encoder motor's
+  mechanism its `SPIKE1_ENCODER_MOTOR` (`SPIKE1_INIT_ENCODER`; Slimer: node 8, motor 0, stops at -6
+  and 96, 50 counts a second). Coil and LED levels are modulated outputs.
   The keys: coins 5, 6, 3 and 4, start 1, the service buttons 7-0 (back, minus, plus, select), tilt
   Insert, slam Home, coin door End.
 - **Displays**: the DMD as a core DMD (`CORE_DMD_PWM_PREINTEGRATED_LINEAR_16`: the device model
@@ -414,7 +442,10 @@ attract mode with the DMD and the insert drawn, takes coins and starts a game fr
 plays the coin sounds and the start music, and keeps its NVRAM across a restart - at 60 frames
 per second, the machine taking about half of one core of an i7-13700KF. Through libpinmame, in
 VPX 10.8.1 (Rev 6113) with its PinMAME plugin, a converted Ghostbusters LE table plays: DMD and
-insert, lamps and GI, coils, switches, sound and Slimer's motor.
+insert, lamps and GI, coils, switches, sound and Slimer's motor. In the harness, Slimer homes at
+power-on and at each game start; the service menu's SLIMER MOTOR TEST moves it to each position it
+asks for (42, 50, 60) and reads it back, and SLIMER MOTOR CALIBRATION ends "COMPLETE: PASSED"
+(POS 0, MIN -5, MAX 97, RANGE 102); the ball search drives it up to its stop until its time-out.
 
 Game of Thrones LE 1.37.0 (six boards, 241 LED channels, Light References up to 265) boots to
 attract mode, takes coins (four to a credit at its default pricing) and starts a game in the
@@ -502,3 +533,17 @@ are the game's own, which its switch test shows, and its cabinet's are Supreme's
    runs on. The RGB panel's frame time is the DMD's (not known). The game writes its settings and
    audits to `/data` as they change and commits nothing at the power fail, so a power down waits
    its full time; nothing is lost.
+10. Ghostbusters' Slimer: its speed at full drive, 50 counts a second, is an estimate from the
+   manual's 10 RPM gearhead (041-5132-01), not a measurement (the game and the firmware set a PWM
+   duty, not a speed). Its end stops are the game's: its calibration drives him to -25 and to 125
+   and passes only when he stopped at -6 (+/-4) and 102 (+/-5) counts further on. The speed is
+   taken as linear in the duty, and with it about one calibration in three ends "ERROR" with MIN 0
+   (a second one passes). That is a race in the game: it drives Slimer out of the home zone for
+   61 loops of its calibration (a DMD frame each, about 1 s), then re-homes him. The board's first
+   homing pass finds him there already, so for one node-bus cycle he homes without moving, and a
+   loop that falls in that cycle sets the next target (-25) at once. The board counts nothing
+   while the second pass drives him back, so the game's next 61-loop wait for a still position
+   ends first and puts its next target (125) over the first. The game wins only if the return at
+   duty 0x50 takes under about 1 s; linear in the duty it takes about 1.3 s at any full speed (the
+   way out, at duty 0x80, grows with it), and only a motor near full speed from duty 0x50 on comes
+   back in time. How the real motor's speed follows the duty is not known.

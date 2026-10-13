@@ -207,13 +207,20 @@ int spike1_pinmame_led(unsigned index, int *number, int *kind, const char **name
 
 int spike1_pinmame_motor(unsigned index, int *position, int *moving)
 {
-	const spike1_devices *d = devices();
+	spike1_devices *d = devices();
 	int16_t p = 0;
 	bool m = false;
 	if (!d || !d->motor_at(index, p, m, now_ns())) return 0;
 	if (position) *position = p;
 	if (moving) *moving = m;
 	return 1;
+}
+
+void spike1_pinmame_encoder_motor(unsigned node, unsigned motor, int low_stop, int high_stop, unsigned counts_per_s)
+{
+	spike1_devices *d = devices();
+	if (d && node < 128 && motor < 8)
+		d->link_encoder_motor(uint8_t(node), uint8_t(motor), int16_t(low_stop), int16_t(high_stop), uint16_t(counts_per_s > 65535 ? 65535 : counts_per_s));
 }
 
 int spike1_pinmame_stepper_home(unsigned node, unsigned stepper, int switch_number)

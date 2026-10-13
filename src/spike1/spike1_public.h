@@ -91,9 +91,14 @@ unsigned spike1_pinmame_led_level(unsigned index);
 
 /* A motor the boards run on their own (Ghostbusters' Slimer), in board and motor order, then their
    steppers (Whoa Nellie's reels, Game of Thrones' dragons), then the limit motors below: its
-   position now - a motor's in the game's units, a stepper's step within its turn - and whether it
-   moves */
+   position now - a motor's as its board counts it, a stepper's step within its turn - and whether
+   it moves. Call from the machine's thread: it runs the boards' motors up to now */
 int spike1_pinmame_motor(unsigned index, int *position, int *moving); /* 0 when there is none */
+/* The mechanism behind a board's encoder motor (Ghostbusters' Slimer): its end stops in encoder
+   counts from the edge of its home zone, which reaches from there down to the lower stop, and the
+   counts a second it makes at full drive. It stands just inside the zone at power-on. Call after
+   spike1_pinmame_start, before the game configures the motor */
+void spike1_pinmame_encoder_motor(unsigned node, unsigned motor, int low_stop, int high_stop, unsigned counts_per_s);
 /* A stepper whose home switch is wired to another board (Game of Thrones' dragons): the stepper by
    its board's node address and its index there, the switch by its number. The switch is then
    closed while the stepper stands at step 0. Call after spike1_pinmame_start; 0 if no such switch */

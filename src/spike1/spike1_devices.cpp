@@ -53,10 +53,11 @@ constexpr uint8_t REFLEX_USED = 0x40, REFLEX_INVERT = 0x80, REFLEX_POSITION = 0x
 // coils. The shortest pulse that moves something is 16 ms (Primus' slingshots)
 constexpr uint32_t COIL_SHOWN_MIN_MS = 4;
 
-// Motors: how long a home takes, and a move per encoder count. The game polls until the board
-// says the move is done, so these only set the pace of the mechanism, not whether it works
-constexpr uint64_t MOTOR_HOME_NS = 1500000000;
-constexpr uint64_t MOTOR_NS_PER_COUNT = 2000000;
+// Motors: the node firmware runs its motor loop once a SysTick tick, 1280 times a second, the rate
+// its LED fades step at, and ramps a motor's duty by its table's 51200 / n a tick for a ramp of n
+// 16 ms units, as the fades do
+constexpr uint64_t MOTOR_TICK_NS = 781250;
+constexpr double MOTOR_TICKS_PER_S = 1280.0;
 
 // Sound. The game's amp_set_sample_rate() passes /dev/i2s a code from its own table, and its DAC
 // handler writes 200 stereo frames of 16-bit samples (800 bytes) at a time. The driver keeps a
@@ -720,6 +721,7 @@ void spike1_devices::node_bus_frame(const uint8_t *frame, uint32_t len, uint64_t
 	if (m_frame_observer) m_frame_observer(now_ns, frame, len);
 	const uint8_t *data = frame + 3;     // the command's own bytes, between cmd and checksum
 	const uint32_t n = len - 5;
+	if (!m_motors.empty()) motors_run(now_ns); // the boards run their motors all the while
 	if (m_led_form < 0) m_led_form = m_cfg.symbol && m_cfg.symbol("_Z23NODEBUS_SetLEDMultiple2hhPhS_S_") ? 0 : 1;
 	if ((cmd >= 0x80 && cmd <= 0xbf) || (cmd == 0xc0 && m_led_form)) { // LED update
 		if (m_led_form ? led_update_run(node, cmd, data, n, now_ns) : led_update(node, cmd, data, n, now_ns)) {
@@ -796,41 +798,17 @@ void spike1_devices::node_bus_frame(const uint8_t *frame, uint32_t len, uint64_t
 		if (data_len == sizeof(r)) { node_bus_reply(r, sizeof(r)); return; }
 		break;
 	}
-	// Motors (the game's EncoderMotor): status bit 3 = at rest and ready (homed after a home),
-	// bit 0 = moving, bit 6 = fault
-	case 0x51: case 0x57: // configure, configure update: [motor][configuration]
-		if (len > 4) m_motors[(uint32_t(node) << 8) | frame[3]];
+	// Motors (the game's EncoderMotor): configure, home, away, go, stop and status, as the node
+	// firmware runs them (motor_command(), motor_tick())
+	case 0x51: case 0x53: case 0x54: case 0x55: case 0x56: case 0x57:
+		if (n < 1) break;
+		motor_command(node, cmd, data, n, now_ns);
+		if (m_cfg.trace) note = "node bus: node " + std::to_string(node) + " motor " + std::to_string(data[0]) + " command " + hex(cmd) + " " + bytes_hex(data + 1, n - 1);
 		return;
-	case 0x53: case 0x54: { // home, away: [motor][...][timeout in board ticks, u16]
-		if (len <= 4) break;
-		motor &m = m_motors[(uint32_t(node) << 8) | frame[3]];
-		const int16_t to = cmd == 0x53 ? 0 : m.position;
-		motor_move(m, to, now_ns, MOTOR_HOME_NS);
-		if (cmd == 0x53) m.homed = true;
-		if (m_cfg.trace) note = "node bus: node " + std::to_string(node) + " motor " + std::to_string(frame[3]) + (cmd == 0x53 ? " home" : " away");
-		return;
-	}
-	case 0x55: { // go: [motor][target, s16][speed][...]
-		if (len <= 6) break;
-		motor &m = m_motors[(uint32_t(node) << 8) | frame[3]];
-		const int16_t target = int16_t(frame[4] | (frame[5] << 8));
-		const int16_t now_at = motor_position(m, now_ns);
-		motor_move(m, target, now_ns, uint64_t(std::abs(int(target) - int(now_at))) * MOTOR_NS_PER_COUNT);
-		if (m_cfg.trace) note = "node bus: node " + std::to_string(node) + " motor " + std::to_string(frame[3]) + " go " + std::to_string(target);
-		return;
-	}
-	case 0x56: { // stop: [motor] - it stays where the move has taken it
-		if (len <= 4) break;
-		motor &m = m_motors[(uint32_t(node) << 8) | frame[3]];
-		m.position = m.from = m.target = motor_position(m, now_ns);
-		m.start_ns = m.end_ns = 0;
-		return;
-	}
 	case 0x52: { // status: [motor] -> [position, u16][status, u16]
-		if (len <= 4 || data_len != 4) break;
-		const motor &m = m_motors[(uint32_t(node) << 8) | frame[3]];
-		const bool moving = m.end_ns > now_ns;
-		const uint16_t pos = uint16_t(motor_position(m, now_ns)), status = moving ? 0x01 : 0x08;
+		if (n < 1 || data_len != 4) break;
+		const auto it = m_motors.find((uint32_t(node) << 8) | data[0]);
+		const uint16_t pos = it != m_motors.end() ? uint16_t(it->second.position) : 0, status = it != m_motors.end() ? it->second.status : 0;
 		const uint8_t r[4] = { uint8_t(pos), uint8_t(pos >> 8), uint8_t(status), uint8_t(status >> 8) };
 		node_bus_reply(r, sizeof(r));
 		return;
@@ -1134,19 +1112,275 @@ int32_t spike1_devices::cpu_spi_message(uint32_t req, uint32_t arg, std::string 
 
 // ---------------------------------------------------------------- motors
 
-void spike1_devices::motor_move(motor &m, int16_t target, uint64_t now_ns, uint64_t duration_ns)
+// An encoder motor as the node firmware runs it (0.52.0, pinnode-LPC1313, the board Ghostbusters'
+// Slimer hangs off). The status bits: 0 driving, 1 driving down, 2 holding, 3 homed (the encoder
+// counts from here), 4 away switch found, 5 target switch found, 6 time-out, 7 limit switch, 8 a
+// go without an encoder. Home drives down until the home input is active; the game homes twice,
+// first with the outputs swapped and the home input's polarity turned (up, until out of the home
+// zone), then as configured (down, until into it), so its zero is the zone's edge, reached from
+// above. A go ramps the duty up by a step a tick to its speed, holds it, ramps it down from the
+// point as far before the target as the ramp up took (or from half way) to the least duty, and
+// stops on the exact count
+
+void spike1_devices::link_encoder_motor(uint8_t node, uint8_t motor_index, int16_t low_stop, int16_t high_stop, uint16_t counts_per_s)
 {
-	m.from = motor_position(m, now_ns);
-	m.position = m.target = target;
-	m.start_ns = now_ns;
-	m.end_ns = now_ns + duration_ns;
+	motor &m = m_mechanics[(uint32_t(node) << 8) | motor_index];
+	m.low = low_stop;
+	m.high = high_stop;
+	m.counts_per_s = std::min<double>(std::max<uint16_t>(counts_per_s, 1), 1000.0); // under a count a tick
+	m.x = std::max(m.low, -0.5);
 }
 
-int16_t spike1_devices::motor_position(const motor &m, uint64_t now_ns) const
+// An input the firmware names by id: false when the id is unused (bit 6 clear). The board reads its
+// own pin, not what the game was last shown (wire_bytes())
+bool spike1_devices::motor_input(uint8_t node, uint8_t id, bool &active) const
 {
-	if (now_ns >= m.end_ns || m.end_ns <= m.start_ns) return m.target;
-	const double f = double(now_ns - m.start_ns) / double(m.end_ns - m.start_ns);
-	return int16_t(m.from + std::lround((m.target - m.from) * f));
+	if (!(id & 0x40)) return false;
+	const uint8_t in = id & 0x3f, n = node & 127;
+	const bool high = ((~(m_sw_closed[n][in >> 3] ^ m_sw_active_high[n][in >> 3])) >> (in & 7)) & 1;
+	active = (id & 0x80) ? high : !high;
+	return true;
+}
+
+uint8_t spike1_devices::motor_pins(uint8_t node, const motor &m) const
+{
+	const uint8_t ids[3] = { m.home_in, m.away_in, m.watch_in };
+	uint8_t pins = 0;
+	for (int k = 0; k < 3; k++) {
+		bool active = false;
+		if (motor_input(node, ids[k], active) && active == ((ids[k] & 0x80) != 0)) pins |= uint8_t(1 << k);
+	}
+	return pins;
+}
+
+// The mechanism's own switches as it stands: the home input at its zone level below the zone's
+// edge (x < 0), the encoder's two phases a count apart
+void spike1_devices::motor_switches(uint8_t node, const motor &m, uint64_t now_ns)
+{
+	auto set_level = [&](uint8_t id, bool high) {
+		if (!(id & 0x40)) return;
+		const uint8_t in = id & 0x3f, n = node & 127;
+		const bool ah = (m_sw_active_high[n][in >> 3] >> (in & 7)) & 1, closed = high == ah;
+		if (switch_closed(n, in) != closed) set_switch(n, in, closed, now_ns);
+	};
+	set_level(m.home_in, (m.x < 0.0) == (m.zone_raw != 0));
+	if (m.encoder) {
+		const int32_t c = int32_t(std::floor(m.x));
+		set_level(m.enc_a, (c >> 1) & 1);
+		set_level(m.enc_b, ((c + 1) >> 1) & 1);
+	}
+}
+
+// The firmware's output routine: one output at the duty, the other off; status bit 0 while it
+// drives, bit 1 for down. A time-out of 0 or more restarts the motor's time-out
+void spike1_devices::motor_drive(motor &m, uint8_t duty, bool down, int32_t timeout)
+{
+	m.duty = duty;
+	m.down = down;
+	m.status = down ? uint16_t(m.status | 0x02) : uint16_t(m.status & ~0x02);
+	if (!duty) { m.status &= uint16_t(~0x01); return; }
+	m.status = uint16_t((m.status & ~0x81) | 0x01);
+	if (timeout >= 0) {
+		m.timeout = m.timeout_left = uint16_t(timeout);
+		if (timeout) m.status &= uint16_t(~0x40);
+	}
+}
+
+void spike1_devices::motor_command(uint8_t node, uint8_t cmd, const uint8_t *data, uint32_t n, uint64_t now_ns)
+{
+	const uint32_t key = (uint32_t(node) << 8) | data[0];
+	if (cmd == 0x51 || cmd == 0x57) { // configure, configure update: [motor][16 bytes]
+		if (n < 17) return;
+		auto it = m_motors.find(key);
+		if (it == m_motors.end()) { // the mechanism stands where it stood at power-on
+			const auto mech = m_mechanics.find(key);
+			it = m_motors.emplace(key, mech != m_mechanics.end() ? mech->second : motor()).first;
+			it->second.at_ns = now_ns;
+		}
+		motor &m = it->second;
+		m.home_in = data[1]; m.away_in = data[2]; m.watch_in = data[3];
+		m.enc_a = data[4]; m.enc_b = data[5];
+		m.out_down = data[7]; m.out_up = data[8];
+		m.ramp = data[9]; m.least = data[10];
+		m.settle[0] = uint16_t(data[13] | data[14] << 8);
+		m.settle[1] = uint16_t(data[15] | data[16] << 8);
+		if (cmd == 0x51) m.state = 0;
+		m.encoder = (m.enc_a & 0x40) && (m.enc_b & 0x40);
+		m.counted = int32_t(std::floor(m.x));
+		m.status = 0;
+		// Which way each output moves the mechanism, by the LED channel's name (Slimer Motor Forward
+		// and Backward); else as the firmware's go assumes, counting up on out_up
+		auto sign = [&](uint8_t out, int8_t otherwise) -> int8_t {
+			for (const auto &l : m_leds) {
+				if (l.node != node || l.position != out) continue;
+				std::string u = l.name;
+				for (auto &ch : u) ch = char(std::toupper(uint8_t(ch)));
+				if (u.find("BACKWARD") != std::string::npos) return -1;
+				if (u.find("FORWARD") != std::string::npos) return 1;
+			}
+			return otherwise;
+		};
+		m.sign_down = sign(m.out_down, -1);
+		m.sign_up = sign(m.out_up, 1);
+		// the zone is where the home input is active as the game configures it to run - counting
+		// down toward the zone - and the opposite in the swapped configuration
+		m.zone_raw = uint8_t((m.sign_down < 0) == ((m.home_in & 0x80) != 0));
+		motor_switches(node, m, now_ns);
+		m.last_raw = motor_pins(node, m);
+		return;
+	}
+	auto it = m_motors.find(key);
+	if (it == m_motors.end()) return;
+	motor &m = it->second;
+	switch (cmd) {
+	case 0x53: case 0x54: { // home, away: [motor][speed][fade][time-out, u16]
+		if (n < 5) return;
+		const bool home = cmd == 0x53;
+		const uint8_t in = home ? m.home_in : m.away_in;
+		m.speed = data[1];
+		m.status &= 0xfe3f;
+		bool active = false;
+		if (motor_input(node, in, active) && active) { // there already
+			m.status |= home ? 0x08 : 0x10;
+			if (m.encoder) { if (home) m.position = 0; return; }
+			m.position = in & 0x3f;
+			m.status &= home ? 0xffcf : 0xffd7;
+			return;
+		}
+		m.flags = 0;
+		m.state = home ? 2 : 3;
+		if (!m.encoder) m.status &= 0xffc7;
+		motor_drive(m, m.speed, home, data[3] | data[4] << 8);
+		return;
+	}
+	case 0x55: { // go: [motor][target, s16][speed][time-out, u16][flags: bit 0 hold there, bit 1 stop at a limit switch]
+		if (n < 7) return;
+		const int16_t target = int16_t(data[1] | data[2] << 8);
+		const uint16_t was = m.status;
+		m.status &= 0xfe3f;
+		if (m.encoder && !(was & 0x08)) return; // not homed: the board takes no target
+		if (!m.encoder) { m.status |= 0x100; m.state = 0; return; } // a target switch: not modelled
+		if (m.position == target) { m.state = 0; return; }
+		m.acc = 0;
+		m.start = m.position;
+		m.phase = target <= m.position ? 4 : 0;
+		m.mid = int16_t((target + m.position) / 2);
+		m.target = target;
+		m.speed = data[3];
+		m.flags = data[6];
+		if (m.ramp) m.step = uint32_t((int32_t(int16_t(51200 / m.ramp)) * int32_t(m.speed)) >> 12);
+		else m.acc = uint32_t(m.speed) << 8;
+		m.timeout = m.timeout_left = uint16_t(data[4] | data[5] << 8);
+		m.state = 4;
+		return;
+	}
+	case 0x56: // stop: [motor]
+		m.state = 0;
+		m.status &= 0xfe3f;
+		return;
+	}
+}
+
+// One tick of the board's motor loop, then the mechanism moves on for the tick at the duty set
+void spike1_devices::motor_tick(uint8_t node, motor &m, uint64_t now_ns)
+{
+	const uint8_t ids[3] = { m.home_in, m.away_in, m.watch_in };
+	bool used[3], active[3] = {};
+	for (int k = 0; k < 3; k++) used[k] = motor_input(node, ids[k], active[k]);
+	const uint8_t raw = motor_pins(node, m), changed = raw ^ m.last_raw;
+	m.last_raw = raw;
+	auto found = [&](int k) { return used[k] && ((changed >> k) & 1) && active[k]; };
+	// the time-out, which the watch input's edges restart
+	if (found(2)) m.timeout_left = m.timeout;
+	else if (m.timeout_left && --m.timeout_left == 0) { m.status |= 0x40; m.state = 0; }
+	// the encoder counts once the motor is homed
+	if (m.encoder && (m.status & 0x08)) {
+		const int32_t c = int32_t(std::floor(m.x));
+		m.position = int16_t(m.position + (c - m.counted));
+		m.counted = c;
+	}
+	switch (m.state) {
+	case 0: // stop, then idle
+		motor_drive(m, 0, false, -1);
+		m.status &= uint16_t(~0x04);
+		m.state = 1;
+		m.timeout_left = 0;
+		break;
+	case 2: case 3: { // home, away: until the switch is found
+		const int k = m.state - 2;
+		m.status &= uint16_t(~0x04);
+		if (!found(k)) break;
+		m.status |= k ? 0x10 : 0x08;
+		if (!m.encoder) m.position = ids[k] & 0x3f;
+		m.settle_left = m.settle[0];
+		m.state = 7;
+		if (!k) { m.counted = int32_t(std::floor(m.x)); m.position = 0; }
+		break;
+	}
+	case 4: { // go
+		m.status &= uint16_t(~0x04);
+		bool limit = false;
+		if (m.flags & 0x02) { bool a = false; limit = motor_input(node, m.down ? m.home_in : m.away_in, a) && a; }
+		if (limit || m.position == m.target) {
+			if (limit) m.status |= 0x80;
+			m.state = (!limit && (m.flags & 0x01)) ? 6 : 0;
+			m.acc = 0;
+			motor_drive(m, 0, false, -1);
+			break;
+		}
+		const bool down = m.phase >= 4;
+		const bool ahead = down ? m.position > m.mid : m.position < m.mid;
+		const uint32_t top = uint32_t(m.speed) << 8, least = uint32_t(m.least) << 8;
+		switch (m.phase & 3) {
+		case 0: // ramping up
+			m.acc += m.step;
+			if (m.acc > top) { m.acc = top; m.phase++; m.mid = int16_t(m.start + m.target - m.position); }
+			else if (!ahead) m.phase += 2;
+			break;
+		case 1: // at speed
+			if (!ahead) m.phase++;
+			break;
+		case 2: // ramping down to the least duty
+			if (m.acc > m.step) m.acc -= m.step;
+			if (m.acc < least) { m.acc = least; m.phase++; }
+			break;
+		}
+		motor_drive(m, uint8_t(m.acc >> 8), down, -1);
+		break;
+	}
+	case 6: // holding at the target (nothing moves it away here)
+		m.status |= 0x04;
+		break;
+	case 7: // settling after a switch was found
+		if (m.settle_left) m.settle_left--;
+		else { m.settle_left = m.settle[1]; m.state = 8; }
+		break;
+	case 8: case 9: // then the brake output, which no title configures
+		m.state = 0;
+		break;
+	}
+	if (m.duty) {
+		const int8_t way = m.down ? m.sign_down : m.sign_up;
+		m.x = std::clamp(m.x + way * m.counts_per_s * m.duty / 255.0 / MOTOR_TICKS_PER_S, m.low, m.high);
+		motor_switches(node, m, now_ns);
+	}
+}
+
+void spike1_devices::motors_run(uint64_t now_ns)
+{
+	for (auto &it : m_motors) {
+		motor &m = it.second;
+		const uint8_t node = uint8_t(it.first >> 8);
+		while (m.at_ns + MOTOR_TICK_NS <= now_ns) {
+			if (m.state == 1 && !m.duty && !m.timeout_left) { // nothing moves until a command
+				m.at_ns += (now_ns - m.at_ns) / MOTOR_TICK_NS * MOTOR_TICK_NS;
+				m.last_raw = motor_pins(node, m);
+				break;
+			}
+			m.at_ns += MOTOR_TICK_NS;
+			motor_tick(node, m, m.at_ns);
+		}
+	}
 }
 
 uint16_t spike1_devices::stepper_position(const stepper &s, uint64_t now_ns) const
@@ -1223,15 +1457,6 @@ void spike1_devices::limit_motors_run(uint64_t now_ns)
 		if (switch_closed(m.home[0], m.home[1]) != home) set_switch(m.home[0], m.home[1], home, now_ns);
 		if (switch_closed(m.away[0], m.away[1]) != away) set_switch(m.away[0], m.away[1], away, now_ns);
 	}
-}
-
-bool spike1_devices::motor_state(uint8_t node, uint8_t index, int16_t &position, bool &moving, uint64_t now_ns) const
-{
-	auto it = m_motors.find((uint32_t(node) << 8) | index);
-	if (it == m_motors.end()) return false;
-	position = motor_position(it->second, now_ns);
-	moving = it->second.end_ns > now_ns;
-	return true;
 }
 
 // ---------------------------------------------------------------- coils
@@ -1860,13 +2085,14 @@ void spike1_devices::apply_manual_numbers(const std::vector<std::pair<int, size_
 		std::to_string(leds) + " of " + std::to_string(m_leds.size()) + " LED channels");
 }
 
-bool spike1_devices::motor_at(size_t i, int16_t &position, bool &moving, uint64_t now_ns) const
+bool spike1_devices::motor_at(size_t i, int16_t &position, bool &moving, uint64_t now_ns)
 {
 	if (i < m_motors.size()) {
+		motors_run(now_ns);
 		auto it = m_motors.begin();
 		std::advance(it, i);
-		position = motor_position(it->second, now_ns);
-		moving = it->second.end_ns > now_ns;
+		position = it->second.position;
+		moving = it->second.status & 0x01;
 		return true;
 	}
 	i -= m_motors.size();

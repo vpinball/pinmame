@@ -56,6 +56,7 @@
 #define SPIKE1_PEN0       (COL_COUNT + 48 + 48 + 48) /* the core's palette, then 32768 pens of RGB555 */
 #define SPIKE1_MAXCOILS   64
 #define SPIKE1_MAXLEDS    256
+#define SPIKE1_MAXMECHS   8              /* Whoa Nellie's five reels are the most a title has */
 #define SPIKE1_FIRSTCUSTSOL CORE_FIRSTCUSTSOL /* solenoid 51 */
 #define SPIKE1_NCUSTSOLS  (CORE_MODOUT_SOL_MAX - SPIKE1_FIRSTCUSTSOL + 1)
 #define SPIKE1_IOFREQ     1000           /* the I/O exchange: the node boards scan their switches far faster than a frame */
@@ -85,11 +86,19 @@ typedef struct { int forward, backward, home, away, travelMs; } spike1_tLimitMot
 #define SPIKE1_NOLIMIT { 0 }
 #define SPIKE1_LIMIT_MOTOR(forward, backward, home, away, travelMs) { forward, backward, home, away, travelMs }
 
+/* The mechanism behind a board's encoder motor (Ghostbusters' Slimer), which the board runs on its
+   own: the board's node address and motor index, its end stops in encoder counts from the edge of
+   its home zone (the zone reaches from there down to the lower stop), and the counts a second it
+   makes at full drive; node 0 for none */
+typedef struct { int node, motor, lowStop, highStop, countsPerS; } spike1_tEncoderMotor;
+#define SPIKE1_ENCODER_MOTOR(node, motor, lowStop, highStop, countsPerS) { node, motor, lowStop, highStop, countsPerS }
+
 /* What a title adds to core_tGameData: its game folder's name (the program runs as
    /games/<folder>/game), its switch numbers, its steppers' home switches on other boards, its
    limit motor, for a game program shipped without its symbol table the addresses of the tables
-   the subsystem reads (NULL when the program has its own), and for a title whose game picks its
-   display by the machine's /usr/local/spike/display.hex link that link's target (NULL: none) */
+   the subsystem reads (NULL when the program has its own), for a title whose game picks its
+   display by the machine's /usr/local/spike/display.hex link that link's target (NULL: none), and
+   the mechanism of its encoder motor */
 typedef struct {
   core_tGameData core;
   const char *folder;
@@ -98,6 +107,7 @@ typedef struct {
   spike1_tLimitMotor limit;
   const spike1_symbol *symbols;
   const char *displayLink;
+  spike1_tEncoderMotor encoder;
 } spike1_tGameData;
 
 static const spike1_tGameData *spike1_game(void) { return (const spike1_tGameData *)core_gameData; }
@@ -124,6 +134,7 @@ static struct {
   unsigned nLeds;
   unsigned audioRate;     /* the sound stream's rate: the game's, once it has set one */
   int ledLamp[SPIKE1_MAXLEDS]; /* the lamp number of LED channel k, 0 for none */
+  volatile int mech[SPIKE1_MAXMECHS]; /* each mech's position as of the last I/O exchange, for GetMech */
 } locals;
 
 static int spike1_stream = -1; /* the sound stream's first channel, the left; the right follows */
@@ -358,6 +369,11 @@ static void spike1_sync_io(void)
     }
   }
   for (i = 0; i < CORE_MAXLAMPCOL; i++) coreGlobals.lampMatrix[i] = lamps[i];
+  /* the mechs, for GetMech */
+  for (i = 0; i < SPIKE1_MAXMECHS; i++) {
+    int position = 0;
+    locals.mech[i] = spike1_pinmame_motor((unsigned)i, &position, NULL) ? position : 0;
+  }
   /* the DMD: a new frame when the game has sent one (a title with the RGB matrix instead draws it
      as video, spike1_rgb_video) */
   if ((core_gameData->lcdLayout->type & CORE_SEGALL) == CORE_DMD && spike1_pinmame_dmd(NULL) != locals.dmdFrames) {
@@ -403,11 +419,11 @@ static INTERRUPT_GEN(spike1_vblank)
   core_updateSw(0); /* the flippers are the node boards' own (FLIP_SOL), see spike1_sync_io */
 }
 
-/* mech n: the n-th motor's position */
+/* mech n: the n-th motor's position, as the last I/O exchange took it (spike1_sync_io): a host asks
+   from its own thread, and the machine's motors run on the machine's */
 static int spike1_getMech(int mechNo)
 {
-  int position = 0;
-  return mechNo >= 0 && spike1_pinmame_motor((unsigned)mechNo, &position, NULL) ? position : 0;
+  return mechNo >= 0 && mechNo < SPIKE1_MAXMECHS ? locals.mech[mechNo] : 0;
 }
 
 /* the coils PinMAME numbers 51 on: a coil numbered 0 or above 32 */
@@ -750,6 +766,10 @@ static MACHINE_INIT(spike1)
     const spike1_tLimitMotor *limit = &spike1_game()->limit;
     if (limit->forward) spike1_pinmame_limit_motor(limit->forward, limit->backward, limit->home, limit->away, (unsigned)limit->travelMs);
   }
+  {
+    const spike1_tEncoderMotor *encoder = &spike1_game()->encoder;
+    if (encoder->node) spike1_pinmame_encoder_motor((unsigned)encoder->node, (unsigned)encoder->motor, encoder->lowStop, encoder->highStop, (unsigned)encoder->countsPerS);
+  }
   spike1_map_switches();
   spike1_map_outputs();
 }
@@ -857,6 +877,11 @@ MACHINE_DRIVER_END
   SPIKE1_INPUT_PORTS(name) \
   static spike1_tGameData name##GameData = { SPIKE1_CORE(spike1_rgb, lamps, FLIP_L), folder, switches, SPIKE1_NOHOMES, SPIKE1_NOLIMIT, NULL, displayLink }; \
   static void init_##name(void) { core_gameData = &name##GameData.core; }
+/* the same as SPIKE1_INIT for a title with an encoder motor (encoder SPIKE1_ENCODER_MOTOR) */
+#define SPIKE1_INIT_ENCODER(name, folder, layout, lamps, switches, encoder) \
+  SPIKE1_INPUT_PORTS(name) \
+  static spike1_tGameData name##GameData = { SPIKE1_CORE(layout, lamps, FLIP_L), folder, switches, SPIKE1_NOHOMES, SPIKE1_NOLIMIT, NULL, NULL, encoder }; \
+  static void init_##name(void) { core_gameData = &name##GameData.core; }
 /* Another edition of a title (a Pro beside its LE): the set name_ver, a clone of the set parent,
    with its own game data from SPIKE1_INIT*(data, ...). Its files are the edition's own; those it
    shares with the parent (the asset image, the node firmware) can come from the parent's ROM set */
@@ -866,7 +891,12 @@ MACHINE_DRIVER_END
 /*-------------------------------------------------------------------
 / Ghostbusters (Stern, 2016) - Limited Edition
 /-------------------------------------------------------------------*/
-SPIKE1_INIT(gbust, "ghostbusters_le", spike1_dmd_insert, 165, SPIKE1_SWITCHES(9, 10, 11, 12, 81, 82, 83, 84, 86, 89))
+/* Slimer: node 8 motor 0. The game's own Slimer calibration drives him to -25 and to 125 and passes
+   only when he stopped at -6 (+/-4) and 102 (+/-5) counts further on, so his end stops are at -6
+   and 96. His speed is not in the game or the firmware, which sets a PWM duty: 50 counts a second
+   at full drive is an estimate from the manual's 10 RPM gearhead (041-5132-01), not a measurement */
+SPIKE1_INIT_ENCODER(gbust, "ghostbusters_le", spike1_dmd_insert, 165, SPIKE1_SWITCHES(9, 10, 11, 12, 81, 82, 83, 84, 86, 89),
+                    SPIKE1_ENCODER_MOTOR(8, 0, -6, 96, 50))
 ROM_START(gbust_117h)
   ROM_REGION(0x47c44000, SPIKE1_REGION, ROMREGION_MAPPED)
     ROM_LOAD("game", 0x00000000, 0x006c311a, CRC(0b6958ba) SHA1(6f94dbcdaa85e95073534032d74a2dab390b7a4a))

@@ -135,6 +135,8 @@ int main(int argc, char **argv)
 	std::vector<home_link> home_links;
 	struct limit_motor { int forward, backward, home, away; unsigned travel_ms; };
 	std::vector<limit_motor> limit_motors;
+	struct encoder_motor { int node, motor, low, high; unsigned counts_per_s; };
+	std::vector<encoder_motor> encoder_motors;
 	bool list_switches = false, show_outputs = false;
 	std::string node_dump, wav_path;
 	for (int i = 1; i < argc; i++) {
@@ -194,6 +196,14 @@ int main(int argc, char **argv)
 				return 2;
 			}
 			limit_motors.push_back(m);
+		}
+		else if (arg == "--encoder-motor") { // <node>:<motor>:<low stop>:<high stop>:<counts a second>, as a set's SPIKE1_ENCODER_MOTOR
+			encoder_motor m{};
+			if (std::sscanf(next().c_str(), "%d:%d:%d:%d:%u", &m.node, &m.motor, &m.low, &m.high, &m.counts_per_s) != 5) {
+				std::fprintf(stderr, "--encoder-motor takes <node>:<motor>:<low stop>:<high stop>:<counts a second>\n");
+				return 2;
+			}
+			encoder_motors.push_back(m);
 		}
 		else if (arg == "--peek") { // <address>:<bytes> of guest memory, printed at the end
 			const std::string v = next();
@@ -268,6 +278,8 @@ int main(int argc, char **argv)
 			std::fprintf(stderr, "no LED channels %d and %d or switches %d and %d for a limit motor\n", m.forward, m.backward, m.home, m.away);
 			return 2;
 		}
+	for (const auto &m : encoder_motors)
+		linux_os.devices().link_encoder_motor(uint8_t(m.node), uint8_t(m.motor), int16_t(m.low), int16_t(m.high), uint16_t(m.counts_per_s));
 	if (video_key.size() == 16 && !linux_os.devices().provide_video_key(video_key.data()))
 		std::fprintf(stderr, "the title has no video key to provide\n");
 
@@ -304,6 +316,7 @@ int main(int argc, char **argv)
 		});
 
 	std::vector<uint8_t> coil_levels;
+	std::vector<int32_t> mech_positions;
 	FILE *wav = wav_path.empty() ? nullptr : std::fopen(wav_path.c_str(), "wb");
 	uint32_t wav_frames = 0, wav_rate = 0;
 	std::vector<int16_t> audio(2 * 4096);
@@ -343,6 +356,13 @@ int main(int argc, char **argv)
 					std::printf("[%10.6f] coil %u %s %s\n", now_s, coils[i].number, coils[i].name.c_str(),
 						level ? ("on " + std::to_string(level * 100 / 255) + "%").c_str() : "off");
 				coil_levels[i] = level;
+			}
+			int16_t position = 0;
+			bool moving = false;
+			for (size_t i = 0; linux_os.devices().motor_at(i, position, moving, linux_os.now_ns()); i++) {
+				if (mech_positions.size() <= i) mech_positions.resize(i + 1, INT32_MIN);
+				if (position != mech_positions[i]) std::printf("[%10.6f] mech %zu %d%s\n", now_s, i, position, moving ? " (moving)" : "");
+				mech_positions[i] = position;
 			}
 		}
 		for (size_t k = 0; k < watched.size(); k++) {

@@ -122,11 +122,15 @@ public:
 	// An LED channel's level at now_ns, 0-255: on its way to the level the game last set, over that
 	// update's fade time
 	uint8_t led_level(uint8_t node, uint8_t position, uint64_t now_ns) const;
-	// For a host that animates a mechanism: the position of a board's motor
-	bool motor_state(uint8_t node, uint8_t index, int16_t &position, bool &moving, uint64_t now_ns) const;
-	// The same for the i-th motor the game has configured, in board and motor order, then its
-	// steppers (a stepper's position is its step within the turn), then the limit motors
-	bool motor_at(size_t i, int16_t &position, bool &moving, uint64_t now_ns) const;
+	// For a host that animates a mechanism: the i-th motor the game has configured, in board and
+	// motor order (its position as the board counts it), then its steppers (a stepper's position is
+	// its step within the turn), then the limit motors. Runs the boards' motor loops up to now_ns
+	bool motor_at(size_t i, int16_t &position, bool &moving, uint64_t now_ns);
+	// The mechanism behind a board's encoder motor (Ghostbusters' Slimer): its end stops, in encoder
+	// counts from the edge of its home zone, which reaches from that edge down to the lower stop,
+	// and how many counts a second it makes at full drive. Without one the motor runs free at 50
+	// counts a second. It stands just inside the zone at power-on
+	void link_encoder_motor(uint8_t node, uint8_t motor, int16_t low_stop, int16_t high_stop, uint16_t counts_per_s);
 	// A stepper whose home switch is wired to another board, which the game watches itself (Game of
 	// Thrones' dragons): that switch, by its manual number, is closed while the stepper stands at
 	// step 0, as it does at power-on. False when the title has no such switch
@@ -249,17 +253,44 @@ private:
 	uint32_t m_lcd_image_id = 0;             // the LCD insert holds the title's lcdinsert.bin: its ID word
 	frame_observer m_frame_observer;
 
-	// A motor a board runs on its own, closed loop on its encoder: the game commands home or a
-	// target position and polls the status
+	// A motor a board runs on its own, on its encoder (the game's EncoderMotor), as the node
+	// firmware does it (0.52.0, pinnode-LPC1313: the motor block 0x51-0x57 and the motor loop it
+	// runs every SysTick tick). The board drives the motor's H-bridge through two of its LED outputs
+	// at a PWM duty; the mechanism behind it moves at the duty's share of its full-drive speed
 	struct motor
 	{
-		int16_t position = 0, from = 0, target = 0;
-		uint64_t start_ns = 0, end_ns = 0;   // the move under way, if end_ns > now
-		bool homed = false;
+		// configure (0x51, 0x57). Inputs as the firmware takes them: bit 6 used, bit 7 active when
+		// high (else when low), bits 0-5 the board's input
+		uint8_t home_in = 0, away_in = 0, watch_in = 0, enc_a = 0, enc_b = 0;
+		uint8_t out_down = 0, out_up = 0;   // the outputs driven to count down (home, or a target below) and up
+		uint8_t ramp = 0, least = 0;        // the duty ramp in 16 ms units, the least duty near the target
+		uint16_t settle[2] = {};            // ticks after a home or away switch is found
+		bool encoder = false;
+		uint8_t zone_raw = 1;               // the home input's level inside the home zone
+		// the firmware's state
+		uint8_t state = 1, phase = 0, speed = 0, flags = 0, duty = 0;
+		bool down = false;                  // the way it drives: status bit 1
+		uint16_t status = 0;
+		int16_t position = 0, target = 0, start = 0, mid = 0;
+		uint32_t acc = 0, step = 0;         // the duty, times 256, and its change a tick
+		uint16_t timeout = 0, timeout_left = 0, settle_left = 0;
+		uint8_t last_raw = 0;               // the home, away and watch inputs at the last tick (bits 0-2)
+		uint64_t at_ns = 0;                 // the loop has run up to here
+		// the mechanism (link_encoder_motor())
+		double x = -0.5;                    // counts from the edge of the home zone
+		int32_t counted = -1;               // floor(x) as the encoder last counted it
+		double low = -30000.0, high = 30000.0, counts_per_s = 50.0;
+		int8_t sign_down = -1, sign_up = 1; // which way each drive output moves it
 	};
 	std::map<uint32_t, motor> m_motors;      // (node << 8 | motor)
-	void motor_move(motor &m, int16_t target, uint64_t now_ns, uint64_t duration_ns);
-	int16_t motor_position(const motor &m, uint64_t now_ns) const;
+	std::map<uint32_t, motor> m_mechanics;   // what link_encoder_motor() set, for motors not configured yet
+	void motor_command(uint8_t node, uint8_t cmd, const uint8_t *data, uint32_t n, uint64_t now_ns);
+	void motors_run(uint64_t now_ns);
+	void motor_tick(uint8_t node, motor &m, uint64_t now_ns);
+	void motor_drive(motor &m, uint8_t duty, bool down, int32_t timeout);
+	bool motor_input(uint8_t node, uint8_t id, bool &active) const; // false for an unused input
+	uint8_t motor_pins(uint8_t node, const motor &m) const;          // the home, away and watch pins high, bits 0-2
+	void motor_switches(uint8_t node, const motor &m, uint64_t now_ns);
 
 	// A stepper a board runs on its own (Whoa Nellie's score and credit reels, Game of Thrones'
 	// dragons): the game sets its steps per turn and home switch input, then sends targets - the

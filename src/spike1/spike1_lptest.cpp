@@ -3,19 +3,20 @@
 // PinMAME Spike 1 subsystem - runs a set through libpinmame (pinmame64.dll) the way a VPX table
 // does, without VPX: the library is loaded at run time, the game started by its set name, coins
 // dropped and START pressed on a timetable (seconds from when the machine runs), switches pressed
-// for a time, and the video displays (the LCD insert, WWE's LCD, Spider-Man's RGB matrix) saved as
-// PNG pictures once a second, with the coils, lamps and sound the library hands out reported along
+// for a time, and the displays (the DMD, and the video displays: the LCD insert, WWE's LCD,
+// Spider-Man's RGB matrix) saved as PNG pictures once a second, with the coils, lamps and sound the library hands out reported along
 // the way (and the frame rate in the library's own log line at the end).
 //
 //    spike1_lptest <pinmame64.dll> <vpm path> <set> [--seconds N] [--frames <dir>] [--report <s>]
 //                  [--coin <switch>] [--coins N] [--coin-at <s>] [--start <switch>] [--start-at <s>]
-//                  [--press <s>:<switch>[:<ms>]]... [--lamp <n>]...
+//                  [--press <s>:<switch>[:<ms>]]... [--lamp <n>]... [--mech <n>]...
 //
 // The vpm path holds roms/<set>.zip (or roms/<set>/) and nvram/<set>.nv as PinMAME has them; the
 // defaults are Ghostbusters LE's switches (LEFT COIN 81, START BUTTON 78). A press shorter than
 // 20 ms is timed exactly, 0 ms closes and opens the switch back to back; a negative switch is one
-// closed at rest, opened for the time. --lamp prints that lamp's level as it changes. SPIKE1_LOG
-// passes the subsystem's log on. Windows only: it loads the library with LoadLibrary.
+// closed at rest, opened for the time. --lamp prints that lamp's level as it changes, --mech that
+// mech's GetMech() value (Ghostbusters' Slimer is mech 0). SPIKE1_LOG passes the subsystem's log
+// on. Windows only: it loads the library with LoadLibrary.
 
 #include "../libpinmame/libpinmame.h"
 
@@ -28,6 +29,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <map>
 #include <mutex>
 #include <string>
 #include <thread>
@@ -48,7 +50,6 @@ std::atomic<unsigned> g_display_updates{0}, g_display_changes{0}, g_saved{0}, g_
 std::atomic<long long> g_audio_samples{0};
 std::mutex g_peak_lock;
 float g_peak = 0.0f;
-int g_next_save = 0;
 
 bool write_png(const std::string &path, const std::vector<uint8_t> &rgb, uint32_t w, uint32_t h)
 {
@@ -124,21 +125,30 @@ void PINMAMECALLBACK on_display_available(int index, int count, PinmameDisplayLa
 void PINMAMECALLBACK on_display_updated(int index, void *data, PinmameDisplayLayout *l, void *)
 {
 	// the library passes the frame only when it changed: the last one stands for the screen until then
-	static std::vector<uint8_t> last;
+	static std::map<int, std::vector<uint8_t>> lasts;
+	static std::map<int, int> next_saves;
 	g_display_updates++;
 	if (data) g_display_changes++;
-	if ((l->type & PINMAME_DISPLAY_TYPE_VIDEO) != PINMAME_DISPLAY_TYPE_VIDEO) return;
+	const bool video = (l->type & PINMAME_DISPLAY_TYPE_VIDEO) == PINMAME_DISPLAY_TYPE_VIDEO;
+	if (!video && (l->type & PINMAME_DISPLAY_TYPE_DMD) != PINMAME_DISPLAY_TYPE_DMD) return;
+	std::vector<uint8_t> &last = lasts[index];
 	if (data) {
 		const uint8_t *p = static_cast<const uint8_t *>(data);
-		last.assign(p, p + size_t(l->width) * l->height * (l->depth == 16 ? 2 : 3));
+		last.assign(p, p + size_t(l->width) * l->height * (video ? (l->depth == 16 ? 2 : 3) : 1));
 	}
 	if (last.empty() || g_frames.empty()) return;
 	const int second = int(now_s());
-	if (second < g_next_save) return;
-	g_next_save = second + 1;
+	// a second's picture is its last frame: a change saves over it, else one a second
+	int &next_save = next_saves[index];
+	if (!data && second < next_save) return;
+	next_save = second + 1;
 	const uint32_t w = uint32_t(l->width), h = uint32_t(l->height);
 	std::vector<uint8_t> rgb(size_t(w) * h * 3);
-	if (l->depth == 16) { // 5.6.5
+	if (!video) { // a DMD: a level a dot, of depth bits
+		const unsigned top = (1u << l->depth) - 1;
+		for (size_t i = 0; i < size_t(w) * h; i++) rgb[3 * i] = rgb[3 * i + 1] = rgb[3 * i + 2] = uint8_t(std::min(unsigned(last[i]), top) * 255 / top);
+	}
+	else if (l->depth == 16) { // 5.6.5
 		const uint16_t *p = reinterpret_cast<const uint16_t *>(last.data());
 		for (size_t i = 0; i < size_t(w) * h; i++) {
 			const uint16_t c = p[i];
@@ -215,7 +225,7 @@ int main(int argc, char **argv)
 	struct press { double at = 0.0; int sw = 0, ms = 200; bool down = false, done = false; };
 	double report_every = 5.0;
 	std::vector<press> presses;
-	std::vector<int> watch_lamps;
+	std::vector<int> watch_lamps, watch_mechs;
 	int coin = 81, coins = 4, start = 78;
 	for (int i = 4; i < argc; i++) {
 		const std::string a = argv[i];
@@ -229,6 +239,7 @@ int main(int argc, char **argv)
 		else if (a == "--start-at") start_at = std::atof(next());
 		else if (a == "--report") report_every = std::atof(next());
 		else if (a == "--lamp") watch_lamps.push_back(std::atoi(next()));
+		else if (a == "--mech") watch_mechs.push_back(std::atoi(next()));
 		else if (a == "--press") { // <s>:<switch>[:<ms>]; a negative switch is opened (one closed at rest)
 			press p;
 			if (std::sscanf(next(), "%lf:%d:%d", &p.at, &p.sw, &p.ms) >= 2) presses.push_back(p);
@@ -240,7 +251,6 @@ int main(int argc, char **argv)
 	if (!dll) { std::fprintf(stderr, "cannot load %s (%lu)\n", dll_path.c_str(), GetLastError()); return 1; }
 	decltype(&PinmameSetConfig) set_config;
 	decltype(&PinmameSetHandleKeyboard) set_keyboard;
-	decltype(&PinmameSetHandleMechanics) set_mechanics;
 	decltype(&PinmameSetSolenoidMask) set_solenoid_mask;
 	decltype(&PinmameRun) run;
 	decltype(&PinmameIsRunning) is_running;
@@ -249,8 +259,9 @@ int main(int argc, char **argv)
 	decltype(&PinmameGetHardwareGen) hardware_gen;
 	decltype(&PinmameGetMaxLamps) max_lamps;
 	decltype(&PinmameGetChangedLamps) changed_lamps;
+	decltype(&PinmameGetMech) get_mech;
 	if (!bind(dll, set_config, "PinmameSetConfig") || !bind(dll, set_keyboard, "PinmameSetHandleKeyboard")
-		|| !bind(dll, set_mechanics, "PinmameSetHandleMechanics") || !bind(dll, set_solenoid_mask, "PinmameSetSolenoidMask")
+		|| !bind(dll, get_mech, "PinmameGetMech") || !bind(dll, set_solenoid_mask, "PinmameSetSolenoidMask")
 		|| !bind(dll, run, "PinmameRun") || !bind(dll, is_running, "PinmameIsRunning") || !bind(dll, stop, "PinmameStop")
 		|| !bind(dll, set_switch, "PinmameSetSwitch") || !bind(dll, hardware_gen, "PinmameGetHardwareGen")
 		|| !bind(dll, max_lamps, "PinmameGetMaxLamps") || !bind(dll, changed_lamps, "PinmameGetChangedLamps"))
@@ -264,7 +275,8 @@ int main(int argc, char **argv)
 	std::snprintf(const_cast<char *>(config.vpmPath), PINMAME_MAX_PATH, "%s", vpm.c_str());
 	set_config(&config);
 	set_keyboard(0);
-	set_mechanics(0);
+	// HandleMechanics stays at its default, as a Spike 1 table leaves it: with 0, GetMech would
+	// read PinMAME's simulated mechs instead of the machine's motors and steppers
 	set_solenoid_mask(2, 2); // the lamps and coils as levels, as VPX tables for Spike 1 ask
 
 	g_t0 = clock_type::now();
@@ -273,6 +285,7 @@ int main(int argc, char **argv)
 	if (status != PINMAME_STATUS_OK) return 1;
 
 	std::vector<PinmameLampState> lamps(size_t(std::max(1, max_lamps())));
+	std::vector<int> mech_was(watch_mechs.size(), INT32_MIN);
 	unsigned lamp_changes = 0;
 	int coins_done = 0;
 	bool started = false;
@@ -291,6 +304,11 @@ int main(int argc, char **argv)
 			lamp_changes++;
 			if (std::find(watch_lamps.begin(), watch_lamps.end(), lamps[k].lampNo) != watch_lamps.end())
 				std::printf("[%7.3f] lamp %d %d\n", now_s(), lamps[k].lampNo, lamps[k].state);
+		}
+		for (size_t k = 0; k < watch_mechs.size(); k++) { // as a table reads them, once a frame or so
+			const int position = get_mech(watch_mechs[k]);
+			if (position != mech_was[k]) std::printf("[%7.3f] mech %d %d\n", now_s(), watch_mechs[k], position);
+			mech_was[k] = position;
 		}
 		// a coin each 0.6 s from coin_at, closed for 0.15 s
 		if (coins_done < coins && t >= coin_at + 0.6 * coins_done) {
