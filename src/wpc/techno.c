@@ -32,7 +32,7 @@
 //#define TECNO_CPUFREQ 8000000 //As written in manual
 #define TECNO_CPUFREQ 4000000 //Seems to work better
 
-// Crystal from CPU feeds an LS393 - Q1 (acts as divide by 2) - Feeds 4040 which divides by 128 - Feeds 7474 (divide by 2)
+// Crystal from CPU feeds an LS393 - Q0 (Pin #3, acts as divide by 2) - Feeds 4040 which divides by 128 - Feeds 7474 (divide by 2)
 #define TECNO_IRQ_FREQ TIME_IN_HZ(TECNO_CPUFREQ/2/128/2) //Not 100% sure on this one..
 
 #if 0
@@ -89,19 +89,20 @@ static INTERRUPT_GEN(vblank) {
   locals.vblankCount += 1;
 
   memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+  coreGlobals.tmpLampMatrix[8] = 0;
   memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
 
   coreGlobals.solenoids = locals.solenoids;
   if ((locals.vblankCount % TECNO_SOLSMOOTH) == 0) {
 	locals.solenoids = coreGlobals.pulsedSolState;
   }
-  core_updateSw(1);
+  core_updateSw(core_getSol(20));
 }
 
 static SWITCH_UPDATE(tecno) {
   if (inports) {
-	  coreGlobals.swMatrix[1] = (inports[CORE_COREINPORT] & 0x00ff); //Column 0 Switches
-	  coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0xfc) | (inports[CORE_COREINPORT] & 0x0300)>>8; //Column 1 Switches
+    CORE_SETKEYSW(inports[CORE_COREINPORT], 0xff, 1);
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0x07, 2);
   }
 }
 
@@ -148,7 +149,10 @@ static READ16_HANDLER(rtrg_r) {
 //Lamp Rows (actually columns) 1-8
 static WRITE16_HANDLER(lamp1_w) { locals.LampCol = core_BitColToNum(data >> 8); }
 //Lamp Cols (actually rows) 1-8
-static WRITE16_HANDLER(lamp2_w) { 	coreGlobals.tmpLampMatrix[locals.LampCol] = data>>8; }
+static WRITE16_HANDLER(lamp2_w) {
+  coreGlobals.tmpLampMatrix[locals.LampCol] = data >> 8;
+  coreGlobals.tmpLampMatrix[8] |= data & 0xff; // lights indicators for players in game in spcteam
+}
 
 //Solenoids 1-16
 static WRITE16_HANDLER(sol1_w) { coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFF0000) | data; }
@@ -359,19 +363,19 @@ INPUT_PORTS_START(tecno) \
   CORE_PORTS \
   SIM_PORTS(4) \
   PORT_START /* 0 */ \
-
     /* Switch Column 1 */ \
-    COREPORT_BIT(     0x0001, "Test Up",		  KEYCODE_7)\
-	COREPORT_BIT(     0x0002, "Test Down",		  KEYCODE_8)\
-	COREPORT_BIT(     0x0004, "Ball Tilt",        KEYCODE_INSERT)\
-	COREPORT_BIT(     0x0008, "Service",          KEYCODE_9)\
-	COREPORT_BITDEF(  0x0010, IPT_COIN1,          KEYCODE_3)\
-	COREPORT_BITDEF(  0x0020, IPT_COIN2,          KEYCODE_4)\
-	COREPORT_BITDEF(  0x0040, IPT_COIN3,          KEYCODE_5)\
-	COREPORT_BIT(     0x0080, "Letter Sel ->",    KEYCODE_PGUP)\
-	/* Switch Column 2 */ \
-	COREPORT_BIT(     0x0100, "Letter Sel <-",    KEYCODE_PGDN)\
-	COREPORT_BITDEF(  0x0200, IPT_START1,         IP_KEY_DEFAULT)\
+    COREPORT_BIT(     0x0001, "Test Up",          KEYCODE_7)\
+    COREPORT_BIT(     0x0002, "Test Down",        KEYCODE_8)\
+    COREPORT_BIT(     0x0004, "Slam Tilt",        KEYCODE_HOME)\
+    COREPORT_BIT(     0x0008, "Service",          KEYCODE_9)\
+    COREPORT_BITDEF(  0x0010, IPT_COIN1,          KEYCODE_3)\
+    COREPORT_BITDEF(  0x0020, IPT_COIN2,          KEYCODE_4)\
+    COREPORT_BITDEF(  0x0040, IPT_COIN3,          KEYCODE_5)\
+    COREPORT_BIT(     0x0080, "Letter Sel ->",    KEYCODE_PGUP)\
+    /* Switch Column 2 */ \
+    COREPORT_BIT(     0x0100, "Letter Sel <-",    KEYCODE_PGDN)\
+    COREPORT_BITDEF(  0x0200, IPT_START1,         IP_KEY_DEFAULT)\
+    COREPORT_BIT(     0x0400, "Ball Tilt",        KEYCODE_INSERT)\
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
@@ -417,6 +421,10 @@ ROM_START(xforce)
     ROM_RELOAD(0, 0x8000)
   NORMALREGION(0x40000, REGION_USER1)
   ROM_REGION(0x20000, REGION_SOUND1, ROMREGION_ERASEFF) // sample ROMs ic8-ic11, not dumped yet
+    ROM_LOAD("ic8.bin", 0x0000, 0x8000, NO_DUMP)
+    ROM_LOAD("ic9.bin", 0x8000, 0x8000, NO_DUMP)
+    ROM_LOAD("ic10.bin", 0x10000, 0x8000, NO_DUMP)
+    ROM_LOAD("ic11.bin", 0x18000, 0x8000, NO_DUMP)
 ROM_END
 #define input_ports_xforce input_ports_tecno
 CORE_GAMEDEFNV(xforce, "X Force", 1987, "Tecnoplay", tecno, GAME_IMPERFECT_SOUND) //!! X Force's game program does send DAC sounds 40, 4C and 4D, remains to be seen if our DAC code outputs these correctly!
@@ -426,7 +434,7 @@ static core_tLCDLayout disp2[] = {
   {3, 0,16, 1,CORE_SEG16S}, {3, 2,48,15,CORE_SEG16S},
   {0}
 };
-static core_tGameData spcteamGameData = {0,disp2,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_TECNOPLAY}};
+static core_tGameData spcteamGameData = {0,disp2,{FLIP_SW(FLIP_L),0,1,0,SNDBRD_TECNOPLAY}};
 static void init_spcteam(void) {
   core_gameData = &spcteamGameData;
 }
