@@ -46,6 +46,45 @@ typedef struct PinMAMEReadMemoryMsg
 } PinMAMEReadMemoryMsg;
 
 
+// Message asking the emulator to persist its NVRAM now, message must be a PinMAMESaveNVRAMMsg
+//
+// PinMAME writes NVRAM exactly once, when emulation stops. A host that can end
+// without a clean shutdown -- an appliance switched off at the mains, a crash, a
+// session killed by the window manager -- therefore loses everything the ROM
+// recorded in that session: high scores, audits, and anything changed in the
+// operator menu.
+//
+// When to save is the host's business and differs between hosts, so this message
+// carries the policy and leaves the mechanics to the emulator. The emulator saves
+// on its emulation thread, at a point where the emulated CPU is not part way
+// through writing NVRAM, and writes the file so that an interrupted save leaves
+// either the old contents or the new ones and never half of each.
+//
+// minIdleMs is what keeps this off the hot path. A host can send this message on
+// a plain timer and let the emulator decline it: nothing is written while a game
+// is being played, because NVRAM does not stop changing for long enough, and
+// nothing is written at all when nothing has changed.
+#define PMPI_SAVE_NVRAM                      "SaveNVRAM:1"
+
+typedef enum
+{
+   PMPI_NVRAM_SAVED = 0,         // Written
+   PMPI_NVRAM_UNCHANGED = 1,     // Identical to what is already on disk
+   PMPI_NVRAM_NOT_SETTLED = 2,   // Changed more recently than minIdleMs
+   PMPI_NVRAM_NOT_RUNNING = 3,   // No machine running, or this machine has no NVRAM
+   PMPI_NVRAM_TIMEOUT = 4,       // The emulation thread did not reach the request in time
+   PMPI_NVRAM_WRITE_FAILED = 5   // Nothing was written; what is on disk is still intact
+} PMPI_NVRAM_SAVE_RESULT;
+
+typedef struct PinMAMESaveNVRAMMsg
+{
+   int version;         // Always 1 (to allow upgrading this message in later revisions)
+   uint32_t minIdleMs;  // Request: do not save unless NVRAM has been unchanged this long; 0 saves whatever the state
+   uint32_t timeoutMs;  // Request: how long to wait for the emulation thread; 0 picks the emulator's default
+   int result;          // Response: a PMPI_NVRAM_SAVE_RESULT
+} PinMAMESaveNVRAMMsg;
+
+
 // State groups
 // 
 // The groups correspond to the hardware of WPC as PinMAME started as a WPC 
