@@ -23,8 +23,9 @@ enum { EV_NONE, EV_HUB, EV_EXEC, EV_DONE, EV_WAITPIN, EV_RESTART, EV_SLEEP };
 #define P8_COLD static
 #endif
 enum { LOOP_SEARCH, LOOP_RECORD, LOOP_SLEEP };
-/* p8x32a_loop.dirty: DIRTY_REG a register changed, which a Spin loop may do within an iteration; DIRTY_IO anything else */
-enum { DIRTY_IO = 1, DIRTY_REG = 2 };
+/* p8x32a_loop.dirty: DIRTY_REG a register changed (complete(), logged by spin_log), which a Spin loop may do within an iteration;
+   DIRTY_IO anything else, also register writes on the paths that only run while searching (run_local, event_run, the JIT) */
+enum { DIRTY_IO = 1, DIRTY_REG = 2 }; // leave IO at 1!
 
 #define OP(i)   ((unsigned)((i) >> 26))
 #define FWZ(i)  (((i) >> 25) & 1)
@@ -852,7 +853,7 @@ static void loop_hub_access(p8x32a * const p, const int n, const uint32_t a, con
 		return;
 	}
 #endif
-	if (l->nhub == 4) { l->dirty = 1; return; }
+	if (l->nhub == 4) { l->dirty |= DIRTY_IO; return; }
 	l->hub_a[l->nhub] = (uint16_t)(a & ~(sz - 1));
 	l->hub_n[l->nhub] = (uint8_t)sz;
 	l->hub_v[l->nhub] = sz == 4 ? rd32(p, a) : sz == 2 ? (uint32_t)(p->hub[a & ~1u] | p->hub[(a & ~1u) + 1] << 8) : p->hub[a];
@@ -958,7 +959,7 @@ static void loop_in(p8x32a * const p, const int n, const unsigned op, const uint
 {
 	p8x32a_loop * const l = &p->loop[n];
 	const uint32_t mask = (op == 0x18 || op == 0x19) ? d : 0xFFFFFFFFu;
-	if (l->nin == 4 || l->spin) { l->dirty = 1; return; }
+	if (l->nin == 4 || l->spin) { l->dirty |= DIRTY_IO; return; }
 	l->in_mask[l->nin] = mask;
 	l->in_val[l->nin++] = s & mask;
 }
@@ -1179,7 +1180,7 @@ static void complete(p8x32a * const p, const int n, const uint64_t m3, const uin
 #endif
 				jit_write(p, n, DST(i), o);
 			}
-			if (DST(i) >= 0x1F0) { special_write(p, n, DST(i), r, m3); p->loop[n].dirty = 1; }
+			if (DST(i) >= 0x1F0) { special_write(p, n, DST(i), r, m3); p->loop[n].dirty |= DIRTY_IO; }
 		}
 		if (FWC(i)) c->c = (uint8_t)co;
 		if (FWZ(i)) c->z = (uint8_t)zo;
@@ -1306,7 +1307,7 @@ static void do_hub(p8x32a * const p, const int n)
 			CHK_WRITE(ha, sz, h);
 			if (p->lz_on) lazy_write(p, ha, sz, v, h);
 			if (hub_store(p, ha, sz, v)) {
-				p->loop[n].dirty = 1;
+				p->loop[n].dirty |= DIRTY_IO;
 				if (p->sleepers) loop_hub_write(p, n, ha, sz, h);
 			}
 		}
@@ -1369,7 +1370,7 @@ static void exec(p8x32a * const p, const int n)
 	c->s = FIM(i) ? SRC(i) : SRC(i) == 0x1F2 ? ina(p, t2, (op == 0x18 || op == 0x19) ? c->ram[DST(i)] : 0xFFFFFFFFu) : sread(p, n, SRC(i), t2);
 	c->d = c->ram[DST(i)];
 	if (!c->run || (c->cond && (op == 3 || op >= 0x3C)) || (!FIM(i) && (SRC(i) == 0x1F1 || SRC(i) == 0x1FC || SRC(i) == 0x1FD)))
-		p->loop[n].dirty = 1;
+		p->loop[n].dirty |= DIRTY_IO;
 	else if (!FIM(i) && SRC(i) == 0x1F2 && p->loop[n].state == LOOP_RECORD)
 		loop_in(p, n, op, c->s, c->d);
 	c->px = (uint16_t)((c->cond && jump) ? (c->s & 511) : c->p);
@@ -1406,6 +1407,10 @@ static void restart(p8x32a * const p, const int n)
 		jit_drop(p, n);
 		memset(p->jvar[n], 0, sizeof(p->jvar[n]));
 	}
+#ifdef P8X32A_SPIN_LOOPS
+	p->spin[n].nseen = 0;
+	p->spin[n].skip = p->spin[n].fails = 0;
+#endif
 	c->p = 0;
 	c->c = c->z = c->cancel = c->run = 0;
 	c->disable_at = P8X32A_NEVER;
@@ -1473,14 +1478,14 @@ static unsigned hub_rw(p8x32a * const p, const int n, const uint32_t i, const ui
 		CHK_WRITE(ha, sz, h);
 		if (p->lz_on) lazy_write(p, ha, sz, d, h);
 		if (hub_store(p, ha, sz, d)) {
-			l->dirty = 1;
+			l->dirty |= DIRTY_IO;
 			if (p->sleepers) loop_hub_write(p, n, ha, sz, h);
 		}
 	}
 	r = op == 2 ? w : op == 1 ? (w >> ((a & 2) * 8)) & 0xFFFF : (w >> ((a & 3) * 8)) & 0xFF;
 	if (FWR(i)) {
-		if (ram[dst] != r) { const uint32_t o = ram[dst]; ram[dst] = r; l->dirty = 1; jit_write(p, n, dst, o); }
-		if (dst >= 0x1F0) { special_write(p, n, dst, r, m3); l->dirty = 1; }
+		if (ram[dst] != r) { const uint32_t o = ram[dst]; ram[dst] = r; l->dirty |= DIRTY_IO; jit_write(p, n, dst, o); }
+		if (dst >= 0x1F0) { special_write(p, n, dst, r, m3); l->dirty |= DIRTY_IO; }
 	}
 	if (FWC(i)) fl = (fl & ~2u) | (unsigned)p->sys_c << 1;
 	if (FWZ(i)) fl = (fl & ~1u) | (unsigned)!r;
@@ -1506,7 +1511,7 @@ P8_INLINE int event_run(p8x32a * const p, const int n, const p8x32a_dec * const 
 		else if (!(e->fl & F_SPEC)) s = ram[e->src];
 		else {
 			s = sread(p, n, e->src, now);
-			if (e->src == 0x1F1 || e->src == 0x1FC || e->src == 0x1FD) l->dirty = 1;
+			if (e->src == 0x1F1 || e->src == 0x1FC || e->src == 0x1FD) l->dirty |= DIRTY_IO;
 		}
 		*nix = ram[pc];
 		p->now = h;
@@ -1523,13 +1528,13 @@ P8_INLINE int event_run(p8x32a * const p, const int n, const p8x32a_dec * const 
 		else if (!(e->fl & F_SPEC)) s = ram[e->src];
 		else {
 			s = sread(p, n, e->src, now);
-			if (e->src == 0x1F1 || e->src == 0x1FC || e->src == 0x1FD) l->dirty = 1;
+			if (e->src == 0x1F1 || e->src == 0x1FC || e->src == 0x1FD) l->dirty |= DIRTY_IO;
 		}
 		d = ram[e->dst];
 		*nix = ram[pc];
 		r = alu_run(op, s, d, pc, (int)(f >> 1 & 1), (int)(f & 1), p->sys_c, (e->fl & F_WC) != 0, &wr, &ci, &zi);
-		if ((e->fl & F_WR) && wr && ram[e->dst] != r) { const uint32_t o = ram[e->dst]; ram[e->dst] = r; l->dirty = 1; jit_write(p, n, e->dst, o); }
-		if ((e->fl & F_WR) && e->dst >= 0x1F0) { special_write(p, n, e->dst, r, now + 1); l->dirty = 1; }
+		if ((e->fl & F_WR) && wr && ram[e->dst] != r) { const uint32_t o = ram[e->dst]; ram[e->dst] = r; l->dirty |= DIRTY_IO; jit_write(p, n, e->dst, o); }
+		if ((e->fl & F_WR) && e->dst >= 0x1F0) { special_write(p, n, e->dst, r, now + 1); l->dirty |= DIRTY_IO; }
 		if (e->fl & F_WC) f = (f & ~2u) | (unsigned)ci << 1;
 		if (e->fl & F_WZ) f = (f & ~1u) | (unsigned)zi;
 		*t2 = now + 4;
@@ -1777,7 +1782,7 @@ static int run_local(p8x32a * const p, const int n, const uint64_t t, const uint
 		if (e->kind == K_NL || (e->fl & F_INA)) {
 			if (!((e->cond >> fl) & 1)) {
 				if (e->fl & F_INA) break;
-				if ((e->fl & F_SPEC) && (e->src == 0x1F1 || e->src == 0x1FC || e->src == 0x1FD)) l->dirty = 1;
+				if ((e->fl & F_SPEC) && (e->src == 0x1F1 || e->src == 0x1FC || e->src == 0x1FD)) l->dirty |= DIRTY_IO;
 				nix = ram[px];
 				nins++;
 				goto next;
@@ -1788,7 +1793,7 @@ static int run_local(p8x32a * const p, const int n, const uint64_t t, const uint
 					c->i = ix;
 					c->cond = 1;
 					c->s = (e->fl & F_IMM) ? e->src : (e->fl & F_SPEC) ? sread(p, n, e->src, t2) : ram[e->src];
-					if ((e->fl & F_SPEC) && (e->src == 0x1F1 || e->src == 0x1FC || e->src == 0x1FD)) l->dirty = 1;
+					if ((e->fl & F_SPEC) && (e->src == 0x1F1 || e->src == 0x1FC || e->src == 0x1FD)) l->dirty |= DIRTY_IO;
 					c->d = ram[e->dst];
 					c->px = (uint16_t)pc;
 					c->nix = ram[pc];
@@ -1805,7 +1810,7 @@ static int run_local(p8x32a * const p, const int n, const uint64_t t, const uint
 		else if (!(e->fl & F_SPEC)) s = ram[e->src];
 		else {
 			s = sread(p, n, e->src, t2);
-			if (e->src == 0x1F1 || e->src == 0x1FC || e->src == 0x1FD) l->dirty = 1;
+			if (e->src == 0x1F1 || e->src == 0x1FC || e->src == 0x1FD) l->dirty |= DIRTY_IO;
 		}
 		if ((e->cond >> fl) & 1) {
 			unsigned co = 0, zo;
@@ -1835,13 +1840,13 @@ static int run_local(p8x32a * const p, const int n, const uint64_t t, const uint
 				zo = (unsigned)zi;
 				if (op == 0x3A) jc = !d;
 				else if (op == 0x3B) jc = d != 0;
-				if ((e->fl & F_WR) && wr && ram[e->dst] != r) { const uint32_t o = ram[e->dst]; ram[e->dst] = r; l->dirty = 1; jit_write(p, n, e->dst, o); }
+				if ((e->fl & F_WR) && wr && ram[e->dst] != r) { const uint32_t o = ram[e->dst]; ram[e->dst] = r; l->dirty |= DIRTY_IO; jit_write(p, n, e->dst, o); }
 				goto flags;
 			}
 			}
 			nix = ram[px];
 			zo = !r;
-			if ((e->fl & F_WR) && ram[e->dst] != r) { const uint32_t o = ram[e->dst]; ram[e->dst] = r; l->dirty = 1; jit_write(p, n, e->dst, o); }
+			if ((e->fl & F_WR) && ram[e->dst] != r) { const uint32_t o = ram[e->dst]; ram[e->dst] = r; l->dirty |= DIRTY_IO; jit_write(p, n, e->dst, o); }
 		flags:
 			if (e->fl & F_WC) fl = (fl & ~2u) | co << 1;
 			if (e->fl & F_WZ) fl = (fl & ~1u) | zo;
@@ -1882,7 +1887,7 @@ limit:
 		if (e->kind != K_NL && !(e->fl & F_INA)) {
 			if ((e->fl & F_SPEC)) {
 				(void)sread(p, n, e->src, t2);
-				if (e->src == 0x1F1 || e->src == 0x1FC || e->src == 0x1FD) l->dirty = 1;
+				if (e->src == 0x1F1 || e->src == 0x1FC || e->src == 0x1FD) l->dirty |= DIRTY_IO;
 			}
 			idled = 1;
 		}
