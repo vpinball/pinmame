@@ -3,16 +3,18 @@
 /* Zaccaria Prototype Solid State machines */
 /* CPU: National Semiconductor SC/MP ISP-8A 500D */
 
+/* Sound emulation: 2MHz clock, divided by latch U36 (128..255, U44/U45),
+   clocks an 8 bit down counter (U46/U47), one of whose bits (selected by U37, which also mutes) drives the speaker */
+
 #include <math.h>
 #include "driver.h"
 #include "cpu/scamp/scamp.h"
 #include "core.h"
 #include "sim.h"
 
-/* Sound emulation: 1 = MAME (zac_proto.cpp): a 2MHz clock, divided by latch U36 (128..255, U44/U45),
-   clocks an 8 bit down counter (U46/U47), one of whose bits (selected by U37, which also mutes) drives the speaker;
-   0 = PinMAME's former guess, a discrete sine sweeping down from the command value */
-#define ZACPROTO_MAME_SOUND 1
+#define ZACPROTO_SND_CLOCK 2000000. /* 4MHz XTAL / 2 */
+#define ZACPROTO_SND_RATE (4*48000) /* the mixer then resamples it (band-limited) to the output rate */
+#define ZACPROTO_DC_CUTOFF_HZ 1.6   /* output coupling capacitor, as in the discrete output node (disc_out.c) */
 
 static struct {
   core_tSeg segments;
@@ -22,6 +24,17 @@ static struct {
   int dispCount, output, enable;
   UINT8 sndCmd;
 } locals;
+
+static struct {
+  int stream;
+  UINT8 u36;    /* preset divider for U44/U45 */
+  UINT8 u37;    /* bits 0-2: counter bit select (U48), bit 3: sound on */
+  UINT8 u44u45; /* divider counter */
+  UINT8 u46u47; /* frequency counter */
+  int level;    /* speaker level 0/1, updated on each divider reload (as MAME) */
+  double clk, clkStep; /* fractional 2MHz clocks per output sample */
+  double dcInteg, dcPrev, dcCoeff;
+} snd;
 
 static INTERRUPT_GEN(vblank) {
   locals.vblankCount++;
@@ -94,22 +107,6 @@ static WRITE_HANDLER(sol_w) {
     locals.solenoids = (locals.solenoids & 0xffff00ff) | (data << 8);
 }
 
-#if ZACPROTO_MAME_SOUND
-#define ZACPROTO_SND_CLOCK 2000000. /* 4MHz XTAL / 2 */
-#define ZACPROTO_SND_RATE (4*48000) /* the mixer then resamples it (band-limited) to the output rate */
-#define ZACPROTO_DC_CUTOFF_HZ 1.6   /* output coupling capacitor, as in the discrete output node (disc_out.c) */
-
-static struct {
-  int stream;
-  UINT8 u36;    /* preset divider for U44/U45 */
-  UINT8 u37;    /* bits 0-2: counter bit select (U48), bit 3: sound on */
-  UINT8 u44u45; /* divider counter */
-  UINT8 u46u47; /* frequency counter */
-  int level;    /* speaker level 0/1, updated on each divider reload (as MAME) */
-  double clk, clkStep; /* fractional 2MHz clocks per output sample */
-  double dcInteg, dcPrev, dcCoeff;
-} snd;
-
 static WRITE_HANDLER(sound_w) {
   stream_update(snd.stream, 0);
   data &= 0x3f;
@@ -161,31 +158,6 @@ static int zacProto_sh_start(const struct MachineSound *msound) {
 }
 
 static struct CustomSound_interface zacProto_custInt = {zacProto_sh_start, NULL, NULL, zacProto_sh_reset};
-#else
-static WRITE_HANDLER(sound_w) {
-  if (data) {
-    if (!offset) {
-      locals.sndCmd = (locals.sndCmd & 0x40) | (data & 0x3f);
-    } else {
-      locals.enable = (data & 0x02) >> 1;
-      locals.sndCmd = (locals.sndCmd & 0x3f) | ((data & 0x01) << 6);
-      if (!locals.enable)
-        locals.output = (data & 0x1c) >> 2;
-    }
-    logerror("sound %d: snd data = %02x, enable = %x, output = %x\n", offset, locals.sndCmd, locals.enable, locals.output);
-    discrete_sound_w(1, ((locals.sndCmd << (7-locals.output)) & 0xff) >> (7-locals.output));
-    discrete_sound_w(2, 1);
-  }
-}
-
-static void zacProto_sndTimer(int data) {
-  if (locals.sndCmd) {
-    locals.sndCmd--;
-    discrete_sound_w(1, ((locals.sndCmd << (7-locals.output)) & 0xff) >> (7-locals.output));
-  } else
-    discrete_sound_w(2, 0);
-}
-#endif
 
 static WRITE_HANDLER(lamp_w) {
   coreGlobals.tmpLampMatrix[offset] = data;
@@ -210,19 +182,6 @@ static MEMORY_WRITE_START(writemem)
   { 0x0e09, 0x0e16, lamp_w },
 MEMORY_END
 
-#if !ZACPROTO_MAME_SOUND
-static DISCRETE_SOUND_START(zacProto_discInt)
-	DISCRETE_INPUT(NODE_01,1,0x0003,0) // tone
-	DISCRETE_INPUT(NODE_02,2,0x0003,0) // enable
-	DISCRETE_MULTADD(NODE_05,1,NODE_01,2,90)
-	DISCRETE_SINEWAVE(NODE_10,NODE_02,NODE_05,20000,10000,0)
-	DISCRETE_GAIN(NODE_20,NODE_10,12)
-	/* Unipolar (a sine of BIAS 10000 x12, +120000 of DC even in silence: a disabled wave node outputs its BIAS),
-	   hence _AC to correct/center around 0. The remaining +-120000 is 3.7x 16bit full scale, so the final mix clips - the whole graph is a guess */
-	DISCRETE_OUTPUT_AC(NODE_20, 50)
-DISCRETE_SOUND_END
-#endif
-
 static core_tLCDLayout disp[] = {
   {0, 0, 4, 1,CORE_SEG8D},{0, 2, 5, 2,CORE_SEG7},{0, 6, 7, 1,CORE_SEG8D},{0, 8, 8, 3,CORE_SEG7},
   {3, 2, 0, 2,CORE_SEG7S},
@@ -243,12 +202,7 @@ MACHINE_DRIVER_START(zacProto)
   MDRV_CPU_VBLANK_INT(vblank, 1)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_DIPS(24)
-#if ZACPROTO_MAME_SOUND
   MDRV_SOUND_ADD(CUSTOM, zacProto_custInt)
-#else
-  MDRV_SOUND_ADD(DISCRETE, zacProto_discInt)
-  MDRV_TIMER_ADD(zacProto_sndTimer, 250)
-#endif
 MACHINE_DRIVER_END
 
 INPUT_PORTS_START(strike) \
@@ -350,7 +304,7 @@ ROM_START(strike) \
     ROM_LOAD("strike4.bin", 0x1400, 0x0400, CRC(ca0eddd0) SHA1(52f9faf791c56b68b1806e685d0479ea67aba019))
 ROM_END
 
-CORE_GAMEDEFNV(strike, "Strike", 1978, "Zaccaria", zacProto, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(strike, "Strike", 1978, "Zaccaria", zacProto, 0)
 
 INPUT_PORTS_START(skijump) \
   CORE_PORTS \
@@ -453,7 +407,7 @@ ROM_START(skijump) \
 ROM_END
 #define init_skijump init_strike
 
-CORE_GAMEDEFNV(skijump,"Ski Jump", 1978, "Zaccaria", zacProto, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(skijump,"Ski Jump", 1978, "Zaccaria", zacProto, 0)
 
 INPUT_PORTS_START(spacecty) \
   CORE_PORTS \
@@ -554,4 +508,4 @@ ROM_START(spacecty) \
 ROM_END
 #define init_spacecty init_strike
 
-CORE_GAMEDEFNV(spacecty,"Space City", 1979, "Zaccaria", zacProto, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(spacecty,"Space City", 1979, "Zaccaria", zacProto, 0)
