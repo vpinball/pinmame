@@ -929,3 +929,14 @@ endif()
 if(TARGET pinmame_static)
    pinmame_enable_p2k(pinmame_static)
 endif()
+
+# --- Stern Spike 1 subsystem (src/spike1)
+# On by default; -DPINMAME_SPIKE1=OFF leaves neither the driver nor its CPU registered. After the
+# Pinball 2000 subsystem, whose MAME compatibility layer it shares - see cmake/spike1.cmake
+include(${CMAKE_SOURCE_DIR}/cmake/spike1.cmake)
+if(TARGET pinmame_shared)
+   pinmame_enable_spike1(pinmame_shared)
+endif()
+if(TARGET pinmame_static)
+   pinmame_enable_spike1(pinmame_static)
+endif()

@@ -52,6 +52,7 @@ enum { CLEAR_LINE = 0, ASSERT_LINE, HOLD_LINE };
 
 // ---------------------------------------------------------------- fwd decls
 class device_t;
+class device_execute_interface;
 class device_memory_interface;
 class machine_config;
 class running_machine;
@@ -64,6 +65,15 @@ class memory_region;
 using device_timer_id = int;
 
 namespace util { class disasm_interface; }
+
+// Modern MAME helpers the Spike 1 arm7 import (src/spike1/mame/cpu/arm7) uses
+class address_map;
+using address_map_constructor = std::function<void (address_map &)>;
+enum { TR_READ = TRANSLATE_READ, TR_WRITE = TRANSLATE_WRITE, TR_FETCH = TRANSLATE_FETCH };
+namespace util {
+template <typename T, typename U> constexpr T sext(T value, U width)
+{ using S = std::make_signed_t<T>; return T(S(value << (8 * sizeof(T) - width)) >> (8 * sizeof(T) - width)); }
+}
 
 // ---------------------------------------------------------------- disasm stub
 namespace util {
@@ -144,6 +154,9 @@ class address_space final
 {
 public:
 	explicit address_space(const p2k_bus_callbacks &cb) : m_cb(cb) {}
+	endianness_t endianness() const { return ENDIANNESS_LITTLE; }
+	// the host address behind `a` when a fast window holds it, else null
+	const void *read_ptr(offs_t a) const { return fast(a); }
 
 	// Hotspot for Pin2K emu, so the fast window lookup happens up front and on the byte
 	// address itself: a hit is one load, with no dword to assemble, mask or shift back down.
@@ -192,22 +205,23 @@ public:
 	ATTR_FORCE_INLINE u32 read_dword_unaligned(offs_t a, u32 mask) { return read_dword(a, mask); }
 
 	// The write side of the same idea, and it saves more than the read side does: a hit stores
-	// the one byte outright, where w32() had to read the dword back, blend and store it again
+	// the one byte outright, where w32() had to read the dword back, blend and store it again.
+	// Writes look up the writable windows only (fast_w()): a read-only one sends them to the callback
 	ATTR_FORCE_INLINE void write_byte(offs_t a, u8 d)
 	{
-		if (u8 *p = fast(a)) { *p = d; return; }
+		if (u8 *p = fast_w(a)) { *p = d; return; }
 		const unsigned shift = (a & 3) * 8;
 		m_cb.write32(m_cb.ctx, a & ~3u, u32(d) << shift, 0xffu << shift);
 	}
 	ATTR_FORCE_INLINE void write_word(offs_t a, u16 d)
 	{
-		if (u8 *p = fast(a & ~1u)) { store16(p, d); return; }
+		if (u8 *p = fast_w(a & ~1u)) { store16(p, d); return; }
 		const unsigned shift = (a & 2) * 8;
 		m_cb.write32(m_cb.ctx, a & ~3u, u32(d) << shift, 0xffffu << shift);
 	}
 	ATTR_FORCE_INLINE void write_word(offs_t a, u16 d, u16 mask)
 	{
-		if (u8 *p = fast(a & ~1u)) { store16(p, u16((load16(p) & u16(~mask)) | (d & mask))); return; }
+		if (u8 *p = fast_w(a & ~1u)) { store16(p, u16((load16(p) & u16(~mask)) | (d & mask))); return; }
 		const unsigned shift = (a & 2) * 8;
 		m_cb.write32(m_cb.ctx, a & ~3u, u32(d) << shift, u32(mask) << shift);
 	}
@@ -216,7 +230,7 @@ public:
 	// A full-width store needs no read-back to blend into, so it does not go through w32()
 	ATTR_FORCE_INLINE void write_dword(offs_t a, u32 d)
 	{
-		if (u8 *p = fast(a & ~3u)) { store32(p, d); return; }
+		if (u8 *p = fast_w(a & ~3u)) { store32(p, d); return; }
 		m_cb.write32(m_cb.ctx, a & ~3u, d, 0xffffffff);
 	}
 	ATTR_FORCE_INLINE void write_dword(offs_t a, u32 d, u32 mask) { w32(a & ~3u, d, mask); }
@@ -245,8 +259,11 @@ public:
 	//                time through r32()/w32().
 	//
 	// Trimming does not narrow what the dword path reaches: its offsets are multiples of 4, and
-	// off < 4*floor(size/4) is the same set as the old off < size-3
-	void add_fast_window(u32 base, u8 *mem, size_t size)
+	// off < 4*floor(size/4) is the same set as the old off < size-3.
+	//
+	// A read-only window (`writable` false, e.g. a file the host maps read-only) serves reads only;
+	// a write inside it goes to the callback, which can report it instead of faulting the host
+	void add_fast_window(u32 base, u8 *mem, size_t size, bool writable = true)
 	{
 		if (m_fast_n >= MAX_FAST || !mem) return;
 		const u32 head = (0u - base) & 3u; // bytes up to the next dword boundary
@@ -254,13 +271,20 @@ public:
 		base += head; mem += head; size -= head;
 		size &= ~size_t(3);
 		if (size < 4) return;
-		m_fast[m_fast_n++] = { base, u32(size), uintptr_t(mem) - base };
+		m_fast[m_fast_n] = { base, u32(size), uintptr_t(mem) - base };
+		if (writable) m_fast_w[m_fast_n] = m_fast[m_fast_n];
+		m_fast_n++;
 	}
 	// Zeroing the slots is the part that actually disarms them: fast() tests all MAX_FAST entries
 	// unconditionally and never consults m_fast_n, so resetting the count alone would leave every
 	// registered window still live - exactly the wrong outcome for the bus-probe case above.
 	// A zeroed slot has span 0, and u32(a - 0) < 0 is false for every a, so it can never match
-	void clear_fast_windows() { for (auto &w : m_fast) w = {}; m_fast_n = 0; }
+	void clear_fast_windows()
+	{
+		for (auto &w : m_fast) w = {};
+		for (auto &w : m_fast_w) w = {};
+		m_fast_n = 0;
+	}
 
 	// Hand out the window containing `a` as a pre-biased pointer plus its range, so a caller that
 	// walks a run of sequential addresses can serve them itself instead of coming back per byte.
@@ -341,6 +365,17 @@ private:
 		if (u32(a - m_fast[3].base) < m_fast[3].span) return reinterpret_cast<u8 *>(m_fast[3].adj + a);
 		return nullptr;
 	}
+	// The same over the writable windows: m_fast_w holds each writable window in the slot m_fast
+	// has it in, and a zeroed slot where m_fast holds a read-only one
+	ATTR_FORCE_INLINE u8 *fast_w(const offs_t a) const
+	{
+		static_assert(MAX_FAST == 4);
+		if (u32(a - m_fast_w[0].base) < m_fast_w[0].span) return reinterpret_cast<u8 *>(m_fast_w[0].adj + a);
+		if (u32(a - m_fast_w[1].base) < m_fast_w[1].span) return reinterpret_cast<u8 *>(m_fast_w[1].adj + a);
+		if (u32(a - m_fast_w[2].base) < m_fast_w[2].span) return reinterpret_cast<u8 *>(m_fast_w[2].adj + a);
+		if (u32(a - m_fast_w[3].base) < m_fast_w[3].span) return reinterpret_cast<u8 *>(m_fast_w[3].adj + a);
+		return nullptr;
+	}
 
 	ATTR_FORCE_INLINE u32 r32(offs_t a, u32 mask)
 	{
@@ -349,7 +384,7 @@ private:
 	}
 	ATTR_FORCE_INLINE void w32(offs_t a, u32 d, u32 mask)
 	{
-		if (u8 *p = fast(a)) { store32(p, (load32(p) & ~mask) | (d & mask)); return; }
+		if (u8 *p = fast_w(a)) { store32(p, (load32(p) & ~mask) | (d & mask)); return; }
 		m_cb.write32(m_cb.ctx, a, d, mask);
 	}
 
@@ -376,8 +411,10 @@ private:
 	//
 	// Ordered hottest first: m_fast on every access, m_cb on every miss, m_fast_n only when a
 	// window is registered - fast() deliberately never reads it. Everything after m_fast lands in
-	// the second line either way, so this is for legibility only
+	// the second line either way, so this is for legibility only. m_fast_w, the writable subset
+	// the write paths look up, is a line of its own
 	alignas(64) win m_fast[MAX_FAST] {};
+	alignas(64) win m_fast_w[MAX_FAST] {};
 	p2k_bus_callbacks m_cb;
 	unsigned m_fast_n = 0;
 };
@@ -398,6 +435,7 @@ struct memory_access
 		ATTR_FORCE_INLINE u8  read_byte (offs_t a) { return m_space->read_byte(a); }
 		ATTR_FORCE_INLINE u16 read_word (offs_t a) { return m_space->read_word(a); }
 		ATTR_FORCE_INLINE u32 read_dword(offs_t a) { return m_space->read_dword(a); }
+		const void *read_ptr(offs_t a) { return m_space->read_ptr(a); }
 	private:
 		address_space *m_space = nullptr;
 	};
@@ -493,6 +531,9 @@ public:
 
 class device_scheduler final
 {
+public:
+	// a shim CPU runs only inside its own execute call, so nothing is "currently executing" to ask about
+	device_execute_interface *currently_executing() const { return nullptr; }
 public:
 	attotime time() const { return m_time; }
 
@@ -1202,6 +1243,7 @@ public:
 	void set_input_line_and_vector(int line, int state, int vector) { execute_set_input(line, state); }
 
 	void set_icountptr(int &icount) { m_icountptr = &icount; }
+	u64 total_cycles() const { return 0; }
 	void eat_cycles(int c) { if (m_icountptr) *m_icountptr -= c; }
 	template <typename T> void pulse_input_line(int line, T &&)
 	{ execute_set_input(line, ASSERT_LINE); execute_set_input(line, CLEAR_LINE); }
@@ -1244,6 +1286,9 @@ public:
 
 	virtual space_config_vector memory_space_config() const = 0;
 	virtual bool memory_translate(int spacenum, int intention, offs_t &address) { return true; }
+	// modern MAME's form, which also names the space the address lands in
+	virtual bool memory_translate(int spacenum, int intention, offs_t &address, address_space *&target_space)
+	{ target_space = has_space(spacenum) ? &space(spacenum) : nullptr; return memory_translate(spacenum, intention, address); }
 
 	const address_space_config *space_config(int index = 0) const
 	{

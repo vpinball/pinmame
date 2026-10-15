@@ -140,6 +140,7 @@ int readzipat(ZIP* zip, INT64 offset, char* data, UINT32 length);
 int /* error */ load_zipped_file (int pathtype, int pathindex, const char *zipfile, const char *filename,
 	unsigned char **buf, unsigned int *length);
 int /* error */ checksum_zipped_file (int pathtype, int pathindex, const char *zipfile, const char *filename, unsigned int *length, unsigned int *sum);
+int /* error */ locate_stored_zipped_file (int pathtype, int pathindex, const char *zipfile, const char *filename, UINT64 *offset, unsigned int *length, unsigned int *sum);
 
 void unzip_cache_clear(void);
 

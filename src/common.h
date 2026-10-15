@@ -223,6 +223,10 @@ enum
 #define		ROMREGION_DATATYPEROM	0x00000000
 #define		ROMREGION_DATATYPEDISK	0x00010000
 
+#define ROMREGION_MAPPEDMASK		0x00020000			/* map the files from the set on disk (get_mapped_rom()) */
+#define		ROMREGION_LOADED		0x00000000
+#define		ROMREGION_MAPPED		0x00020000
+
 /* ----- per-region macros ----- */
 #define ROMREGION_GETTYPE(r)		((size_t)(r)->_hashdata)
 #define ROMREGION_GETLENGTH(r)		((r)->_length)
@@ -239,6 +243,7 @@ enum
 #define ROMREGION_GETDATATYPE(r)	(ROMREGION_GETFLAGS(r) & ROMREGION_DATATYPEMASK)
 #define ROMREGION_ISROMDATA(r)		(ROMREGION_GETDATATYPE(r) == ROMREGION_DATATYPEROM)
 #define ROMREGION_ISDISKDATA(r)		(ROMREGION_GETDATATYPE(r) == ROMREGION_DATATYPEDISK)
+#define ROMREGION_ISMAPPED(r)		((ROMREGION_GETFLAGS(r) & ROMREGION_MAPPEDMASK) == ROMREGION_MAPPED)
 
 
 /* ----- per-ROM constants ----- */
@@ -448,6 +453,13 @@ const struct RomModule *rom_first_file(const struct RomModule *romp);
 const struct RomModule *rom_next_file(const struct RomModule *romp);
 const struct RomModule *rom_first_chunk(const struct RomModule *romp);
 const struct RomModule *rom_next_chunk(const struct RomModule *romp);
+
+/* A ROMREGION_MAPPED region has no memory: the loader maps each of its files read-only from the
+   set on disk - a stored (uncompressed) zip entry or a file in the set's folder - and keeps it
+   until the machine shuts down. A file it cannot map (a compressed entry, or a host that does not
+   map files) it holds in memory instead. NULL for a file that is not open */
+const UINT8 *get_mapped_rom(const struct RomModule *romp, UINT32 *length, int *mapped);
+void close_mapped_roms(void);
 
 void printromlist(const struct RomModule *romp,const char *name);
 
