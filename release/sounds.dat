@@ -112,54 +112,54 @@ dcs:
 ; set automatically by playing a music command.
 ; -------------
 wpcs:
-:00:Reset Sound System
-:1e:Decrease Music Tempo
-:1f:Increase Music Tempo
-:20:Set DAC (drums) volume to 15
-:21:Set DAC (drums) volume to 14
-:22:Set DAC (drums) volume to 13
-:23:Set DAC (drums) volume to 12
-:24:Set DAC (drums) volume to 11
-:25:Set DAC (drums) volume to 10
-:26:Set DAC (drums) volume to 9
-:27:Set DAC (drums) volume to 8
-:28:Set DAC (drums) volume to 7
-:29:Set DAC (drums) volume to 6
-:2a:Set DAC (drums) volume to 5
-:2b:Set DAC (drums) volume to 4
-:2c:Set DAC (drums) volume to 3
-:2d:Set DAC (drums) volume to 2
-:2e:Set DAC (drums) volume to 1
-:2f:Set DAC (drums) volume to 0
-:50:FM: Menu Select A
-:51:FM: Menu Select B
-:52:FM: System Warning Beep
-:53:FM: Menu Op Completed
-:54:FM: System Attention Beep
-:55:FM: Menu Select C
-:56:FM: Menu Select D
-:57:FM: Menu Enter
-:58:FM: Menu Cancel/Clear
-:59:FM: System Sweep
-:60:Set FM (Music) volume to 18
-:61:Set FM (Music) volume to 17
-:62:Set FM (Music) volume to 16
-:63:Set FM (Music) volume to 15
-:64:Set FM (Music) volume to 14
-:65:Set FM (Music) volume to 13
-:66:Set FM (Music) volume to 12
-:67:Set FM (Music) volume to 11
-:68:Set FM (Music) volume to 10
-:69:Set FM (Music) volume to 9
-:6a:Set FM (Music) volume to 8
-:6b:Set FM (Music) volume to 7
-:6c:Set FM (Music) volume to 6
-:6d:Set FM (Music) volume to 5
-:6e:Set FM (Music) volume to 4
-:6f:Set FM (Music) volume to 3
-:70:Set FM (Music) volume to 2
-:71:Set FM (Music) volume to 1
-:72:Set FM (Music) volume to 0
+:0000:Reset Sound System
+:001e:Decrease Music Tempo
+:001f:Increase Music Tempo
+:0020:Set DAC (drums) volume to 15
+:0021:Set DAC (drums) volume to 14
+:0022:Set DAC (drums) volume to 13
+:0023:Set DAC (drums) volume to 12
+:0024:Set DAC (drums) volume to 11
+:0025:Set DAC (drums) volume to 10
+:0026:Set DAC (drums) volume to 9
+:0027:Set DAC (drums) volume to 8
+:0028:Set DAC (drums) volume to 7
+:0029:Set DAC (drums) volume to 6
+:002a:Set DAC (drums) volume to 5
+:002b:Set DAC (drums) volume to 4
+:002c:Set DAC (drums) volume to 3
+:002d:Set DAC (drums) volume to 2
+:002e:Set DAC (drums) volume to 1
+:002f:Set DAC (drums) volume to 0
+:0050:FM: Menu Select A
+:0051:FM: Menu Select B
+:0052:FM: System Warning Beep
+:0053:FM: Menu Op Completed
+:0054:FM: System Attention Beep
+:0055:FM: Menu Select C
+:0056:FM: Menu Select D
+:0057:FM: Menu Enter
+:0058:FM: Menu Cancel/Clear
+:0059:FM: System Sweep
+:0060:Set FM (Music) volume to 18
+:0061:Set FM (Music) volume to 17
+:0062:Set FM (Music) volume to 16
+:0063:Set FM (Music) volume to 15
+:0064:Set FM (Music) volume to 14
+:0065:Set FM (Music) volume to 13
+:0066:Set FM (Music) volume to 12
+:0067:Set FM (Music) volume to 11
+:0068:Set FM (Music) volume to 10
+:0069:Set FM (Music) volume to 9
+:006a:Set FM (Music) volume to 8
+:006b:Set FM (Music) volume to 7
+:006c:Set FM (Music) volume to 6
+:006d:Set FM (Music) volume to 5
+:006e:Set FM (Music) volume to 4
+:006f:Set FM (Music) volume to 3
+:0070:Set FM (Music) volume to 2
+:0071:Set FM (Music) volume to 1
+:0072:Set FM (Music) volume to 0
 
 
 ; ROM Header name must match the ROM name
@@ -173,71 +173,71 @@ wpcs:
 ; sound command editor can't access it.
 ; --------------
 cftbl_l4:
-:00:Reset Sound System
-:01:Music: Main Game Theme 1 (?)
-:02:Music: Main Game Theme 2
-:03:Music: Main Game Theme 3
-:04:Music: Mega Menu
-:05:Music: Main Game Theme 4
-:06:Music: Multiball
-:07:Music: ?? Loop
-:08:Music: Snack Attack
-:09:Music: Normal Prelaunch
-:0a:Music: Video Mode
-:0b:Music: Main Game Theme 5
-:0c:Music: Main Game Theme 6
-:0d:Music: Move Your Car!
-:0e:Music: Multiball Hurry-Up
-:10:Music: ?? (same as 01)
-:11:Music: (01 = messed up)
-:12:Music: (02 = messed up)
-:13:Music: (03 = messed up)
-:14:Music: (04 = messed up)
-:15:Music: (05 = messed up)
-:16:Music: (06 = messed up)
-:17:Music: (08 = messed up)
-:18:Music: (1c = messed up)
-:19:Music: (1b = messed up)
-:1a:Music: Bonus Ending 1
-:1e:Decrease Music Tempo
-:1f:Increase Music Tempo
-:30:SFX: Car driving by
-:31:SFX: Kiss - Mwah!
-:32:SFX: Projector Startup
-:33:(Blues mumbling 1)
-:34:(Blues mumbling 2)
-:35:(Blues mumbling 3)
-:36:(Creature Noise)
-:37:SFX: Cash Register
-:38:"Thank you, enjoy the film"
-:39:SFX: Cash Reg + "Thank you"
+:0000:Reset Sound System
+:0001:Music: Main Game Theme 1 (?)
+:0002:Music: Main Game Theme 2
+:0003:Music: Main Game Theme 3
+:0004:Music: Mega Menu
+:0005:Music: Main Game Theme 4
+:0006:Music: Multiball
+:0007:Music: ?? Loop
+:0008:Music: Snack Attack
+:0009:Music: Normal Prelaunch
+:000a:Music: Video Mode
+:000b:Music: Main Game Theme 5
+:000c:Music: Main Game Theme 6
+:000d:Music: Move Your Car!
+:000e:Music: Multiball Hurry-Up
+:0010:Music: ?? (same as 01)
+:0011:Music: (01 = messed up)
+:0012:Music: (02 = messed up)
+:0013:Music: (03 = messed up)
+:0014:Music: (04 = messed up)
+:0015:Music: (05 = messed up)
+:0016:Music: (06 = messed up)
+:0017:Music: (08 = messed up)
+:0018:Music: (1c = messed up)
+:0019:Music: (1b = messed up)
+:001a:Music: Bonus Ending 1
+:001e:Decrease Music Tempo
+:001f:Increase Music Tempo
+:0030:SFX: Car driving by
+:0031:SFX: Kiss - Mwah!
+:0032:SFX: Projector Startup
+:0033:(Blues mumbling 1)
+:0034:(Blues mumbling 2)
+:0035:(Blues mumbling 3)
+:0036:(Creature Noise)
+:0037:SFX: Cash Register
+:0038:"Thank you, enjoy the film"
+:0039:SFX: Cash Reg + "Thank you"
 # -----------
 # Apparently the next two were jokes put in by one of the Williams
 # programmers against their boss or something.  Sounds like
 # something they would do.
 # -----------
-:3a:"I'm sorry, Jeff..."
-:3b:"Jeff! You are a weenie!"
+:003a:"I'm sorry, Jeff..."
+:003b:"Jeff! You are a weenie!"
 #
-:3c:"My hero!"
-:3d:"Thank you!"
-:3e:"You saved my life!"
-:3f:VOX: Girl screams
-:40:SFX: Boom 1
-:41:"Focus!"
-:42:"Move your car!"
-:43:"Hey, slide over, baby!"
-:44:"Ummm, okay!"
-:45:"Okay!"
-:46:"How about a kiss?"
-:47:"Gee, I dunno..."
-:48:"Awww, c'mon!"
-:49:"Well, maybe..."
-:4a:SFX: Ahooga!
-:4b:"Shoot the left ramp!"
-:4c:"Jackpot!"
-:4d:"Super Jackpot!"
-:4e:"Let's try the next..."
+:003c:"My hero!"
+:003d:"Thank you!"
+:003e:"You saved my life!"
+:003f:VOX: Girl screams
+:0040:SFX: Boom 1
+:0041:"Focus!"
+:0042:"Move your car!"
+:0043:"Hey, slide over, baby!"
+:0044:"Ummm, okay!"
+:0045:"Okay!"
+:0046:"How about a kiss?"
+:0047:"Gee, I dunno..."
+:0048:"Awww, c'mon!"
+:0049:"Well, maybe..."
+:004a:SFX: Ahooga!
+:004b:"Shoot the left ramp!"
+:004c:"Jackpot!"
+:004d:"Super Jackpot!"
+:004e:"Let's try the next..."
 # -----------
 # "At the Hop" was a popular 50's song, and evidently they encoded a
 # huge number of samples into this game to play it as a soundtrack.
@@ -245,110 +245,110 @@ cftbl_l4:
 # think the voice samples would get overridden by more important
 # voices as you play the game.
 # -----------
-:4f:"At the hop!"
-:5a:"Hop!" 1
-:5b:"Hop!" 2
-:5c:"Hop!" 3
-:5d:"Hop!" 4
+:004f:"At the hop!"
+:005a:"Hop!" 1
+:005b:"Hop!" 2
+:005c:"Hop!" 3
+:005d:"Hop!" 4
 #
-:80:SFX: PAID rollover 1
-:81:SFX: PAID rollover 2
-:82:SFX: PAID rollover 3
-:83:Music: Sneak-In Award
-:84:Music: 5 Million Award
-:85:SFX: Misc 1
-:86:SFX: Misc 2
-:87:SFX: Jet Bumper 1
-:88:SFX: Jet Bumper 2
-:89:SFX: Jet Bumper 3
-:8a:SFX: Inlane 1
-:8b:SFX: Inlane 2
-:8c:SFX: Right Ramp
-:8d:SFX: Car horn
-:8e:Music: M.Ball Restart
-:8f:SFX: Snackbar target 1
-:90:SFX: Snackbar target 2
-:91:SFX: Snackbar target 3
-:92:SFX: Snackbar target 4
-:96:Music: Sn.Attack Score
-:97:Music: KISS Score
-:98:Music: Mega Menu Score
-:99:Music: Creature Found
-:9a:Music: Girl Rescued
-:9b:Music: Jackpot Lit
-:9c:Music: Jackpot Score
-:9d:Music: Empty Tunnel
-:9e:Music: ??
-:9f:Music: Explain Award
-:a0:SFX: Whiz-Bang 1
-:a1:SFX: Whiz-Bang 2
-:a2:SFX: Whiz-Bang 3
-:a3:SFX: Misc 3
-:a4:SFX: Misc 4
-:a5:SFX: Countdown Tick
-:a6:SFX: Mode Fail
-:a7:SFX: Combo Shot 1
-:a8:SFX: Combo Shot 2
-:a9:SFX: Combo Shot 3
-:aa:SFX: Combo Shot 4
-:ab:SFX: Combo Shot 5
-:ac:SFX: Combo Shot Score
-:ad:SFX: Extra Ball Score
-:ae:SFX: Slide Score
-:af:SFX: M.Y. Car Shot 1
-:b0:SFX: Snack Bar Open
-:b1:SFX: Special Lit
-:b2:Music: Replay/Special
-:b3:SFX: FILM Letter Score
-:b4:Music: Game Over
-:b5:Music: Shoot Again
-:b6:Music: Playground Awd
-:b7:Music: Sup.Jackpot Lit
-:b8:Music: Sup.Jack. Score
-:b9:Music: S.J. Score 2 (?)
-:ba:Music: Movie Madness
-:bb:SFX: Bonus X
-:bc:SFX: Unlim.Mill. Score
-:bd:SFX: Misc 5
-:be:SFX: Misc 6
-:bf:Music: KISS Letter
-:c2:Music: F-I-L-M Sequence
-:c3:Music: (combo?)
-:c4:Music: Snackbar Random
-:c5:Music: Tilt Warning
-:c6:SFX: Bell 1
-:c7:SFX: Creature Loop 1
-:c8:SFX: Creature Loop 2
-:c9:SFX: Creature Loop 3
-:ca:SFX: Creature Loop 4
-:cb:SFX: Creature Loop 5
-:cc:SFX: Creature Loop 6
-:cd:SFX: Creature Loop 7
-:ce:SFX: Creature Loop 8
-:cf:SFX: Misc 7
+:0080:SFX: PAID rollover 1
+:0081:SFX: PAID rollover 2
+:0082:SFX: PAID rollover 3
+:0083:Music: Sneak-In Award
+:0084:Music: 5 Million Award
+:0085:SFX: Misc 1
+:0086:SFX: Misc 2
+:0087:SFX: Jet Bumper 1
+:0088:SFX: Jet Bumper 2
+:0089:SFX: Jet Bumper 3
+:008a:SFX: Inlane 1
+:008b:SFX: Inlane 2
+:008c:SFX: Right Ramp
+:008d:SFX: Car horn
+:008e:Music: M.Ball Restart
+:008f:SFX: Snackbar target 1
+:0090:SFX: Snackbar target 2
+:0091:SFX: Snackbar target 3
+:0092:SFX: Snackbar target 4
+:0096:Music: Sn.Attack Score
+:0097:Music: KISS Score
+:0098:Music: Mega Menu Score
+:0099:Music: Creature Found
+:009a:Music: Girl Rescued
+:009b:Music: Jackpot Lit
+:009c:Music: Jackpot Score
+:009d:Music: Empty Tunnel
+:009e:Music: ??
+:009f:Music: Explain Award
+:00a0:SFX: Whiz-Bang 1
+:00a1:SFX: Whiz-Bang 2
+:00a2:SFX: Whiz-Bang 3
+:00a3:SFX: Misc 3
+:00a4:SFX: Misc 4
+:00a5:SFX: Countdown Tick
+:00a6:SFX: Mode Fail
+:00a7:SFX: Combo Shot 1
+:00a8:SFX: Combo Shot 2
+:00a9:SFX: Combo Shot 3
+:00aa:SFX: Combo Shot 4
+:00ab:SFX: Combo Shot 5
+:00ac:SFX: Combo Shot Score
+:00ad:SFX: Extra Ball Score
+:00ae:SFX: Slide Score
+:00af:SFX: M.Y. Car Shot 1
+:00b0:SFX: Snack Bar Open
+:00b1:SFX: Special Lit
+:00b2:Music: Replay/Special
+:00b3:SFX: FILM Letter Score
+:00b4:Music: Game Over
+:00b5:Music: Shoot Again
+:00b6:Music: Playground Awd
+:00b7:Music: Sup.Jackpot Lit
+:00b8:Music: Sup.Jack. Score
+:00b9:Music: S.J. Score 2 (?)
+:00ba:Music: Movie Madness
+:00bb:SFX: Bonus X
+:00bc:SFX: Unlim.Mill. Score
+:00bd:SFX: Misc 5
+:00be:SFX: Misc 6
+:00bf:Music: KISS Letter
+:00c2:Music: F-I-L-M Sequence
+:00c3:Music: (combo?)
+:00c4:Music: Snackbar Random
+:00c5:Music: Tilt Warning
+:00c6:SFX: Bell 1
+:00c7:SFX: Creature Loop 1
+:00c8:SFX: Creature Loop 2
+:00c9:SFX: Creature Loop 3
+:00ca:SFX: Creature Loop 4
+:00cb:SFX: Creature Loop 5
+:00cc:SFX: Creature Loop 6
+:00cd:SFX: Creature Loop 7
+:00ce:SFX: Creature Loop 8
+:00cf:SFX: Misc 7
 # ------------
 # More Hop voices - can anyone verify that this was actually
 # used in the game?
 # ------------
-:d0:"Hop, Baby, Hop!" 1
-:d1:"Hop, Baby, Hop!" 2
-:d2:"Hop, Baby, Hop!" 3
-:d3:(Hop) "Laa, laa!"
-:d4:(Hop) "Oh Baby!" 1
-:d5:(Hop) "Oh Baby!" 2
-:d6:(Hop) "Aaaaaahhh..." 1
-:d7:(Hop) "Aaaaaahhh..." 2
-:d8:(Hop) "Aaaaaahhh..." 3
-:d9:(Hop) "To the hop!" 1
-:da:(Hop) "To the hop!" 2
-:db:(Hop) "To the hop!" 3
-:dc:"Let's go to the hop" 1
-:dd:"Let's go to the hop" 2
-:de:"Let's go to the hop" 3
+:00d0:"Hop, Baby, Hop!" 1
+:00d1:"Hop, Baby, Hop!" 2
+:00d2:"Hop, Baby, Hop!" 3
+:00d3:(Hop) "Laa, laa!"
+:00d4:(Hop) "Oh Baby!" 1
+:00d5:(Hop) "Oh Baby!" 2
+:00d6:(Hop) "Aaaaaahhh..." 1
+:00d7:(Hop) "Aaaaaahhh..." 2
+:00d8:(Hop) "Aaaaaahhh..." 3
+:00d9:(Hop) "To the hop!" 1
+:00da:(Hop) "To the hop!" 2
+:00db:(Hop) "To the hop!" 3
+:00dc:"Let's go to the hop" 1
+:00dd:"Let's go to the hop" 2
+:00de:"Let's go to the hop" 3
 #
-:df:SFX: EB.Countdown Fail
-:e0:SFX: Misc 8 (loops)
-:e1:Music: Snackbar Bonus
+:00df:SFX: EB.Countdown Fail
+:00e0:SFX: Misc 8 (loops)
+:00e1:Music: Snackbar Bonus
 
 
 ; Demolition Man
@@ -658,115 +658,115 @@ dw_l2:
 ; all.
 ; ------------
 fh_l9:
-:00:Reset Sound System
-:01:Music: Normal Prelaunch
-:02:Music: Normal Game
-:04:Music: Crazy Steps
-:05:Music: 11:30 Lock Lit
-:06:Music: 11:45 Lock Lit
-:07:Music: Midnight
-:08:Music: Multiball (normal)
-:09:Music: Multiball (Jackpot!)
-:0a:Music: 11:30 Prelaunch
-:0c:Music: 11:45 Prelaunch
-:0d:Music: Multiball (Hurry-Up!)
-:0e:Music: Frenzy Mode
-:0f:Music: Super HotDog Mode
-:10:Music: MBall Hurry-Up 2
-:11:Music: ??
-:12:Music: ??
-:13:Music: ??
-:40:Music: Ta-Da Hit
-:41:Music: 02 (messed up)
-:42:Music: 05 (messed up)
-:43:Music: 06 (messed up)
-:44:Music: 07 (messed up)
-:45:Music: 08 (messed up)
-:46:Music: 09 (messed up)
-:47:Music: 0d (messed up)
-:48:Music: 0e (messed up)
-:49:Music: 0f (messed up)
-:4a:Music: 11 (messed up)
-:80:Music: Extra Ball Awarded
-:81:Music: 11:30 Strike
-:82:SFX: Inlane Rollover
-:83:SFX: Misc 2
-:84:SFX: Outlane
-:85:Music: Wind Tunnel Award
-:86:SFX: Misc 4
-:88:SFX: Clock Chime 1
-:89:SFX: Misc 5
-:8a:SFX: Bell 1
-:8b:SFX: Bell 2
-:8c:SFX: Bell 3
-:8d:SFX: Misc 6
-:8e:SFX: Misc 7
-:90:SFX: Tilt!
-:91:SFX: Misc 8
-:92:SFX: Misc 9
-:93:SFX: Tilt Warning
-:94:SFX: Coin Inserted
-:95:SFX: Smudge
-:96:SFX: Bell 4
-:97:SFX: Bell 5
-:98:SFX: Bell 6
-:99:SFX: Bell 7
-:9a:SFX: Bell 8
-:9b:SFX: Bell 9
-:9c:SFX: Misc 10
-:9d:SFX: Steps Missed 1
-:9f:SFX: R. Outer Inlane
-:a0:SFX: Misc 13
-:a1:SFX: Crazy Steps Award
-:a2:SFX: Misc 14
-:a3:SFX: TrapDoor Countup 1
-:a4:SFX: Misc 15
-:a5:SFX: TrapDoor Countup 2
-:a7:SFX: TrapDoor Countup 3
-:a9:SFX: Misc 19
-:aa:Music: Combo Shot 1
-:ac:SFX: Misc 20
-:ad:Music: Combo Shot 2
-:ae:SFX: Trap Door Award
-:b0:SFX: Ball Locked
-:b5:SFX: Misc 22
-:b6:SFX: Misc 23
-:b8:SFX: Trap Door Open
-:ba:SFX: Misc 25
-:bc:SFX: Misc 26
-:bf:SFX: Kickout ready
-:c0:SFX: Clock Shime 2
-:c1:SFX: Misc 28
-:c2:SFX: Misc 29
-:c3:SFX: Misc 30
-:c4:SFX: Misc 31
-:c6:SFX: Boom 1
-:c7:SFX: Boom 2
-:c8:SFX: Misc 32
-:c9:SFX: Drums + Cymbal
-:ca:SFX: Misc 33
-:cb:SFX: Misc 34
-:cc:Music: Misc 1
-:ce:Music: Replay Awarded
-:d0:SFX: Misc 35
-:d1:SFX: Misc 36
-:d2:SFX: Misc 37
-:d3:SFX: Misc 38
-:d4:SFX: Misc 39
-:d5:SFX: Misc 40
-:d6:SFX: Misc 41
-:d7:SFX: Misc 42
-:d8:SFX: Misc 43
-:d9:SFX: Misc 44
-:db:SFX: Misc 45
-:df:SFX: Crash 1
-:e0:SFX: Bonus Sound 1
-:e1:SFX: Bonus Sound 2
-:e2:SFX: Bonus Sound 3
-:e3:SFX: Bonus Sound 4
-:e4:SFX: Instructions 1
-:e5:SFX: Instructions 2
-:e6:SFX: Bonus Sound 5
+:0000:Reset Sound System
+:0001:Music: Normal Prelaunch
+:0002:Music: Normal Game
+:0004:Music: Crazy Steps
+:0005:Music: 11:30 Lock Lit
+:0006:Music: 11:45 Lock Lit
+:0007:Music: Midnight
+:0008:Music: Multiball (normal)
+:0009:Music: Multiball (Jackpot!)
+:000a:Music: 11:30 Prelaunch
+:000c:Music: 11:45 Prelaunch
+:000d:Music: Multiball (Hurry-Up!)
+:000e:Music: Frenzy Mode
+:000f:Music: Super HotDog Mode
+:0010:Music: MBall Hurry-Up 2
+:0011:Music: ??
+:0012:Music: ??
+:0013:Music: ??
+:0040:Music: Ta-Da Hit
+:0041:Music: 02 (messed up)
+:0042:Music: 05 (messed up)
+:0043:Music: 06 (messed up)
+:0044:Music: 07 (messed up)
+:0045:Music: 08 (messed up)
+:0046:Music: 09 (messed up)
+:0047:Music: 0d (messed up)
+:0048:Music: 0e (messed up)
+:0049:Music: 0f (messed up)
+:004a:Music: 11 (messed up)
+:0080:Music: Extra Ball Awarded
+:0081:Music: 11:30 Strike
+:0082:SFX: Inlane Rollover
+:0083:SFX: Misc 2
+:0084:SFX: Outlane
+:0085:Music: Wind Tunnel Award
+:0086:SFX: Misc 4
+:0088:SFX: Clock Chime 1
+:0089:SFX: Misc 5
+:008a:SFX: Bell 1
+:008b:SFX: Bell 2
+:008c:SFX: Bell 3
+:008d:SFX: Misc 6
+:008e:SFX: Misc 7
+:0090:SFX: Tilt!
+:0091:SFX: Misc 8
+:0092:SFX: Misc 9
+:0093:SFX: Tilt Warning
+:0094:SFX: Coin Inserted
+:0095:SFX: Smudge
+:0096:SFX: Bell 4
+:0097:SFX: Bell 5
+:0098:SFX: Bell 6
+:0099:SFX: Bell 7
+:009a:SFX: Bell 8
+:009b:SFX: Bell 9
+:009c:SFX: Misc 10
+:009d:SFX: Steps Missed 1
+:009f:SFX: R. Outer Inlane
+:00a0:SFX: Misc 13
+:00a1:SFX: Crazy Steps Award
+:00a2:SFX: Misc 14
+:00a3:SFX: TrapDoor Countup 1
+:00a4:SFX: Misc 15
+:00a5:SFX: TrapDoor Countup 2
+:00a7:SFX: TrapDoor Countup 3
+:00a9:SFX: Misc 19
+:00aa:Music: Combo Shot 1
+:00ac:SFX: Misc 20
+:00ad:Music: Combo Shot 2
+:00ae:SFX: Trap Door Award
+:00b0:SFX: Ball Locked
+:00b5:SFX: Misc 22
+:00b6:SFX: Misc 23
+:00b8:SFX: Trap Door Open
+:00ba:SFX: Misc 25
+:00bc:SFX: Misc 26
+:00bf:SFX: Kickout ready
+:00c0:SFX: Clock Shime 2
+:00c1:SFX: Misc 28
+:00c2:SFX: Misc 29
+:00c3:SFX: Misc 30
+:00c4:SFX: Misc 31
+:00c6:SFX: Boom 1
+:00c7:SFX: Boom 2
+:00c8:SFX: Misc 32
+:00c9:SFX: Drums + Cymbal
+:00ca:SFX: Misc 33
+:00cb:SFX: Misc 34
+:00cc:Music: Misc 1
+:00ce:Music: Replay Awarded
+:00d0:SFX: Misc 35
+:00d1:SFX: Misc 36
+:00d2:SFX: Misc 37
+:00d3:SFX: Misc 38
+:00d4:SFX: Misc 39
+:00d5:SFX: Misc 40
+:00d6:SFX: Misc 41
+:00d7:SFX: Misc 42
+:00d8:SFX: Misc 43
+:00d9:SFX: Misc 44
+:00db:SFX: Misc 45
+:00df:SFX: Crash 1
+:00e0:SFX: Bonus Sound 1
+:00e1:SFX: Bonus Sound 2
+:00e2:SFX: Bonus Sound 3
+:00e3:SFX: Bonus Sound 4
+:00e4:SFX: Instructions 1
+:00e5:SFX: Instructions 2
+:00e6:SFX: Bonus Sound 5
 
 
 ; Theatre of Magic
@@ -1033,184 +1033,184 @@ tom_13:
 ; Additions made 01/20/01 by Dorsola (dorsola@descent2.com)
 ; ------------
 tz_94h:
-:00:Reset Sound System
-:02:Music: Normal Prelaunch
-:03:Music: Normal Game
-:04:Music: Lock Lit
-:05:Music: Powerball Prelaunch
-:06:Music: Powerball Game
-:07:Music: Battle the Power
-:08:Music: Collect Bonus (pt 1)
-:09:Music: Power Mania
-:0a:Music: Multiball (normal)
-:0b:Music: Town Square Madness
-:0c:Music: T.S.M. Hit 1 + Theme
-:0d:Music: T.S.M. Hit 2 + Theme
-:0e:Music: T.S.M. Hit 3 + Theme
-:0f:Music: Multiball (Hurry-Up)
-:10:Music: Multiball (Jackpot!)
-:11:Music: Multiball Ready Pre
-:12:Music: Multiball Ready Game
-:13:Music: Super Slot
-:14:Music: Super Skill Shot
-:15:Music: Quick Lock Lit
-:16:Music: The Spiral
-:17:Music: Greed
-:18:Music: Clock Chaos level 1
-:19:Music: Clock Chaos level 2
-:1a:Music: Clock Chaos level 3
-:1b:Music: Clock Chaos level 4
-:1c:Music: Clock Chaos level 5
-:1d:Music: Quick Lock Theme 1
+:0000:Reset Sound System
+:0002:Music: Normal Prelaunch
+:0003:Music: Normal Game
+:0004:Music: Lock Lit
+:0005:Music: Powerball Prelaunch
+:0006:Music: Powerball Game
+:0007:Music: Battle the Power
+:0008:Music: Collect Bonus (pt 1)
+:0009:Music: Power Mania
+:000a:Music: Multiball (normal)
+:000b:Music: Town Square Madness
+:000c:Music: T.S.M. Hit 1 + Theme
+:000d:Music: T.S.M. Hit 2 + Theme
+:000e:Music: T.S.M. Hit 3 + Theme
+:000f:Music: Multiball (Hurry-Up)
+:0010:Music: Multiball (Jackpot!)
+:0011:Music: Multiball Ready Pre
+:0012:Music: Multiball Ready Game
+:0013:Music: Super Slot
+:0014:Music: Super Skill Shot
+:0015:Music: Quick Lock Lit
+:0016:Music: The Spiral
+:0017:Music: Greed
+:0018:Music: Clock Chaos level 1
+:0019:Music: Clock Chaos level 2
+:001a:Music: Clock Chaos level 3
+:001b:Music: Clock Chaos level 4
+:001c:Music: Clock Chaos level 5
+:001d:Music: Quick Lock Theme 1
 # -------------
 # In most pre-DCS games, 1e and 1f adjust music tempo.  They're used
 # differently in TZ, however.
 # -------------
-:1e:Music: Clock Millions
-:1f:Music: Continue?
+:001e:Music: Clock Millions
+:001f:Music: Continue?
 # -------------
 # NOTE ABOUT 30: Will only sound if 37 or 08 was called previously.
 # -------------
-:30:Music: Collect Bonus (pt 2)
+:0030:Music: Collect Bonus (pt 2)
 # -------------
 # NOTE: Items marked with an asterisk (*) are special fade-in music
 # commands.  They perform a smooth transition from one theme to
 # another.
 # -------------
-:31:Music: Normal Prelaunch
-:32:Music: Normal Game *
-:33:Music: Lock Lit *
-:34:Music: Powerball Prelaunch
-:35:Music: Powerball Game *
-:36:Music: Battle the Power *
-:37:Music: Collect Bonus (pt 1)
-:38:Music: Power Mania
-:39:Music: Multiball Ready *
-:40:Music: Load Gumball pt. 1
-:41:Music: Load Gumball pt. 2
-:42:Music: Quick Lock Theme 2
-:43:Music: Quick Lock Theme 3
-:44:Music: Quick Lock Theme 4
-:45:Music: Quick Lock Theme 5
-:5a:Increase music tempo
-:5b:Decrease music tempo
-:7a:(+ param) = Alt. sound bank
-:81:SFX: Camera whirr-click
-:82:SFX: Crash 1
-:84:SFX: Slingshot
-:85:SFX: Tonk!
-:86:SFX: Crank turn 1
-:87:SFX: Crank turn 2
-:88:SFX: Crank turn 3
-:89:SFX: Misc 1
-:8a:SFX: Plunk
-:8d:SFX: Cuckoo
-:8e:SFX: Click 1
-:8f:SFX: Energy Release 1
-:90:SFX: Energy Release 2
-:91:SFX: Energy Release 3
-:93:SFX: Energy Release 4
-:94:SFX: Energy Release 5
-:95:SFX: Click 2
-:96:SFX: Crash 2
-:97:SFX: Launch Ball
-:98:SFX: Crash 3
-:9b:SFX: Click 3
-:9c:SFX: Right Ramp Diverter
-:9d:SFX: Gumball whirr-click
-:9e:SFX: Slot Machine Wind-up
-:9f:SFX: Slot Machine Stop
-:a0:SFX: Splat
-:a1:SFX: Click 4
-:a2:SFX: Click 5
-:a3:SFX: Boom 1
-:a4:SFX: Boom 2
-:a5:SFX: Boom 3
-:a7:SFX: Energy Release 1
-:a8:SFX: Energy Release 2
-:a9:SFX: Energy Release 3
-:ab:SFX: Crash 4
-:ac:SFX: Crash 5
-:ad:Music: Piano 2 (unused)
-:ae:SFX: Horn 1
-:af:SFX: Crash 6
-:b0:SFX: Horn 2
-:b1:SFX: Horn 3
-:b2:SFX: Horn 4
-:b3:SFX: Energy Release 4
-:b4:SFX: Energy Release 5
-:b5:SFX: Inlane rollover
-:b6:SFX: Outlane rollover
-:b7:SFX: Extra Ball Lit
-:b8:SFX: Multiball Start
-:b9:SFX: Rocket (long)
-:ba:SFX: Left Ramp Start
-:bb:SFX: Left Ramp Complete
-:bc:SFX: Misc 2
-:bd:SFX: Clock Chime
-:be:SFX: Misc 3
-:bf:SFX: Misc 4
-:c0:SFX: Hitchhiker Score
-:c1:SFX: TZ Hit (single)
-:c2:SFX: TZ Hit (Fade out)
-:c3:SFX: Spiral Score 1
-:c4:SFX: Spiral Score 2
-:c5:SFX: Spiral Breakthru
-:c6:SFX: Powerball Loop
-:c7:Music: Camera Score
-:c8:Music: Camera Next Award
-:c9:Music: Misc 1
-:ca:Music: Misc 2
-:cb:Music: Misc 3
-:cc:Music: Misc 4
-:cd:SFX: Jackpot Relit
-:ce:SFX: Quick Lock Show 1
-:cf:SFX: Quick Lock Show 2
-:d0:SFX: Slot Launch (ready)
-:d1:SFX: Slot Launch (go)
-:d2:SFX: Tilt Warning
-:d3:SFX: Tilt!
-:d4:SFX: Slam Tilt!
-:d5:SFX: Skill Red
-:d6:SFX: Skill Orange
-:d7:SFX: Skill Yellow
-:d8:SFX: Skill Shot Missed
-:d9:SFX: Echoed Click 1
-:da:SFX: Echoed Click 2
-:db:SFX: Echoed Click 3
-:dc:SFX: Echoed Click 4
-:dd:SFX: Electric Arc 1
-:e0:SFX: Electric Arc 2
-:e1:SFX: Super Slot Score
-:e2:SFX: T.S.M. Hit 1
-:e3:SFX: T.S.M. Hit 2
-:e4:SFX: T.S.M. Hit 3
-:e5:SFX: Super Skill Red
-:e6:SFX: Super Skill Orange
-:e7:SFX: Super Skill Yellow
-:e8:SFX: Super Skill Missed
-:e9:SFX: Start Battle Power
-:ea:SFX: Lite Slot Machine
-:eb:SFX: Spiral Shot Start
-:ec:SFX: Spiral Shot Complete
-:ed:SFX: Rocket (short)
-:ee:SFX: Door appears
-:ef:SFX: Robot Score
-:f0:SFX: Kick-out from lock, etc
-:f1:SFX: Jet bumper added
-:f2:Music: Replay/Special
-:f3:SFX: Misc 5
-:f4:SFX: Misc 6
-:f5:SFX: Misc 7
-:f6:SFX: Misc 8
-:f7:SFX: Jackpot Score (pt 1)
-:f8:SFX: Jackpot Score (pt 2)
-:fa:SFX: Right Ramp
-:fb:Music: Piano Award
-:fc:SFX: Lock Lit!
-:fd:SFX: Misc 9
-:fe:SFX: Mode Explain
-:ff:SFX: Misc 10
+:0031:Music: Normal Prelaunch
+:0032:Music: Normal Game *
+:0033:Music: Lock Lit *
+:0034:Music: Powerball Prelaunch
+:0035:Music: Powerball Game *
+:0036:Music: Battle the Power *
+:0037:Music: Collect Bonus (pt 1)
+:0038:Music: Power Mania
+:0039:Music: Multiball Ready *
+:0040:Music: Load Gumball pt. 1
+:0041:Music: Load Gumball pt. 2
+:0042:Music: Quick Lock Theme 2
+:0043:Music: Quick Lock Theme 3
+:0044:Music: Quick Lock Theme 4
+:0045:Music: Quick Lock Theme 5
+:005a:Increase music tempo
+:005b:Decrease music tempo
+:007a:(+ param) = Alt. sound bank
+:0081:SFX: Camera whirr-click
+:0082:SFX: Crash 1
+:0084:SFX: Slingshot
+:0085:SFX: Tonk!
+:0086:SFX: Crank turn 1
+:0087:SFX: Crank turn 2
+:0088:SFX: Crank turn 3
+:0089:SFX: Misc 1
+:008a:SFX: Plunk
+:008d:SFX: Cuckoo
+:008e:SFX: Click 1
+:008f:SFX: Energy Release 1
+:0090:SFX: Energy Release 2
+:0091:SFX: Energy Release 3
+:0093:SFX: Energy Release 4
+:0094:SFX: Energy Release 5
+:0095:SFX: Click 2
+:0096:SFX: Crash 2
+:0097:SFX: Launch Ball
+:0098:SFX: Crash 3
+:009b:SFX: Click 3
+:009c:SFX: Right Ramp Diverter
+:009d:SFX: Gumball whirr-click
+:009e:SFX: Slot Machine Wind-up
+:009f:SFX: Slot Machine Stop
+:00a0:SFX: Splat
+:00a1:SFX: Click 4
+:00a2:SFX: Click 5
+:00a3:SFX: Boom 1
+:00a4:SFX: Boom 2
+:00a5:SFX: Boom 3
+:00a7:SFX: Energy Release 1
+:00a8:SFX: Energy Release 2
+:00a9:SFX: Energy Release 3
+:00ab:SFX: Crash 4
+:00ac:SFX: Crash 5
+:00ad:Music: Piano 2 (unused)
+:00ae:SFX: Horn 1
+:00af:SFX: Crash 6
+:00b0:SFX: Horn 2
+:00b1:SFX: Horn 3
+:00b2:SFX: Horn 4
+:00b3:SFX: Energy Release 4
+:00b4:SFX: Energy Release 5
+:00b5:SFX: Inlane rollover
+:00b6:SFX: Outlane rollover
+:00b7:SFX: Extra Ball Lit
+:00b8:SFX: Multiball Start
+:00b9:SFX: Rocket (long)
+:00ba:SFX: Left Ramp Start
+:00bb:SFX: Left Ramp Complete
+:00bc:SFX: Misc 2
+:00bd:SFX: Clock Chime
+:00be:SFX: Misc 3
+:00bf:SFX: Misc 4
+:00c0:SFX: Hitchhiker Score
+:00c1:SFX: TZ Hit (single)
+:00c2:SFX: TZ Hit (Fade out)
+:00c3:SFX: Spiral Score 1
+:00c4:SFX: Spiral Score 2
+:00c5:SFX: Spiral Breakthru
+:00c6:SFX: Powerball Loop
+:00c7:Music: Camera Score
+:00c8:Music: Camera Next Award
+:00c9:Music: Misc 1
+:00ca:Music: Misc 2
+:00cb:Music: Misc 3
+:00cc:Music: Misc 4
+:00cd:SFX: Jackpot Relit
+:00ce:SFX: Quick Lock Show 1
+:00cf:SFX: Quick Lock Show 2
+:00d0:SFX: Slot Launch (ready)
+:00d1:SFX: Slot Launch (go)
+:00d2:SFX: Tilt Warning
+:00d3:SFX: Tilt!
+:00d4:SFX: Slam Tilt!
+:00d5:SFX: Skill Red
+:00d6:SFX: Skill Orange
+:00d7:SFX: Skill Yellow
+:00d8:SFX: Skill Shot Missed
+:00d9:SFX: Echoed Click 1
+:00da:SFX: Echoed Click 2
+:00db:SFX: Echoed Click 3
+:00dc:SFX: Echoed Click 4
+:00dd:SFX: Electric Arc 1
+:00e0:SFX: Electric Arc 2
+:00e1:SFX: Super Slot Score
+:00e2:SFX: T.S.M. Hit 1
+:00e3:SFX: T.S.M. Hit 2
+:00e4:SFX: T.S.M. Hit 3
+:00e5:SFX: Super Skill Red
+:00e6:SFX: Super Skill Orange
+:00e7:SFX: Super Skill Yellow
+:00e8:SFX: Super Skill Missed
+:00e9:SFX: Start Battle Power
+:00ea:SFX: Lite Slot Machine
+:00eb:SFX: Spiral Shot Start
+:00ec:SFX: Spiral Shot Complete
+:00ed:SFX: Rocket (short)
+:00ee:SFX: Door appears
+:00ef:SFX: Robot Score
+:00f0:SFX: Kick-out from lock, etc
+:00f1:SFX: Jet bumper added
+:00f2:Music: Replay/Special
+:00f3:SFX: Misc 5
+:00f4:SFX: Misc 6
+:00f5:SFX: Misc 7
+:00f6:SFX: Misc 8
+:00f7:SFX: Jackpot Score (pt 1)
+:00f8:SFX: Jackpot Score (pt 2)
+:00fa:SFX: Right Ramp
+:00fb:Music: Piano Award
+:00fc:SFX: Lock Lit!
+:00fd:SFX: Misc 9
+:00fe:SFX: Mode Explain
+:00ff:SFX: Misc 10
 # --------------
 # 01 is a blank music track used here so that CVSD sound can be played
 # back correctly.  It's unknown at this time if it's actually necessary
