@@ -1529,8 +1529,9 @@ WRITE_HANDLER(techno_sh_w)
 	techno_locals.snd_data = data;
 	cpu_set_irq_line(techno_locals.brdData.cpuNo, 0, HOLD_LINE);
 	cpu_set_irq_line(techno_locals.brdData.cpuNo+1, 0, HOLD_LINE);
-	//Bit 6 if NOT set, fires TMS IRQ 1
-	if(~data & 0x40) cpu_set_irq_line(techno_locals.brdData.cpuNo+2, TMS7000_IRQ1_LINE, ASSERT_LINE);
+	//Bit 6 if NOT set, fires TMS IRQ 1, released when the TMS takes it: INT1 is level sensitive,
+	//so a line left asserted makes the TMS replay the command after every RETI, for good
+	if(~data & 0x40) cpu_set_irq_line(techno_locals.brdData.cpuNo+2, TMS7000_IRQ1_LINE, HOLD_LINE);
 }
 
 /* bits 0-3 are probably unused (future expansion) */
