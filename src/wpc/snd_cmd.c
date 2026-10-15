@@ -100,7 +100,7 @@ extern UINT8 debugger_focus;
 
 #define MAX_CMD_LENGTH   6
 #define MAX_NAME_LENGTH 30
-#define MAX_LINE_LENGTH 100
+#define MAX_LINE_LENGTH 256
 #define SMDCMD_DIGITTOGGLE SMDCMD_ZERO
 
 static int playCmd(int length, int *cmd);
@@ -737,11 +737,12 @@ int manual_sound_commands(struct mame_bitmap *bitmap) {
   return TRUE; /* not in sound command mode */
 }
 
+/* A heading matches the whole name, in any case: "amazonh:" is not "amazonh2:", and "dcs:" is DCS */
 static int checkName(const char *buf, const char *name) {
   while (*name)
-    if ((*buf == '\0') || (*(buf++) != *(name++)))
+    if ((*buf == '\0') || (tolower((unsigned char)*(buf++)) != tolower((unsigned char)*(name++))))
       return FALSE;
-  return TRUE;
+  return (*buf == ':') || (*buf == '\0') || isspace((unsigned char)*buf);
 }
 
 static void readCmds(int boardNo, const char *head) {
@@ -750,24 +751,42 @@ static void readCmds(int boardNo, const char *head) {
 
   if (f) {
     char buffer[MAX_LINE_LENGTH];
-    while (mame_fgets(buffer, MAX_LINE_LENGTH, f)) {
+    while (mame_fgets(buffer, MAX_LINE_LENGTH-1, f)) {
+      buffer[MAX_LINE_LENGTH-1] = '\0';
+      /* a line longer than the buffer: skip the rest, or it is read as a heading */
+      if (!strchr(buffer, '\r')) {
+        char rest[MAX_LINE_LENGTH];
+        while (mame_fgets(rest, MAX_LINE_LENGTH-1, f)) {
+          rest[MAX_LINE_LENGTH-1] = '\0';
+          if (strchr(rest, '\r'))
+            break;
+        }
+      }
       /* LOG(("line=%s",buffer)); */
       if (buffer[0] == ':') {
         if (getData) {
           struct cmds tmpCmd;
           char *tmp = &buffer[1];
-          int   cmd = 0;
+          int   cmd = 0, digit;
 
           /*-- fetch commands --*/
           tmpCmd.length = 0;
           for (;;) {
             if (isdigit(*tmp))
-              cmd = cmd*16 + (*tmp) - '0';
+              digit = (*tmp) - '0';
             else if ((*tmp >= 'a') && (*tmp <= 'f'))
-              cmd = cmd*16 + (*tmp) - 'a' + 10;
+              digit = (*tmp) - 'a' + 10;
+            else if ((*tmp >= 'A') && (*tmp <= 'F'))
+              digit = (*tmp) - 'A' + 10;
             else
               break;
+            cmd = cmd*16 + digit;
             if (tmpCmd.length++ & 0x01) {
+              /* no room for this byte (and the board number): drop the entry */
+              if (tmpCmd.length/2 + ((getData == 2) && (boardNo >= 0)) > MAX_CMD_LENGTH) {
+                tmpCmd.length = -1;
+                break;
+              }
               if ((getData == 2) && (boardNo >= 0)) {
                 tmpCmd.cmd[tmpCmd.length/2-1] = boardNo; tmpCmd.length += 2;
               }
@@ -777,6 +796,8 @@ static void readCmds(int boardNo, const char *head) {
             }
             tmp += 1;
           }
+          if (tmpCmd.length < 0)
+            continue;
           tmpCmd.length /= 2;
           strncpy(tmpCmd.name, &tmp[1], MAX_NAME_LENGTH);
 
