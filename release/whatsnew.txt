@@ -26,6 +26,9 @@ Fixed in libPinMAME: Handle aliases properly
 
 Simulator: add possibility to add a 'autoBall'
 
+Fixed sounds.dat for WPCS
+Added sound commands of 725 games to sound.dat (unnamed for now)
+
 VS2026 build support
 
 Get rid of BasicBitmap external dependency
@@ -119,6 +122,7 @@ Replaced existing arm7/AT91 JIT compiler with a new asmjit-library based one, wh
  in addition, it is a bit more faithful than the old JIT, and also a bit faster on the average
 Slightly improve Splin (Belgium) bingo sets (via i86 fixes)
 Caveman should now work consistently (also via i86 fixes)
+Fixed the RollerCoaster Tycoon 7.02, Spanish set not working
 
 *** ROM SUPPORT *** Thanks to Tom Collins/Scorbit, Paul Swan, Dieter Werner, Victor Fernandez, Jordi Beltran, ipdb.org, Billc479, Scott Charles, inkochnito, frisbez, Chad Hendrickson, idealjoker, ingo333, RedBall, Quench, slochar, Jesus Carballo, Rockman i uri666arcade de l'associació ARCADE (Recreativas.org), myPinballs, hemtoni
 New:
