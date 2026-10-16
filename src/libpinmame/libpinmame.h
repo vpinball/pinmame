@@ -526,6 +526,23 @@ PINMAMEAPI int PinmameGetChangedNVRAM(PinmameNVRAMState* const p_nvramStates);
 PINMAMEAPI int PinmameReadMainCPUByte(uint32_t address, uint8_t* const p_value);
 PINMAMEAPI int PinmameReadMainCPUMemory(uint32_t address, uint8_t* const p_buffer, int size);
 PINMAMEAPI int PinmameWriteMainCPUMemory(uint32_t address, const uint8_t* const p_buffer, int size);
+
+// One write in a batch for PinmameWriteMainCPUMemoryBatch: 'size' bytes from 'data' (caller-owned,
+// read only while the call is in progress) to 'address' in the main CPU address space.
+typedef struct {
+	uint32_t address;
+	uint32_t size;
+	const uint8_t* data;
+} PinmameMemoryWrite;
+
+// Applies every write of the batch in one pass on the emulation thread, between two of its frames, so
+// the machine cannot run between them. That is what a field and the checksum its block keeps need,
+// and what WPC's protected CMOS needs: 0xB4 to 0x3FFD must precede the data in the same batch, since
+// the game re-locks within a frame. Two separate PinmameWriteMainCPUMemory calls land a frame apart.
+// The same batch the WriteMemory:1 plugin message carries, for a host that links libpinmame in-process
+// and has no MsgPluginAPI to send it over. Blocks until the batch is applied (bounded, see the single
+// write). Returns 'count' when applied, 0 otherwise.
+PINMAMEAPI int PinmameWriteMainCPUMemoryBatch(const PinmameMemoryWrite* const p_writes, int count);
 PINMAMEAPI const uint8_t* PinmameGetRawMemoryRegion(const int region);
 PINMAMEAPI size_t PinmameGetRawMemoryRegionLength(const int region);
 PINMAMEAPI void PinmameSetUserData(void* const p_userData);

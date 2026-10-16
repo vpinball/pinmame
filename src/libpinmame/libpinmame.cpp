@@ -2077,6 +2077,26 @@ static void OnReadMemory(const unsigned int eventId, void* userData, void* msgDa
    msg->read = PinmameReadMainCPUMemory(msg->address, msg->data, (int)msg->size);
 }
 
+/******************************************************
+ * PinmameWriteMainCPUMemoryBatch
+ ******************************************************/
+
+PINMAMEAPI int PinmameWriteMainCPUMemoryBatch(const PinmameMemoryWrite* const p_writes, const int count)
+{
+	if (_isRunning != 1 || p_writes == nullptr || count <= 0)
+		return 0;
+
+	std::vector<PinMAMEWriteMemoryOp> ops((size_t)count);
+	for (int i = 0; i < count; i++)
+	{
+		if (p_writes[i].data == nullptr || p_writes[i].size == 0)
+			return 0;
+		ops[i] = { p_writes[i].address, p_writes[i].size, p_writes[i].data };
+	}
+
+	return SubmitWrite(ops.data(), (uint32_t)count) ? count : 0;
+}
+
 static void OnWriteMemory(const unsigned int eventId, void* userData, void* msgData)
 {
    if (_isRunning != 1)
