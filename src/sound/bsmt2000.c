@@ -40,6 +40,7 @@
 #if BSMT2000_LLE
 #include "../cpu/tms320c1x/tms320c1x.h"
 #include <stdarg.h>
+#include <zlib.h>
 #ifdef LIBPINMAME
 extern void libpinmame_log_info(const char* format, ...);
 #endif
