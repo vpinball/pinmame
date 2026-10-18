@@ -981,16 +981,21 @@ static PALETTE_INIT(core) {
 // DMD display handler
 //
 
-// Render to internal display, using provided luminance, if there is a visible display (PinMAME always, and VPinMAME when its window is shown)
-// FIXME apply colors LUT ?
 #if defined(PINMAME) || defined(VPINMAME)
-static void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int y, const int width, const int height, const float* const dmdDotLum) {
+// Games rendered with 16 shades (raw DMD levels) are never colorized, the others map their 4 identified shades to the 4 user colors
+static int core_dmd_has_16_shades(void) {
+  return (core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2 | GEN_PINHECK)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0);
+}
+
+// Render to internal display, using provided luminance, if there is a visible display (PinMAME always, and VPinMAME when its window is shown)
+// If dmdDotRaw is provided (colorize option), dots use the 4 colorized palette entries selected by the identified shade instead of the luminance
+static void core_dmd_render_internal(struct mame_bitmap *bitmap, const int x, const int y, const int width, const int height, const float* const dmdDotLum, const UINT8* const dmdDotRaw) {
   #define DMD_OFS(row, col) ((row)*width + (col))
   BMTYPE **lines = ((BMTYPE **)bitmap->line) + (y * locals.displaySize);
   for (int ii = 0; ii < height; ii++) {
     BMTYPE *line = (*lines) + (x * locals.displaySize);
     for (int jj = 0; jj < width; jj++) {
-      *line = DMD_PAL(dmdDotLum[DMD_OFS(ii, jj)]);
+      *line = dmdDotRaw ? (BMTYPE)(COL_DMDOFF + dmdDotRaw[DMD_OFS(ii, jj)]) : DMD_PAL(dmdDotLum[DMD_OFS(ii, jj)]);
       line += locals.displaySize;
     }
     lines += locals.displaySize;
@@ -1077,7 +1082,7 @@ static void core_dmd_send_vpm(const int width, const int height, const float* co
   const float perc33 = hasPercents ? (float)pmoptions.dmd_perc33 : 33.f;
   const float perc66 = hasPercents ? (float)pmoptions.dmd_perc66 : 67.f;
 
-  if ((core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2 | GEN_PINHECK)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0)) { // pinHeck: the raw DMD's 16 levels
+  if (core_dmd_has_16_shades()) { // pinHeck: the raw DMD's 16 levels
     // Backward compatibility: 16 shades mode has no colorization and fixed lighting levels ranging from 0 to 100
     //static const UINT8 levelgts3[16] = {0/*5*/, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100}; // GTS3 and AlvinG brightness seems okay
     //static const UINT8 levelsam[16]  = {0/*5*/, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 90, 100}; // SAM brightness seems okay
@@ -1347,7 +1352,7 @@ static void core_dmd_video_update(struct mame_bitmap *bitmap, const struct recta
       const UINT8* rawFrame = core_dmd_update_identify(layout, &rawFrameId);
       const float* lumFrame = core_dmd_update_pwm(layout, &lumFrameId);
       // FIXME check for VPinMame window hidden/shown state, and do not render if hidden
-      core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, lumFrame);
+      core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, lumFrame, (pmoptions.dmd_colorize && layout->length >= 128 && !core_dmd_has_16_shades()) ? rawFrame : NULL);
       core_dmd_capture_frame(layout->length, layout->start, rawFrame, g_raw_dmd_frame_count, raw_dmd_frames);
       core_dmd_send_vpm(layout->length, layout->start, lumFrame, rawFrame);
       core_dmd_send_dmddevice(layout->length, layout->start, lumFrame, rawFrame, layout->top != 0);
@@ -1356,7 +1361,9 @@ static void core_dmd_video_update(struct mame_bitmap *bitmap, const struct recta
   #elif defined(PINMAME)
     unsigned int lumFrameId;
     const float* lumFrame = core_dmd_update_pwm(layout, &lumFrameId);
-    core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, lumFrame);
+    unsigned int colRawFrameId;
+    const UINT8* colRawFrame = (pmoptions.dmd_colorize && layout->length >= 128 && !core_dmd_has_16_shades()) ? core_dmd_update_identify(layout, &colRawFrameId) : NULL;
+    core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, lumFrame, colRawFrame);
     if (pmoptions.dmd_dump_dir && pmoptions.dmd_dump_dir[0] && layout->length >= 128) {
       unsigned int rawFrameId;
       const UINT8* rawFrame = core_dmd_update_identify(layout, &rawFrameId);
