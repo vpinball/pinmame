@@ -77,9 +77,12 @@ static WRITE_HANDLER(lamp_w) {
 
 static WRITE_HANDLER(strobe_w) {
   static const int posMap[10] = { 0, 6, 7, 8, 5, 4, 2, 9, 3, 1 };
-  int pos;
+  int pos = 0, bits, n;
   memory_region(REGION_CPU1)[0xab] = data;
-  pos = data ? 1 + core_BitColToNum(data) : 0;
+  // the ROM writes the digit number to bits 3-5, posMap is indexed by the sum of the set bit numbers
+  for (bits = data, n = 0; bits; bits >>= 1, n++)
+    if (bits & 1) pos += n;
+  if (data) pos++;
   coreGlobals.segments[     posMap[pos]].w = locals.digit[0];
   coreGlobals.segments[10 + posMap[pos]].w = locals.digit[1];
   coreGlobals.segments[20 + posMap[pos]].w = locals.digit[2];
