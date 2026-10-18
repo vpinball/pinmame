@@ -629,6 +629,11 @@ extern "C" int osd_update_audio_stream(INT16* p_buffer)
 {
    if (msgLocals.registered)
    {
+      // Sound disabled (sample rate 0): nothing to stream. Sending empty 0 Hz updates makes the host
+      // try (and fail) to open an audio stream on every frame.
+      if (Machine->sample_rate == 0)
+         return 0;
+
       const int samplesThisFrame = mixer_samples_this_frame();
 
       // Data are only valid in the context of the call, we need to copy the data to feed them on the message thread.
