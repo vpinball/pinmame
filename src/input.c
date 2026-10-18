@@ -944,7 +944,7 @@ struct ui_info {
 	int memory;
 };
 
-static struct ui_info ui_map[__ipt_max];
+static struct ui_info ui_map[IPT_UI_DUMPFRAME + 1]; // IPT_UI_DUMPFRAME is declared after __ipt_max
 
 int input_ui_pressed(int code)
 {
