@@ -59,6 +59,9 @@ struct hc55516_interface
  *  acceptable tradeoff for some games to increase the apparent loudness.
  */
 void hc55516_set_mixing_level(int num, double gain);
+
+/* returns the current mixer level (0-100) of the output stream */
+int hc55516_get_mixing_level(int num);
 #endif
 
 /* sets the databit (0 or 1) */
