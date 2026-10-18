@@ -1,7 +1,6 @@
 // license:BSD-3-Clause
 
-#ifndef PINHECK_ZIPSRC_H
-#define PINHECK_ZIPSRC_H
+#pragma once
 
 #include <stdint.h>
 #include "unzip.h"
@@ -34,6 +33,4 @@ const vfat_source *zipsrc_source(zipsrc *z);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

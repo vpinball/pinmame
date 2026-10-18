@@ -1,7 +1,6 @@
 // license:BSD-3-Clause
 
-#ifndef PINHECK_VFAT_H
-#define PINHECK_VFAT_H
+#pragma once
 
 #include <stdint.h>
 
@@ -42,6 +41,4 @@ int vfat_read(vfat *v, uint32_t lba, uint8_t *buf512);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

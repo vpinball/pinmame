@@ -1050,6 +1050,7 @@ CORE_GAMEDEFNV(rctycn,"RollerCoaster Tycoon (7.02)",2002,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(rctycnl,"rctcpu.702",CRC(5736a816) SHA1(fcfd06eeca74df0bca2c0bc57aeaa00400e4ab55))
 DE_DMD32ROM8x(       "rctdisps.701",CRC(0efa8208) SHA1(6706ea3e31b478970fc65a8cf9db749db9c0fa39))
+RCT_SND
 SE_ROMEND
 #define input_ports_rctycnl input_ports_rctycn
 #define init_rctycnl init_rctycn

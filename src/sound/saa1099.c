@@ -330,9 +330,10 @@ int saa1099_sh_start(const struct MachineSound *msound)
 {
 	int i;
 	const struct SAA1099_interface *intf = msound->sound_interface;
+	if (intf->numchips > MAX_SAA1099) return 1;
 
 	/* for each chip allocate one stream */
-	for (i = 0; i < intf->numchips; i++)
+	for (i = 0; i < intf->numchips && i < MAX_SAA1099; i++)
 	{
 		int j;
 		int vol[2];

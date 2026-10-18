@@ -794,6 +794,10 @@ void *memory_get_read_ptr(int cpunum, offs_t offset)
 	if (entry > STATIC_RAM || (minbits == 0 && entry != STATIC_RAM))
 		return NULL;
 	offset -= handlist[entry].offset;
+	/* cpu_bankbase[STATIC_RAM] is rewritten to the active CPU's base on every
+	context switch, so resolve against the requested CPU's own base instead. */
+	if (entry == STATIC_RAM)
+		return (UINT8 *)cpudata[cpunum].rambase + offset;
 	return &cpu_bankbase[entry][offset];
 }
 
@@ -821,6 +825,10 @@ void *memory_get_write_ptr(int cpunum, offs_t offset)
 	if (entry > STATIC_RAM || (minbits == 0 && entry != STATIC_RAM))
 		return NULL;
 	offset -= handlist[entry].offset;
+	/* cpu_bankbase[STATIC_RAM] is rewritten to the active CPU's base on every
+	context switch, so resolve against the requested CPU's own base instead. */
+	if (entry == STATIC_RAM)
+		return (UINT8 *)cpudata[cpunum].rambase + offset;
 	return &cpu_bankbase[entry][offset];
 }
 

@@ -1,7 +1,6 @@
 // license:BSD-3-Clause
 
-#ifndef PINHECK_BOARD_H
-#define PINHECK_BOARD_H
+#pragma once
 
 #include <stdint.h>
 
@@ -9,17 +8,17 @@
 extern "C" {
 #endif
 
-#define BOARD_SOLS     24
-#define BOARD_SERVOS   5
-#define BOARD_RGB_MAX  16
-#define BOARD_PORTS    7
+#define BOARD_SOLS    24
+#define BOARD_SERVOS  5
+#define BOARD_RGB_MAX 16
+#define BOARD_PORTS   7
 
 enum { BOARD_RGB_ONBOARD, BOARD_RGB_EXTERNAL, BOARD_RGB_CHAINS };
 
 typedef struct pinheck_board_io {
 	void *ctx;
-	uint8_t (*sw_col)(void *ctx, int col);     /* closed rows of switch column 0..7 */
-	uint16_t (*cabinet)(void *ctx);             /* closed cabinet inputs: bits 0-7 U12 D0-D7, bits 8-15 U11 D0-D7 */
+	uint8_t (*sw_col)(void *ctx, int col); /* closed rows of switch column 0..7 */
+	uint16_t (*cabinet)(void *ctx);        /* closed cabinet inputs: bits 0-7 U12 D0-D7, bits 8-15 U11 D0-D7 */
 	void (*lamps)(void *ctx, uint64_t t, uint8_t cols, uint8_t rows);
 	void (*sols)(void *ctx, uint64_t t, uint32_t sols);
 	void (*gi)(void *ctx, uint64_t t, uint16_t gi);
@@ -58,6 +57,4 @@ void pinheck_board_tick(pinheck_board *b, uint64_t t);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

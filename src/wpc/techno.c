@@ -15,7 +15,7 @@
 
   Issues/Todo:
   #0) Display is going too fast @ 8Mhz cpu
-  #1) Not 100% sure of the IRQ timing, although I think it should be correct from the schematics.
+  #1) Not 100% sure of the IRQ timing, although I think it should be correct from the schematics
   #2) Seems the display might go too fast in places, ie, doesn't scroll enough sometimes
   #3) In relation to #2 - not sure if calculation of the display column is always 100% correct
 
@@ -29,11 +29,11 @@
 #include "sndbrd.h"
 
 #define TECNO_SOLSMOOTH 4
-//#define TECNO_CPUFREQ 8000000		//As written in manual
-#define TECNO_CPUFREQ 4000000			//Seems to work better
+//#define TECNO_CPUFREQ 8000000 //As written in manual
+#define TECNO_CPUFREQ 4000000 //Seems to work better
 
-// Crystal from CPU feeds an LS393 - Q1 (acts as divide by 2) - Feeds 4040 which divides by 128 - Feeds 7474 (divide by 2)
-#define TECNO_IRQ_FREQ TIME_IN_HZ(TECNO_CPUFREQ/2/128/2)		//Not 100% sure on this one..
+// Crystal from CPU feeds an LS393 - Q0 (Pin #3, acts as divide by 2) - Feeds 4040 which divides by 128 - Feeds 7474 (divide by 2)
+#define TECNO_IRQ_FREQ TIME_IN_HZ(TECNO_CPUFREQ/2/128/2) //Not 100% sure on this one..
 
 #if 0
 #define LOG(x) printf x
@@ -52,6 +52,7 @@ static struct {
   int LampCol;
   UINT8 sndCmd;
   int sndAck;
+  int sndStrobe;
 } locals;
 
 /* Each time an IRQ is fired, the Vector # is incremented (since the IRQ generation is via a 4040 timer)
@@ -88,24 +89,26 @@ static INTERRUPT_GEN(vblank) {
   locals.vblankCount += 1;
 
   memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+  coreGlobals.tmpLampMatrix[8] = 0;
   memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
 
   coreGlobals.solenoids = locals.solenoids;
   if ((locals.vblankCount % TECNO_SOLSMOOTH) == 0) {
 	locals.solenoids = coreGlobals.pulsedSolState;
   }
-  core_updateSw(1);
+  core_updateSw(core_getSol(20));
 }
 
 static SWITCH_UPDATE(tecno) {
   if (inports) {
-	  coreGlobals.swMatrix[1] = (inports[CORE_COREINPORT] & 0x00ff);		//Column 0 Switches
-	  coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0xfc) | (inports[CORE_COREINPORT] & 0x0300)>>8;     //Column 1 Switches
+    CORE_SETKEYSW(inports[CORE_COREINPORT], 0xff, 1);
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0x07, 2);
   }
 }
 
 static MACHINE_INIT(tecno) {
   memset(&locals, 0, sizeof(locals));
+  locals.sndStrobe = 1;
 
   //setup 68000 IRQ callback to generate IRQ Vector #
   cpu_set_irq_callback(0, tecno_irq_callback);
@@ -117,6 +120,7 @@ static MACHINE_INIT(tecno) {
   locals.irq_count = 1;
 
   sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_CPU2), NULL, NULL);
+  cpu_setbank(1, memory_region(REGION_SOUND1));
 }
 
 static MACHINE_STOP(tecno)
@@ -126,14 +130,14 @@ static MACHINE_STOP(tecno)
 
 //Input Key - Return Switches (uses Lamp Column Strobe)
 static READ16_HANDLER(input_key_r) {
-	UINT8 switches = coreGlobals.swMatrix[locals.LampCol+1];	//+1 so we begin by reading column 1 of input matrix instead of 0 which is used for special switches in many drivers
-	return (UINT16)core_revbyte(switches);	//Reverse bits to align with switch matrix from manual
+	UINT8 switches = coreGlobals.swMatrix[locals.LampCol+1]; //+1 so we begin by reading column 1 of input matrix instead of 0 which is used for special switches in many drivers
+	return (UINT16)core_revbyte(switches); //Reverse bits to align with switch matrix from manual
 }
 
-//Return Sound Status?
+//Sound board ready (TMS7000 port B bit 1) on D0; the schematic shows this at 0x14800 by mistake.
+//The game only sends a command while this bit is set, and the sound CPU clears it while busy.
 static READ16_HANDLER(input_sound_r) {
-	LOG(("input_sound_r\n"));
-	return locals.sndAck ? 0 : 0xffff;
+	return 0xfffe | locals.sndAck;
 }
 
 //The value here is read, which is tied to the ls74 flip generating the blanking signal.
@@ -142,16 +146,13 @@ static READ16_HANDLER(rtrg_r) {
 	return 0xffff;
 }
 
-//This value is read but unused according to schematics.
-static READ16_HANDLER(rtrg2_r) {
-	//LOG(("%08x: rtrg2_r\n",activecpu_get_pc()));
-	return 0;
-}
-
 //Lamp Rows (actually columns) 1-8
 static WRITE16_HANDLER(lamp1_w) { locals.LampCol = core_BitColToNum(data >> 8); }
 //Lamp Cols (actually rows) 1-8
-static WRITE16_HANDLER(lamp2_w) { 	coreGlobals.tmpLampMatrix[locals.LampCol] = data>>8; }
+static WRITE16_HANDLER(lamp2_w) {
+  coreGlobals.tmpLampMatrix[locals.LampCol] = data >> 8;
+  coreGlobals.tmpLampMatrix[8] |= data & 0xff; // lights indicators for players in game in spcteam
+}
 
 //Solenoids 1-16
 static WRITE16_HANDLER(sol1_w) { coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFF0000) | data; }
@@ -170,7 +171,10 @@ static WRITE16_HANDLER(sound_w) {
 	int dclk = (data & 0x400) >> 10;
 
 	//LOG(("sound_w = %04x\n",data));
-	sndbrd_data_w(0, data & 0xff);
+	//A sound command is the byte on D0-D7 when the strobe (D8) goes low; the other writes clock the display
+	if (locals.sndStrobe && !(data & 0x100))
+		sndbrd_data_w(0, data & 0xff);
+	locals.sndStrobe = (data & 0x100) >> 8;
 
 	//LOG(("%08x: dclk_w = %04x\n",activecpu_get_pc(),dclk));
 
@@ -240,9 +244,8 @@ static MEMORY_READ16_START(readmem)
   { 0x004000, 0x005fff, MRA16_RAM },
   { 0x006000, 0x00ffff, MRA16_ROM },
   { 0x014000, 0x014001, input_key_r },
-  { 0x014800, 0x014801, input_sound_r },
   { 0x015000, 0x015001, rtrg_r },
-  { 0x015800, 0x015801, rtrg2_r },
+  { 0x015800, 0x015801, input_sound_r },
 MEMORY_END
 
 static MEMORY_WRITE16_START(writemem)
@@ -267,9 +270,16 @@ static WRITE_HANDLER(m7000_w) {
   // bit 2 controls the X2 output, but it's connected nowhere?
 }
 
+/* Sound board map, as on the schematic (MAME's techno.cpp has the same): 4000-BFFF is one of
+   four 32K sample ROMs (ic8-ic11), selected by port B bits 2-3; C000-FFFF is the second half of
+   the program ROM (ic12, whose first half is never addressed). The sound program plays its DAC
+   samples (commands 40-4E) from 4000-BFFF. No sample ROM is dumped, and Space Team's game program
+   never sends 40-7F, so the sockets are probably empty: they read as FF, a constant DAC level. */
 static MEMORY_READ_START(snd_readmem)
   { 0x3000, 0x3000, Y8950_status_port_0_r },
-  { 0x3001, 0xffff, MRA_ROM },
+  { 0x3001, 0x3fff, MRA_ROM },
+  { 0x4000, 0xbfff, MRA_BANK1 },
+  { 0xc000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(snd_writemem)
@@ -287,6 +297,7 @@ static WRITE_HANDLER(tms_port_w) {
   LOG(("p_out %c: %02x\n", 'A' + offset, data));
   if (offset == 1) {
     locals.sndAck = (data & 2) >> 1;
+    cpu_setbank(1, memory_region(REGION_SOUND1) + ((data >> 2) & 3) * 0x8000);
   }
 }
 
@@ -339,13 +350,10 @@ MACHINE_DRIVER_START(tecno)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
 MACHINE_DRIVER_END
 
+//Every byte is a command, 00 included (Space Team sends it); INT3 is held until the sound CPU takes it
 static WRITE_HANDLER(tecsnd_data_w) {
-  if (data) {
-    locals.sndCmd = data;
-    cpu_set_irq_line(1, TMS7000_IRQ3_LINE, ASSERT_LINE);
-  } else {
-    cpu_set_irq_line(1, TMS7000_IRQ3_LINE, CLEAR_LINE);
-  }
+  locals.sndCmd = data;
+  cpu_set_irq_line(1, TMS7000_IRQ3_LINE, HOLD_LINE);
 }
 const struct sndbrdIntf tecnoplayIntf = {
   "TECNOPLAY", NULL, NULL, NULL, tecsnd_data_w, tecsnd_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
@@ -355,19 +363,19 @@ INPUT_PORTS_START(tecno) \
   CORE_PORTS \
   SIM_PORTS(4) \
   PORT_START /* 0 */ \
-
     /* Switch Column 1 */ \
-    COREPORT_BIT(     0x0001, "Test Up",		  KEYCODE_7)\
-	COREPORT_BIT(     0x0002, "Test Down",		  KEYCODE_8)\
-	COREPORT_BIT(     0x0004, "Ball Tilt",        KEYCODE_INSERT)\
-	COREPORT_BIT(     0x0008, "Service",          KEYCODE_9)\
-	COREPORT_BITDEF(  0x0010, IPT_COIN1,          KEYCODE_3)\
-	COREPORT_BITDEF(  0x0020, IPT_COIN2,          KEYCODE_4)\
-	COREPORT_BITDEF(  0x0040, IPT_COIN3,          KEYCODE_5)\
-	COREPORT_BIT(     0x0080, "Letter Sel ->",    KEYCODE_PGUP)\
-	/* Switch Column 2 */ \
-	COREPORT_BIT(     0x0100, "Letter Sel <-",    KEYCODE_PGDN)\
-	COREPORT_BITDEF(  0x0200, IPT_START1,         IP_KEY_DEFAULT)\
+    COREPORT_BIT(     0x0001, "Test Up",          KEYCODE_7)\
+    COREPORT_BIT(     0x0002, "Test Down",        KEYCODE_8)\
+    COREPORT_BIT(     0x0004, "Slam Tilt",        KEYCODE_HOME)\
+    COREPORT_BIT(     0x0008, "Service",          KEYCODE_9)\
+    COREPORT_BITDEF(  0x0010, IPT_COIN1,          KEYCODE_3)\
+    COREPORT_BITDEF(  0x0020, IPT_COIN2,          KEYCODE_4)\
+    COREPORT_BITDEF(  0x0040, IPT_COIN3,          KEYCODE_5)\
+    COREPORT_BIT(     0x0080, "Letter Sel ->",    KEYCODE_PGUP)\
+    /* Switch Column 2 */ \
+    COREPORT_BIT(     0x0100, "Letter Sel <-",    KEYCODE_PGDN)\
+    COREPORT_BITDEF(  0x0200, IPT_START1,         IP_KEY_DEFAULT)\
+    COREPORT_BIT(     0x0400, "Ball Tilt",        KEYCODE_INSERT)\
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
@@ -412,16 +420,21 @@ ROM_START(xforce)
     ROM_LOAD("sound.bin", 0x8000, 0x8000, NO_DUMP)
     ROM_RELOAD(0, 0x8000)
   NORMALREGION(0x40000, REGION_USER1)
+  ROM_REGION(0x20000, REGION_SOUND1, ROMREGION_ERASEFF) // sample ROMs ic8-ic11, not dumped yet
+    ROM_LOAD("ic8.bin", 0x0000, 0x8000, NO_DUMP)
+    ROM_LOAD("ic9.bin", 0x8000, 0x8000, NO_DUMP)
+    ROM_LOAD("ic10.bin", 0x10000, 0x8000, NO_DUMP)
+    ROM_LOAD("ic11.bin", 0x18000, 0x8000, NO_DUMP)
 ROM_END
 #define input_ports_xforce input_ports_tecno
-CORE_GAMEDEFNV(xforce, "X Force", 1987, "Tecnoplay", tecno, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(xforce, "X Force", 1987, "Tecnoplay", tecno, GAME_IMPERFECT_SOUND) //!! X Force's game program does send DAC sounds 40, 4C and 4D, remains to be seen if our DAC code outputs these correctly!
 
 static core_tLCDLayout disp2[] = {
   {0, 0, 0, 1,CORE_SEG16S}, {0, 2,32,15,CORE_SEG16S},
   {3, 0,16, 1,CORE_SEG16S}, {3, 2,48,15,CORE_SEG16S},
   {0}
 };
-static core_tGameData spcteamGameData = {0,disp2,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_TECNOPLAY}};
+static core_tGameData spcteamGameData = {0,disp2,{FLIP_SW(FLIP_L),0,1,0,SNDBRD_TECNOPLAY}};
 static void init_spcteam(void) {
   core_gameData = &spcteamGameData;
 }
@@ -433,6 +446,7 @@ ROM_START(spcteam)
     ROM_LOAD("sound.bin", 0x8000, 0x8000, CRC(6a87370f) SHA1(51e055dcf23a30e337ff439bba3c40e5c51c490a))
     ROM_RELOAD(0, 0x8000)
   NORMALREGION(0x40000, REGION_USER1)
+  ROM_REGION(0x20000, REGION_SOUND1, ROMREGION_ERASEFF) // sample ROMs ic8-ic11, (maybe) not dumped (most likely empty)
 ROM_END
 #define input_ports_spcteam input_ports_tecno
-CORE_GAMEDEFNV(spcteam, "Space Team", 1988, "Tecnoplay", tecno, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(spcteam, "Space Team", 1988, "Tecnoplay", tecno, GAME_IMPERFECT_SOUND) //!! In theory, sound should be correct now, BUT: DAC sounds may still be incorrect, unknown until ic8-ic11 shows up (or proven that these are empty). The game itself does not seem to trigger DAC sounds 40..7F. Also: TKY2016 is only assumed to be a Y8950, not proven.

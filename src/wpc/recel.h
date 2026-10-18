@@ -1,5 +1,6 @@
-#ifndef INC_RECEL
-#define INC_RECEL
+// license:BSD-3-Clause
+
+#pragma once
 
 #include "core.h"
 #include "sim.h"
@@ -137,5 +138,3 @@ extern MACHINE_DRIVER_EXTERN(RECEL);
 /* recelsnd.c: discrete sound, PIO outputs 0-5 */
 extern MACHINE_DRIVER_EXTERN(recel_snd);
 void recel_snd_w(int bits);
-
-#endif /* INC_RECEL */

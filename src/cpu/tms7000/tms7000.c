@@ -19,10 +19,14 @@
 
 //SJE: Changed all references to ICount to icount (to match MAME requirements)
 //SJE: Changed RM/WM macros to reference newly created tms7000 read/write handlers & removed unused SRM() macro
+//PinMAME: Interrupt flags in IOCNT0 are cleared when an interrupt is taken (INT1/INT3 stay level sensitive, as in MAME's
+//         rewritten core), interrupts are checked again after EINT, RETI, POP ST and IOCNT0 writes, Timer 1 wakes the CPU
+//         from IDLE, a reset leaves IDLE, and Timer 1 is allocated once in tms7000_init instead of on every reset
 
 #include <stdio.h>
 #include <stdlib.h>
 #include "cpuintrf.h"
+#include "cpuexec.h"
 #include "state.h"
 #include "mamedbg.h"
 #include "tms7000.h"
@@ -224,21 +228,31 @@ void tms7000_init(void)
 	state_save_register_UINT16("tms7000", cpuNum, "PC", &pPC, 1);
 	state_save_register_UINT8("tms7000", cpuNum, "SP", &pSP, 1);
 	state_save_register_UINT8("tms7000", cpuNum, "SR", &pSR, 1);
+
+	tms7000.timer1 = timer_alloc(tms7000_int2_callback);
 }
 
 void tms7000_reset(void *param)
 {
 	memset(tms7000.pf, 0, 0x100);
-	tms7000.timer1 = timer_alloc(tms7000_int2_callback);
 	timer_adjust( tms7000.timer1, TIME_NEVER, 0, TIME_NEVER );
 	tms7000.timer1_capturelatch = 0;
 
 //	tms7000.architecture = (int)param;
 	
-	tms7000.idle_state = 0;
-	tms7000.irq_state[ TMS7000_IRQ1_LINE ] = CLEAR_LINE;
+	/* A reset ends IDLE: wake the CPU if it was waiting there for an interrupt */
+	if( tms7000.idle_state )
+	{
+		tms7000.idle_state = 0;
+		cpu_triggerint(cpuNum);
+	}
+
+	/* The external lines keep their state: flag those still held */
 	tms7000.irq_state[ TMS7000_IRQ2_LINE ] = CLEAR_LINE;
-	tms7000.irq_state[ TMS7000_IRQ3_LINE ] = CLEAR_LINE;
+	if( tms7000.irq_state[ TMS7000_IRQ1_LINE ] != CLEAR_LINE )
+		tms7000.pf[0] |= 0x02;
+	if( tms7000.irq_state[ TMS7000_IRQ3_LINE ] != CLEAR_LINE )
+		tms7000.pf[0] |= 0x20;
 
 	WM( 0x100 + 9, 0 );		/* Data direction regs are cleared */
 	WM( 0x100 + 11, 0 );
@@ -366,40 +380,22 @@ void tms7000_check_IRQ_lines( void )
 	
 	if( pSR & SR_I ) /* Check Global Interrupt bit: Status register, bit 4 */
 	{
-		if( tms7000.irq_state[ TMS7000_IRQ1_LINE ] == ASSERT_LINE )
-		{
-			if( tms7000.pf[0] & 0x01 ) /* INT1 Enable bit */
-			{
-				newPC = RM16(0xfffc);
-				tms7000_state = TMS7000_IRQ1_LINE;
-				goto tms7000_interrupt;
-			}
-		}
+		/* INT1, INT2, INT3 in priority order: flag and enable bit both set in IOCNT0 */
+		for( tms7000_state = TMS7000_IRQ1_LINE; tms7000_state <= TMS7000_IRQ3_LINE; tms7000_state++ )
+			if( (tms7000.pf[0] & (0x03 << (tms7000_state * 2))) == (0x03 << (tms7000_state * 2)) )
+				break;
 
-		if( tms7000.irq_state[ TMS7000_IRQ2_LINE ] == ASSERT_LINE )
-		{
-			if( tms7000.pf[0] & 0x04 ) /* INT2 Enable bit */
-			{
-				newPC = RM16(0xfffa);
-				tms7000_state = TMS7000_IRQ2_LINE;
-				goto tms7000_interrupt;
-			}
-		}
+		if( tms7000_state > TMS7000_IRQ3_LINE )
+			return;
 
-		if( tms7000.irq_state[ TMS7000_IRQ3_LINE ] == ASSERT_LINE )
-		{
-			if( tms7000.pf[0] & 0x10 ) /* INT3 Enable bit */
-			{
-				newPC = RM16(0xfff8);
-				tms7000_state = TMS7000_IRQ3_LINE;
-				goto tms7000_interrupt;
-			}
-		}
+		/* Taking the interrupt clears its flag; INT1 and INT3 are level sensitive, so the flag
+		   stays set while the line is still held (the line's own clear removes it) */
+		tms7000.pf[0] &= ~(0x02 << (tms7000_state * 2));
+		if( tms7000_state != TMS7000_IRQ2_LINE && tms7000.irq_state[ tms7000_state ] != CLEAR_LINE )
+			tms7000.pf[0] |= (0x02 << (tms7000_state * 2));
 
-		return;
+		newPC = RM16(0xfffc - tms7000_state * 2);
 
-tms7000_interrupt:
-	
 		PUSHBYTE( pSR );	/* Push Status register */
 		PUSHWORD( PC );		/* Push Program Counter */
 		pSR = 0;			/* Clear Status register */
@@ -407,12 +403,12 @@ tms7000_interrupt:
 		CHANGE_PC;
 		
 		if( tms7000.idle_state != 0 )
-			tms7000_icount -= 19;		/* 19 cycles used */
-		else
 		{
 			tms7000_icount -= 17;		/* 17 if idled */
 			tms7000.idle_state = 0;
 		}
+		else
+			tms7000_icount -= 19;		/* 19 cycles used */
 		
 		(void)(*tms7000.irq_callback)(tms7000_state);
 	}
@@ -423,16 +419,18 @@ tms7000_interrupt:
 
 int tms7000_execute(int cycles)
 {
-	if (checkIrqs) {
-		checkIrqs = 0;
-		tms7000_check_IRQ_lines();
-	}
-	
 	tms7000_icount = cycles;
 
 	do
 	{
 		int op;
+
+		/* set by an IRQ line, Timer 1, EINT, RETI, POP ST and IOCNT0 writes */
+		if (checkIrqs) {
+			checkIrqs = 0;
+			tms7000_check_IRQ_lines();
+		}
+
 		CALL_MAME_DEBUG;
 		op = cpu_readop(pPC);
 		pPC++;
@@ -492,6 +490,7 @@ void tms7000_int2_callback( int	param )
 {
 	tms7000_set_irq_line( TMS7000_IRQ2_LINE, ASSERT_LINE);
 	tms7000_starttimer1();
+	cpu_triggerint(cpuNum);	/* wake the CPU if it waits in IDLE */
 }
 
 /****************************************************************************
@@ -529,6 +528,12 @@ WRITE_HANDLER( tms70x0_pf_w )	/* Perpherial file write */
 			temp2 = tms7000.pf[0x00] & 0x2a;				/* Get copy of current bits */
 			temp3 = (~temp1) & temp2;						/* Clear the requested bits */
 			tms7000.pf[0x00] = temp3 | (data & (~0x2a) );	/* OR in the remaining data */
+			/* INT1 and INT3 flags come back while their line is held */
+			if( tms7000.irq_state[ TMS7000_IRQ1_LINE ] != CLEAR_LINE )
+				tms7000.pf[0x00] |= 0x02;
+			if( tms7000.irq_state[ TMS7000_IRQ3_LINE ] != CLEAR_LINE )
+				tms7000.pf[0x00] |= 0x20;
+			checkIrqs = 1;
 			break;
 
 		case 0x03:	/* T1CTL, timer 1 control */

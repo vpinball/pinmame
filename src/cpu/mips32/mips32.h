@@ -1,7 +1,6 @@
 // license:BSD-3-Clause
 
-#ifndef MIPS32_H
-#define MIPS32_H
+#pragma once
 
 #include <stdint.h>
 
@@ -24,6 +23,9 @@ enum { MIPS32_HOOK_DELIVER = 0, MIPS32_HOOK_SKIP = 1, MIPS32_HOOK_STOP = 2 };
 typedef struct mips32_state mips32_state;
 
 #define MIPS32_REGIONS 4
+
+/* fast_run skips idle loops (loop_skip in mips32.c); undefine to run them */
+#define MIPS32_IDLE_LOOPS
 
 #if defined(_MSC_VER)
 #define MIPS32_ALIGN64 __declspec(align(64))
@@ -84,6 +86,12 @@ struct mips32_state {
 	int prov_kind;
 	unsigned prov_set, prov_reg, prov_gen, prov_n;
 	uint32_t prov_v, prov_mask, prov_tok, unc, unc_tok;
+#ifdef MIPS32_IDLE_LOOPS
+	/* idle loops (fast_run): the last taken backward branch's target, its cycle and registers, stores that changed memory */
+	uint32_t lp_head, lp_state, lp_wr, lp_wr0;
+	uint64_t lp_cyc, lp_len;
+	uint32_t lp_gpr[32], lp_hi, lp_lo;
+#endif
 };
 
 void mips32_init(mips32_state *s, const mips32_bus *bus, int shadow_sets, uint32_t prid);
@@ -92,12 +100,10 @@ void mips32_direct(mips32_state *s, int slot, uint32_t base, uint32_t size, cons
 int mips32_run(mips32_state *s, int cycles);
 uint32_t *mips32_regs(mips32_state *s);
 void mips32_uncertain(mips32_state *s, uint32_t mask, uint32_t token); /* from bus.read: bits of this read not known yet */
-void mips32_settle(mips32_state *s);                                  /* a register not known yet gets its bits */
+void mips32_settle(mips32_state *s);                                   /* a register not known yet gets its bits */
 void mips32_set_eic(mips32_state *s, int ripl, int vector, int srs);
 int mips32_timer_irq(const mips32_state *s);
 int mips32_soft_irq(const mips32_state *s);
 int mips32_translate(const mips32_state *s, uint32_t va, uint32_t *pa);
 uint32_t mips32_get_cp0(const mips32_state *s, int reg, int sel);
 unsigned mips32_dasm(char *buf, uint32_t pc, uint32_t op);
-
-#endif

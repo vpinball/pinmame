@@ -1,6 +1,7 @@
 #include "driver.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 struct wav_data
 {
@@ -193,6 +194,60 @@ void wav_add_data_32lr(void *wavptr, INT32 *left, INT32 *right, int samples, int
 		val >>= shift;
 		temp[i] = (val < -32768) ? -32768 : (val > 32767) ? 32767 : val;
 	}
+
+	/* write and flush */
+	fwrite(temp, 4, samples, wav->file);
+	fflush(wav->file);
+
+	/* free memory */
+	free(temp);
+}
+
+static INT16 wav_float_to_16(const float v)
+{
+	const float d = floorf(v * 32768.f + 0.5f);
+	return (INT16)(d > 32767.f ? 32767 : d < -32768.f ? -32768 : (int)d);
+}
+
+
+void wav_add_data_float(void *wavptr, const float * const data, int samples)
+{
+	struct wav_data *wav = wavptr;
+	INT16 *temp;
+	int i;
+
+	/* allocate temp memory */
+	temp = malloc(samples * sizeof(temp[0]));
+	if (!temp)
+		return;
+
+	/* scale and clamp */
+	for (i = 0; i < samples; i++)
+		temp[i] = wav_float_to_16(data[i]);
+
+	/* write and flush */
+	fwrite(temp, 2, samples, wav->file);
+	fflush(wav->file);
+
+	/* free memory */
+	free(temp);
+}
+
+
+void wav_add_data_float_lr(void *wavptr, const float * const left, const float * const right, int samples)
+{
+	struct wav_data *wav = wavptr;
+	INT16 *temp;
+	int i;
+
+	/* allocate temp memory */
+	temp = malloc(samples * 2 * sizeof(temp[0]));
+	if (!temp)
+		return;
+
+	/* interleave, scale and clamp */
+	for (i = 0; i < samples * 2; i++)
+		temp[i] = wav_float_to_16((i & 1) ? right[i / 2] : left[i / 2]);
 
 	/* write and flush */
 	fwrite(temp, 4, samples, wav->file);

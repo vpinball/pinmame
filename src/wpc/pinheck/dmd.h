@@ -1,7 +1,6 @@
 // license:BSD-3-Clause
 
-#ifndef PINHECK_DMD_H
-#define PINHECK_DMD_H
+#pragma once
 
 #include <stdint.h>
 
@@ -50,11 +49,9 @@ typedef struct pinheck_dmd {
 } pinheck_dmd;
 
 /* full: 1 decodes P16/P17 (mask DMD_ALL_PINS), 0 takes the dots from hub (mask DMD_ROW_PINS) */
-void pinheck_dmd_init(pinheck_dmd *d, int full, const uint8_t *hub, uint32_t buf, void *ctx, dmd_sub_fn on_sub, dmd_frame_fn on_frame);
-void pinheck_dmd_pins(pinheck_dmd *d, uint64_t t, uint32_t out, uint32_t dir);
+void pinheck_dmd_init(pinheck_dmd * const d, int full, const uint8_t *hub, uint32_t buf, void *ctx, dmd_sub_fn on_sub, dmd_frame_fn on_frame);
+void pinheck_dmd_pins(pinheck_dmd * const d, uint64_t t, uint32_t out, uint32_t dir);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

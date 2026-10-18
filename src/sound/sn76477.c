@@ -1000,6 +1000,10 @@ int SN76477_sh_start(const struct MachineSound *msound)
 		}
 		memset(sn76477[i], 0, sizeof(struct SN76477));
 
+		/* TODO: at the output rate the VCO/SLF squares are point sampled and alias (Game Plan, Valley Spectra, Zaccaria
+		   1B1146). A fixed 4*48000, as in discrete.c and dac.c, would avoid that: all timing uses ->samplerate, but the
+		   noise is capped at that rate (noise_freq), so it would get brighter too. Tried on Spectra: no measurable gain there,
+		   BUT the tones were low (~40-425Hz) and mixed with noise, so revisit */
 		sprintf(name, "SN76477 #%d", i);
 		sn76477[i]->channel = stream_init(name, intf->mixing_level[i], Machine->sample_rate, i, SN76477_sound_update);
 		if( sn76477[i]->channel == -1 )

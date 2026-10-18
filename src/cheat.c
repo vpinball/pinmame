@@ -845,13 +845,13 @@ const char	* cheatfile = NULL;
 /**** Local Globals **********************************************************/
 
 static CheatEntry			* cheatList = NULL;
-static INT32				cheatListLength = 0;
+static UINT32				cheatListLength = 0;
 
 static WatchInfo			* watchList = NULL;
-static INT32				watchListLength = 0;
+static UINT32				watchListLength = 0;
 
 static SearchInfo			* searchList = NULL;
-static INT32				searchListLength = 0;
+static UINT32				searchListLength = 0;
 static INT32				currentSearchIdx = 0;
 
 static CPUInfo				cpuInfoList[MAX_CPU];
@@ -2735,7 +2735,7 @@ static int EnableDisableCheatMenu(struct mame_bitmap * bitmap, int selection, in
 			for(i = 0; i < cheatListLength; i++)
 				SaveCheat(&cheatList[i]);
 
-			usrintf_showmessage_secs(1, "%d cheats saved", cheatListLength);
+			usrintf_showmessage_secs(1, "%u cheats saved", cheatListLength);
 		}
 
 		if(input_ui_pressed(IPT_UI_ADD_CHEAT))
@@ -5412,7 +5412,7 @@ static int AddEditCheatMenu(struct mame_bitmap * bitmap, int selection)
 			for(i = 0; i < cheatListLength; i++)
 				SaveCheat(&cheatList[i]);
 
-			usrintf_showmessage_secs(1, "%d cheats saved", cheatListLength);
+			usrintf_showmessage_secs(1, "%u cheats saved", cheatListLength);
 		}
 		else
 		{

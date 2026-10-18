@@ -45,12 +45,16 @@ const struct sndbrdIntf de1sIntf = {
 
 static struct MSM5205interface de1s_msm5205Int = {
 /* chip          interrupt */
-     1, 384000,	{ de1s_msmIrq }, { MSM5205_S48_4B }, { 0 }, { 60 }
+     1, 384000,	{ de1s_msmIrq }, { MSM5205_S48_4B }, { 0 }, { 50 }
 };
 
+/* Levels measured over all 13 DE1S games (all sound commands): at the former 40/60, the YM2151 music was a median 3.5dB below the MSM5205
+   (Phantom of the Opera and Monday Night Football ~16dB) (also see https://github.com/vpinball/pinmame/pull/701).
+   At 55/50 the music is now just a median 1dB above, the MSM5205 peaks at -6dBFS and the YM2151 at -3..-12dBFS (the loudest games clip only slightly, i.e. King Kong 0.0007%).
+   BUT the overall loudness differs ~15dB between games (Time Machine being quietest), on the real machine that's the job for the volume pot, not compensated here for (yet) */
 static struct YM2151interface de1s_ym2151Int = {
   1, 3579545, /* Hz */
-  { YM3012_VOL(40,MIXER_PAN_LEFT,40,MIXER_PAN_RIGHT) },
+  { YM3012_VOL(55,MIXER_PAN_LEFT,55,MIXER_PAN_RIGHT) },
   { de1s_ym2151IRQ }, { de1s_ym2151Port }
 };
 
@@ -176,8 +180,7 @@ static WRITE_HANDLER(de1s_ym2151Port) {
 /* by Steve Ellenoff, Martin Adrian, and Aaron Giles
 
  BSMT Clock rate of 24Mhz is confirmed to match the pitch on the real machines (10/31/04)
- There are some special effects the BSMT is programmed to do, but we don't know how, this
- can be heard on the BSMT 2000 Logo (for early games like DE - Star Wars, command 0x77)
+ The special effect of the BSMT 2000 Logo (command 0x77) is voice 1 modulating voice 0's pitch, see bsmt2000_update
 
  Missing things
  When a sound command is written from the Main CPU it generates a BUF-FULL signal
@@ -365,17 +368,12 @@ static WRITE_HANDLER(de2s_bsmtcmdLo_w)
    before each write). The HLE is always ready; with the LLE this is the chip's real handshake. */
 static READ_HANDLER(de2s_bsmtready_r) { return BSMT2000_status_0_r() ? 0x80 : 0x00; }
 
-/* D7 is the BSMT reset line */
+/* D7 is the BSMT reset line: the sound program sets it, writes the mode register (e.g. 1), then clears it.
+   The chip restarts on the release (1->0) and reads its mode from that register select latch (as MAME's decobsmt).
+   Resetting on the 0->1 edge picked up a stale register instead (e.g. 0 on Batman, Star Trek 25th, Hook) */
 static WRITE_HANDLER(de2s_bsmtreset_w) {
 	static data8_t last_data = 0;
-	if (BSMT2000_lle_active()) {
-		// as MAME's decobsmt: the chip restarts when the line is released (1->0); its program then
-		// reads its mode from the register select latch, i.e. the register written while in reset
-		if ((last_data & 0x80) && !(data & 0x80))
-			BSMT2000_sh_reset();
-	}
-	//HLE: Watch for 0->1 transition in 8th bit to force a reset
-	else if (!(last_data & 0x80) && (data & 0x80))
+	if ((last_data & 0x80) && !(data & 0x80))
 		BSMT2000_sh_reset();
 	last_data = data;
 }
@@ -392,7 +390,7 @@ static INTERRUPT_GEN(de2s_firq) {
 /* by Steve Ellenoff ( 10/11/2004 - 10/28/2004 )
 
    Hardware: CPU/Sound Bd. II w/ ATMEL Processor
-             SPI Part Nº: 520-5300-00
+             SPI Part NÂº: 520-5300-00
 
    Uses an Atmel AT9140008 CPU (ARM7TDMI Core) and Xilinx FPGA for sound.
    Board is 100% compatible with previous generation hardware (all games using 8Mb roms)

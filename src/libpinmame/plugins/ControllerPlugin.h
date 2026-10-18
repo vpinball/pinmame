@@ -4,6 +4,7 @@
 
 #ifdef __cplusplus
 #include <cstdint>
+#include <string_view>
 #else
 #include <stdint.h>
 #endif
@@ -81,6 +82,26 @@ typedef struct GetControllersMsg
    unsigned int count;         // Number of entries, also position to put next entry, should be increased even if exceeding maxEntryCount to get the total count
    ControllerDef* entries;     // Pointer to an array of maxEntryCount entries to be filled
 } GetControllersMsg;
+
+// Request the target endpoint to start a controller emulating the given game.
+// The message must be sent to a given endpoint (SendMsg), the data being a pointer to a RunCmdMsg.
+#define CTLPI_RUN_CMD "ControllerRunCmd:1"
+
+// Request the target endpoint to stop its running controller. There is no message data.
+#define CTLPI_RUN_STOP "ControllerRunStop:1"
+
+// RunCmdMsg status codes
+#define CTLPI_RUN_STATUS_OK 0 // The controller was started (running state is confirmed through the controllers list change event)
+#define CTLPI_RUN_STATUS_UNSUPPORTED (-1) // Sender's initial value: unchanged if no subscriber handles the message
+#define CTLPI_RUN_STATUS_RUNNING 1 // Discarded: a controller is already running (issue CTLPI_RUN_STOP first)
+#define CTLPI_RUN_STATUS_UNKNOWN_GAME 2 // The gameId could not be resolved by the target
+#define CTLPI_RUN_STATUS_ERROR 3 // The game was resolved but the controller failed to start
+
+typedef struct RunCmdMsg
+{
+   const char* gameId; // Identifier of the game to emulate, semantics defined by the target (e.g. PinMAME driver name)
+   int status; // Must be initialized by the sender to CTLPI_RUN_STATUS_UNSUPPORTED, overwritten by the target with a CTLPI_RUN_STATUS_xxx code
+} RunCmdMsg;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -199,18 +220,18 @@ typedef struct DisplayFrame
 
 typedef struct DisplaySrcId
 {
-   CtlResId id;                                                             // Unique Id of the display
-   CtlResId overrideId;                                                     // If this source overrides another source, id of the overriden source, 0 otherwise
-   unsigned int width;                                                      //
-   unsigned int height;                                                     //
+   CtlResId id;                      // Unique Id of the display
+   CtlResId overrideId;              // Id of the display this source overrides if any, { endpoint, 0xFFFF } if overriding something else then a display, 0 if not overriding anything
+   unsigned int width;
+   unsigned int height;
    union {
       struct {
          uint16_t hardwareModel;
          uint16_t hardwareFamily;
       };
-      uint32_t hardware;                                                    // Hardware hint. See CTLPI_DISPLAY_HARDWARE_xxx
+      uint32_t hardware;             // Hardware hint. See CTLPI_DISPLAY_HARDWARE_xxx
    };
-   void* callContext;                                                       // Opaque pointer that must be passed to GetRenderFrame/GetIdentifyFrame calls
+   void* callContext;                // Opaque pointer that must be passed to GetRenderFrame/GetIdentifyFrame calls
 
    // Render frames, suitable for presenting to the user, but not meant to be backward compatible
    unsigned int frameFormat;                                                // See CTLPI_DISPLAY_FORMAT_xxx
@@ -481,13 +502,23 @@ struct Trampoline<MemFn>
    }
 };
 
-// Extract get game from controller gameId (format is layout :: gameid)
-inline const std::string_view CtrlGetGameKey(const char* gameId)
+// Extract get game from controller gameId (format is namespace :: gameid)
+inline const std::string_view CtrlGetGameKey(const std::string_view id)
 {
-   const std::string_view id(gameId);
    const size_t sep = id.find("::");
    return sep == std::string_view::npos ? id : id.substr(sep + 2);
 }
+
+inline const std::string_view CtrlGetGameKey(const char* gameId) { return CtrlGetGameKey(gameId != nullptr ? std::string_view(gameId) : std::string_view()); }
+
+// Extract namespace from controller gameId (format is namespace :: gameid, empty when no namespace separator is present)
+inline const std::string_view CtrlGetGameNamespace(const std::string_view id)
+{
+   const size_t sep = id.find("::");
+   return sep == std::string_view::npos ? std::string_view() : id.substr(0, sep);
+}
+
+inline const std::string_view CtrlGetGameNamespace(const char* gameId) { return CtrlGetGameNamespace(gameId != nullptr ? std::string_view(gameId) : std::string_view()); }
 
 template <class T> struct GetCtrlSrcMsg
 {

@@ -1,7 +1,6 @@
 // license:BSD-3-Clause
 
-#ifndef PINHECK_RTC_H
-#define PINHECK_RTC_H
+#pragma once
 
 #include <stdint.h>
 
@@ -24,6 +23,4 @@ int ds1340_update(ds1340 *d, int scl, int sda);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

@@ -1,5 +1,6 @@
 // license:BSD-3-Clause
 
+#include <math.h>
 #include "driver.h"
 #include "memory.h"
 #include "cpu/m6502/m6502.h"
@@ -64,15 +65,82 @@ static struct {
 	int    stream;
 } stream_locals;
 
+/* A DAC holds each value until the next write (a staircase), rendered as its exact average over each output sample,
+   at an extreme stream rate (afterwards the resampling does the rest): no aliasing of the steps, no jitter */
+typedef struct {
+	INT16  value[GTS80S_BUFFER_SIZE+1];
+	double clock[GTS80S_BUFFER_SIZE+1];
+	int    pos;
+} dac_staircase;
+
+static void dac_staircase_reset(dac_staircase * const st) {
+	st->clock[0] = 0.;
+	st->value[0] = 0;
+	st->pos = 1;
+}
+
+static void dac_staircase_write(dac_staircase * const st, const INT16 value) {
+	if (st->pos >= GTS80S_BUFFER_SIZE)
+		stream_update(stream_locals.stream, 0); /* renders and empties it */
+	if (st->pos >= GTS80S_BUFFER_SIZE)
+		return;
+	st->clock[st->pos] = timer_get_time();
+	st->value[st->pos++] = value;
+}
+
+/* render the staircase since the last call into length samples */
+static void dac_staircase_render(dac_staircase * const st, float * const out, const int length) {
+	const double tStart = st->clock[0];
+	const double tEnd = timer_get_time();
+	const double dInterval = (tEnd-tStart) / length;
+	double t = tStart;
+	int i = 0, k;
+
+	st->clock[st->pos] = 9e99;
+	for (k = 0; k < length; k++) {
+		const double t1 = tStart + (k+1)*dInterval;
+		double sum = 0.;
+		while (st->clock[i+1] < t1) {
+			const double tw = st->clock[i+1];
+			if (tw > t) {
+				sum += st->value[i] * (tw-t);
+				t = tw;
+			}
+			i++;
+		}
+		sum += st->value[i] * (t1-t);
+		t = t1;
+		out[k] = (float)((dInterval > 0. ? sum/dInterval : st->value[i]) * (1./32768.));
+	}
+
+	st->clock[0] = tEnd;
+	st->value[0] = st->value[st->pos-1];
+	st->pos = 1;
+}
+
+/* a coupling capacitor: one-pole high-pass, exact corner of its RC at DAC_SAMPLE_RATE */
+typedef struct {
+	double coeff, x, y;
+} hp1;
+
+static void hp1_setup(hp1 * const h, const double rc) {
+	const double w = 1./(rc*DAC_SAMPLE_RATE);
+	h->coeff = (1. - sin(w))/cos(w);
+	h->x = h->y = 0.;
+}
+
+static double hp1_step(hp1 * const h, const double x) {
+	h->y = h->y*h->coeff + (x - h->x);
+	h->x = x;
+	return h->y;
+}
+
 static struct {
 	struct sndbrdData boardData;
 
-	INT16  buffer[GTS80S_BUFFER_SIZE+1];
-	double clock[GTS80S_BUFFER_SIZE+1];
-	int    buf_pos;
-
-	filter *filter_f;
-	filter_state *filter_state;
+	dac_staircase dac;
+	hp1 hp; /* output stage, see gts80s_init */
+	filter2_context lp[2];
 
 	int    dips;
 	UINT8* pRIOT6530_0_ram;
@@ -82,11 +150,7 @@ static struct {
 /* digital sound data output */
 static WRITE_HANDLER(gts80s_riot6530_0a_w) {
 //	logerror("riot6530_0a_w: 0x%02x\n", data);
-	if ( GTS80S_locals.buf_pos>=GTS80S_BUFFER_SIZE )
-		return;
-
-	GTS80S_locals.clock[GTS80S_locals.buf_pos] = timer_get_time();
-	GTS80S_locals.buffer[GTS80S_locals.buf_pos++] = (((INT16)data<<7)-0x4000)*2;
+	dac_staircase_write(&GTS80S_locals.dac, (((INT16)data<<7)-0x4000)*2);
 }
 
 static WRITE_HANDLER(gts80s_riot6530_0b_w) {
@@ -136,28 +200,14 @@ MEMORY_END
 
 static void GTS80S_Update(int num, INT16 * const buffer, int length) // El Dorado City of Gold, Black Hole (Sound Only), Volcano (Sound Only), Panthera, etc
 {
-	float * __restrict buffer_f = (float*)buffer;
-
-	double dCurrentClock = GTS80S_locals.clock[0];
-
-	const double dActClock = timer_get_time();
-	const double dInterval = (dActClock-GTS80S_locals.clock[0]) / length;
-
-	int i = 0;
-	GTS80S_locals.clock[GTS80S_locals.buf_pos] = 9e99;
-	while ( length ) {
-		filter_insert(GTS80S_locals.filter_f, GTS80S_locals.filter_state, GTS80S_locals.buffer[i]*(float)(1.0/32768.0));
-		*buffer_f++ = filter_compute(GTS80S_locals.filter_f, GTS80S_locals.filter_state);
-		length--;
-		dCurrentClock += dInterval;
-
-		while ( GTS80S_locals.clock[i+1]<=dCurrentClock )
-			i++;
-	}
-
-	GTS80S_locals.clock[0] = dActClock;
-	GTS80S_locals.buffer[0] = GTS80S_locals.buffer[GTS80S_locals.buf_pos-1];
-	GTS80S_locals.buf_pos = 1;
+	float * const out = (float*)buffer;
+	int k;
+	if (length == 0)
+		return;
+	dac_staircase_render(&GTS80S_locals.dac, out, length);
+	for (k = 0; k < length; k++)
+		out[k] = (float)filter2_step_with(&GTS80S_locals.lp[1], filter2_step_with(&GTS80S_locals.lp[0],
+		         hp1_step(&GTS80S_locals.hp, out[k])));
 }
 
 /*--------------
@@ -178,12 +228,17 @@ void gts80s_init(struct sndbrdData *brdData) {
 		((core_getDip(5)&0x02) ? 0x00:0x10);  /* S2: Attract Mode Tunes */
 
 	/* init sound buffer */
-	GTS80S_locals.clock[0]  = 0;
-	GTS80S_locals.buffer[0] = 0;
-	GTS80S_locals.buf_pos   = 1;
-	GTS80S_locals.filter_f = filter_lp_fir_alloc(0.15, FILTER_ORDER_MAX); // 0.15 = magic
-	GTS80S_locals.filter_state = filter_state_alloc(); //!! leaks!
-	filter_state_reset(GTS80S_locals.filter_f, GTS80S_locals.filter_state);
+	dac_staircase_reset(&GTS80S_locals.dac);
+	/* Output stage, from the sound board schematic (C-19691, e.g. Panthera): the 1408 DAC's current output into
+	   R10 6.8k (to +5V) || C2 0.01uF (~2.4kHz low-pass), C15 0.047uF (~11Hz high-pass) and R5 270k into R13 47k ||
+	   the LM380's 150k input || C16 0.0033uF (~1.5kHz low-pass), so -3dB at ~1.2kHz. Gains normalized to 1;
+	   C8 470uF to the speaker is left out, the listener's speakers take its place */
+	{
+		const double r13 = 47000.*150000./(47000.+150000.);
+		hp1_setup(&GTS80S_locals.hp, (6800.+270000.+r13)*0.047e-6);
+		filter_rc_lp_setup(6800., 270000., r13, 0.01e-6, &GTS80S_locals.lp[0], DAC_SAMPLE_RATE);
+		filter_rc_lp_setup(270000., r13, 0., 0.0033e-6,  &GTS80S_locals.lp[1], DAC_SAMPLE_RATE);
+	}
 
 	if ( GTS80S_locals.boardData.subType==0 ) {
 		/* clear the upper 4 bits, some ROM images aren't 0 */
@@ -252,7 +307,7 @@ static int s80s_sh_start(const struct MachineSound *msound) {
     return -1;
   }
 
-  stream_locals.stream = stream_init_float("SND DAC", 50, 22050, 0, GTS80S_Update, 1);
+  stream_locals.stream = stream_init_float("SND DAC", 50, DAC_SAMPLE_RATE, 0, GTS80S_Update, 1);
 
   return 0;
 }
@@ -323,12 +378,8 @@ static struct {
 	int    dips;
 	UINT8* pRIOT6532_3_ram;
 
-	float  curr_value;
-	float  next_value;
-	int    last_sound;
-
-	double last_clock;
-	double last_soundupdate;
+	dac_staircase dac;
+	hp1    hp[2]; /* output stage, see gts80ss_init */
 
 	void   *timer;
 } GTS80SS_locals;
@@ -362,24 +413,11 @@ READ_HANDLER(GTS80SS_riot3b_r)  {
 
 static WRITE_HANDLER(GTS80SS_riot3b_w) { logerror("riot3b_w: 0x%02x\n", data);}
 
-/* D/A converter for volume */
+/* sound D/A converter (U20), scaled by the amplitude adjust pot */
 static WRITE_HANDLER(GTS80SS_da1_latch_w) {
 //	logerror("da1_w: 0x%02x\n", data);
-
-	float tmp = (float)(((INT32)data << 8) - (INT32)0x7F80)*(float)(1.0/32768.0);
-
-//	logerror("%s %.8f %d\n", (GTS80SS_locals.last_sound == 0) ? "c2" : "c ", timer_get_time(), tmp);
-
-	if (GTS80SS_locals.last_sound == 0) // missed a soundupdate: lerp data in here directly
-		tmp = (tmp + GTS80SS_locals.next_value) * 0.5f;
-
-	GTS80SS_locals.next_value = tmp;
-	GTS80SS_locals.last_sound = 0;
-
+	dac_staircase_write(&GTS80SS_locals.dac, (INT16)(((INT32)data << 8) - (INT32)0x7F80));
 	GTS80SS_locals.device = 1;
-
-	GTS80SS_locals.last_clock = timer_get_time();
-	stream_update(stream_locals.stream, 0);
 }
 
 /* From flipprojets.fr:
@@ -524,50 +562,13 @@ MEMORY_END
 
 static void GTS80SS_Update(int num, INT16 * const buffer, int length) // Mars - God of War, Black Hole, Haunted House, etc
 {
-	float* const __restrict buffer_f = (float*)buffer;
-
-	//logerror("%s %.8f %d\n", (GTS80SS_locals.last_sound == 0) ? "sc" : "s ", timer_get_time(), length);
-
-	/* zero-length? bail */
+	float * const out = (float*)buffer;
+	int k;
 	if (length == 0)
 		return;
-
-	if (length > DAC_SAMPLE_RATE/384) // there was quite some time since the last sound update? -> we're entering or leaving silence
-	{
-		if (GTS80SS_locals.last_sound != 0) // clock did not update next_value since the last update -> fade to silence (resolves clicks and simulates real DAC kinda)
-		{
-			float tmp = GTS80SS_locals.curr_value;
-			int i;
-			for (i = 0; i < length; i++, tmp *= 0.95f)
-				buffer_f[i] = tmp;
-
-			GTS80SS_locals.next_value = tmp; // update next_value with the faded value
-		}
-		else // clock did update next_value just now, so we now need to fade/lerp from silence to next_value
-		{
-			double data = GTS80SS_locals.curr_value;
-			const double slope = (GTS80SS_locals.next_value - data) / (double)length;
-
-			int i;
-			for (i = 0; i < length; i++, data += slope)
-				buffer_f[i] = (float)data;
-		}
-	}
-	else // clock does the update (or the sound buffer catches up) -> fill buffer with curr_value, then next_value
-	{
-		const double diff = (timer_get_time() - GTS80SS_locals.last_soundupdate) / length;
-		double t = GTS80SS_locals.last_soundupdate;
-
-		int i;
-		for (i = 0; i < length; i++, t += diff)
-			buffer_f[i] = (t < GTS80SS_locals.last_clock) ? GTS80SS_locals.curr_value : GTS80SS_locals.next_value; // lerping between the values leads to noise for whatever reason, so raw values only!
-	}
-
-	GTS80SS_locals.curr_value = GTS80SS_locals.next_value;
-
-	GTS80SS_locals.last_soundupdate = timer_get_time();
-
-	GTS80SS_locals.last_sound = 1;
+	dac_staircase_render(&GTS80SS_locals.dac, out, length);
+	for (k = 0; k < length; k++)
+		out[k] = (float)hp1_step(&GTS80SS_locals.hp[1], hp1_step(&GTS80SS_locals.hp[0], out[k]));
 }
 
 /*--------------
@@ -604,12 +605,16 @@ void gts80ss_init(struct sndbrdData *brdData) {
 
 	/* init RIOT */
 	riot6532_config(3, &GTS80SS_riot6532_intf);
-	riot6532_set_clock(3, Machine->drv->cpu[GTS80S_locals.boardData.cpuNo].cpu_clock);
+	riot6532_set_clock(3, Machine->drv->cpu[GTS80SS_locals.boardData.cpuNo].cpu_clock);
 
-	GTS80SS_locals.curr_value = 0.f;
-	GTS80SS_locals.next_value = 0.f;
-	GTS80SS_locals.last_sound = 0;
-	GTS80SS_locals.last_clock = GTS80SS_locals.last_soundupdate = 0.;
+	/* Output stage, from the sound/speech board schematic (A6, E-21337, e.g. Haunted House): the 1408 DAC (U20) into
+	   an LM741 current to voltage converter (only the R13 amplitude pot as feedback: no low-pass), the R15 volume pot
+	   and C31 0.047uF into the LM379S (R18 100k bias, ~34Hz high-pass, the SC01 speech is mixed in there), whose gain
+	   of 51 falls to 1 below ~17Hz (C37 4.7uF, R22 2k, modeled as a high-pass). Gains normalized to 1;
+	   C36 470uF to the speaker is left out, the listener's speakers take its place */
+	dac_staircase_reset(&GTS80SS_locals.dac);
+	hp1_setup(&GTS80SS_locals.hp[0], 100000.*0.047e-6);
+	hp1_setup(&GTS80SS_locals.hp[1], 2000.*4.7e-6);
 
 	{
 	UINT8 * const mr = memory_region(GTS80SS_locals.boardData.cpuNo);
@@ -1085,10 +1090,14 @@ MEMORY_END
 /*----------------
 / Sound interface
 /-----------------*/
+/* At 50,50, Genesis peaked at +1.5dBFS and was ~7dB louder than the AY8910/SP0250. At 25,25 over 27 games of all three generations,
+   the DAC peaks at -4..-13dBFS and is in line with the AY8910/SP0250, and ~5dB above the YM2151 (median).
+   Matches also the handtuned volume from pre-2016 again like this */
 static struct DACinterface GTS80BS_dacInt =
 {
 	2,			/* 2 Chips - but it seems we only access 1, except for BoneBusters */
-	{50,50}		/* Volume */
+	{25,25},	/* Volume */
+	{1,1}		/* DC offset correction */
 };
 
 static struct AY8910interface GTS80BS_ay8910Int = {
@@ -1316,8 +1325,9 @@ MEMORY_END
 
 static struct DACinterface GTS3_dacInt =
 {
-  2,			/*2 Chips - but it seems we only access 1?*/
-  {50,50}		/* Volume */
+  2,		/*2 Chips - but it seems we only access 1?*/
+  {50,50},	/* Volume, was halved in 2016 (ce8775bb) to make up for the doubled volume*data input, see GTS80BS_dacInt, so should be fine like that */
+  {1,1}		/* DC offset correction */
 };
 
 static struct OKIM6295interface GTS3_okim6295_interface = {
@@ -1529,8 +1539,8 @@ WRITE_HANDLER(techno_sh_w)
 	techno_locals.snd_data = data;
 	cpu_set_irq_line(techno_locals.brdData.cpuNo, 0, HOLD_LINE);
 	cpu_set_irq_line(techno_locals.brdData.cpuNo+1, 0, HOLD_LINE);
-	//Bit 6 if NOT set, fires TMS IRQ 1
-	if(~data & 0x40) cpu_set_irq_line(techno_locals.brdData.cpuNo+2, TMS7000_IRQ1_LINE, ASSERT_LINE);
+	//Bit 6 if NOT set, fires TMS IRQ 1, once per command (INT1 is level sensitive, so a line that stays asserted would retrigger it forever)
+	if(~data & 0x40) cpu_set_irq_line(techno_locals.brdData.cpuNo+2, TMS7000_IRQ1_LINE, HOLD_LINE);
 }
 
 /* bits 0-3 are probably unused (future expansion) */
@@ -1723,10 +1733,13 @@ struct AY8910interface techno_ay8910Int = {
 	{ 25, 25 }	/* Volume */
 };
 
+/* DAC 0: At 50, Scramble peaked at +1.7dBFS, but was only slightly louder (RMS) than the other chips,
+   so it was reduced a bit less than on System 80B. DAC 1 (TMS7000) should be fine, on the 0..32767 scale */
 struct DACinterface techno_6502dacInt =
 {
 	2,			/* 2 chips */
-	{50,50}		/* Volume */
+	{30,50},	/* Volume */
+	{1,1}		/* DC offset correction */
 };
 
 struct sp0250_interface techno_sp0250_interface =
@@ -1751,7 +1764,7 @@ MEMORY_WRITE_START( m6502_writemem )
   { 0x4000, 0x4000, techno_sound_control_w },
   { 0x8000, 0x8000, techno_ay8910_latch_w },
   { 0xa000, 0xa000, techno_nmi_rate_w },	/* set Y-CPU NMI rate */
-  { 0xb000, 0xb000, techno_cause_dac_nmi_w },	/* Trigger D-CPU NMI */
+  { 0xb000, 0xb000, techno_cause_dac_nmi_w }, /* Trigger D-CPU NMI */
 MEMORY_END
 
 //6502 #2 CPU

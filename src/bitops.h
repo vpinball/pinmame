@@ -266,7 +266,7 @@ BITOPS_INLINE unsigned int clz_32(const unsigned int x)
 #if defined(_MSC_VER)
     unsigned long i;
     return _BitScanReverse(&i, x) ? 31u - (unsigned int)i : 32u;
-#elif defined(__GNUC__) || defined(__clang__)
+#elif (defined(__GNUC__) && (__GNUC__ > 3)) || defined(__clang__)
     return x ? (unsigned int)__builtin_clz(x) : 32u;
 #else
     unsigned int n = 0, y = x;
@@ -283,7 +283,7 @@ BITOPS_INLINE unsigned int clz_32(const unsigned int x)
 // 1 if an odd number of bits is set
 BITOPS_INLINE unsigned int parity_32(unsigned int x)
 {
-#if defined(__GNUC__) || defined(__clang__)
+#if (defined(__GNUC__) && (__GNUC__ > 3)) || defined(__clang__)
     return (unsigned int)__builtin_parity(x);
 #else
     // no intrinsic short of POPCNT, which is not baseline x64: fold to a nibble, then a 16 bit table
