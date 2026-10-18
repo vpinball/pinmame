@@ -61,6 +61,7 @@ static std::atomic<int> _isRunning = 0;
 static std::shared_mutex _stateMutex;
 static inline bool IsEmulationRunning() { return _isRunning == 1; }
 static int _timeToQuit = 0;
+static bool _solMaskSet = false;
 static PinmameConfig* _p_Config = nullptr;
 static std::thread* _p_gameThread = nullptr;
 static void* _p_userData = nullptr;
@@ -1290,7 +1291,14 @@ PINMAMEAPI PINMAME_STATUS PinmameRun(const char* const p_name)
 
    OnStateChange(2); // Starting state (in between stopped and started)
 
+	// vp_init() resets the solenoid mask, keep the one set before the run (tables mask the startup pulses this way)
+	const int solMask[2] = { vp_getSolMask(0), vp_getSolMask(1) };
 	vp_init();
+	if (_solMaskSet) {
+		vp_setSolMask(0, solMask[0]);
+		vp_setSolMask(1, solMask[1]);
+		_solMaskSet = false; // only for this run, so a later run does not inherit a stale mask
+	}
 
 	_p_gameThread = new std::thread(StartGame, gameNum);
 
@@ -1449,6 +1457,7 @@ PINMAMEAPI uint32_t PinmameGetSolenoidMask(const int low)
 
 PINMAMEAPI void PinmameSetSolenoidMask(const int low, const uint32_t mask)
 {
+	_solMaskSet |= (low == 0 || low == 1);
 	vp_setSolMask(low, mask);
 }
 
