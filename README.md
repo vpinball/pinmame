@@ -55,6 +55,24 @@ to drive (at least) real WPC machines with PinMAME/P-ROC, [PPUC](https://github.
 PinMAME and special hardware, see http://www.lisy80.com & http://www.lisy.dev, also README.lisy)
 platforms (see PROC and LISY_X defines in makefile.unix).
 
+## Downloads
+
+Builds are available on the [Releases](https://github.com/vpinball/pinmame/releases) page (and as artifacts of each CI run).
+The archives are named `<name>-<version>-<platform>`:
+
+- `VPinMAME` - the COM library used by Visual Pinball (`VPinMAME.dll` + `Setup.exe` for x86, `VPinMAME64.dll` + `Setup64.exe` for x64). Take the one matching your Visual Pinball build (32 or 64 bit)
+- `PinMAME` - the standalone command line emulator for Windows
+- `PinMAME32` - the standalone emulator for Windows with a graphical UI
+- `libpinmame` - the library (shared and static) for Windows (incl. MinGW and ARM64), Linux (x64/aarch64), macOS, iOS/tvOS and Android
+- `xpinmame` - the standalone emulator for Linux and macOS (X11)
+- `sdl3pinmame` - the standalone emulator for Linux and macOS using SDL3 (CI artifacts only)
+
+Variants:
+
+- `win-x86` / `win-x64` - 32 bit / 64 bit Windows
+- `-sc` - additionally includes the sets for the colorized Stern S.A.M. ROMs (Colored MODs). Only needed if you use these ROMs
+- `-md` (PinMAME32 only) - built with the MAME debugger enabled
+
 ## What does it do?
 
 Before you start to add the ROMs from your favorite pinball machine please note:
