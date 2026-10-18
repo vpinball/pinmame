@@ -364,7 +364,9 @@ static WRITE_HANDLER(de2s_bsmtcmdLo_w)
   //cpu_set_irq_line(de2slocals.brdData.cpuNo, M6809_IRQ_LINE, HOLD_LINE);
 }
 
-static READ_HANDLER(de2s_bsmtready_r) { return 0x80; } // BSMT is always ready
+/* D7 = 1: the BSMT took the last word and is ready for the next one (the sound program polls it
+   before each write). The HLE is always ready; with the LLE this is the chip's real handshake. */
+static READ_HANDLER(de2s_bsmtready_r) { return BSMT2000_status_0_r() ? 0x80 : 0x00; }
 
 /* D7 is the BSMT reset line: the sound program sets it, writes the mode register (e.g. 1), then clears it.
    The chip restarts on the release (1->0) and reads its mode from that register select latch (as MAME's decobsmt).
@@ -388,7 +390,7 @@ static INTERRUPT_GEN(de2s_firq) {
 /* by Steve Ellenoff ( 10/11/2004 - 10/28/2004 )
 
    Hardware: CPU/Sound Bd. II w/ ATMEL Processor
-             SPI Part Nº: 520-5300-00
+             SPI Part NÂº: 520-5300-00
 
    Uses an Atmel AT9140008 CPU (ARM7TDMI Core) and Xilinx FPGA for sound.
    Board is 100% compatible with previous generation hardware (all games using 8Mb roms)
