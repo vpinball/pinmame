@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /**********************************************************************************************
  *
  *   Data East BSMT2000 driver
@@ -14,10 +16,10 @@
  *             - DONE: 4)Alvin G.(Pistol Poker, Worldtour) did not reset/setup-the-mode: the reset line is wired now (watch_w in wpc/alvgs.c), so the sound program sets Mode 5 itself
  *             - DONE: 5)Monopoly and RCT do never set the right volume (as these are mono only), thus a special hack is necessary to make up for that (right_volume_set)
  *
- *   Low level emulation (LLE, BSMT2000_LLE below), after MAME's bsmt2000.cpp by Aaron Giles:
- *   the chip's real program (the TMS320C15 mask ROM, bsmt2000.bin, 4K words, CRC c2a265af)
+ *   Also includes optional low level emulation (LLE, BSMT2000_LLE below), after MAME's bsmt2000.cpp by Aaron Giles:
+ *   the chip's real program (TMS320C15 mask ROM, bsmt2000.bin, 4K words, CRC c2a265af)
  *   runs on a TMS320C1x core (src/cpu/tms320c1x) in lock-step with the sound stream. All the
- *   voice/mode/ADPCM logic and the TODO items above then come from the chip itself, and the
+ *   voice/mode/ADPCM logic then comes from the chip itself, and the
  *   writer sees the real write-pending/ready handshake (BSMT2000_status_0_r).
  *   It is more expensive than the HLE, so it is opt-in: the bsmt2000_lle option (pmoptions).
  *   The firmware is looked up like a MAME device ROM: bsmt2000.bin in bsmt2000.zip (or in a
@@ -33,14 +35,11 @@
 #include "driver.h"
 #include "../ext/vgm/vgmwrite.h"
 
-#ifndef BSMT2000_LLE
 #define BSMT2000_LLE 1 // 1: the bsmt2000_lle option can run the real chip program (when bsmt2000.bin is found), 0: HLE only
-#endif
 
 #if BSMT2000_LLE
 #include "../cpu/tms320c1x/tms320c1x.h"
 #include <stdarg.h>
-#include <zlib.h>
 #ifdef LIBPINMAME
 extern void libpinmame_log_info(const char* format, ...);
 #endif
@@ -890,13 +889,6 @@ int BSMT2000_sh_start(const struct MachineSound *msound)
 		if (lle_enabled)
 			lle_start(i, intf);
 #endif
-
-		// Record the initial mode into the VGM stream so the later-on used player employs the right
-		// register mapping/sample rate from the start. DE games (re-)issue this via BSMT2000_sh_reset(),
-		// but Alvin G. games whose reset is not wired/emulated yet (setting mode 5), would default to the
-		// wrong default mode and wrongly decode every register write (=garbled exported audio).
-		// Also note that this needs a patch in vgmwrite to make time 0 vgm writes work! (search for PinMAME)
-		vgm_write(m_vgm_idx[i], 0x01, 0x00, bsmt2000[i].last_register & 0x7f);
 		// (the VGM stream gets the mode when the board resets the chip, see BSMT2000_sh_reset)
 	}
 
