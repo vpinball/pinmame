@@ -370,12 +370,22 @@ static sim_tSimData fourx4SimData = {
 /   SEG3/SEG4 on the second device.
 /
 /   The emulation agrees: in a one-player game the SEG1 bus reads a score plus
-/   a heat of 1 while the SEG2 bus reads a blank score -- player 2 is not
-/   playing -- plus the credit count. --*/
+/   a heat of 01 while the SEG2 bus reads a blank score -- player 2 is not
+/   playing -- plus a credit count of 02.
+/
+/   SEG4 is not unused, as was assumed here before.  The wiring sheet draws
+/   three displays on the playfield, one of one digit, one of six and one of
+/   two, and device 1 feeds both buses: its high nibble reads 000000 through
+/   a game, which is the six-digit one, and its low nibble carries a separate
+/   two-digit value.  SEG3 was pointed at the low nibble, so the six-digit
+/   display was not shown at all and the two-digit one was being read as a
+/   six-digit number.  Which of the two remaining displays is the one-digit
+/   one is not established. --*/
 static core_tLCDLayout fourx4_disp[] = {
   { 0, 0, 0, 6, CORE_SEG7 }, { 0,16, 6, 2, CORE_SEG7 },   /* SEG1: player 1, lap (heat) */
   { 2, 0, 8, 6, CORE_SEG7 }, { 2,16,14, 2, CORE_SEG7 },   /* SEG2: player 2, credit */
-  { 5, 0,24, 6, CORE_SEG7 },                              /* SEG3: ante, on the playfield */
+  { 5, 0,16, 6, CORE_SEG7 },                              /* SEG3: six-digit playfield display */
+  { 5,16,24, 2, CORE_SEG7 },                              /* SEG4: two-digit playfield display */
   { 0 }
 };
 
