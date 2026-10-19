@@ -2957,7 +2957,7 @@ static void SetupMsgApiVideoDisplays()
          def.srcId.GetRenderFrame = &GetDisplayFrame;
          if ((layout->type & CORE_SEGMASK) != CORE_VIDEO)
          {
-            def.srcId.identifyFormat = ((core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2 | GEN_PINHECK)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0)) ? CTLPI_DISPLAY_ID_FORMAT_BITPLANE4 : CTLPI_DISPLAY_ID_FORMAT_BITPLANE2; // pinHeck: the raw DMD's 16 levels
+            def.srcId.identifyFormat = ((core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG | GEN_ALVG_DMD2 | GEN_PINHECK)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0)) ? CTLPI_DISPLAY_ID_FORMAT_BITPLANE4 : CTLPI_DISPLAY_ID_FORMAT_BITPLANE2; // pinHeck: the raw DMD's 16 levels
             def.srcId.GetIdentifyFrame = &GetDisplayIdFrame;
          }
          msgLocals.nDisplays++;

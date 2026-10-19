@@ -984,7 +984,7 @@ static PALETTE_INIT(core) {
 #if defined(PINMAME) || defined(VPINMAME)
 // Games rendered with 16 shades (raw DMD levels) are never colorized, the others map their 4 identified shades to the 4 user colors
 static int core_dmd_has_16_shades(void) {
-  return (core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2 | GEN_PINHECK)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0);
+  return (core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG | GEN_ALVG_DMD2 | GEN_PINHECK)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0);
 }
 
 // Render to internal display, using provided luminance, if there is a visible display (PinMAME always, and VPinMAME when its window is shown)
@@ -4073,7 +4073,7 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
       }
     }
     break;
-  case CORE_DMD_PWM_COMBINER_SUM_4: // Sum of the last 4 frames (Alvin G. for Pistol Poker & Mystery Castle)
+  case CORE_DMD_PWM_COMBINER_SUM_4: // Sum of the last 4 frames (all Alvin G. DMD games: PCA020 and PCA020A boards), always 16 shade encoded
     {
       assert((dmd_state->width & 7) == 0);
       static const UINT8 level[5] = { 0, 3, 7, 11, 15 }; // brightness mapping 0,25,50,75,100% (backward compatible to encode 5 levels on 4 bits)
