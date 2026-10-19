@@ -813,12 +813,17 @@ static void slice_write(int dev, int offset, UINT8 data) {
   /   as $14, $15 and $16 are hit in turn, which is a four-target bank showing
   /   how many are down:
   /
-  /     sw $14 $15 $16 -> $210A.5 .6 .7      sw $17 -> $210B.4
-  /     sw $18 $19 $1A -> $2101.5 .6 .7      sw $1B -> $220A.0
-  /     sw $1C $1D $1E -> $220B.5 .6 .7      sw $1F -> $2200.0
-  /     sw $20 $21 $22 -> $2100.5 .6 .7      sw $23 -> $2101.4
-  /     sw $24 $25 $26 -> $2201.5 .6 .7      sw $27 -> $230B.0
-  /     sw $28 $29 $2A -> $210B.5 .6 .7      sw $2B -> $2100.4
+  /     sw $0C $0D $0E -> $210A.5 .6 .7      sw $0F -> $210B.4
+  /     sw $10 $11 $12 -> $2101.5 .6 .7      sw $13 -> $220A.0
+  /     sw $14 $15 $16 -> $220B.5 .6 .7      sw $17 -> $2200.0
+  /     sw $18 $19 $1A -> $2100.5 .6 .7      sw $1B -> $2101.4
+  /     sw $1C $1D $1E -> $2201.5 .6 .7      sw $1F -> $230B.0
+  /     sw $20 $21 $22 -> $210B.5 .6 .7      sw $23 -> $2100.4
+  /
+  /   (These are switch numbers as the game and this driver number them.
+  /   ATARI_m2sw is col*8 + row - 8, so the swMatrix index is eight higher
+  /   than the switch number -- a harness that pokes the matrix directly
+  /   reads eight too high, which is a trap worth naming.)
   /
   /   $2301, $230A, $240A and $240B move constantly in attract and settle when
   /   a ball is in play, which is the general illumination chase.  $2300, $2400

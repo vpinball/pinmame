@@ -151,28 +151,27 @@ ATARI_INPUT_PORTS_END
 #define swMsgr7      18
 #define swMsgr8      19
 #define swLDrop1     20   /* $14-$17; the diagram draws these four along the
-                           top edge of the left four-by-four grid, and each
-                           lights one lamp of the grid's bottom row ($14, $15
-                           and $16 light $1D, $1E and $1F) -- four lanes by
-                           four levels is what the machine is named after */
+                           top edge of the left four-by-four grid.  Measured,
+                           they light lamps $45-$48 -- four lanes by four
+                           levels is what the machine is named after */
 #define swLDrop2     21
 #define swLDrop3     22
 #define swLDrop4     23   /* $17 - resets the left bank */
 #define swLane1      24   /* $18-$1B, the four the diagram draws along the
-                           bottom edge of the left grid; they light lamps
-                           $35-$38, which the diagram draws as one run */
+                           bottom edge of the left grid; measured, they light
+                           $2D, $2E, $2F and $34 */
 #define swLane2      25
 #define swLane3      26
 #define swLane4      27
 #define swRDrop1     28   /* $1C-$1F, the matching set on the right; they
-                           light lamps $45-$48 */
+                           light lamps $55-$58 */
 #define swRDrop2     29
 #define swRDrop3     30
 #define swRDrop4     31   /* $1F - resets the right bank */
 #define swHole       35   /* $23 */
 #define swLStand     37   /* $25, "LEFT SIDE STANDING TARGETS" in the diagram's
-                           own legend; it lights lamp $56 */
-#define swRStand     38   /* $26, "RIGHT SIDE STANDING TARGETS"; lamp $57 */
+                           own legend */
+#define swRStand     38   /* $26, "RIGHT SIDE STANDING TARGETS" */
 #define swVolume     39   /* $27, a cabinet volume control - no game handler */
 /* The playfield diagram's own legend names these, and P9 pins 20, 19, 18, 17
    and P10 pin 11 agree:
@@ -222,12 +221,12 @@ ATARI_INPUT_PORTS_END
                after, with switches $14-$17 along its top edge and $18-$1B
                along its bottom
      L21-L30   the right four-by-four grid
-     L35-L38   a run of lane lamps, lit by switches $18-$1B
-     L45-L48   lit by switches $1C-$1F
+     L35-L38   a run of lane lamps, lit by switches $10-$13
+     L45-L48   lit by switches $14-$17, the top edge of the left grid
      L53-L55   the three pop bumper lamps; the diagram writes each as a
                triplet with its solenoid and switch, L53/SOL 3/SW 3 and so on,
                and those solenoid and switch numbers match this file
-     L55-L58   the cluster above the pops, lit by switches $24-$27
+     L55-L58   the cluster above the pops, lit by switches $1C-$1F
 
    One loose end: L11-L17 would be image byte 2 bits 1-7, and bits 4-6 of that
    byte are the task bank, so three lamps of the left grid have nowhere to sit.
