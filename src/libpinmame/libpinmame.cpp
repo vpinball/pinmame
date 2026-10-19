@@ -915,7 +915,10 @@ extern "C" void OnStateChange(const int state)
 			else if ((layout->type & CORE_SEGMASK) == CORE_DMD) {
 				pDisplay->layout.width = layout->length;
 				pDisplay->layout.height = layout->start;
-				const int shade_16_enabled = (core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG | GEN_ALVG_DMD2 | GEN_GTS3 | GEN_PINHECK)) != 0; // pinHeck: the raw DMD's 16 levels
+				// depth describes the raw frame sent in PINMAME_DMD_MODE_RAW: most GTS3 games identify 4 shades (0..3),
+				// only the two GTS3 games with a 16-shade DMD (smb, cueball) send 0..15 like SAM/SPA/Alvin G/pinHeck
+				const int shade_16_enabled = ((core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG | GEN_ALVG_DMD2 | GEN_PINHECK)) != 0) // pinHeck: the raw DMD's 16 levels
+					|| (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0);
 				pDisplay->layout.depth = shade_16_enabled ? 4 : 2;
 				pDisplay->size = pDisplay->layout.width * pDisplay->layout.height;
 			}
