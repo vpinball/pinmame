@@ -590,6 +590,14 @@ MACHINE_DRIVER_END
 #define SLICE_LOG(...) ((void)0)
 #endif
 
+#if ATARI4_TEST_HOOKS
+/*-- Headless harness: coin, start, then pulse switch ATARI4_TEST_SW
+/   every 90 frames.  $02 is the mid pop bumper. --*/
+#ifndef ATARI4_TEST_SW
+#define ATARI4_TEST_SW 0x02
+#endif
+static int a4frame;
+#endif
 static UINT8 *atari4_taskram;   /* $1000-$17FF: eight 256-byte task pages */
 static UINT8 *atari4_CMOS;
 static int atari4_taskbank;
@@ -636,6 +644,26 @@ static UINT8 slice_read(int dev, int offset) {
   /
   /   The inputs have 470R pull-ups to +5V and the switches pull to switch
   /   ground, so a closed switch reads low and $9248 inverts before storing. --*/
+  /*-- The two POKEYs carry the game's sixteen DIP switches on their pot
+  /   inputs.  The board has two CTS 206-8 packs, each switch in series with a
+  /   resistor, and the game reads them the canonical way: write POTGO at
+  /   register $0B, then read ALLPOT at $08.  A closed switch pulls its line
+  /   down so the conversion finishes at once and its ALLPOT bit is already
+  /   clear by the time the read happens; an open one leaves the bit set.  So
+  /   ALLPOT reads back as the complement of the switches.  $93D6 wants only
+  /   bits 2, 3 and 4 of the first pack; $992D and $9938 take whole bytes.
+  /
+  /   Measured: bits 6 and 7 of the first pack must read 0 or the game never
+  /   leaves its power-up state -- displays stay blank and no task starts.
+  /   Bits 0, 1, 2, 3, 4 and 5 can be anything.  So switches 7 and 8 of the
+  /   first CTS 206-8 have to be closed, which the stock dip default already
+  /   does; what they select is not known. --*/
+  if (dev >= 5 && reg == 0x08) {
+    data = ~core_getDip(dev - 5);
+    SLICE_LOG("4x4 ALLPOT pokey%d -> %02X\n", dev - 5, data);
+    return data;
+  }
+
   if (reg >= 0x0e && atari4_swcol[dev][reg - 0x0e]) {
     int col = atari4_swcol[dev][reg - 0x0e];
     data = ~coreGlobals.swMatrix[col];
@@ -655,6 +683,18 @@ static void slice_write(int dev, int offset, UINT8 data) {
   if (dev == 3 && reg == 0x0f && ((data >> 4) & 7) != 7
       && ((data >> 4) & 7) != atari4_taskbank)
     atari4_setbank((data >> 4) & 7);     /* all ones = hold */
+#if ATARI4_TEST_HOOKS
+  if (dev == 3 && reg == 0x0c) {
+    static int n = 0;
+    if (++n % 60 == 0) {
+      int k; logerror("4x4 ST f=%4d seg1=", a4frame);
+      for (k = 0; k < 8; k++) logerror("%X", slice.reg[0][k] >> 4);
+      logerror(" seg2="); for (k = 0; k < 8; k++) logerror("%X", slice.reg[0][k] & 15);
+      logerror(" seg3="); for (k = 0; k < 8; k++) logerror("%X", slice.reg[1][k] & 15);
+      logerror(" sol=%02X%02X\n", slice.reg[0][0x0b], slice.reg[0][0x0a]);
+    }
+  }
+#endif
   if (reg == 0x0c) {
     if (dev == 2) cpu_set_irq_line(ATARI_CPU, 0, CLEAR_LINE);  /* $220C: IRQ ack */
     if (dev == 3) { slice.wdog = 0; SLICE_LOG("4x4 watchdog kick\n"); }  /* $230C */
@@ -877,6 +917,19 @@ static MACHINE_INIT(ATARI4) {
 /   playfield switches, and the 0x62 mask forced five of them open every frame.
 /   Tilt has no key assigned, so bit 1 is preserved along with SW2D-SW2F. --*/
 static SWITCH_UPDATE(ATARI4) {
+#if ATARI4_TEST_HOOKS
+	a4frame++;
+	memset(&coreGlobals.swMatrix[1], 0, 7);
+	coreGlobals.swMatrix[6] =
+		  ((a4frame >= 200 && a4frame < 216) ? 0x08 : 0)   /* right coin */
+		| ((a4frame >= 300 && a4frame < 316) ? 0x01 : 0);  /* start */
+	if (a4frame >= 700) {
+		const int sw = ATARI4_TEST_SW;
+		if ((a4frame % 90) < 10)
+			coreGlobals.swMatrix[1 + sw / 8] = 1 << (sw % 8);
+	}
+	return;
+#endif
 	if (inports) {
 		coreGlobals.swMatrix[6] = (coreGlobals.swMatrix[6] & 0xe2)
 			| ((inports[ATARI_COMINPORT] & 0x0004) ? 0x01 : 0)   /* Game       -> SW28 */
@@ -894,7 +947,7 @@ MACHINE_DRIVER_START(ATARI4)
   MDRV_CPU_PERIODIC_INT(ATARI4_irq, ATARI4_IRQFREQ)
   MDRV_CORE_INIT_RESET_STOP(ATARI4,NULL,ATARI)
   MDRV_NVRAM_HANDLER(ATARI4)
-  MDRV_DIPS(32)
+  MDRV_DIPS(16)
   MDRV_SWITCH_UPDATE(ATARI4)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_SWITCH_CONV(ATARI_sw2m,ATARI_m2sw)
