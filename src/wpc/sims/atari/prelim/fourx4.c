@@ -175,6 +175,45 @@ ATARI_INPUT_PORTS_END
 #define sSolE        15
 #define sSolF        16
 
+/*-------------------
+/ Lamps
+/--------------------*/
+/* Found by driving each of the 56 switches in turn with a ball in play and
+   recording which lamp bits answer.  Most bits move for nearly every switch --
+   that is the attract and general illumination flashing -- but these move for
+   one switch only, which makes them that feature's own lamp.
+
+   The matrix column is (device-1)*2 + (register-$0A) for registers $0A and $0B,
+   and 8 + (device-2)*2 + register for registers 0 and 1:
+
+     0 = $210A   1 = $210B   2 = $220A   3 = $220B   4 = $230A   5 = $230B
+     6 = $240A   7 = $240B   8 = $2200   9 = $2201  10 = $2300  11 = $2301
+    12 = $2400  13 = $2401
+
+   column.bit   port        lights with
+     0.4        $210A.4     switch $29, tilt
+     0.5        $210A.5     switch $0C
+     0.6        $210A.6     switch $0D
+     0.7        $210A.7     switch $0E
+     1.4        $210B.4     switch $0F
+     1.5        $210B.5     switch $20
+     1.6        $210B.6     switch $21
+     1.7        $210B.7     switch $22
+     9.5        $2201.5     switch $1C, right drop 1
+     9.6        $2201.6     switch $1D, right drop 2
+     9.7        $2201.7     switch $1E, right drop 3
+     5.0        $230B.0     switch $1F, right drop 4
+    13.7        $2401.7     switch $2A, left coin
+
+   $2300's eight bits and $230B bits 1-7 switch together as one block of
+   fifteen, cleared at game start and on tilt.  The playfield diagram draws a
+   four by four grid of lamps, L1 to L10, which is what the machine is named
+   after, so that block is most likely the grid.
+
+   Everything on $2301, $230A, $240A and $240B bits 4-6 moves for nearly every
+   switch; that is general illumination and attract flashing, not per-feature
+   lamps. */
+
 /*---------------------
 /  Ball state handling
 /----------------------*/

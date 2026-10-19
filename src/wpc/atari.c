@@ -756,13 +756,22 @@ static void slice_write(int dev, int offset, UINT8 data) {
   /   divider's clock, and the sheet carrying it is one of the ones missing
   /   from the schematic set -- the slice pages we have are sheet 4 of 7. --*/
 
-  /*-- Devices 2, 3 and 4 appear in the blit table only at registers 0, 1, $0A
-  /   and $0B -- the four output groups of a nibble-paired slice, with nothing
-  /   driving a segment bus.  Every bit of them measures as a lamp: the
-  /   shortest median on-time among them is 32 frames, against under a dozen
-  /   for the solenoids on $200A/$200B.  Twelve columns, 96 lamps. --*/
-  if (dev >= 2 && dev <= 4 && (reg <= 1 || reg == 0x0a || reg == 0x0b))
-    coreGlobals.lampMatrix[(dev - 2) * 4 + (reg <= 1 ? reg : 2 + (reg - 0x0a))] = data;
+  /*-- Lamps.  Registers 0, 1, $0A and $0B of devices 2, 3 and 4 are all lamps,
+  /   and so are registers $0A and $0B of device 1 -- that last pair was missed
+  /   at first because device 1's registers 0-7 are display digits.  Driving
+  /   each switch in turn and watching which bits answer shows $210A and $210B
+  /   carrying one lamp per target: $0C-$0F light $210A.5, .6, .7 and $210B.4,
+  /   $20-$22 light $210B.5, .6, .7, and the tilt switch lights $210A.4.
+  /
+  /   Not lamps: $230F, whose only driven bits are 4-6, the task bank; device
+  /   0's $200A and $200B, which are the solenoids; and registers 0-7 of
+  /   devices 0 and 1, which are the sixteen BCD digits. --*/
+  if (reg == 0x0a || reg == 0x0b) {
+    if (dev >= 1 && dev <= 4)
+      coreGlobals.lampMatrix[(dev - 1) * 2 + (reg - 0x0a)] = data;
+  }
+  else if (dev >= 2 && dev <= 4 && reg <= 1)
+    coreGlobals.lampMatrix[8 + (dev - 2) * 2 + reg] = data;
 
   if (dev == 0 && (reg == 0x0a || reg == 0x0b)) {
     int shift = (reg == 0x0a) ? 0 : 8;
