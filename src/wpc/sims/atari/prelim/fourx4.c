@@ -16,7 +16,10 @@
 
  The displays are named by the schematics: the backbox sheet puts PLAYER 1 and
  LAP (HEAT) on SEG1 and PLAYER 2 and CREDIT on SEG2, and the playfield diagram
- marks the middle-of-playfield display as ANTE, SEG 3.
+ marks the middle-of-playfield display as ANTE.  The wiring sheet draws three
+ displays on the playfield, of one, six and two digits, and device 1 feeds
+ both of its buses -- so ANTE is one of those three rather than the whole of
+ SEG3, and which one is not established.
 
  The playfield diagram draws two four-by-four lamp grids, L11-L20 on the left
  and L21-L30 on the right, numbered in hex and running straight through.  Its
@@ -173,7 +176,7 @@ ATARI_INPUT_PORTS_END
 #define swVolume     39   /* $27, a cabinet volume control - no game handler */
 /* The playfield diagram's own legend names these, and P9 pins 20, 19, 18, 17
    and P10 pin 11 agree:
-       SW 25 = left side swinging switches   SW 26 = right side
+       SW 25 = left side standing targets    SW 26 = right side
        SW 27 = volume   SW 28 = start   SW 29 = tilt
        SW 2A = left coin   SW 2B = right coin   SW 2C = test */
 #define swStart      40   /* $28 */
@@ -369,7 +372,7 @@ static sim_tSimData fourx4SimData = {
 /   (HEAT) both hang off segments 1A-1G and PLAYER 2 and CREDIT both off
 /   2A-2G, so each bus carries a six-digit score and a two-character display --
 /   eight digits, which is exactly the eight registers.  The playfield diagram
-/   marks the display in the middle of the playfield as ANTE, SEG 3.
+/   marks the display in the middle of the playfield as ANTE.
 /
 /   The slices are nibble-paired: 12E takes BD4-BD7 and drives SEG1 (sheet
 /   4936), 13E takes BD0-BD3 and drives SEG2 (sheet 4933).  So the high nibble
