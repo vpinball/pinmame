@@ -83,6 +83,7 @@ static WRITE_HANDLER(strobe_w) {
   for (bits = data, n = 0; bits; bits >>= 1, n++)
     if (bits & 1) pos += n;
   if (data) pos++;
+  assert(pos < 10); // only digits 0-5 (data = digit<<3) are written
   coreGlobals.segments[     posMap[pos]].w = locals.digit[0];
   coreGlobals.segments[10 + posMap[pos]].w = locals.digit[1];
   coreGlobals.segments[20 + posMap[pos]].w = locals.digit[2];

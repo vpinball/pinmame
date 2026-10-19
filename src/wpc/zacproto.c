@@ -19,10 +19,8 @@
 static struct {
   core_tSeg segments;
   UINT32 solenoids;
-  UINT16 sols2;
   int vblankCount;
-  int dispCount, output, enable;
-  UINT8 sndCmd;
+  int dispCount;
 } locals;
 
 static struct {
