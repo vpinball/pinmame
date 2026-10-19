@@ -18,8 +18,10 @@
  LAP (HEAT) on SEG1 and PLAYER 2 and CREDIT on SEG2, and the playfield diagram
  marks the middle-of-playfield display as ANTE, SEG 3.
 
- The playfield diagram also shows the lamps as a four-by-four grid, L1 through
- L10, which is what the machine is named after.
+ The playfield diagram draws two four-by-four lamp grids, L11-L20 on the left
+ and L21-L30 on the right, numbered in hex and running straight through.  Its
+ lamp numbers are the ROM's own output numbers -- see the lamp comment in
+ atari.c, which checks that six ways.
 
  Sweeping all 56 switches with a ball in play and watching the score, the ante
  countdown and the lamp columns sorts them further.  These score: $02-$04,
@@ -41,10 +43,12 @@
  Still unknown by name: the rollunder spinner, the inlanes and the outlanes.
  They are among the scoring switches above.
 
- There is no sound.  The 82S130 PROM that circulates with this ROM set was
- dumped from a Superman (see the note in atarigames.c) and is not 4x4's, and
- nothing in the ROM writes a port with the shape of the gen-2 sound board's
- control and data registers.  Hence GAME_NO_SOUND.
+ The sound is two POKEYs at $2600 and $2700, driven through the same
+ sixteen-slot ramp engine that fades the lamps.  They are emulated well
+ enough to hear, not well enough to be right -- the high-pass filters and
+ the two-tone mode are not modelled -- hence GAME_IMPERFECT_SOUND.  The
+ 82S130 PROM that circulates with this ROM set is not 4x4's: it was dumped
+ from a Superman, as the note in atarigames.c says.
  ******************************************************************************/
 
 /*------------------------------------------------------------------------------
@@ -137,17 +141,29 @@ ATARI_INPUT_PORTS_END
 #define swMsgr6      17
 #define swMsgr7      18
 #define swMsgr8      19
-#define swLDrop1     20   /* $14 */
+#define swLDrop1     20   /* $14-$17; the diagram draws these four along the
+                           top edge of the left four-by-four grid, and each
+                           lights one lamp of the grid's bottom row ($14, $15
+                           and $16 light $1D, $1E and $1F) -- four lanes by
+                           four levels is what the machine is named after */
 #define swLDrop2     21
 #define swLDrop3     22
 #define swLDrop4     23   /* $17 - resets the left bank */
-#define swRDrop1     28   /* $1C */
+#define swLane1      24   /* $18-$1B, the four the diagram draws along the
+                           bottom edge of the left grid; they light lamps
+                           $35-$38, which the diagram draws as one run */
+#define swLane2      25
+#define swLane3      26
+#define swLane4      27
+#define swRDrop1     28   /* $1C-$1F, the matching set on the right; they
+                           light lamps $45-$48 */
 #define swRDrop2     29
 #define swRDrop3     30
 #define swRDrop4     31   /* $1F - resets the right bank */
 #define swHole       35   /* $23 */
-#define swLSwing     37   /* $25, "left side swinging switches" on the diagram */
-#define swRSwing     38   /* $26, "right side swinging switches" */
+#define swLStand     37   /* $25, "LEFT SIDE STANDING TARGETS" in the diagram's
+                           own legend; it lights lamp $56 */
+#define swRStand     38   /* $26, "RIGHT SIDE STANDING TARGETS"; lamp $57 */
 #define swVolume     39   /* $27, a cabinet volume control - no game handler */
 /* The playfield diagram's own legend names these, and P9 pins 20, 19, 18, 17
    and P10 pin 11 agree:
