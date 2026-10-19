@@ -242,15 +242,15 @@ static WRITE_HANDLER(atari_data_w) {
 /  Only the audio half of POKEY is modelled -- four channels, the frequency and
 /  control registers and AUDCTL.  The potentiometer, keyboard and serial halves
 /  are not wired to anything on this board.  The polynomial counters and the
-/  dividers are clocked at the chip clock, which is the same 12.096 MHz / 8 as
-/  the CPU.
+/  dividers are clocked at the chip clock, which is the same 1.5 MHz as the
+/  CPU, the figure given by one of the two owners.
 /
 /  There are two of them, $2600 and $2700, confirmed by one of the two owners;
 /  only one is legible in the board photograph.  Eight channels, and the ramp
 /  engine's sixteen slots map one to one onto their sixteen registers.
 /---------------------------------------------------------------------------*/
 
-#define ATARI4_POKEY_CLK 1512000
+#define ATARI4_POKEY_CLK 1500000
 #define ATARI4_POKEY_RATE 44100
 
 #define ATARI4_POKEYS 2

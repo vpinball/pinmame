@@ -576,20 +576,20 @@ MACHINE_DRIVER_END
 /------------------------------------------*/
 #define ATARI4_SLICE_DEVS 7  /* $2000,$2100,$2200,$2300,$2400,$2600,$2700 */
 
-/*-- CPU: Atari's house standard for 6502 boards of this era is a 12.096 MHz
-/   crystal divided by 8.  Centipede, Asteroids, Asteroids Deluxe, Tempest,
-/   Black Widow and Food Fight all use exactly that.
+/*-- CPU: 1.5 MHz, given by one of the two owners.  It is close to the
+/   12.096 MHz / 8 = 1.512 MHz that Atari's other 6502 boards of the era use
+/   and that had been assumed here, so the two agree to under a percent, but
+/   the owner's figure is the one with a machine behind it.
 /
 /   IRQ: 60 Hz, the AC line frequency.  A mains zero-crossing interrupt is the
 /   usual arrangement for a pinball of this period, and this is a US 60 Hz
 /   machine (the wiring diagram's transformer has 120 V and 100 V primaries).
-/   It is also what the game itself demands: the interrupt handler costs a
+/   It is also what the game demands: the interrupt handler costs a
 /   near-constant 3328 cycles, so at 369 Hz it consumed 81% of the CPU and the
 /   Forth layer managed under 5000 words in a minute of emulated time.  At
 /   60 Hz the handler takes 13% and the game executes 1.1 million words in the
-/   same minute, with no illegal opcodes and no execution outside ROM.  The
-/   earlier 575 kHz / 500 Hz and 1 MHz / 500 Hz pairs had no stated basis. --*/
-#define ATARI4_CPUFREQ 1512000
+/   same minute. --*/
+#define ATARI4_CPUFREQ 1500000
 #define ATARI4_IRQFREQ 60
 
 /*-- The game kicks $230C on every interrupt and inside its power-up busy-wait,
