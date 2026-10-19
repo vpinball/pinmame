@@ -1925,6 +1925,18 @@ SOURCE=.\src\windows\winprefix.h
 # Begin Group "sims"
 
 # PROP Default_Filter ""
+# Begin Group "atari"
+
+# PROP Default_Filter ""
+# Begin Group "prelim_atari"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\wpc\sims\atari\prelim\fourx4.c
+# End Source File
+# End Group
+# End Group
 # Begin Group "s11"
 
 # PROP Default_Filter ""

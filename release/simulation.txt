@@ -124,3 +124,24 @@ only -- and Jupiter's release coil is not seen firing in ordinary play, which
 matches manual 3.3.7: without every ORBITS lamp lit Jupiter holds no ball.  So a
 ball passing straight through either of them is the ordinary case, not a fault.
 Hole 1 is different: it has a real coil and waits for it.
+
+4x4 (fourx4)
+------------
+Atari's 1982-83 prototype; two machines were built and neither is in general
+circulation, so the simulator is preliminary.  Three balls.  The keys are:
+
+  Q     Drain ball
+  WER   Upper / Mid / Lower pop bumper
+  ASDF  Left drop target bank 1-4 (switches $14-$17)
+  ZXCV  Right drop target bank 1-4 (switches $1C-$1F)
+  H     Kick-out hole
+
+The playfield is only partly known.  Switch and solenoid names come from the
+pencilled playfield diagram, whose SW and SOL numbers are the ones the game
+dispatches on; lamp numbers are the ROM's own output numbering, which is
+blitIndex*8 + bit.  The three pop bumpers, both drop target banks, the two
+side standing target banks and the cabinet switches are named; the spinner,
+the inlanes and the outlanes are not.
+
+Sound is two POKEYs and is approximate: the high-pass filters and the
+two-tone mode are not modelled.
