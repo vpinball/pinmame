@@ -283,8 +283,9 @@ static BOOL readSlot(const HANDLE hFile, char * msg)
 		return FALSE;
 	}
 
-	// if there are any data waiting to be read
-	if (msgSize > 0)
+	// if there are any data waiting to be read (MAILSLOT_NO_MESSAGE is (DWORD)-1: on x64 the ~4 GB
+	// GlobalAlloc() can succeed and ReadFile() then blocks forever on the empty slot)
+	if (msgSize != MAILSLOT_NO_MESSAGE && msgSize > 0)
 	{
 		// Allocate buffer memory
 		buffer = (LPTSTR) GlobalAlloc(GPTR, msgSize); //Combines GMEM_FIXED and GMEM_ZEROINIT.
@@ -360,6 +361,11 @@ void reinit_pinSound(void)
 	char	buffer_msg[100];
 
 	if (!(pmoptions.sound_mode == 2 || pmoptions.sound_mode == 3) || options.samplerate == 0) // if not internal or external pinsound enabled, or if sound in general is disabled -> return
+		return;
+
+	// called for each board: skip the ones without a sound system name (e.g. the DE DMD board),
+	// PinSound Studio would only answer "unsupported sound system: (null)"
+	if (!sndbrd_typestr(0) && !sndbrd_typestr(1))
 		return;
 
 	init_pinsound = FALSE;
