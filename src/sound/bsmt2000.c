@@ -210,8 +210,9 @@ struct BSMT2000LLE
     bool        write_pending;          /* drives BIO; cleared when the DSP reads the data word */
     double      cycles_per_sample;      /* DSP cycles per output sample, on average */
     bool        mono;                   /* mode 0: the program only writes the left DAC */
+    UINT8       mode;                   /* the mode the program runs in (lle_set_mode) */
     bool        tick;                   /* the program wrote the left DAC, i.e. completed a sample */
-    bool        right_seen;             /* the right DAC has carried sound (sticky, see bsmt2000_lle_update) */
+    bool        right_volume_set;       /* a right volume register was written (as the HLE's right_volume_set, see bsmt2000_lle_update) */
     /* output cadence measurement, to check the stream rate against what the program really does */
     UINT64      cycles_run;
     UINT64      cycles_at_first_dac;
@@ -323,8 +324,6 @@ static void lle_io_w(void *param, int port, UINT16 data)
             break;
         case 7:
             l->right = (INT16)data;
-            if (l->right > 64 || l->right < -64)
-                l->right_seen = true;
             break;
     }
 }
@@ -359,6 +358,7 @@ static void lle_set_mode(int i, int mode, bool update_stream)
         return;
     lle[i].cycles_per_sample = cycles;
     lle[i].mono = (mode == 0);
+    lle[i].mode = (UINT8)mode;
     chip->sample_rate = chip->clock / 4. / cycles; // the TMS320C1x runs one cycle per 4 input clocks
     if (update_stream)
     {
@@ -398,11 +398,20 @@ static void bsmt2000_lle_update(int num, INT16 **buffer, int length)
         l->cycles_run += spent;
         ldest[samp] = l->left;
         /* Mode 0 is mono (only the left DAC is written). Some stereo-mode games never set a right volume
-           (Monopoly, RollerCoaster Tycoon: the HLE's right_volume_set): the chip then really outputs
-           silence on the right, and those mono machines use the left output only. So, as the HLE does,
-           the left output goes to both channels until the right one has carried any sound. */
-        rdest[samp] = (l->mono || !l->right_seen) ? l->left : l->right;
+           (Monopoly, RollerCoaster Tycoon): the chip then really outputs silence on the right, and those
+           mono machines use the left output only. So, as the HLE does, the left output goes to both
+           channels until a right volume register is written (lle_right_volume_reg). */
+        rdest[samp] = (l->mono || !l->right_volume_set) ? l->left : l->right;
     }
+}
+
+/* the writes the HLE sets right_volume_set on (bsmt2000_reg_write): a PCM voice's right volume, or the ADPCM voice's (modes 0/1) */
+static bool lle_right_volume_reg(int mode, offs_t offset)
+{
+    static const UINT8 voices[8] = { 12, 11, 0, 0, 0, 12, 8, 9 };
+    if (offset < 0x6d)
+        return offset >= regmap[mode][REG_RIGHTVOL] && offset < regmap[mode][REG_LEFTVOL] && offset - regmap[mode][REG_RIGHTVOL] < voices[mode];
+    return mode <= 1 && (offset == 0x6e || offset == 0x74);
 }
 
 static void lle_start(int i, const struct BSMT2000interface *intf)
@@ -410,8 +419,8 @@ static void lle_start(int i, const struct BSMT2000interface *intf)
     struct BSMT2000LLE * const l = &lle[i];
     memset(l, 0, sizeof(*l));
     tms320c1x_init(&l->dsp, lle_firmware, 12, l, lle_io_r, lle_io_w, lle_bio_r);
-    // power-on mode: the HLE's guess from the voice count; the Data East/Sega/Stern boards set it themselves
-    // with a reset, Alvin G. does not wire the reset (yet), so the program starts in this mode there
+    // power-on mode: BSMT2000_sh_start's placeholder (mode 1); every board (Data East/Sega/Stern, Alvin G.)
+    // then sets the game's mode with a reset (lle_reset)
     l->register_select = bsmt2000[i].last_register;
     lle_set_mode(i, l->register_select, true);
     tms320c1x_reset(&l->dsp);
@@ -1119,6 +1128,8 @@ WRITE16_HANDLER( BSMT2000_data_0_w )
 		stream_update(bsmt2000[0].stream, 0);
 		l->register_select = (UINT16)offset;
 		COMBINE_DATA(&l->write_data);
+		if (lle_right_volume_reg(l->mode, offset))
+			l->right_volume_set = true;
 		if (l->write_pending)
 			l->missed_writes++;
 		l->write_pending = true;

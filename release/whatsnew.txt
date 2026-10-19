@@ -29,6 +29,8 @@ Simulator: add possibility to add a 'autoBall'
 Fixed sounds.dat for WPCS
 Added sound commands of 725 games to sound.dat (unnamed for now)
 
+Fixed colorize DMD option
+
 VS2026 build support
 
 Get rid of BasicBitmap external dependency
