@@ -291,6 +291,15 @@ static int pokey_silenced(const struct pokey_chip *c, int ch) {
   return 0;
 }
 
+/*-- A channel at volume zero cannot be heard, so its divider and flip-flop
+/   need not be advanced; when the volume comes back the phase it resumes on
+/   is inaudible.  A chip with all four silent needs no polynomial stepping
+/   either.  Most of the time most channels are quiet, and the chips tick at
+/   1.5 MHz, so this is most of the cost. --*/
+static int pokey_audible(const struct pokey_chip *c) {
+  return (c->audc[0] | c->audc[1] | c->audc[2] | c->audc[3]) & 0x0f;
+}
+
 static void pokey_tick(struct pokey_chip *c) {
   int ch;
   /*-- 4, 5 and 17 bit maximal length shift registers, taps as in the part --*/
@@ -302,6 +311,7 @@ static void pokey_tick(struct pokey_chip *c) {
     c->p17 = (c->p17 >> 1) | (((c->p17 ^ (c->p17 >> 5)) & 1) << 16);
 
   for (ch = 0; ch < 4; ch++) {
+    if (!(c->audc[ch] & 0x0f)) continue;
     if (c->div[ch] == 0) c->div[ch] = pokey_divisor(c, ch);
     if (--c->div[ch]) continue;
     c->div[ch] = pokey_divisor(c, ch);
@@ -321,7 +331,8 @@ static void pokey_update(int num, INT16 *buffer, int length) {
     pkmix.acc += step;
     while (pkmix.acc >= 1.0) {
       pkmix.acc -= 1.0;
-      for (n = 0; n < ATARI4_POKEYS; n++) pokey_tick(&pk[n]);
+      for (n = 0; n < ATARI4_POKEYS; n++)
+        if (pokey_audible(&pk[n])) pokey_tick(&pk[n]);
     }
     for (n = 0; n < ATARI4_POKEYS; n++)
       for (ch = 0; ch < 4; ch++) {
