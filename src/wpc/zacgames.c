@@ -1447,6 +1447,7 @@ ROM_START(thndrman)
 ZAC_ROMEND
 CORE_GAMEDEFNV(thndrman,"Thunder Man",1987,"Apple Time",thndrman,0)
 
+// https://pinside.com/pinball/forum/topic/apple-time-thunder-man-info-zaccariaunknown-hybrid/page/2#post-9352611 :
 INITGAME(thndrmne,GEN_ZAC2,dispZAC3,SNDBRD_ZAC1370,USES_TMS_5220|NEEDS_TMS_RESET_ON_DATA|NO_AY8910)
 ROM_START(thndrmne)
   NORMALREGION (0x10000, ZAC_MEMREG_CPU)
@@ -1470,7 +1471,7 @@ ROM_START(thndrmne)
   ROM_LOAD("snd_1f_gb.764", 0xc000, 0x2000, CRC(84013b7f) SHA1(1c8e10f2be55d91e2ef3a9faf5b9e8b54df4df38))
   ROM_LOAD("snd_1c_gb.764", 0xe000, 0x2000, CRC(86665dd1) SHA1(7bda81189bd2201cd2abb8f409562aa448b43ec5))
 ZAC_ROMEND
-CORE_CLONEDEFNV(thndrmne,thndrman,"Thunder Man (English Speech)",1987,"Apple Time",thndrman,0)
+CORE_CLONEDEFNV(thndrmne,thndrman,"Thunder Man (English Speech MOD)",2026,"Apple Time",thndrman,0)
 
 INITGAME(thndrmnz,GEN_ZAC2,dispZAC3,SNDBRD_ZAC1370,USES_TMS_5220|NEEDS_TMS_RESET_ON_DATA|NO_AY8910)
 ROM_START(thndrmnz)
@@ -1491,7 +1492,7 @@ ROM_START(thndrmnz)
   ROM_LOAD("snd_1f.764", 0xc000, 0x2000, CRC(400e8e2a) SHA1(24af3a8e11aec89ae27a5cfcce9d4624bede18f7))
   ROM_LOAD("snd_1c.764", 0xe000, 0x2000, CRC(4f18409f) SHA1(21002a147e2542caacba0392cec62511343b90c2))
 ZAC_ROMEND
-CORE_CLONEDEFNV(thndrmnz,thndrman,"Thunder Man (Zaccaria CPU Board Conversion)",1987,"Apple Time",thndrman,0)
+CORE_CLONEDEFNV(thndrmnz,thndrman,"Thunder Man (Zaccaria CPU Board Conversion MOD)",2026,"Apple Time",thndrman,0)
 
 INITGAME(thndrmnze,GEN_ZAC2,dispZAC3,SNDBRD_ZAC1370,USES_TMS_5220|NEEDS_TMS_RESET_ON_DATA|NO_AY8910)
 ROM_START(thndrmnze)
@@ -1512,4 +1513,4 @@ ROM_START(thndrmnze)
   ROM_LOAD("snd_1f_gb.764", 0xc000, 0x2000, CRC(84013b7f) SHA1(1c8e10f2be55d91e2ef3a9faf5b9e8b54df4df38))
   ROM_LOAD("snd_1c_gb.764", 0xe000, 0x2000, CRC(86665dd1) SHA1(7bda81189bd2201cd2abb8f409562aa448b43ec5))
 ZAC_ROMEND
-CORE_CLONEDEFNV(thndrmnze,thndrman,"Thunder Man (Zaccaria CPU Board Conversion, English Speech)",1987,"Apple Time",thndrman,0)
+CORE_CLONEDEFNV(thndrmnze,thndrman,"Thunder Man (Zaccaria CPU Board Conversion, English Speech MOD)",2026,"Apple Time",thndrman,0)

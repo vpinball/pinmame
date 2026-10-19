@@ -164,6 +164,7 @@ Revenge From Mars 2.60, 2.50, 2.24 (r3, r2 & r1), 2.23, 2.22, 2.21, 2.20, 2.10 (
 Star Wars Episode I 2.10, 2.01, 2.00m (unofficial MODs by myPinballs)
                     2.00h, 1.66 (r2 & r1), 1.65 (r2 & r1) (unofficial MODs by hemtoni, a separate line from myPinballs' 2.x above)
                     1.60 (kinda official MOD by Tom Uban, released alongside RFM 1.80)
+Thunder Man (English Speech MOD), (Zaccaria CPU Board Conversion MOD), (Zaccaria CPU Board Conversion, English Speech MOD)
 
 Correct Dumps:
 DE: Batman 1.06 (just using correct name for the display rom (1.02 instead of 1.06))

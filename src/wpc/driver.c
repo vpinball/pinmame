@@ -90,9 +90,9 @@ DRIVERNV(test8031)      //Test 8031 cpu core
 // APPLE TIME
 // --------------------
 DRIVERNV(thndrman)      //Thunder Man (Zaccaria hardware)
-DRIVERNV(thndrmne)      //Thunder Man (English Speech)
-DRIVERNV(thndrmnz)      //Thunder Man (Zaccaria CPU Board Conversion)
-DRIVERNV(thndrmnze)     //Thunder Man (Zaccaria CPU Board Conversion, English Speech)
+DRIVERNV(thndrmne)      //Thunder Man (English Speech MOD)
+DRIVERNV(thndrmnz)      //Thunder Man (Zaccaria CPU Board Conversion MOD)
+DRIVERNV(thndrmnze)     //Thunder Man (Zaccaria CPU Board Conversion, English Speech MOD)
 
 // --------------------
 // ARKON
