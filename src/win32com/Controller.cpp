@@ -45,7 +45,7 @@ extern UINT32 g_raw_dmdy;
 extern UINT8  g_needs_DMD_update;
 extern int g_cpu_affinity_mask;
 
-extern char g_fShowWinDMD;
+extern int g_fShowWinDMD;
 extern char g_szGameName[256];
 
 extern UINT8 g_VPM_ignore_pwm_segments_update;
