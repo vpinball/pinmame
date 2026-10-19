@@ -85,20 +85,58 @@ ATARI2_INPUT_PORTS_START(fourx4,3)
     COREPORT_BIT(0x0200,"Right Drop 3",       KEYCODE_C)
     COREPORT_BIT(0x0400,"Right Drop 4",       KEYCODE_V)
     COREPORT_BIT(0x0800,"Kick-out Hole",      KEYCODE_H)
+    COREPORT_BIT(0x1000,"Outhole",            KEYCODE_O)
     COREPORT_BIT(0x4000,"Drain",              KEYCODE_Q)
+  PORT_START /* 1 */
+    COREPORT_BIT(0x0001,"Messenger 1",        KEYCODE_1_PAD)
+    COREPORT_BIT(0x0002,"Messenger 2",        KEYCODE_2_PAD)
+    COREPORT_BIT(0x0004,"Messenger 3",        KEYCODE_3_PAD)
+    COREPORT_BIT(0x0008,"Messenger 4",        KEYCODE_4_PAD)
+    COREPORT_BIT(0x0010,"Messenger 5",        KEYCODE_5_PAD)
+    COREPORT_BIT(0x0020,"Messenger 6",        KEYCODE_6_PAD)
+    COREPORT_BIT(0x0040,"Messenger 7",        KEYCODE_7_PAD)
+    COREPORT_BIT(0x0080,"Messenger 8",        KEYCODE_8_PAD)
 ATARI_INPUT_PORTS_END
 
 /*-------------------
 / Switch definitions
 /--------------------*/
 /* The game dispatches on col*8+bit, and ATARI_sw2m maps a switch number
-   straight onto that, so these numbers are the game's own event codes. */
-#define swRFlipper    0   /* P11 pin 13; schematic marks it RT FLIPPER */
-#define swLFlipper    4   /* P11 pin 5; schematic marks it LT FLIPPER */
+   straight onto that, so these numbers are the game's own event codes -- and
+   the same hex numbers the wiring sheets print against the connector pins.
+
+   The handler table at $8B06 gives one thread per switch, and its shape sorts
+   them.  Nine switches point at the do-nothing stub $8A9C and so have no
+   handler at all: $00, $04, $27, $2D, $2E, $2F and $34-$37.  The first two are
+   the flipper buttons, which is why holding them produces no coil write -- the
+   flippers are gated in hardware, not pulsed by the CPU.
+
+   The rest fall into groups whose handlers are the same size as each other:
+
+     $01-$03   three pop bumpers (measured: upper, mid, lower)
+     $05-$07   three of a kind
+     $0C-$13   eight of a kind -- IPDB lists eight messenger balls
+     $14-$17   four of a kind, and $17 fires reset-left-bank
+     $18-$1B   four of a kind
+     $1C-$1F   four of a kind, and $1F fires reset-right-bank
+     $20-$23   four of a kind, same sizes as $18-$1B
+     $28-$2C   the cabinet, named outright by P9 and P10
+     $30-$33   four on column 6
+*/
+#define swRFlipper    0   /* P11 pin 13, RT FLIPPER; no handler */
 #define swUpperPop    1
 #define swMidPop      2
 #define swLowerPop    3
+#define swLFlipper    4   /* P11 pin 5, LT FLIPPER; no handler */
 #define swOuthole     7   /* works the ball feed */
+#define swMsgr1      12   /* $0C-$13, the group of eight */
+#define swMsgr2      13
+#define swMsgr3      14
+#define swMsgr4      15
+#define swMsgr5      16
+#define swMsgr6      17
+#define swMsgr7      18
+#define swMsgr8      19
 #define swLDrop1     20   /* $14 */
 #define swLDrop2     21
 #define swLDrop3     22
@@ -143,7 +181,8 @@ ATARI_INPUT_PORTS_END
 enum {stTrough=SIM_FIRSTSTATE, stShooter, stDrain, stOuthole,
       stUpperPop, stMidPop, stLowerPop,
       stLDrop1, stLDrop2, stLDrop3, stLDrop4,
-      stRDrop1, stRDrop2, stRDrop3, stRDrop4, stHole
+      stRDrop1, stRDrop2, stRDrop3, stRDrop4, stHole,
+      stMsgr1, stMsgr2, stMsgr3, stMsgr4, stMsgr5, stMsgr6, stMsgr7, stMsgr8
 };
 
 static sim_tState fourx4_stateDef[] = {
@@ -172,6 +211,15 @@ static sim_tState fourx4_stateDef[] = {
   {"Right Drop 4",    1,swRDrop4,  0,          stFree,    1},
 
   {"Kick-out Hole",   1,swHole,    sHoleKick,  stFree,    3},
+
+  {"Messenger 1",     1,swMsgr1,   0,          stFree,    1},
+  {"Messenger 2",     1,swMsgr2,   0,          stFree,    1},
+  {"Messenger 3",     1,swMsgr3,   0,          stFree,    1},
+  {"Messenger 4",     1,swMsgr4,   0,          stFree,    1},
+  {"Messenger 5",     1,swMsgr5,   0,          stFree,    1},
+  {"Messenger 6",     1,swMsgr6,   0,          stFree,    1},
+  {"Messenger 7",     1,swMsgr7,   0,          stFree,    1},
+  {"Messenger 8",     1,swMsgr8,   0,          stFree,    1},
   {0}
 };
 
@@ -191,7 +239,16 @@ static sim_tInportData fourx4_inportData[] = {
   {0, 0x0200, stRDrop3},
   {0, 0x0400, stRDrop4},
   {0, 0x0800, stHole},
+  {0, 0x1000, stOuthole},
   {0, 0x4000, stDrain},
+  {1, 0x0001, stMsgr1},
+  {1, 0x0002, stMsgr2},
+  {1, 0x0004, stMsgr3},
+  {1, 0x0008, stMsgr4},
+  {1, 0x0010, stMsgr5},
+  {1, 0x0020, stMsgr6},
+  {1, 0x0040, stMsgr7},
+  {1, 0x0080, stMsgr8},
   {0}
 };
 
@@ -203,8 +260,8 @@ static void fourx4_drawStatic(BMTYPE **line) {
   core_textOutf(30, 70,BLACK,"W/E/R = Upper/Mid/Lower pop bumper");
   core_textOutf(30, 80,BLACK,"A/S/D/F = Left drop target bank");
   core_textOutf(30, 90,BLACK,"Z/X/C/V = Right drop target bank");
-  core_textOutf(30,100,BLACK,"H = Kick-out hole, Q = Drain ball");
-  core_textOutf(30,110,BLACK,"");
+  core_textOutf(30,100,BLACK,"H = Kick-out hole, O = Outhole, Q = Drain");
+  core_textOutf(30,110,BLACK,"Keypad 1-8 = the eight-switch group");
   core_textOutf(30,120,BLACK,"Prototype: two machines were built, and");
   core_textOutf(30,130,BLACK,"the playfield is only partly known.");
   core_textOutf(30,140,BLACK,"");
@@ -224,7 +281,7 @@ ATARI_ROMEND
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData fourx4SimData = {
-  1,                    /* 1 game specific input port */
+  2,                    /* 2 game specific input ports */
   fourx4_stateDef,      /* Definition of all states */
   fourx4_inportData,    /* Keyboard Entries */
   { stTrough, stTrough, stTrough, stDrain, stDrain, stDrain, stDrain },
