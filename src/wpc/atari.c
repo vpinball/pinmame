@@ -714,9 +714,24 @@ static void slice_write(int dev, int offset, UINT8 data) {
   /   through ULN2803A 12D/A, 13E takes BD0-BD3 and drives SEG2 through 13D.
   /   So one register byte carries two digits, one per segment bus, and the
   /   register index is the digit position: four buses of eight. --*/
+  /*-- The register index is the digit position, counting up from the least
+  /   significant.  Measured by hammering a pop bumper through a game and
+  /   counting how often each nibble changes: on device 0 the high nibbles of
+  /   $2001, $2002, $2003 and $2004 changed 254, 124, 12 and 1 times, a clean
+  /   factor of ten per place, and $2000 changed exactly once -- it is the
+  /   units digit, which goes to 0 on the first score and stays there because
+  /   nothing scores less than ten.  $2005 never left blank.  So the score
+  /   reads $2005 down to $2000, and the display layout, which puts the most
+  /   significant digit first, needs the index turned around.
+  /
+  /   Device 0 carries the two-digit heat and credit displays in registers 6
+  /   and 7, past the end of the six-digit score, so only the first six turn
+  /   around there.  Device 1 has no such pair -- its registers 0 and 1 are
+  /   lamps -- and its six digits are registers 2 to 7. --*/
   if (dev <= 1 && reg <= 7 && !(dev == 1 && reg <= 1)) {
-    coreGlobals.segments[dev * 16 + reg].w     = core_bcd2seg7a[data >> 4];
-    coreGlobals.segments[dev * 16 + 8 + reg].w = core_bcd2seg7a[data & 0x0f];
+    int pos = (dev == 0) ? ((reg <= 5) ? 5 - reg : reg) : (7 - reg);
+    coreGlobals.segments[dev * 16 + pos].w     = core_bcd2seg7a[data >> 4];
+    coreGlobals.segments[dev * 16 + 8 + pos].w = core_bcd2seg7a[data & 0x0f];
   }
 
   /*-- Registers $0A and $0B of device 0 are the solenoids.  The slices are
