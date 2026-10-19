@@ -134,7 +134,11 @@ circulation, so the simulator is preliminary.  Three balls.  The keys are:
   WER   Upper / Mid / Lower pop bumper
   ASDF  Left drop target bank 1-4 (switches $14-$17)
   ZXCV  Right drop target bank 1-4 (switches $1C-$1F)
+  TYUI  Lanes 1-4 (switches $18-$1B), along the bottom of the left grid
+  GJ    Left / right side standing targets (switches $25, $26)
   H     Kick-out hole
+  O     Outhole
+  1-8   (keypad) the eight-switch group at $0C-$13
 
 The playfield is only partly known.  Switch and solenoid names come from the
 pencilled playfield diagram, whose SW and SOL numbers are the ones the game

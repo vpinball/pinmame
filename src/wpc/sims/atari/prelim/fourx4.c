@@ -100,6 +100,12 @@ ATARI2_INPUT_PORTS_START(fourx4,3)
     COREPORT_BIT(0x0020,"Messenger 6",        KEYCODE_6_PAD)
     COREPORT_BIT(0x0040,"Messenger 7",        KEYCODE_7_PAD)
     COREPORT_BIT(0x0080,"Messenger 8",        KEYCODE_8_PAD)
+    COREPORT_BIT(0x0100,"Lane 1",             KEYCODE_T)
+    COREPORT_BIT(0x0200,"Lane 2",             KEYCODE_Y)
+    COREPORT_BIT(0x0400,"Lane 3",             KEYCODE_U)
+    COREPORT_BIT(0x0800,"Lane 4",             KEYCODE_I)
+    COREPORT_BIT(0x1000,"Left Standing Tgts", KEYCODE_G)
+    COREPORT_BIT(0x2000,"Right Standing Tgts",KEYCODE_J)
 ATARI_INPUT_PORTS_END
 
 /*-------------------
@@ -201,42 +207,28 @@ ATARI_INPUT_PORTS_END
 /*-------------------
 / Lamps
 /--------------------*/
-/* The game numbers lamps column*8 + bit, the same scheme as the switches, and
-   the playfield diagram names enough of them to place three columns.
+/* Lamp numbers here are the ROM's own output numbers, blitIndex*8 + bit --
+   the same scheme as the solenoids.  atari.c carries the derivation and the
+   port-to-column table; the short version is that the lamp column is the
+   port's slot in the blit list at $8844, and the playfield diagram's L**
+   labels land on those numbers with no offset.
 
-   The diagram draws the four by four grid the machine is named after as lamps
-   L11 to L20, sixteen consecutive numbers, and labels L59 GAME OVER PL1,
-   L5A GAME OVER PL2 and L5B TILT.  Driving each switch in turn and watching
-   which lamp bits answer then pins the columns:
+   What the diagram names:
 
-     $2201 = column 3    switches $1C-$1F light $2201.5, .6, .7 and $230B.0,
-                         which is the grid's bottom row, lamps $1D-$20, and
-                         every bit position agrees with the number
-     $230B = column 4    lamp $20 = column 4 bit 0
-     $2300 = column 11   bits 1, 2 and 3 are L59, L5A and L5B, and $2300's
-                         eight bits switch as a block at game over and on
-                         tilt; P3, a backbox connector, carries $58-$5B
+     L11-L20   the left four-by-four grid, the feature the machine is named
+               after, with switches $14-$17 along its top edge and $18-$1B
+               along its bottom
+     L21-L30   the right four-by-four grid
+     L35-L38   a run of lane lamps, lit by switches $18-$1B
+     L45-L48   lit by switches $1C-$1F
+     L53-L55   the three pop bumper lamps; the diagram writes each as a
+               triplet with its solenoid and switch, L53/SOL 3/SW 3 and so on,
+               and those solenoid and switch numbers match this file
+     L55-L58   the cluster above the pops, lit by switches $24-$27
 
-   Verified in the emulation: with a game running, column 3 reads $20 -- bit 5,
-   lamp $1D -- and the grid renders with its bottom row lit.
-
-   The other eleven lamp ports are known to be lamps but not yet placed, so the
-   driver puts them at columns 12 and above rather than guessing them into the
-   real numbering.  Placing them needs more anchors of the same kind: a lamp
-   the diagram names against a bit the emulation can be made to light.
-
-   Bits on the unplaced columns that answer to exactly one switch, and so
-   belong to that feature:
-
-     $210A.4 with switch $29      $210B.4 with switch $0F
-     $210A.5 with switch $0C      $210B.5 with switch $20
-     $210A.6 with switch $0D      $210B.6 with switch $21
-     $210A.7 with switch $0E      $210B.7 with switch $22
-     $2401.7 with switch $2A, the left coin
-
-   Note $210A.4 is not the tilt lamp despite answering to the tilt switch --
-   tilt starts a whole sequence, and the diagram puts tilt at L5B, column 11
-   bit 3. */
+   One loose end: L11-L17 would be image byte 2 bits 1-7, and bits 4-6 of that
+   byte are the task bank, so three lamps of the left grid have nowhere to sit.
+   Everything else checks out, so it is recorded rather than worked around. */
 
 /*---------------------
 /  Ball state handling
@@ -245,6 +237,7 @@ enum {stTrough=SIM_FIRSTSTATE, stShooter, stDrain, stOuthole,
       stUpperPop, stMidPop, stLowerPop,
       stLDrop1, stLDrop2, stLDrop3, stLDrop4,
       stRDrop1, stRDrop2, stRDrop3, stRDrop4, stHole,
+      stLane1, stLane2, stLane3, stLane4, stLStand, stRStand,
       stMsgr1, stMsgr2, stMsgr3, stMsgr4, stMsgr5, stMsgr6, stMsgr7, stMsgr8
 };
 
@@ -274,6 +267,14 @@ static sim_tState fourx4_stateDef[] = {
   {"Right Drop 4",    1,swRDrop4,  0,          stFree,    1},
 
   {"Kick-out Hole",   1,swHole,    sHoleKick,  stFree,    3},
+
+  {"Lane 1",          1,swLane1,   0,          stFree,    1},
+  {"Lane 2",          1,swLane2,   0,          stFree,    1},
+  {"Lane 3",          1,swLane3,   0,          stFree,    1},
+  {"Lane 4",          1,swLane4,   0,          stFree,    1},
+
+  {"L Standing Tgt",  1,swLStand,  0,          stFree,    1},
+  {"R Standing Tgt",  1,swRStand,  0,          stFree,    1},
 
   {"Messenger 1",     1,swMsgr1,   0,          stFree,    1},
   {"Messenger 2",     1,swMsgr2,   0,          stFree,    1},
@@ -312,6 +313,12 @@ static sim_tInportData fourx4_inportData[] = {
   {1, 0x0020, stMsgr6},
   {1, 0x0040, stMsgr7},
   {1, 0x0080, stMsgr8},
+  {1, 0x0100, stLane1},
+  {1, 0x0200, stLane2},
+  {1, 0x0400, stLane3},
+  {1, 0x0800, stLane4},
+  {1, 0x1000, stLStand},
+  {1, 0x2000, stRStand},
   {0}
 };
 
@@ -325,9 +332,9 @@ static void fourx4_drawStatic(BMTYPE **line) {
   core_textOutf(30, 90,BLACK,"Z/X/C/V = Right drop target bank");
   core_textOutf(30,100,BLACK,"H = Kick-out hole, O = Outhole, Q = Drain");
   core_textOutf(30,110,BLACK,"Keypad 1-8 = the eight-switch group");
-  core_textOutf(30,120,BLACK,"Prototype: two machines were built, and");
-  core_textOutf(30,130,BLACK,"the playfield is only partly known.");
-  core_textOutf(30,140,BLACK,"");
+  core_textOutf(30,120,BLACK,"T/Y/U/I = Lanes 1-4, G/J = Standing tgts");
+  core_textOutf(30,130,BLACK,"Prototype: two machines were built, and");
+  core_textOutf(30,140,BLACK,"the playfield is only partly known.");
   core_textOutf(30,150,BLACK,"      *** PRELIMINARY ***");
   core_textOutf(30,160,BLACK,"");
 }
