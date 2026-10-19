@@ -30,9 +30,16 @@
  that fire the bank resets, so the four of them are the ends of the two drop
  target banks.
 
- Still unknown by name: the left flipper button, the rollunder spinner, the
- inlanes and the outlanes.  They are among the scoring switches above; telling
- which is which needs a playfield with the switch numbers on it.
+ The wiring sheets name some of them outright, and they use the same hex switch
+ numbers the game dispatches on.  P9 pins 20, 19, 18 and 17 are SW $28 START,
+ $29 TILT, $2A COIN LT and $2B COIN RT, and P10 pin 11 is SW $2C TEST -- the
+ five the attract enable mask $1D had already pointed at.  P11 marks RT FLIPPER
+ at pin 13, which is SW $00, matching the measurement, and LT FLIPPER at pin 5,
+ which is SW $04.  The flipper buttons appear to be gated in hardware rather
+ than pulsed by the CPU: holding SW $04 produces no coil write.
+
+ Still unknown by name: the rollunder spinner, the inlanes and the outlanes.
+ They are among the scoring switches above.
 
  There is no sound.  The 82S130 PROM that circulates with this ROM set was
  dumped from a Superman (see the note in atarigames.c) and is not 4x4's, and
@@ -86,7 +93,8 @@ ATARI_INPUT_PORTS_END
 /--------------------*/
 /* The game dispatches on col*8+bit, and ATARI_sw2m maps a switch number
    straight onto that, so these numbers are the game's own event codes. */
-#define swRFlipper    0   /* works the right flipper */
+#define swRFlipper    0   /* P11 pin 13; schematic marks it RT FLIPPER */
+#define swLFlipper    4   /* P11 pin 5; schematic marks it LT FLIPPER */
 #define swUpperPop    1
 #define swMidPop      2
 #define swLowerPop    3
@@ -100,7 +108,8 @@ ATARI_INPUT_PORTS_END
 #define swRDrop3     30
 #define swRDrop4     31   /* $1F - resets the right bank */
 #define swHole       35   /* $23 */
-#define swStart      40   /* $28 - column 5, in the attract enable mask $1D */
+/* P9 pins 20, 19, 18, 17 and P10 pin 11 name these outright */
+#define swStart      40   /* $28 */
 #define swTilt       41   /* $29 */
 #define swLCoin      42   /* $2A */
 #define swRCoin      43   /* $2B */
