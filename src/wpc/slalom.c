@@ -136,7 +136,8 @@ static WRITE_HANDLER(sol_w) {
   static const int pos[7] = { 5, 4, 3, 0, 6, 1, 2 };
   UINT32 solMask, solBits;
   if (!locals.isBr) { // on slalom03, $A008 is the display column write ($9002 on blroller)
-    locals.dispCol = pos[core_BitColToNum(data) - 1];
+    // the ROM also writes 0 here (no column set): keep column 0 instead of reading pos[-1]
+    locals.dispCol = (data & 0xfe) ? pos[core_BitColToNum(data & 0xfe) - 1] : 0;
     locals.dispCnt = 0;
     return;
   }
