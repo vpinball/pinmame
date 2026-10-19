@@ -146,7 +146,14 @@ ATARI_INPUT_PORTS_END
 #define swRDrop3     30
 #define swRDrop4     31   /* $1F - resets the right bank */
 #define swHole       35   /* $23 */
-/* P9 pins 20, 19, 18, 17 and P10 pin 11 name these outright */
+#define swLSwing     37   /* $25, "left side swinging switches" on the diagram */
+#define swRSwing     38   /* $26, "right side swinging switches" */
+#define swVolume     39   /* $27, a cabinet volume control - no game handler */
+/* The playfield diagram's own legend names these, and P9 pins 20, 19, 18, 17
+   and P10 pin 11 agree:
+       SW 25 = left side swinging switches   SW 26 = right side
+       SW 27 = volume   SW 28 = start   SW 29 = tilt
+       SW 2A = left coin   SW 2B = right coin   SW 2C = test */
 #define swStart      40   /* $28 */
 #define swTilt       41   /* $29 */
 #define swLCoin      42   /* $2A */
@@ -204,6 +211,19 @@ ATARI_INPUT_PORTS_END
      9.7        $2201.7     switch $1E, right drop 3
      5.0        $230B.0     switch $1F, right drop 4
     13.7        $2401.7     switch $2A, left coin
+
+   The playfield diagram settles what those are.  It draws the four by four
+   grid the machine is named after as lamps L11 to L20, sixteen consecutive
+   numbers, and lamp numbering is column*8 + bit:
+
+       lamp $1D = column 3 bit 5, measured at $2201.5
+       lamp $1E = column 3 bit 6, measured at $2201.6
+       lamp $1F = column 3 bit 7, measured at $2201.7
+       lamp $20 = column 4 bit 0, measured at $230B.0
+
+   So switches $1C-$1F light the bottom row of the grid, $2201 is lamp column
+   3 and $230B is lamp column 4.  By the same reasoning $210A is probably
+   column 2, since switches $0C-$0E would then light grid lamps $15, $16, $17.
 
    $2300's eight bits and $230B bits 1-7 switch together as one block of
    fifteen, cleared at game start and on tilt.  The playfield diagram draws a
