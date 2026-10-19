@@ -714,7 +714,7 @@ static void slice_write(int dev, int offset, UINT8 data) {
   /   through ULN2803A 12D/A, 13E takes BD0-BD3 and drives SEG2 through 13D.
   /   So one register byte carries two digits, one per segment bus, and the
   /   register index is the digit position: four buses of eight. --*/
-  if (dev <= 1 && reg <= 7) {
+  if (dev <= 1 && reg <= 7 && !(dev == 1 && reg <= 1)) {
     coreGlobals.segments[dev * 16 + reg].w     = core_bcd2seg7a[data >> 4];
     coreGlobals.segments[dev * 16 + 8 + reg].w = core_bcd2seg7a[data & 0x0f];
   }
@@ -732,7 +732,15 @@ static void slice_write(int dev, int offset, UINT8 data) {
   /
   /   Measured pulse widths agree: of all 33 ports only $200A, $200B and
   /   $210A ever go high for under a dozen frames, and $200B bit 1 -- the ball
-  /   feed -- fires exactly once, at the start of a game. --*/
+  /   feed -- fires exactly once, at the start of a game.
+  /
+  /   The ROM says the same.  The pulse engine at $9286 pops the next queued
+  /   solenoid, sets its image bit and loads a countdown from the table at
+  /   $8802; when that expires it ANDs the two solenoid bytes with $8817,
+  /   which holds 11 00.  So every solenoid is dropped on expiry except
+  /   $200A bits 0 and 4 -- and those two are exactly the entries whose
+  /   timing byte is FF rather than a pulse length.  Bits 0 and 4 of $200A
+  /   are the two flipper enables, held for as long as the button is in. --*/
   /*-- $2600 and $2700 are two POKEYs.  The CPU board carries a CO12294 at
   /   position C and a second one the photograph does not show; the game drives
   /   their frequency and control registers through the same ramp engine that
@@ -756,49 +764,87 @@ static void slice_write(int dev, int offset, UINT8 data) {
   /   divider's clock, and the sheet carrying it is one of the ones missing
   /   from the schematic set -- the slice pages we have are sheet 4 of 7. --*/
 
-  /*-- Lamps.  Registers 0, 1, $0A and $0B of devices 2, 3 and 4 are lamps, and
-  /   so are $0A and $0B of device 1 -- that pair is easy to miss because
-  /   device 1's registers 0-7 are display digits.
+  /*-- Lamps.
   /
-  /   The game numbers lamps column*8 + bit, the same scheme as the switches.
-  /   Three columns are placed, each from a lamp the playfield diagram names
-  /   against a bit measured by driving switches and watching which bits answer:
+  /   The ROM numbers every output as blitIndex*8 + bit, where blitIndex is the
+  /   port's slot in the 33-entry list at $8844 that $91B9 blits from the image
+  /   at $3082.  That is not a guess: the solenoid pulse engine at $92BE builds
+  /   exactly that number -- TYA, three ASLs, ADC the bit index -- and uses it
+  /   to index the per-solenoid timing table at $8802.  The solenoid numbering
+  /   already in this driver is the same scheme, and it agrees with the SOL 1
+  /   to SOL 16 labels on the playfield diagram.
   /
-  /     $2201 = column 3.   The diagram draws the four by four grid as lamps
-  /                         L11-L20; switches $1C-$1F light $2201.5, .6, .7 and
-  /                         $230B.0, which is the grid's bottom row $1D-$20, and
-  /                         every bit position agrees with the number.
-  /     $230B = column 4.   Same measurement, lamp $20 = column 4 bit 0.
-  /     $2300 = column 11.  The diagram labels L59 GAME OVER PL1, L5A GAME OVER
-  /                         PL2 and L5B TILT -- column 11 bits 1, 2 and 3 -- and
-  /                         $2300's eight bits switch as a block at game over
-  /                         and on tilt.  P3, a backbox connector, carries
-  /                         $58-$5B, which is where those lamps are.
+  /   Which ports are lamps comes from the four lamp-layer routines at $9344,
+  /   $936B, $938D and $93AF.  Each takes an on/off flag and ORs or ANDs a
+  /   33-byte RAM mask ($30E5, $3106, $3127, $3148) into the output image,
+  /   looping the image index from $12 down to 2.  So image bytes 2-18 are the
+  /   lamp range; 0 and 1 are the solenoids and 19-32 the score digits.
   /
-  /   The other eleven lamp ports are not placed yet, so they go above the real
-  /   numbering rather than being guessed into it.  Anything at column 12 or
-  /   higher is "known to be a lamp, position unknown".
+  /   Using the blit index as the lamp column makes a PinMAME lamp number and
+  /   the ROM's own output number the same value, which is what anyone reading
+  /   the ROM alongside the lamp viewer wants:
   /
-  /   Not lamps: $230F, whose only driven bits are 4-6, the task bank; $200A and
-  /   $200B, which are the solenoids; and registers 0-7 of devices 0 and 1,
-  /   which are the sixteen BCD digits. --*/
-  if (reg <= 1 || reg == 0x0a || reg == 0x0b) {
-    int col = -1;
-    if      (dev == 2 && reg == 0x01) col = 3;    /* proven */
-    else if (dev == 3 && reg == 0x0b) col = 4;    /* proven */
-    else if (dev == 3 && reg == 0x00) col = 11;   /* proven */
-    else if (dev == 1 && reg == 0x0a) col = 12;   /* $210A, unplaced */
-    else if (dev == 1 && reg == 0x0b) col = 13;   /* $210B */
-    else if (dev == 2 && reg == 0x00) col = 14;   /* $2200 */
-    else if (dev == 2 && reg == 0x0a) col = 15;   /* $220A */
-    else if (dev == 2 && reg == 0x0b) col = 16;   /* $220B */
-    else if (dev == 3 && reg == 0x01) col = 17;   /* $2301 */
-    else if (dev == 3 && reg == 0x0a) col = 18;   /* $230A */
-    else if (dev == 4 && reg == 0x00) col = 19;   /* $2400 */
-    else if (dev == 4 && reg == 0x01) col = 20;   /* $2401 */
-    else if (dev == 4 && reg == 0x0a) col = 21;   /* $240A */
-    else if (dev == 4 && reg == 0x0b) col = 22;   /* $240B */
-    if (col >= 0) coreGlobals.lampMatrix[col] = data;
+  /     col  2  $230F   bits 0-3 only; 4-6 are the task bank, see slice_write
+  /     col  3  $210A   col  8  $220B   col 13  $2301
+  /     col  4  $210B   col  9  $2200   col 14  $230A
+  /     col  5  $2100   col 10  $2201   col 15  $240A
+  /     col  6  $2101   col 11  $230B   col 16  $240B
+  /     col  7  $220A   col 12  $2300   col 17  $2400
+  /                                     col 18  $2401
+  /
+  /   Measured, by holding one switch at a time and subtracting the bits that
+  /   move in attract anyway.  Each of these latches and stays latched, and a
+  /   second hit of the same switch does nothing -- $210A walks 10, 30, 70, F0
+  /   as $14, $15 and $16 are hit in turn, which is a four-target bank showing
+  /   how many are down:
+  /
+  /     sw $14 $15 $16 -> $210A.5 .6 .7      sw $17 -> $210B.4
+  /     sw $18 $19 $1A -> $2101.5 .6 .7      sw $1B -> $220A.0
+  /     sw $1C $1D $1E -> $220B.5 .6 .7      sw $1F -> $2200.0
+  /     sw $20 $21 $22 -> $2100.5 .6 .7      sw $23 -> $2101.4
+  /     sw $24 $25 $26 -> $2201.5 .6 .7      sw $27 -> $230B.0
+  /     sw $28 $29 $2A -> $210B.5 .6 .7      sw $2B -> $2100.4
+  /
+  /   $2301, $230A, $240A and $240B move constantly in attract and settle when
+  /   a ball is in play, which is the general illumination chase.  $2300, $2400
+  /   and $2401 stayed at 00 through every state reached here, including tilt.
+  /
+  /   The playfield diagram labels its lamps L11 upwards in hex, and those
+  /   labels land on these numbers with no offset at all.  Six independent
+  /   checks, every one of them exact:
+  /
+  /     $2101.5 .6 .7, $220A.0  = 53, 54, 55, 56 = L35 L36 L37 L38, which the
+  /                               diagram draws as one run of lane lamps
+  /     $220B.5 .6 .7, $2200.0  = 69, 70, 71, 72 = L45 L46 L47 L48
+  /     $2201.5 .6 .7, $230B.0  = 85, 86, 87, 88 = L55 L56 L57 L58, the
+  /                               cluster the diagram draws above the pops
+  /     $210A.5 .6 .7           = 29, 30, 31     = L1D L1E L1F, the bottom row
+  /                               of the left four by four grid (L11-L20)
+  /     $210B.5 .6 .7           = 37, 38, 39     = L25 L26 L27, row two of the
+  /                               right grid (L21-L30)
+  /     $2100.5 .6 .7           = 45, 46, 47     = L2D L2E L2F, row four of it
+  /
+  /   One thing does not fit yet.  L11-L17 would be image byte 2 bits 1-7, and
+  /   bits 4-6 of that byte are the task bank.  Three lamps of the left grid
+  /   therefore have nowhere to live under this numbering.  Everything else
+  /   checks out, so this is recorded as an open question rather than a reason
+  /   to move the map: settling it needs the main PCB schematic, which is the
+  /   sheet missing from the set, or somebody at the machine. --*/
+  {
+    static const struct { UINT8 dev, reg, col; } lampport[] = {
+      {3,0x0f, 2}, {1,0x0a, 3}, {1,0x0b, 4}, {1,0x00, 5}, {1,0x01, 6},
+      {2,0x0a, 7}, {2,0x0b, 8}, {2,0x00, 9}, {2,0x01,10}, {3,0x0b,11},
+      {3,0x00,12}, {3,0x01,13}, {3,0x0a,14}, {4,0x0a,15}, {4,0x0b,16},
+      {4,0x00,17}, {4,0x01,18}
+    };
+    int i;
+    for (i = 0; i < sizeof(lampport)/sizeof(lampport[0]); i++)
+      if (lampport[i].dev == dev && lampport[i].reg == reg) {
+        /* image byte 2 shares $230F with the task bank in bits 4-6 */
+        coreGlobals.lampMatrix[lampport[i].col] =
+          (lampport[i].col == 2) ? (data & 0x0f) : data;
+        break;
+      }
   }
 
   if (dev == 0 && (reg == 0x0a || reg == 0x0b)) {
