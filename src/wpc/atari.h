@@ -196,6 +196,75 @@
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x8000, "1" )
 
+/*-- 4x4 has sixteen DIPs, not the thirty-two ATARI2_COMPORTS declares: they
+/   are read as two POKEY pot scans, eight bits each.  The count matters
+/   beyond the menu -- sim_run takes the first game inport as
+/   CORE_COREINPORT + (dips+31)/16, so a driver whose MDRV_DIPS disagrees
+/   with the number of ports its COMPORTS macro declares hands the
+/   simulator a DIP port and it reads the defaults as held keys. --*/
+#define ATARI4_COMPORTS \
+  PORT_START /* 0 */ \
+    /* switch column 1 */ \
+    COREPORT_BIT(     0x0004, "Game", KEYCODE_1)  \
+    COREPORT_BIT(     0x0008, "Left Coin", KEYCODE_3)  \
+    COREPORT_BIT(     0x0010, "Right Coin", KEYCODE_5)  \
+    COREPORT_BIT(     0x0081, "Test", KEYCODE_7)  \
+  PORT_START /* 1 */ \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0001, "1" ) \
+    COREPORT_DIPNAME( 0x0002, 0x0000, "S2") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0002, "1" ) \
+    COREPORT_DIPNAME( 0x0004, 0x0000, "S3") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0004, "1" ) \
+    COREPORT_DIPNAME( 0x0008, 0x0008, "S4") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0008, "1" ) \
+    COREPORT_DIPNAME( 0x0010, 0x0010, "S5") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0010, "1" ) \
+    COREPORT_DIPNAME( 0x0020, 0x0020, "S6") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0020, "1" ) \
+    COREPORT_DIPNAME( 0x0040, 0x0040, "S7") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0040, "1" ) \
+    COREPORT_DIPNAME( 0x0080, 0x0080, "S8") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0080, "1" ) \
+    COREPORT_DIPNAME( 0x0100, 0x0000, "S9") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0100, "1" ) \
+    COREPORT_DIPNAME( 0x0200, 0x0000, "S10") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0200, "1" ) \
+    COREPORT_DIPNAME( 0x0400, 0x0000, "S11") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0400, "1" ) \
+    COREPORT_DIPNAME( 0x0800, 0x0000, "S12") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0800, "1" ) \
+    COREPORT_DIPNAME( 0x1000, 0x0000, "S13") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x1000, "1" ) \
+    COREPORT_DIPNAME( 0x2000, 0x2000, "S14") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x2000, "1" ) \
+    COREPORT_DIPNAME( 0x4000, 0x4000, "S15") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x4000, "1" ) \
+    COREPORT_DIPNAME( 0x8000, 0x0000, "S16") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x8000, "1" ) \
+
+#define ATARI4_INPUT_PORTS_START(name,balls) \
+  INPUT_PORTS_START(name) \
+    CORE_PORTS \
+    SIM_PORTS(balls) \
+    ATARI4_COMPORTS
+
 #define ATARI3_COMPORTS \
   PORT_START /* 3 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S33") \

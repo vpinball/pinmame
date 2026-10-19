@@ -140,6 +140,7 @@ static INTERRUPT_GEN(ATARI4_vblank) {
   core_updateSw(TRUE);
 }
 
+
 static SWITCH_UPDATE(ATARI0) {
 	if (inports) {
 		coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xc0) | (inports[ATARI_COMINPORT] & 0x0f) | ((inports[ATARI_COMINPORT] & 0x0300) >> 4);

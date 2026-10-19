@@ -78,7 +78,7 @@ static void fourx4_drawStatic(BMTYPE **line);
 /*--------------------------
 / Game specific input ports
 /---------------------------*/
-ATARI2_INPUT_PORTS_START(fourx4,3)
+ATARI4_INPUT_PORTS_START(fourx4,3)
   PORT_START /* 0 */
     COREPORT_BIT(0x0001,"Upper Pop Bumper",   KEYCODE_W)
     COREPORT_BIT(0x0002,"Mid Pop Bumper",     KEYCODE_E)
