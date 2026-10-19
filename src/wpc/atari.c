@@ -947,6 +947,25 @@ static void atari4_setbank(int bank) {
 static NVRAM_HANDLER(ATARI4) {
   core_nvram(file, read_or_write, atari4_CMOS, 0x100, 0x00);
 }
+/*-- $2500 is a 256 by 4 CMOS, so only the low nibble of each byte exists.
+/   The write handler masks it off, and the game agrees: every read of it in
+/   the ROM is followed immediately by ORA #$F0 or AND #$0F.
+/
+/   The only 6502 code that touches it is the record routine at $8EF8 -- the
+/   three other apparent references are thread cells whose bytes happen to
+/   decode as absolute addressing.  It takes a record number in A, doubles it
+/   for the index, and works on an eight-byte record: six BCD digits, one per
+/   nibble, and a checksum.  It does three passes.  First it sums the eight
+/   nibbles and folds the result back into the record, which is the verify.
+/   Then it decrements the six-digit value in decimal mode and, if that
+/   borrows past the top, fills all six with 9.  Then it sums the first seven
+/   nibbles again, negates, and stores that as the eighth -- so the checksum
+/   is the two's complement of the nibble sum, and a record reads back
+/   consistent only if its nibbles sum to zero.
+/
+/   That is why a blank NVRAM is safe to boot on: the routine rewrites the
+/   checksum from whatever it finds, so the zero fill below heals on first
+/   use rather than wedging the game. --*/
 static READ_HANDLER(nvram4_r)  { return atari4_CMOS[offset]; }
 static WRITE_HANDLER(nvram4_w) { atari4_CMOS[offset] = data & 0x0f; }
 

@@ -256,7 +256,7 @@ static WRITE_HANDLER(atari_data_w) {
 #define ATARI4_POKEYS 2
 
 static struct pokey_chip {
-  UINT8  audf[4], audc[4], audctl;
+  UINT8  audf[4], audc[4], audctl, skctl;
   UINT32 div[4];        /* divider countdown, in chip clocks */
   UINT8  ff[4];         /* channel output, 0 or 1 */
   UINT32 p4, p5, p17;   /* polynomial counters, one set per chip */
@@ -266,6 +266,30 @@ static struct {
   int    channel;
   double acc;           /* chip clocks owed to the current output sample */
 } pkmix;
+
+/*-- What this game actually asks of a POKEY, from the ROM.
+/
+/   The sound image is sixteen bytes at $31D6 and $961E blits it to registers
+/   0-7 of each chip -- AUDF1-4 and AUDC1-4 and nothing else.  Everything
+/   outside that is written directly, and there are only three places:
+/
+/     $DF8B   zeroes all sixteen registers of both chips, then writes $03 to
+/             SKCTL.  This is the only write AUDCTL ever gets.
+/     $93D3   POTGO, which starts a pot scan; the DIP switches are read back
+/             through ALLPOT, see slice2_r in atari.c
+/     $992F   POTGO again, on the second chip as well
+/
+/   So AUDCTL stays 0 for the life of the machine.  The code below handles
+/   the joined sixteen-bit channels, the 1.79 MHz channel clocking, the
+/   15 kHz base and the nine-bit polynomial, and none of them can ever be
+/   reached here -- they are kept because they are what the part does, not
+/   because this game needs them.  The two high-pass filters, AUDCTL bits 1
+/   and 2, are not implemented for the same reason: with AUDCTL fixed at 0
+/   they cannot come on.  Nor can two-tone mode, which is SKCTL bit 3, and
+/   the only value SKCTL is given is $03.
+/
+/   What is left that matters is the reset: until SKCTL bits 0-2 are nonzero
+/   the chip is held with its polynomial counters stopped. --*/
 
 /*-- Divisor in chip clocks.  A channel normally counts the 64 kHz or 15 kHz
 /   base clock, which is the chip clock divided by 28 or 114; AUDCTL can clock
@@ -297,6 +321,9 @@ static int pokey_silenced(const struct pokey_chip *c, int ch) {
 /   either.  Most of the time most channels are quiet, and the chips tick at
 /   1.5 MHz, so this is most of the cost. --*/
 static int pokey_audible(const struct pokey_chip *c) {
+  /* SKCTL bits 0-2 all zero holds the whole chip, polynomials included, in
+     reset; it comes out of power-up that way until the game writes $03 */
+  if (!(c->skctl & 0x07)) return 0;
   return (c->audc[0] | c->audc[1] | c->audc[2] | c->audc[3]) & 0x0f;
 }
 
@@ -379,7 +406,19 @@ void atari4snd_w(int chip, int offset, int data) {
     case 0x01: case 0x03: case 0x05: case 0x07:
       c->audc[(offset & 0x0f) >> 1] = data; break;
     case 0x08: c->audctl = data; break;
-    default: break;   /* STIMER, SKRES, POTGO, SEROUT, IRQEN, SKCTL: unused here */
+    case 0x0f:
+      /* SKCTL.  Bits 0-2 all zero holds the chip in reset: the polynomial
+         counters stop and nothing is heard.  The game writes 0 to all
+         sixteen registers at $DF8B and then $03 here, which is the ordinary
+         release; it never sets bit 3, so two-tone mode never comes on. */
+      c->skctl = data;
+      if (!(data & 0x07)) {
+        c->p4 = c->p5 = c->p17 = 1;
+        memset(c->div, 0, sizeof(c->div));
+        memset(c->ff, 0, sizeof(c->ff));
+      }
+      break;
+    default: break;   /* STIMER, SKRES, POTGO, SEROUT, IRQEN: not written */
   }
 }
 
