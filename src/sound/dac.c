@@ -125,7 +125,10 @@ void DAC_DC_offset_correction_data_16_w(int num, int data)
 	{
 		/* not declared in the interface (int16 stream): play it uncorrected rather than overflowing it */
 		static int logged = 0;
-		if (!logged++) logerror("DAC #%d: DAC_DC_offset_correction_data_16_w() without dc_offset_correction in its DACinterface\n", num);
+		if (!logged) {
+			logged = 1;
+			logerror("DAC #%d: DAC_DC_offset_correction_data_16_w() without dc_offset_correction in its DACinterface\n", num);
+		}
 		DAC_data_16_w(num, data);
 		return;
 	}

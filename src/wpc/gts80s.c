@@ -82,8 +82,12 @@ static void dac_staircase_reset(dac_staircase * const st) {
 static void dac_staircase_write(dac_staircase * const st, const INT16 value) {
 	if (st->pos >= GTS80S_BUFFER_SIZE)
 		stream_update(stream_locals.stream, 0); /* renders and empties it */
-	if (st->pos >= GTS80S_BUFFER_SIZE)
+	if (st->pos >= GTS80S_BUFFER_SIZE) {
+		/* still full (nothing rendered: all steps are within one output sample), so the new value replaces the last step rather than being lost */
+		st->clock[st->pos-1] = timer_get_time();
+		st->value[st->pos-1] = value;
 		return;
+	}
 	st->clock[st->pos] = timer_get_time();
 	st->value[st->pos++] = value;
 }
