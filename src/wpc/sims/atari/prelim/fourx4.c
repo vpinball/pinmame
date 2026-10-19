@@ -365,7 +365,7 @@ static core_tLCDLayout fourx4_disp[] = {
 
 static core_tGameData fourx4GameData = {
   0, fourx4_disp,
-  { FLIP_SWNO(0,swRFlipper), 0, 0, 0, SNDBRD_NONE, 0 },
+  { FLIP_SWNO(swLFlipper,swRFlipper), 0, 0, 0, SNDBRD_NONE, 0 },
   &fourx4SimData
 };
 
