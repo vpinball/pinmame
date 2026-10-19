@@ -62,7 +62,7 @@ typedef struct PinMAMEWriteMemoryMsg
    int version;                      // Always 1 (to allow upgrading this message in later revisions)
    uint32_t count;                   // Request: number of ops
    const PinMAMEWriteMemoryOp* ops;  // Request: applied in order, atomically
-   uint32_t applied;                 // Response: count on success, 0 if unavailable
+   uint32_t applied;                 // Response: count on success, else 0 (unavailable, or an op outside the address space: nothing applied)
 } PinMAMEWriteMemoryMsg;
 
 
