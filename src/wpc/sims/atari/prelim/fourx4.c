@@ -185,54 +185,42 @@ ATARI_INPUT_PORTS_END
 /*-------------------
 / Lamps
 /--------------------*/
-/* Found by driving each of the 56 switches in turn with a ball in play and
-   recording which lamp bits answer.  Most bits move for nearly every switch --
-   that is the attract and general illumination flashing -- but these move for
-   one switch only, which makes them that feature's own lamp.
+/* The game numbers lamps column*8 + bit, the same scheme as the switches, and
+   the playfield diagram names enough of them to place three columns.
 
-   The matrix column is (device-1)*2 + (register-$0A) for registers $0A and $0B,
-   and 8 + (device-2)*2 + register for registers 0 and 1:
+   The diagram draws the four by four grid the machine is named after as lamps
+   L11 to L20, sixteen consecutive numbers, and labels L59 GAME OVER PL1,
+   L5A GAME OVER PL2 and L5B TILT.  Driving each switch in turn and watching
+   which lamp bits answer then pins the columns:
 
-     0 = $210A   1 = $210B   2 = $220A   3 = $220B   4 = $230A   5 = $230B
-     6 = $240A   7 = $240B   8 = $2200   9 = $2201  10 = $2300  11 = $2301
-    12 = $2400  13 = $2401
+     $2201 = column 3    switches $1C-$1F light $2201.5, .6, .7 and $230B.0,
+                         which is the grid's bottom row, lamps $1D-$20, and
+                         every bit position agrees with the number
+     $230B = column 4    lamp $20 = column 4 bit 0
+     $2300 = column 11   bits 1, 2 and 3 are L59, L5A and L5B, and $2300's
+                         eight bits switch as a block at game over and on
+                         tilt; P3, a backbox connector, carries $58-$5B
 
-   column.bit   port        lights with
-     0.4        $210A.4     switch $29, tilt
-     0.5        $210A.5     switch $0C
-     0.6        $210A.6     switch $0D
-     0.7        $210A.7     switch $0E
-     1.4        $210B.4     switch $0F
-     1.5        $210B.5     switch $20
-     1.6        $210B.6     switch $21
-     1.7        $210B.7     switch $22
-     9.5        $2201.5     switch $1C, right drop 1
-     9.6        $2201.6     switch $1D, right drop 2
-     9.7        $2201.7     switch $1E, right drop 3
-     5.0        $230B.0     switch $1F, right drop 4
-    13.7        $2401.7     switch $2A, left coin
+   Verified in the emulation: with a game running, column 3 reads $20 -- bit 5,
+   lamp $1D -- and the grid renders with its bottom row lit.
 
-   The playfield diagram settles what those are.  It draws the four by four
-   grid the machine is named after as lamps L11 to L20, sixteen consecutive
-   numbers, and lamp numbering is column*8 + bit:
+   The other eleven lamp ports are known to be lamps but not yet placed, so the
+   driver puts them at columns 12 and above rather than guessing them into the
+   real numbering.  Placing them needs more anchors of the same kind: a lamp
+   the diagram names against a bit the emulation can be made to light.
 
-       lamp $1D = column 3 bit 5, measured at $2201.5
-       lamp $1E = column 3 bit 6, measured at $2201.6
-       lamp $1F = column 3 bit 7, measured at $2201.7
-       lamp $20 = column 4 bit 0, measured at $230B.0
+   Bits on the unplaced columns that answer to exactly one switch, and so
+   belong to that feature:
 
-   So switches $1C-$1F light the bottom row of the grid, $2201 is lamp column
-   3 and $230B is lamp column 4.  By the same reasoning $210A is probably
-   column 2, since switches $0C-$0E would then light grid lamps $15, $16, $17.
+     $210A.4 with switch $29      $210B.4 with switch $0F
+     $210A.5 with switch $0C      $210B.5 with switch $20
+     $210A.6 with switch $0D      $210B.6 with switch $21
+     $210A.7 with switch $0E      $210B.7 with switch $22
+     $2401.7 with switch $2A, the left coin
 
-   $2300's eight bits and $230B bits 1-7 switch together as one block of
-   fifteen, cleared at game start and on tilt.  The playfield diagram draws a
-   four by four grid of lamps, L1 to L10, which is what the machine is named
-   after, so that block is most likely the grid.
-
-   Everything on $2301, $230A, $240A and $240B bits 4-6 moves for nearly every
-   switch; that is general illumination and attract flashing, not per-feature
-   lamps. */
+   Note $210A.4 is not the tilt lamp despite answering to the tilt switch --
+   tilt starts a whole sequence, and the diagram puts tilt at L5B, column 11
+   bit 3. */
 
 /*---------------------
 /  Ball state handling

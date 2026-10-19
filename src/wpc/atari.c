@@ -756,22 +756,50 @@ static void slice_write(int dev, int offset, UINT8 data) {
   /   divider's clock, and the sheet carrying it is one of the ones missing
   /   from the schematic set -- the slice pages we have are sheet 4 of 7. --*/
 
-  /*-- Lamps.  Registers 0, 1, $0A and $0B of devices 2, 3 and 4 are all lamps,
-  /   and so are registers $0A and $0B of device 1 -- that last pair was missed
-  /   at first because device 1's registers 0-7 are display digits.  Driving
-  /   each switch in turn and watching which bits answer shows $210A and $210B
-  /   carrying one lamp per target: $0C-$0F light $210A.5, .6, .7 and $210B.4,
-  /   $20-$22 light $210B.5, .6, .7, and the tilt switch lights $210A.4.
+  /*-- Lamps.  Registers 0, 1, $0A and $0B of devices 2, 3 and 4 are lamps, and
+  /   so are $0A and $0B of device 1 -- that pair is easy to miss because
+  /   device 1's registers 0-7 are display digits.
   /
-  /   Not lamps: $230F, whose only driven bits are 4-6, the task bank; device
-  /   0's $200A and $200B, which are the solenoids; and registers 0-7 of
-  /   devices 0 and 1, which are the sixteen BCD digits. --*/
-  if (reg == 0x0a || reg == 0x0b) {
-    if (dev >= 1 && dev <= 4)
-      coreGlobals.lampMatrix[(dev - 1) * 2 + (reg - 0x0a)] = data;
+  /   The game numbers lamps column*8 + bit, the same scheme as the switches.
+  /   Three columns are placed, each from a lamp the playfield diagram names
+  /   against a bit measured by driving switches and watching which bits answer:
+  /
+  /     $2201 = column 3.   The diagram draws the four by four grid as lamps
+  /                         L11-L20; switches $1C-$1F light $2201.5, .6, .7 and
+  /                         $230B.0, which is the grid's bottom row $1D-$20, and
+  /                         every bit position agrees with the number.
+  /     $230B = column 4.   Same measurement, lamp $20 = column 4 bit 0.
+  /     $2300 = column 11.  The diagram labels L59 GAME OVER PL1, L5A GAME OVER
+  /                         PL2 and L5B TILT -- column 11 bits 1, 2 and 3 -- and
+  /                         $2300's eight bits switch as a block at game over
+  /                         and on tilt.  P3, a backbox connector, carries
+  /                         $58-$5B, which is where those lamps are.
+  /
+  /   The other eleven lamp ports are not placed yet, so they go above the real
+  /   numbering rather than being guessed into it.  Anything at column 12 or
+  /   higher is "known to be a lamp, position unknown".
+  /
+  /   Not lamps: $230F, whose only driven bits are 4-6, the task bank; $200A and
+  /   $200B, which are the solenoids; and registers 0-7 of devices 0 and 1,
+  /   which are the sixteen BCD digits. --*/
+  if (reg <= 1 || reg == 0x0a || reg == 0x0b) {
+    int col = -1;
+    if      (dev == 2 && reg == 0x01) col = 3;    /* proven */
+    else if (dev == 3 && reg == 0x0b) col = 4;    /* proven */
+    else if (dev == 3 && reg == 0x00) col = 11;   /* proven */
+    else if (dev == 1 && reg == 0x0a) col = 12;   /* $210A, unplaced */
+    else if (dev == 1 && reg == 0x0b) col = 13;   /* $210B */
+    else if (dev == 2 && reg == 0x00) col = 14;   /* $2200 */
+    else if (dev == 2 && reg == 0x0a) col = 15;   /* $220A */
+    else if (dev == 2 && reg == 0x0b) col = 16;   /* $220B */
+    else if (dev == 3 && reg == 0x01) col = 17;   /* $2301 */
+    else if (dev == 3 && reg == 0x0a) col = 18;   /* $230A */
+    else if (dev == 4 && reg == 0x00) col = 19;   /* $2400 */
+    else if (dev == 4 && reg == 0x01) col = 20;   /* $2401 */
+    else if (dev == 4 && reg == 0x0a) col = 21;   /* $240A */
+    else if (dev == 4 && reg == 0x0b) col = 22;   /* $240B */
+    if (col >= 0) coreGlobals.lampMatrix[col] = data;
   }
-  else if (dev >= 2 && dev <= 4 && reg <= 1)
-    coreGlobals.lampMatrix[8 + (dev - 2) * 2 + reg] = data;
 
   if (dev == 0 && (reg == 0x0a || reg == 0x0b)) {
     int shift = (reg == 0x0a) ? 0 : 8;
