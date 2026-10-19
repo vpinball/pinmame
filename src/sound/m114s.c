@@ -330,7 +330,7 @@ static INT16 read_sample(struct M114SChannel * const channel, const UINT32 lengt
 
 		// interpolate
 		const INT16 val1 = channel->output[pos];
-		const INT16 val2 = channel->output[pos+1 < length ? pos : 0]; // wrap around to 0 (see code below!)?
+		const INT16 val2 = channel->output[pos+1 < length ? pos+1 : 0]; // wrap around to 0 (see code below!)?
 		const INT16 sample = (val1 * ((INT32)FRAC_ONE - frac) + val2 * frac) >> FRAC_BITS;
 
 		channel->outpos += channel->incr;
