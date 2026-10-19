@@ -124,6 +124,22 @@ static INTERRUPT_GEN(ATARI2_vblank) {
   core_updateSw(core_getSol(16));
 }
 
+/*-- 4x4 does not multiplex anything that needs integrating here.  The game
+/   blits all 33 output ports every second interrupt and slice_write puts the
+/   digits, lamps and solenoids straight into coreGlobals as they arrive, so
+/   this only has to advance the flipper state and read the cabinet.
+/
+/   It cannot share ATARI2_vblank: that one copies coreGlobals.lampMatrix from
+/   tmpLampMatrix, copies coreGlobals.segments from locals.segments and then
+/   zeroes locals.segments, and copies coreGlobals.solenoids from
+/   locals.solenoids.  None of those three are written by this generation, so
+/   sharing it wiped every output just before it reached the screen. --*/
+static INTERRUPT_GEN(ATARI4_vblank) {
+  locals.vblankCount++;
+  coreGlobals.diagnosticLed = locals.diagnosticLed;
+  core_updateSw(TRUE);
+}
+
 static SWITCH_UPDATE(ATARI0) {
 	if (inports) {
 		coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xc0) | (inports[ATARI_COMINPORT] & 0x0f) | ((inports[ATARI_COMINPORT] & 0x0300) >> 4);
@@ -590,14 +606,6 @@ MACHINE_DRIVER_END
 #define SLICE_LOG(...) ((void)0)
 #endif
 
-#if ATARI4_TEST_HOOKS
-/*-- Headless harness: coin, start, then pulse switch ATARI4_TEST_SW
-/   every 90 frames.  $02 is the mid pop bumper. --*/
-#ifndef ATARI4_TEST_SW
-#define ATARI4_TEST_SW 0x02
-#endif
-static int a4frame;
-#endif
 static UINT8 *atari4_taskram;   /* $1000-$17FF: eight 256-byte task pages */
 static UINT8 *atari4_CMOS;
 static int atari4_taskbank;
@@ -683,18 +691,12 @@ static void slice_write(int dev, int offset, UINT8 data) {
   if (dev == 3 && reg == 0x0f && ((data >> 4) & 7) != 7
       && ((data >> 4) & 7) != atari4_taskbank)
     atari4_setbank((data >> 4) & 7);     /* all ones = hold */
-#if ATARI4_TEST_HOOKS
-  if (dev == 3 && reg == 0x0c) {
-    static int n = 0;
-    if (++n % 60 == 0) {
-      int k; logerror("4x4 ST f=%4d seg1=", a4frame);
-      for (k = 0; k < 8; k++) logerror("%X", slice.reg[0][k] >> 4);
-      logerror(" seg2="); for (k = 0; k < 8; k++) logerror("%X", slice.reg[0][k] & 15);
-      logerror(" seg3="); for (k = 0; k < 8; k++) logerror("%X", slice.reg[1][k] & 15);
-      logerror(" sol=%02X%02X\n", slice.reg[0][0x0b], slice.reg[0][0x0a]);
-    }
-  }
-#endif
+  /*-- Registers 8 and 9 of the five slice devices are configuration, written
+  /   once at power up -- $DD to $2008, $4B to $2108, zero to the rest, and
+  /   register 9 from cold start.  Nothing in the ROM ever reads them back, so
+  /   whatever they set up inside the part cannot be observed from the bus and
+  /   nothing here needs to model it.  (Devices 0 and 1 are the display pair,
+  /   so the two non-zero values are most likely the multiplex divider.) --*/
   if (reg == 0x0c) {
     if (dev == 2) cpu_set_irq_line(ATARI_CPU, 0, CLEAR_LINE);  /* $220C: IRQ ack */
     if (dev == 3) { slice.wdog = 0; SLICE_LOG("4x4 watchdog kick\n"); }  /* $230C */
@@ -917,19 +919,6 @@ static MACHINE_INIT(ATARI4) {
 /   playfield switches, and the 0x62 mask forced five of them open every frame.
 /   Tilt has no key assigned, so bit 1 is preserved along with SW2D-SW2F. --*/
 static SWITCH_UPDATE(ATARI4) {
-#if ATARI4_TEST_HOOKS
-	a4frame++;
-	memset(&coreGlobals.swMatrix[1], 0, 7);
-	coreGlobals.swMatrix[6] =
-		  ((a4frame >= 200 && a4frame < 216) ? 0x08 : 0)   /* right coin */
-		| ((a4frame >= 300 && a4frame < 316) ? 0x01 : 0);  /* start */
-	if (a4frame >= 700) {
-		const int sw = ATARI4_TEST_SW;
-		if ((a4frame % 90) < 10)
-			coreGlobals.swMatrix[1 + sw / 8] = 1 << (sw % 8);
-	}
-	return;
-#endif
 	if (inports) {
 		coreGlobals.swMatrix[6] = (coreGlobals.swMatrix[6] & 0xe2)
 			| ((inports[ATARI_COMINPORT] & 0x0004) ? 0x01 : 0)   /* Game       -> SW28 */
@@ -943,7 +932,7 @@ MACHINE_DRIVER_START(ATARI4)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CPU_ADD_TAG("mcpu", M6502, ATARI4_CPUFREQ)
   MDRV_CPU_MEMORY(ATARI4_readmem, ATARI4_writemem)
-  MDRV_CPU_VBLANK_INT(ATARI2_vblank, 1)
+  MDRV_CPU_VBLANK_INT(ATARI4_vblank, 1)
   MDRV_CPU_PERIODIC_INT(ATARI4_irq, ATARI4_IRQFREQ)
   MDRV_CORE_INIT_RESET_STOP(ATARI4,NULL,ATARI)
   MDRV_NVRAM_HANDLER(ATARI4)
