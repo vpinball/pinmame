@@ -33,7 +33,6 @@
 #include <math.h>
 
 #include "driver.h"
-#include "../ext/vgm/vgmwrite.h"
 
 #define BSMT2000_LLE 1 // 1: the bsmt2000_lle option can run the real chip program (when bsmt2000.bin is found), 0: HLE only
 
@@ -45,6 +44,9 @@
 extern void libpinmame_log_info(const char* format, ...);
 #endif
 #endif
+
+// after the system headers: vgmwrite.h #defines uint8_t & co, which breaks a later <stdint.h> (zlib-ng's zconf.h includes it)
+#include "../ext/vgm/vgmwrite.h"
 
 #ifndef MIN
  #define MIN(x,y) ((x)<(y)?(x):(y))
