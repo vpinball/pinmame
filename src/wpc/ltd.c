@@ -366,7 +366,7 @@ static WRITE_HANDLER(peri4_w) {
                  if ((data & 0xf0) != 0xf0) locals.solenoids |= 0x4000 << (data >> 4);
                  coreGlobals.solenoids = locals.solenoids;
                } else
-                 locals.solBank = core_BitColToNum(data);
+                 locals.solBank = core_LowestBitColToNum(data); // 0xff at power-up
                break;
       case  2: locals.solenoids |= (data >> 4) << (locals.solBank * 4);
                locals.solenoids2 |= (data & 0x0f) << 4;
