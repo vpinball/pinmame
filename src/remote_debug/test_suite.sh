@@ -44,6 +44,16 @@ assert_status() {
     if [ "$code" == "$2" ]; then echo "  [PASS] $3"; else fail "$3 (expected HTTP $2, got $code)"; fi
 }
 
+# wait_paused SECONDS: poll until the emulator halts; fails after SECONDS
+wait_paused() {
+    local i
+    for i in $(seq 1 $(($1 * 10))); do
+        [[ "$(curl -s "$BASE/api/info" | tr -d ' ')" == *'"paused":1'* ]] && return 0
+        sleep 0.1
+    done
+    return 1
+}
+
 echo "1. Info & core connectivity..."
 INFO=$(curl -s "$BASE/api/info")
 assert_contains "$INFO" "$ROM" "Game name"
@@ -327,8 +337,8 @@ curl -s "$BASE/api/debugger/scan?cmd=filter&op=changed" > /dev/null; sleep 1
 CH=$(curl -s "$BASE/api/debugger/scan?cmd=filter&op=changed" | python3 -c "import json,sys;r=json.load(sys.stdin)['results'];print('%X'%r[0]['addr']) if r else print('')")
 curl -s "$BASE/api/debugger/watchpoints?cmd=clear" > /dev/null
 if [ -n "$CH" ]; then
-    # impossible condition: must NOT halt
-    curl -s "$BASE/api/debugger/watchpoints?cmd=add&addr=$CH&mode=2&cond=eq&val=FF" > /dev/null
+    # impossible condition (a byte is never above FF): must NOT halt
+    curl -s "$BASE/api/debugger/watchpoints?cmd=add&addr=$CH&mode=2&cond=gt&val=FF" > /dev/null
     curl -s "$BASE/api/debugger/control?cmd=resume" > /dev/null; sleep 1.5
     P=$(curl -s "$BASE/api/info" | tr -d ' ')
     assert_contains "$P" '"paused":0' "Value-cond WP (impossible) keeps running"
@@ -339,23 +349,24 @@ if [ -n "$CH" ]; then
     P=$(curl -s "$BASE/api/info" | tr -d ' ')
     assert_contains "$P" '"paused":1' "Value-cond WP (achievable) halts"
     curl -s "$BASE/api/debugger/watchpoints?cmd=clear" > /dev/null
-    # the condition is tested on the value being written: take a value the
-    # game writes there from the trace, and once halted the byte must hold it
+    # the condition is tested on the value being written: with cond=ne and
+    # the current value, the next write that changes the byte halts (testing
+    # the old byte, as before, it never would), and once halted the byte
+    # holds the value written. Poll with a bound instead of a fixed wait
+    curl -s "$BASE/api/debugger/control?cmd=pause" > /dev/null
+    OLD=$(curl -s "$BASE/api/debugger/memory?addr=$CH&size=1" | python3 -c "import json,sys;print(json.load(sys.stdin)['data'][0])")
     curl -s "$BASE/api/debugger/trace?cmd=clear" > /dev/null
     curl -s "$BASE/api/debugger/trace?cmd=add&addr=$CH&mode=2" > /dev/null
-    curl -s "$BASE/api/debugger/control?cmd=resume" > /dev/null; sleep 1
-    curl -s "$BASE/api/debugger/control?cmd=pause" > /dev/null
-    V=$(curl -s "$BASE/api/debugger/trace" | python3 -c "import json,sys;l=json.load(sys.stdin)['logs'];print(l[-1]['value']) if l else print('')")
+    curl -s "$BASE/api/debugger/watchpoints?cmd=add&addr=$CH&mode=2&cond=ne&val=$(printf '%X' "$OLD")" > /dev/null
+    curl -s "$BASE/api/debugger/control?cmd=resume" > /dev/null
+    wait_paused 10 || fail "Value-cond WP on the written value did not halt within 10 s"
+    echo "  [PASS] Value-cond WP on the written value halts"
+    M=$(curl -s "$BASE/api/debugger/memory?addr=$CH&size=1" | python3 -c "import json,sys;print(json.load(sys.stdin)['data'][0])")
+    V=$(curl -s "$BASE/api/debugger/trace" | python3 -c "import json,sys;l=[e for e in json.load(sys.stdin)['logs'] if e['value']!=$OLD];print(l[-1]['value'] if l else '')")
+    [ "$M" != "$OLD" ] && [ "$M" == "$V" ] && echo "  [PASS] Value-cond WP halts on the write that sets the value" \
+        || fail "Value-cond WP halted with $M at $CH (was $OLD, written $V)"
+    curl -s "$BASE/api/debugger/watchpoints?cmd=clear" > /dev/null
     curl -s "$BASE/api/debugger/trace?cmd=clear" > /dev/null
-    if [ -n "$V" ]; then
-        curl -s "$BASE/api/debugger/watchpoints?cmd=add&addr=$CH&mode=2&cond=eq&val=$(printf '%X' "$V")" > /dev/null
-        curl -s "$BASE/api/debugger/control?cmd=resume" > /dev/null; sleep 1.5
-        P=$(curl -s "$BASE/api/info" | tr -d ' ')
-        assert_contains "$P" '"paused":1' "Value-cond WP on a traced value halts"
-        M=$(curl -s "$BASE/api/debugger/memory?addr=$CH&size=1" | tr -d ' ')
-        assert_contains "$M" "\"data\":[$V]" "Value-cond WP halts on the write that sets the value"
-        curl -s "$BASE/api/debugger/watchpoints?cmd=clear" > /dev/null
-    fi
 else
     echo "  [INFO] no churning byte found, skipped"
 fi
