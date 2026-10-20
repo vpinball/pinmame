@@ -343,7 +343,7 @@ INLINE UINT32 RWORD_PGM(UINT32 addr)
 #ifdef PINMAME
 	if (!WPC_gWPC95 && (addr == 0x3000)) return dcs_latch_r(0,0xffff)<<8;
 #endif /* PINMAME */
-	addr <<= 2;
+	addr = (addr & 0x3fff) << 2; // 14 bit program address bus: a PC running past 0x3fff wraps
 	return *(UINT32 *)&OP_ROM[ADSP2100_PGM_OFFSET + addr];
 }
 
@@ -352,7 +352,7 @@ INLINE void WWORD_PGM(UINT32 addr, UINT32 data)
 #ifdef PINMAME
 	if (!WPC_gWPC95 && (addr == 0x3000)) dcs_latch_w(0, (data>>8), 0xffff);
 #endif /* PINMAME */
-	addr <<= 2;
+	addr = (addr & 0x3fff) << 2;
 	ADSP2100_WRPGM(&OP_ROM[ADSP2100_PGM_OFFSET + addr], data);
 }
 
