@@ -172,7 +172,7 @@ Everything is `GET`. Parameter conventions:
 | Parameters | Base |
 |------------|------|
 | `addr`, `val`, `bank`, `pattern`, `data`, `cond` values | hexadecimal, `0x`/`$` prefix optional |
-| `size`, `lines`, `before`, `cpu`, `sw`, `idx`, `len`, `mode`, `ignore` | decimal |
+| `size`, `lines`, `before`, `cpu`, `sw`, `idx`, `len`, `mode`, `ignore` | decimal, or hexadecimal with a `0x`/`$` prefix |
 
 The live reference is served at `GET /api/doc`.
 
