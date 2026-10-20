@@ -2392,6 +2392,7 @@ void i386_device::zero_state()
 	m_CPL = 0;
 	m_performed_intersegment_jump = 0;
 	m_delayed_interrupt_enable = 0;
+	m_auto_clear_RF = true;
 	memset( m_cr, 0, sizeof(m_cr) );
 	memset( m_dr, 0, sizeof(m_dr) );
 	memset( m_tr, 0, sizeof(m_tr) );
