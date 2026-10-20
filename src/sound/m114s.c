@@ -695,11 +695,11 @@ static void process_freq_codes(struct M114SChip * const chip)
 			// seems to be unused by Mr.Game
 			LOG(("* * Channel: %02d: Frequency Code: %02x - PSF * * \n",chip->channel,channel->regs.frequency));
 			break;
-		//FFT - Forced Table Termination
+		//FTT - Forced Table Termination
 		case 0xff:
 			//Stop whatever output from playing by simulating an end of table event!
 			channel->outpos = 0; // but this will just put the cyclic counter back to the beginning!?!
-			//LOG(("* * Channel: %02d: Frequency Code: %02x - FFT * * \n",chip->channel,channel->regs.frequency));
+			//LOG(("* * Channel: %02d: Frequency Code: %02x - FTT * * \n",chip->channel,channel->regs.frequency));
 			break;
 		default:
 			LOG(("* * Channel: %02d: Frequency Code: %02x - UNKNOWN * * \n",chip->channel,channel->regs.frequency));
@@ -734,17 +734,17 @@ static void process_channel_data(struct M114SChip * const chip)
 	//Look for the 16 special frequency codes
 	if(channel->regs.frequency >= 0xf0) {
 			process_freq_codes(chip);
-			//FFT & PSF are the only codes that should continue to process channel data AFAIK
+			//FTT & PSF are the only codes that should continue to process channel data AFAIK
 			if(channel->regs.frequency != 0xff && channel->regs.frequency != 0xfc)
 				return;
 	}
 
 	//If Attenuation set to 0x3F - The channel becomes inactive
 	if(channel->regs.atten == 0x3f) {
-		// New data only takes effect at the end of the table being read (that's what the
-		// FFT code is for), so unless FFT is given, let the current table play to its end.
-		// Mr. Game sends the silence a few ms after starting a one-shot percussion table,
-		// which would otherwise be cut after a fraction of its length (pops and clicks).
+		// Per the datasheet, attenuation and table changes only take effect once the current
+		// table has been completely scanned, unless the FTT code is given, so let the current
+		// table play to its end. Mr. Game sends the silence a few ms after starting a one-shot
+		// percussion table, which would otherwise be cut after a fraction of its length.
 		if (channel->active && channel->regs.frequency != 0xff) {
 			channel->regs = playing_regs;
 			channel->stop_at_end = 1;
