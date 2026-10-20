@@ -113,6 +113,7 @@ struct M114SChannel
 		struct M114SChannelRegs regs;					/* register data for the channel */
 	/* internal state */
 		bool			active;							/* is the channel active */
+		bool			stop_at_end;					/* silence requested: stop once the current table has been read to its end */
 		INT16			output[4096];					/* Holds output samples mixed from table 1 & 2 */
 		UINT32			outpos;							/* Index into output samples */
 		int				prev_volume;					/* Holds the last volume code set for the channel */
@@ -330,7 +331,7 @@ static INT16 read_sample(struct M114SChannel * const channel, const UINT32 lengt
 
 		// interpolate
 		const INT16 val1 = channel->output[pos];
-		const INT16 val2 = channel->output[pos+1 < length ? pos : 0]; // wrap around to 0 (see code below!)?
+		const INT16 val2 = channel->output[pos+1 < length ? pos+1 : 0]; // wrap around to 0 (see code below!)?
 		const INT16 sample = (val1 * ((INT32)FRAC_ONE - frac) + val2 * frac) >> FRAC_BITS;
 
 		channel->outpos += channel->incr;
@@ -339,6 +340,12 @@ static INT16 read_sample(struct M114SChannel * const channel, const UINT32 lengt
 	else {
 		//LOG(("End of Table\n"));
 		//channel->end_of_table++;
+		if (channel->stop_at_end) {
+			channel->stop_at_end = 0;
+			channel->active = 0;
+			channel->outpos = 0;
+			return 0;
+		}
 		channel->outpos = 0; // related to cyclic reading of tables //!! rather wrap over including exact FRAC_BITS instead of just nulling it?
 		return channel->output[0]; //!! dto. would need interpolation then
 	}
@@ -540,6 +547,7 @@ INLINE void init_channel(struct M114SChannel * const channel)
 {
 	//set all internal registers to 0!
 	channel->active = 0;
+	channel->stop_at_end = 0;
 	channel->outpos = 0;
 	channel->prev_volume = 0;
 	memset(&channel->output,0,sizeof(channel->output));
@@ -687,11 +695,11 @@ static void process_freq_codes(struct M114SChip * const chip)
 			// seems to be unused by Mr.Game
 			LOG(("* * Channel: %02d: Frequency Code: %02x - PSF * * \n",chip->channel,channel->regs.frequency));
 			break;
-		//FFT - Forced Table Termination
+		//FTT - Forced Table Termination
 		case 0xff:
 			//Stop whatever output from playing by simulating an end of table event!
 			channel->outpos = 0; // but this will just put the cyclic counter back to the beginning!?!
-			//LOG(("* * Channel: %02d: Frequency Code: %02x - FFT * * \n",chip->channel,channel->regs.frequency));
+			//LOG(("* * Channel: %02d: Frequency Code: %02x - FTT * * \n",chip->channel,channel->regs.frequency));
 			break;
 		default:
 			LOG(("* * Channel: %02d: Frequency Code: %02x - UNKNOWN * * \n",chip->channel,channel->regs.frequency));
@@ -709,6 +717,7 @@ static void process_channel_data(struct M114SChip * const chip)
 {
 	//Grab pointer to channel being programmed
 	struct M114SChannel * const channel = &chip->channels[chip->channel];
+	struct M114SChannelRegs playing_regs;
 
 	/* Force stream to update */
 	stream_update(chip->stream, 0);
@@ -716,19 +725,31 @@ static void process_channel_data(struct M114SChip * const chip)
 	//Reset # of bytes for next group
 	chip->bytes_read = 0;
 
+	//Registers of the table being read, kept in case a silence request has to wait for its end
+	playing_regs = channel->regs;
+
 	//Copy data to the appropriate channel registers from our temp channel registers
 	memcpy(&channel->regs,&chip->tempch_regs,sizeof(chip->tempch_regs));
 
 	//Look for the 16 special frequency codes
 	if(channel->regs.frequency >= 0xf0) {
 			process_freq_codes(chip);
-			//FFT & PSF are the only codes that should continue to process channel data AFAIK
+			//FTT & PSF are the only codes that should continue to process channel data AFAIK
 			if(channel->regs.frequency != 0xff && channel->regs.frequency != 0xfc)
 				return;
 	}
 
 	//If Attenuation set to 0x3F - The channel becomes inactive
 	if(channel->regs.atten == 0x3f) {
+		// Per the datasheet, attenuation and table changes only take effect once the current
+		// table has been completely scanned, unless the FTT code is given, so let the current
+		// table play to its end. Mr. Game sends the silence a few ms after starting a one-shot
+		// percussion table, which would otherwise be cut after a fraction of its length.
+		if (channel->active && channel->regs.frequency != 0xff) {
+			channel->regs = playing_regs;
+			channel->stop_at_end = 1;
+			return;
+		}
 		channel->active = 0;
 		return;
 	}
@@ -761,6 +782,7 @@ static void process_channel_data(struct M114SChip * const chip)
 
 		//Channel is now active!
 		channel->active = 1;
+		channel->stop_at_end = 0;
 
 		// Setup Sample Rate/Step size increase
 		channel->incr = (UINT32)(freq * ((double)(16u << FRAC_BITS) / SAMPLE_RATE));
