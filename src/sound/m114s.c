@@ -114,6 +114,8 @@ struct M114SChannel
 	/* internal state */
 		bool			active;							/* is the channel active */
 		bool			stop_at_end;					/* silence requested: stop once the current table has been read to its end */
+		bool			pending;						/* new programming waiting for the end of the current table (asynchronous mode) */
+		struct M114SChannelRegs pending_regs;			/* registers to apply once the current table has been read to its end */
 		INT16			output[4096];					/* Holds output samples mixed from table 1 & 2 */
 		UINT32			outpos;							/* Index into output samples */
 		int				prev_volume;					/* Holds the last volume code set for the channel */
@@ -316,14 +318,26 @@ static const double freqtable4Mhz[256] = {
 };
 #endif
 
+static void start_table(struct M114SChip * const chip, struct M114SChannel * const channel);
+
 /**********************************************************************************************
 
 	 read_sample -- returns 1 sample from the channel's output buffer, but upsamples/interpolates the data
 	 as necessary to match the Machine driver's output sample rate.
 
+	 About the resampling: the real chip outputs one sample per table step (16 x the frequency of
+	 the table, so about 16-38kHz on the 4MHz M114A) to its DAC, and the board filters that
+	 staircase (on Mr. Game: an RC network on each of the 4 outputs, values not known here).
+	 The linear step below between adjacent samples is cheap and closer to that filtered signal
+	 than a hold, but it is not exact either: it attenuates the top of the band a bit and still
+	 lets some aliasing through when the step rate gets close to SAMPLE_RATE. Something more
+	 correct would be a band-limited (windowed sinc / polyphase) resampler from the table step
+	 rate to SAMPLE_RATE, followed by a model of the output filter once its values are known.
+
 ***********************************************************************************************/
-static INT16 read_sample(struct M114SChannel * const channel, const UINT32 length)
+static INT16 read_sample(struct M114SChip * const chip, struct M114SChannel * const channel)
 {
+	const UINT32 length = channel->table1.total_length;
 	const UINT32 pos = channel->outpos >> FRAC_BITS;
 	if (pos < length)
 	{
@@ -340,13 +354,18 @@ static INT16 read_sample(struct M114SChannel * const channel, const UINT32 lengt
 	else {
 		//LOG(("End of Table\n"));
 		//channel->end_of_table++;
+		channel->outpos = 0; // related to cyclic reading of tables //!! rather wrap over including exact FRAC_BITS instead of just nulling it?
+		// End of table: this is where the chip takes the programming received meanwhile into account
 		if (channel->stop_at_end) {
 			channel->stop_at_end = 0;
 			channel->active = 0;
-			channel->outpos = 0;
 			return 0;
 		}
-		channel->outpos = 0; // related to cyclic reading of tables //!! rather wrap over including exact FRAC_BITS instead of just nulling it?
+		if (channel->pending) {
+			channel->pending = 0;
+			channel->regs = channel->pending_regs;
+			start_table(chip, channel);
+		}
 		return channel->output[0]; //!! dto. would need interpolation then
 	}
 }
@@ -507,7 +526,7 @@ static void m114s_update(int num,
 			if (channel->active)
 			{
 				//We use Table 1 to drive everything, as Table 2 is really for mixing into Table 1..
-				INT32 sample = read_sample(channel, channel->table1.total_length); //!! INT16 if MR_GAME_VOLUME_HACK would be off
+				INT32 sample = read_sample(chip, channel); //!! INT16 if MR_GAME_VOLUME_HACK would be off
 
 #ifdef MR_GAME_VOLUME_HACK
 				sample = sample*chip->channel_volume[channel->regs.outputs] / 100; // boost percussion on Dakar, penalty some of the other instruments
@@ -548,6 +567,7 @@ INLINE void init_channel(struct M114SChannel * const channel)
 	//set all internal registers to 0!
 	channel->active = 0;
 	channel->stop_at_end = 0;
+	channel->pending = 0;
 	channel->outpos = 0;
 	channel->prev_volume = 0;
 	memset(&channel->output,0,sizeof(channel->output));
@@ -667,49 +687,159 @@ void M114S_sh_reset(void)
      process_freq_codes -- There are up to 16 special values for frequency that signify a code
 
 ***********************************************************************************************/
-static void process_freq_codes(struct M114SChip * const chip)
+static void process_freq_codes(struct M114SChip * const chip, const UINT8 code)
 {
-	//Grab pointer to channel being programmed
-	struct M114SChannel * const channel = &chip->channels[chip->channel];
-	switch(channel->regs.frequency)
+	switch(code)
 	{
 		//ROMID - ROM Identification  (Are you kidding me?)
 		case 0xf8:
-			LOG(("* * Channel: %02d: Frequency Code: %02x - ROMID * * \n",chip->channel,channel->regs.frequency));
+			LOG(("* * Channel: %02d: Frequency Code: %02x - ROMID * * \n",chip->channel,code));
 			break;
 		//SSG - Set Syncro Global
 		case 0xf9:
-			LOG(("* * Channel: %02d: Frequency Code: %02x - SSG * * \n",chip->channel,channel->regs.frequency));
+			// would make frequency changes also wait for the end of the table (synchronous mode), not emulated as no Mr. Game ROM uses it
+			LOG(("* * Channel: %02d: Frequency Code: %02x - SSG * * \n",chip->channel,code));
 			break;
 		//RSS - Reverse Syncro Status
 		case 0xfa:
 			// check if used, as this will force frequency changes to wait until table ends
-			LOG(("* * Channel: %02d: Frequency Code: %02x - RSS * * \n",chip->channel,channel->regs.frequency));
+			LOG(("* * Channel: %02d: Frequency Code: %02x - RSS * * \n",chip->channel,code));
 			break;
 		//RSG - Reset Syncro Global
 		case 0xfb:
-			LOG(("* * Channel: %02d: Frequency Code: %02x - RSG * * \n",chip->channel,channel->regs.frequency));
+			LOG(("* * Channel: %02d: Frequency Code: %02x - RSG * * \n",chip->channel,code));
 			break;
 		//PSF - Previously Selected Frequency
 		case 0xfc:
 			// seems to be unused by Mr.Game
-			LOG(("* * Channel: %02d: Frequency Code: %02x - PSF * * \n",chip->channel,channel->regs.frequency));
+			LOG(("* * Channel: %02d: Frequency Code: %02x - PSF * * \n",chip->channel,code));
 			break;
 		//FTT - Forced Table Termination
 		case 0xff:
-			//Stop whatever output from playing by simulating an end of table event!
-			channel->outpos = 0; // but this will just put the cyclic counter back to the beginning!?!
-			//LOG(("* * Channel: %02d: Frequency Code: %02x - FTT * * \n",chip->channel,channel->regs.frequency));
+			//LOG(("* * Channel: %02d: Frequency Code: %02x - FTT * * \n",chip->channel,code));
 			break;
 		default:
-			LOG(("* * Channel: %02d: Frequency Code: %02x - UNKNOWN * * \n",chip->channel,channel->regs.frequency));
+			LOG(("* * Channel: %02d: Frequency Code: %02x - UNKNOWN * * \n",chip->channel,code));
 			break;
 	}
 }
 
 /**********************************************************************************************
 
+     set_frequency -- table step rate from the frequency & octave divisor registers
+
+***********************************************************************************************/
+
+static void set_frequency(struct M114SChip * const chip, struct M114SChannel * const channel)
+{
+	//Calculate frequency of both tables
+	double freq = chip->is_M114A ? freqtable4Mhz[channel->regs.frequency] : freqtable6Mhz[channel->regs.frequency];
+
+	//Adjust frequency if octave divisor set
+	if (channel->regs.oct_divisor)
+		freq /= 2.; // maybe new frequency must be clamped to freqtable[0]??
+
+	// Setup Sample Rate/Step size increase
+	channel->incr = (UINT32)(freq * ((double)(16u << FRAC_BITS) / SAMPLE_RATE));
+}
+
+/**********************************************************************************************
+
+     start_table -- set up the tables, volume and output buffer of a channel from its registers
+
+***********************************************************************************************/
+
+static void start_table(struct M114SChip * const chip, struct M114SChannel * const channel)
+{
+	//Calculate # of repetitions for Table 1 & Table 2
+	const int rep1 = mode_to_rep[channel->regs.read_meth][0];
+	const int rep2 = mode_to_rep[channel->regs.read_meth][1];
+	//Calculate Table Length for Table 1 & Table 2
+	const int lent1 = mode_to_len_t1[channel->regs.read_meth][channel->regs.table_len];
+	const int lent2 = mode_to_len_t2[channel->regs.read_meth][channel->regs.table_len];
+	//Start & Stop Address - Note the special case for table length of 16 - Bit 5 always 1 in this case // but also for special cases 8 and 4 for table 2?!?
+	//Calculate Table 1 Start & End Address in ROM
+	const int t1start = ((channel->regs.table1_addr<<5) & (~(lent1-1)&0x1fff)) | (lent1 == 16 ? 0x10 : 0); //T1 Addr is only upper 8 bits, but masked by length
+	//const int t1end = t1start | (lent1-1);
+	//Calculate Table 2 Start & End Address in ROM
+	const int t2start = ((channel->regs.table2_addr<<5) & (~(lent2-1)&0x1fff)) | (lent2 <= 16 ? 0x10 : 0); //T2 Addr is only upper 8 bits, but masked by length
+	//const int t2end = t2start | (lent2-1);
+
+	//Calculate new volume
+	channel->target_volume = channel->regs.atten < 32 ? v_linear[channel->regs.atten] : 0; // channel must be kept active, but is it really 0? Or is the last value used (v_linear[31])? Or something inbetween??
+
+	//Assign start & stop address offsets to ROM
+	channel->table1.start_address = t1start;
+	channel->table2.start_address = t2start;
+	//channel->table1.stop_address = t1end;
+	//channel->table2.stop_address = t2end;
+
+	//Assign # of times to re-read & Length
+	channel->table1.reread = rep1;
+	channel->table2.reread = rep2;
+	channel->table1.length = lent1;
+	channel->table2.length = lent2;
+	channel->table1.total_length = lent1*rep1;
+	channel->table2.total_length = lent2*rep2;
+
+	//Calculate Sample Volume
+	//- If Envelope should be used, Take the difference in new volume & current volume, and break it into the # of samples in the table
+	//- If No Envelope should be used, Volume is simply based on the Volume Table
+#ifdef USE_VOL_ENVELOPE
+	if(channel->regs.env_enable) {
+		const int diff = channel->target_volume - channel->prev_volume;
+		channel->step_rate_volume_env = abs(diff) > 128 ? 1 : abs(diff) > 64 ? 2 : abs(diff) > 32 ? 4 : 8;
+		if(channel->target_volume < channel->prev_volume)
+			channel->step_rate_volume_env = -channel->step_rate_volume_env;
+		channel->current_volume = channel->prev_volume;
+	}
+	else
+#endif
+	{
+		channel->current_volume = channel->target_volume;
+	}
+	//Update Last Volume
+	channel->prev_volume = channel->target_volume;
+
+	//Temp hack to ensure we only generate the ouput data 1x - this is WRONG and needs to be addressed eventually!
+	//if(channel->output[0] == 0)
+		read_table(chip,channel);
+
+#if 0
+//if(chip->channel == 2) {
+if(channel->regs.outputs == 2) {
+	if(channel->regs.frequency == 0x70)
+	{
+		LOG(("orig: = %0f, incr = %0d \n",freqtable4Mhz[channel->regs.frequency],channel->incr));
+	}
+	//LOG(("EOT=%d\n",channel->end_of_table));
+	LOG(("C:%02d V:%02d FQ:%03x TS1:%02x TS2:%02x T1L:%04d T1R:%01d T2L:%04d T2R:%01d OD=%01d I:%02d E:%01d\n",
+		chip->channel,
+		channel->regs.atten,
+		channel->regs.frequency,
+		channel->table1.start_address,channel->table2.start_address,
+		channel->table1.length,channel->table1.reread,
+		channel->table2.length,channel->table2.reread,
+		channel->regs.oct_divisor,
+		channel->regs.interp,
+		channel->regs.env_enable
+		));
+}
+#endif
+}
+
+/**********************************************************************************************
+
      process_channel_data -- complete programming for a channel now exists, process it!
+
+     The chip works in asynchronous mode (the default, the only one Mr. Game uses), see the
+     datasheet pages 9-11: a new frequency (and octave divisor) is used immediately, but the
+     table addresses, lengths, reading method, attenuation, interpolation, envelope and output
+     only once the table being read has been completely scanned. The FTT code (forced table
+     termination) applies the other bytes of its programming sequence at once, restarting from
+     the first table address, while keeping the frequency already programmed. FTT cannot start
+     a stopped channel. Attenuation 0x3F stops the channel (at the end of the table, or at once
+     with FTT).
 
 ***********************************************************************************************/
 
@@ -717,7 +847,8 @@ static void process_channel_data(struct M114SChip * const chip)
 {
 	//Grab pointer to channel being programmed
 	struct M114SChannel * const channel = &chip->channels[chip->channel];
-	struct M114SChannelRegs playing_regs;
+	struct M114SChannelRegs regs = chip->tempch_regs;
+	bool ftt = false;
 
 	/* Force stream to update */
 	stream_update(chip->stream, 0);
@@ -725,127 +856,64 @@ static void process_channel_data(struct M114SChip * const chip)
 	//Reset # of bytes for next group
 	chip->bytes_read = 0;
 
-	//Registers of the table being read, kept in case a silence request has to wait for its end
-	playing_regs = channel->regs;
-
-	//Copy data to the appropriate channel registers from our temp channel registers
-	memcpy(&channel->regs,&chip->tempch_regs,sizeof(chip->tempch_regs));
-
 	//Look for the 16 special frequency codes
-	if(channel->regs.frequency >= 0xf0) {
-			process_freq_codes(chip);
-			//FTT & PSF are the only codes that should continue to process channel data AFAIK
-			if(channel->regs.frequency != 0xff && channel->regs.frequency != 0xfc)
-				return;
+	if(regs.frequency >= 0xf0) {
+		process_freq_codes(chip, regs.frequency);
+		//FTT & PSF are the only codes that also carry channel data, the others are global commands which ignore the remaining bits
+		if(regs.frequency != 0xff && regs.frequency != 0xfc)
+			return;
+		ftt = (regs.frequency == 0xff);
+		//both keep the frequency that is already programmed
+		regs.frequency = channel->regs.frequency;
+		regs.oct_divisor = channel->regs.oct_divisor;
 	}
 
-	//If Attenuation set to 0x3F - The channel becomes inactive
-	if(channel->regs.atten == 0x3f) {
-		// Per the datasheet, attenuation and table changes only take effect once the current
-		// table has been completely scanned, unless the FTT code is given, so let the current
-		// table play to its end. Mr. Game sends the silence a few ms after starting a one-shot
-		// percussion table, which would otherwise be cut after a fraction of its length.
-		if (channel->active && channel->regs.frequency != 0xff) {
-			channel->regs = playing_regs;
-			channel->stop_at_end = 1;
+	if (ftt) {
+		if (!channel->active)
+			return;
+		channel->pending = 0;
+		channel->stop_at_end = 0;
+		channel->regs = regs;
+		//If Attenuation set to 0x3F - The channel becomes inactive
+		if (regs.atten == 0x3f) {
+			channel->active = 0;
+			channel->outpos = 0;
 			return;
 		}
-		channel->active = 0;
+		channel->outpos = 0;
+		start_table(chip, channel);
 		return;
 	}
-	else
-	//Process this channel
-	{
-		//Calculate # of repetitions for Table 1 & Table 2
-		const int rep1 = mode_to_rep[channel->regs.read_meth][0];
-		const int rep2 = mode_to_rep[channel->regs.read_meth][1];
-		//Calculate Table Length for Table 1 & Table 2
-		const int lent1 = mode_to_len_t1[channel->regs.read_meth][channel->regs.table_len];
-		const int lent2 = mode_to_len_t2[channel->regs.read_meth][channel->regs.table_len];
-		//Start & Stop Address - Note the special case for table length of 16 - Bit 5 always 1 in this case // but also for special cases 8 and 4 for table 2?!?
-		//Calculate Table 1 Start & End Address in ROM
-		const int t1start = ((channel->regs.table1_addr<<5) & (~(lent1-1)&0x1fff)) | (lent1 == 16 ? 0x10 : 0); //T1 Addr is only upper 8 bits, but masked by length
-		//const int t1end = t1start | (lent1-1);
-		//Calculate Table 2 Start & End Address in ROM
-		const int t2start = ((channel->regs.table2_addr<<5) & (~(lent2-1)&0x1fff)) | (lent2 <= 16 ? 0x10 : 0); //T2 Addr is only upper 8 bits, but masked by length
-		//const int t2end = t2start | (lent2-1);
 
-		//Calculate initial frequency of both tables
-		double freq = chip->is_M114A ? freqtable4Mhz[channel->regs.frequency] : freqtable6Mhz[channel->regs.frequency];
-
-		//Calculate new volume
-		channel->target_volume = channel->regs.atten < 32 ? v_linear[channel->regs.atten] : 0; // channel must be kept active, but is it really 0? Or is the last value used (v_linear[31])? Or something inbetween??
-
-		//Adjust frequency if octave divisor set
-		if (channel->regs.oct_divisor)
-			freq /= 2.; // maybe new frequency must be clamped to freqtable[0]??
-
+	if (!channel->active) {
+		//If Attenuation set to 0x3F - The channel stays inactive
+		if (regs.atten == 0x3f)
+			return;
 		//Channel is now active!
+		channel->regs = regs;
 		channel->active = 1;
+		channel->pending = 0;
 		channel->stop_at_end = 0;
-
-		// Setup Sample Rate/Step size increase
-		channel->incr = (UINT32)(freq * ((double)(16u << FRAC_BITS) / SAMPLE_RATE));
-
-		//Assign start & stop address offsets to ROM
-		channel->table1.start_address = t1start;
-		channel->table2.start_address = t2start;
-		//channel->table1.stop_address = t1end;
-		//channel->table2.stop_address = t2end;
-
-		//Assign # of times to re-read & Length
-		channel->table1.reread = rep1;
-		channel->table2.reread = rep2;
-		channel->table1.length = lent1;
-		channel->table2.length = lent2;
-		channel->table1.total_length = lent1*rep1;
-		channel->table2.total_length = lent2*rep2;
-
-		//Calculate Sample Volume
-		//- If Envelope should be used, Take the difference in new volume & current volume, and break it into the # of samples in the table
-		//- If No Envelope should be used, Volume is simply based on the Volume Table
-#ifdef USE_VOL_ENVELOPE
-		if(channel->regs.env_enable) {
-			const int diff = channel->target_volume - channel->prev_volume;
-			channel->step_rate_volume_env = abs(diff) > 128 ? 1 : abs(diff) > 64 ? 2 : abs(diff) > 32 ? 4 : 8;
-			if(channel->target_volume < channel->prev_volume)
-				channel->step_rate_volume_env = -channel->step_rate_volume_env;
-			channel->current_volume = channel->prev_volume;
-		}
-		else
-#endif
-		{
-			channel->current_volume = channel->target_volume;
-		}
-		//Update Last Volume
-		channel->prev_volume = channel->target_volume;
-
-		//Temp hack to ensure we only generate the ouput data 1x - this is WRONG and needs to be addressed eventually!
-		//if(channel->output[0] == 0)
-			read_table(chip,channel);
-
-#if 0
-//if(chip->channel == 2) {
-if(channel->regs.outputs == 2) {
-	if(channel->regs.frequency == 0x70)
-	{
-		LOG(("orig: = %0f, freq = %0f, incr = %0d \n",freqtable4Mhz[channel->regs.frequency],freq,channel->incr));
+		channel->outpos = 0;
+		set_frequency(chip, channel);
+		start_table(chip, channel);
+		return;
 	}
-	//LOG(("EOT=%d\n",channel->end_of_table));
-	LOG(("C:%02d V:%02d FQ:%03x TS1:%02x TS2:%02x T1L:%04d T1R:%01d T2L:%04d T2R:%01d OD=%01d I:%02d E:%01d\n",
-		chip->channel,
-		channel->regs.atten,
-		channel->regs.frequency,
-		t1start,t2start,
-		lent1,rep1,
-		lent2,rep2,
-		channel->regs.oct_divisor,
-		channel->regs.interp,
-		channel->regs.env_enable
-		));
-}
-#endif
 
+	//Running channel: the frequency changes now, the rest when the current table ends
+	channel->regs.frequency = regs.frequency;
+	channel->regs.oct_divisor = regs.oct_divisor;
+	set_frequency(chip, channel);
+	if (regs.atten == 0x3f) {
+		// Mr. Game sends the silence a few ms after starting a one-shot percussion table,
+		// which would otherwise be cut after a fraction of its length.
+		channel->pending = 0;
+		channel->stop_at_end = 1;
+	}
+	else {
+		channel->pending_regs = regs;
+		channel->pending = 1;
+		channel->stop_at_end = 0;
 	}
 }
 
