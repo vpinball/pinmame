@@ -96,7 +96,7 @@ static WRITE_HANDLER(bcd_w) {
 }
 
 static WRITE_HANDLER(panel_w) {
-  if (data) locals.segments[offset*8 + core_BitColToNum(~locals.latch & 0xff)].w = core_bcd2seg7[0x0f ^ locals.bcd];
+  if (data) locals.segments[offset*8 + core_LowestBitColToNum(~locals.latch & 0xff)].w = core_bcd2seg7[0x0f ^ locals.bcd];
 }
 
 static WRITE_HANDLER(snd_w) {
