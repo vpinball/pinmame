@@ -445,9 +445,14 @@ static WRITE_HANDLER(GTS80SS_da1_latch_w) {
 /* D/A converter for voice clock */
 static WRITE_HANDLER(GTS80SS_da2_latch_w) {
 //	logerror("da2_w: 0x%02x\n", data);
-	if (GTS80SS_locals.boardData.subType)
+	if (GTS80SS_locals.boardData.subType) {
+		// Striker writes 1 and then 0 here, which the formula below turns into a 1.25kHz and a 1Hz clock: far below
+		// anything the VCO produces, and too low for the mixer to resample (assert in src_process). Clamp like MAME does
+		if (data < 0x40)
+			data = 0x40;
 		//votraxsc01_set_base_frequency(11025+(data*100)); // OLD_VOTRAX
-		votraxsc01_set_clock(max((int)-4500 + (int)data*(int)5750,1)); // approximation for the 2 data points above
+		votraxsc01_set_clock((int)-4500 + (int)data*(int)5750); // approximation for the 2 data points above
+	}
 	GTS80SS_locals.device = 3;
 }
 
