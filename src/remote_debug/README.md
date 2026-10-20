@@ -528,6 +528,9 @@ via `ROMPATH=/path`):
 - `./test_suite_s11.sh` — the same for a Williams System 11 game (default
   `f14_l1`): M6808 main CPU, sequential switch/lamp numbers, operator
   buttons, NVRAM, callstack.
+- `./test_suite_capcom.sh` — value conditions on 16 bit writes and trace
+  range bounds on a Capcom game (default `bsv103`): big endian M68306 with
+  a 32 bit address space.
 - `./test_breakpoint.sh` — end-to-end breakpoint hit test.
 - `./re_demo.sh` — guided tour of the RE tooling (coverage, execution
   trace, tracepoints, value-condition watchpoint with callstack, monitor
