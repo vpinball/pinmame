@@ -111,6 +111,7 @@ Improved the BSMT2000 sound emulation to follow the chip's own program more clos
  - proper reset on Data East/Sega/Stern sound boards: now restarts when the reset line is released, so the chip picks the mode the game sets (e.g. Batman, Star Trek 25th and Hook, in practice no audible change though)
  - proper reset on Alvin G. sound boards: reset line is wired now, so games set up the chip's mode themselves (in practice no audible change though)
 Also added an optional low level emulation of the BSMT2000 sound chip, running the chip's own program (needs bsmt2000.bin, in bsmt2000.zip in the roms folder): enable via the 'bsmt2000_lle' setting (registry key/command line), off by default as it costs more CPU
+Added an optional MC6840 timer emulation running in the sound stream for the Stern SB-300 (MP-200 games like Meteor, Galaxy, Ali, Flight 2000) and Game Plan MSU-1 sound boards: the tones follow the chip's own counting (all counter modes, exact pitch and duty cycle) instead of looped samples, and on Stern it also needs less CPU: enable via the MC6840_SOUND define in src/sound/mc6840.h, off by default
 Fixed VGM recording for machines using OKI6295 sound
 Added VGM recording for machines using BSMT2000 sound
 Added VGM recording for machines using MSM5205/MSM6585 sound
