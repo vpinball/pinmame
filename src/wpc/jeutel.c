@@ -1013,3 +1013,41 @@ ROM_END
 INITGAME_LAMPS(jpapillon,dispAlpha,FLIP_SW(FLIP_L),&papillonSimData,&papillon_lampPos)
 JEUTEL_COMPORTS(jpapillon, 1)
 CORE_GAMEDEFNV(jpapillon, "Papillon (Jeutel)", 1984, "Jeutel", jeutel, 0)
+
+/*--------------------------------
+/ Apocalypse Now
+/-------------------------------*/
+// ROM names follow the board silkscreen: A1 is the Unite Centrale (CPU) board,
+// A3 is the Carte Son (sound) board.
+// The main CPU ROM (A1/IC6, an M5L2764K labelled "APO") is a consensus of 14
+// reads of a chip with marginal D6/D7 contacts - the erased area verifies clean
+// and every structural check passes, but it is not a single clean read.
+// The other three are byte-identical to ROMs already in this file: the display
+// ROM matches Olympic Games / Papillon, the sound CPU ROM matches Le King, and
+// the speech ROM is the one shared across the whole range.
+ROM_START(apocalypse_now)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("a1-ic3_disp.bin",  0x0000, 0x1000, CRC(cd284a20) SHA1(94568e1247994c802266f9fbe4a6f6ed2b55a978))
+  NORMALREGION(0x10000, REGION_CPU2)
+    ROM_LOAD("a1-ic6_cpu.bin",   0x0000, 0x2000, CRC(8f8ad836) SHA1(0d422f12ff63655ba6da4535430de3b1359162e4))
+
+  NORMALREGION(0x10000, REGION_CPU3)
+    ROM_LOAD("a3-z4_snd.bin",    0x0000, 0x1000, CRC(36130e7b) SHA1(d9b66d43b55272579b3972005355b8a18ce6b4a9))
+  NORMALREGION(0x10000, REGION_SOUND1)
+    ROM_LOAD("a3-z5_speech.bin", 0x0000, 0x2000, CRC(97eedd6c) SHA1(3bb8e5d32417c49ef97cbe407f2c5eeb214bf72d))
+    ROM_RELOAD(0x2000, 0x2000)
+    ROM_RELOAD(0x4000, 0x2000)
+    ROM_RELOAD(0x6000, 0x2000)
+    ROM_RELOAD(0x8000, 0x2000)
+    ROM_RELOAD(0xa000, 0x2000)
+    ROM_RELOAD(0xc000, 0x2000)
+    ROM_RELOAD(0xe000, 0x2000)
+ROM_END
+
+INITGAME(apocalypse_now,dispAlpha,FLIP_SW(FLIP_L),NULL)
+// One ball.  Switch 18, the multiball DIP, is 0xC0A6 bit 1 and this ROM never
+// tests it; nor do Olympic Games' or Papillon's.  The ball is served by SOL 9,
+// the receptacle B73; SOL 8, the B74 ejector the manual lists as fitted
+// "uniquement sur jeu multibilles", is never driven.
+JEUTEL_COMPORTS(apocalypse_now, 1)
+CORE_GAMEDEFNV(apocalypse_now, "Apocalypse Now", 1985, "Jeutel", jeutel, 0)
