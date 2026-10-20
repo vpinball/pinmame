@@ -17,6 +17,8 @@ Cleanup PinMAME32 UI a bit (historic/leftover MAME options like vector display, 
 
 Add -skip_gamewarnings option, for headless runs of not-yet-working/imperfect games
 
+Fixed 'F6' DMD frame recording into the 'DmdDump' folder in PinMAME(32) and xpinmame, it only worked in VPinMAME before
+
 Fixed debugger lockup when tabbing backwards
 
 Fixed broken fast frames UI/registry option (VPinMAME, to enable faster boot/startup) and nothrottle (PinMAME(32), e.g. for benchmarking)

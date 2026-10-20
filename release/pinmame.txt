@@ -450,9 +450,15 @@ Recording Sounds to a Wave File
 Recording DMD frames to a Text File
 -----------------------------------
   By creating a folder called 'DmdDump' inside of the PinMAME folder,
-  one can then use the 'F6' key to start recording DMD frames to a text file.
-  The file is created in the 'DmdDump' directory and contains the name
-  of the game.
+  one can then use the 'F6' key to start (and stop again) recording DMD frames
+  to a text file. The file is created in the 'DmdDump' directory and contains
+  the name of the game. Each recording is appended to the existing file.
+  Alternatively use the -dmd_dump_dir option (see above), which records
+  the whole run into the given folder.
+
+  In VPinMAME the 'DmdDump' folder has to be next to VPinMAME.dll (or
+  VPinMAME64.dll) and the frames are recorded when both 'Use external DMD (dll)'
+  and the VPinMAME DMD window are enabled.
 
 Accessing Williams/Bally WPC - Hidden Menu
 ------------------------------------------
