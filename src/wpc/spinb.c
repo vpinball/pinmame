@@ -930,7 +930,9 @@ static MACHINE_INIT(spinb) {
   /* Setup DMD Serial Port Callback */
   i8051_set_serial_tx_callback(dmd_serial_callback);
 
-  core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_PREINTEGRATED_LINEAR_4, CORE_DMD_PWM_PREINTEGRATED_LINEAR_4, 0);
+  // Gun Shot has no display at all
+  if ((core_gameData->lcdLayout->type & CORE_SEGALL) == CORE_DMD)
+    core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_PREINTEGRATED_LINEAR_4, CORE_DMD_PWM_PREINTEGRATED_LINEAR_4, 0);
 
   /* Init the dmd & sound board */
   sndbrd_0_init(core_gameData->hw.soundBoard,   2, memory_region(SPINB_MEMREG_SND1),NULL,NULL);
