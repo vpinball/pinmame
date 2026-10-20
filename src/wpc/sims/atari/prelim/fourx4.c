@@ -4,64 +4,54 @@
  Preliminary Atari 4x4 Pinball Simulator
 
  4x4 is a 1982-83 Atari prototype; two machines were built.  Everything named
- here was recovered from the ROM and the surviving schematics rather than from
- a machine, so the playfield layout is only partly known -- hence preliminary.
+ here comes from the ROM and the surviving schematics rather than from a
+ machine, and the playfield is only partly known -- hence preliminary.
 
- The solenoid names are the ones pencilled onto the schematic by whoever drew
- it.  The switch names were established by running the game and watching which
- solenoid each of the 56 switches fires: switch 0 works the right flipper,
- switches 1-3 the three pop bumpers, switch 7 the ball feed (so it is the
- outhole), and switches $17 and $1F -- eight apart -- reset the left and right
- drop target banks, which is the two four-bank sets IPDB lists.
+ Switch and solenoid numbers are the ones the game dispatches on, and they are
+ the numbers the playfield diagram and the wiring sheets print.  The diagram's
+ legend names the cabinet switches: $27 VOLUME, $28 START, $29 TILT, $2A LCOIN,
+ $2B RCOIN, $2C TEST, and $25 and $26 the two side standing target banks.  P11
+ marks RT FLIPPER at pin 13, which is SW $00, and LT FLIPPER at pin 5, SW $04.
+ Both flipper buttons are gated in hardware rather than pulsed by the CPU:
+ holding either produces no coil write.
+
+ Fourteen switches have a handler in the table at $8B06 but no name: $05, $06,
+ $08-$0B, $20-$22, $24 and $30-$33.  The rollunder spinner, the inlanes and the
+ outlanes are among them.  Ten have no handler at all -- $00 and $04, the
+ flipper buttons, $27, the volume pot, and $2D-$2F and $34-$37.
+
+ Lamp numbers are the ROM's own output numbers, blitIndex*8 + bit; atari.c
+ carries the derivation and the port-to-column table.  The playfield diagram
+ draws two four-by-four lamp grids, L11-L20 on the left and L21-L30 on the
+ right, numbered in hex and running straight through.
 
  The displays are named by the schematics: the backbox sheet puts PLAYER 1 and
  LAP (HEAT) on SEG1 and PLAYER 2 and CREDIT on SEG2, and the playfield diagram
  marks the middle-of-playfield display as ANTE.  The wiring sheet draws three
- displays on the playfield, of one, six and two digits, and device 1 feeds
- both of its buses -- so ANTE is one of those three rather than the whole of
- SEG3, and which one is not established.
-
- The playfield diagram draws two four-by-four lamp grids, L11-L20 on the left
- and L21-L30 on the right, numbered in hex and running straight through.  Its
- lamp numbers are the ROM's own output numbers -- see the lamp comment in
- atari.c, which checks that six ways.
-
- Sweeping all 56 switches with a ball in play and watching the score, the ante
- countdown and the lamp columns sorts them further.  These score: $02-$04,
- $06-$08, $0D-$14, $18-$24.  These do not: $01, $05, $09-$0C and everything
- from $28 up, which is the cabinet column and the unused column 6.  Switches
- $15, $17, $1D and $1F score differently from their neighbours -- they jump a
- higher digit rather than stepping the low one -- and $17 and $1F are the two
- that fire the bank resets, so the four of them are the ends of the two drop
- target banks.
-
- The wiring sheets name some of them outright, and they use the same hex switch
- numbers the game dispatches on.  P9 pins 20, 19, 18 and 17 are SW $28 START,
- $29 TILT, $2A COIN LT and $2B COIN RT, and P10 pin 11 is SW $2C TEST -- the
- five the attract enable mask $1D had already pointed at.  P11 marks RT FLIPPER
- at pin 13, which is SW $00, matching the measurement, and LT FLIPPER at pin 5,
- which is SW $04.  The flipper buttons appear to be gated in hardware rather
- than pulsed by the CPU: holding SW $04 produces no coil write.
-
- Still unknown by name: the rollunder spinner, the inlanes and the outlanes.
- They are among the scoring switches above.
+ displays on the playfield, of one, six and two digits, and device 1 feeds both
+ of its buses, so ANTE is one of those three rather than the whole of SEG3.
+ Which one is not established.
 
  The sound is two POKEYs at $2600 and $2700, driven through the same
- sixteen-slot ramp engine that fades the lamps.  They are emulated well
- enough to hear, not well enough to be right -- the high-pass filters and
- the two-tone mode are not modelled -- hence GAME_IMPERFECT_SOUND.  The
- 82S130 PROM that circulates with this ROM set is not 4x4's: it was dumped
- from a Superman, as the note in atarigames.c says.
+ sixteen-slot ramp engine that fades the lamps.  They are emulated well enough
+ to hear, not well enough to be right -- the high-pass filters and two-tone
+ mode are unreachable in this game and are not modelled -- hence
+ GAME_IMPERFECT_SOUND.  The 82S130 PROM that circulates with this ROM set is
+ not 4x4's: it was dumped from a Superman, as the note in atarigames.c says.
  ******************************************************************************/
 
 /*------------------------------------------------------------------------------
   Keys for the 4x4 Simulator:
   ---------------------------
-    Q    Drain Ball
+    Q    Drain ball
    WER   Upper / Mid / Lower pop bumper
    ASDF  Left drop target bank 1-4
    ZXCV  Right drop target bank 1-4
+   TYUI  Lanes 1-4, along the bottom edge of the left grid
+    GJ   Left / right side standing targets
     H    Kick-out hole
+    O    Outhole
+  1-8    (keypad) the eight-switch group at $0C-$13
 ------------------------------------------------------------------------------*/
 
 #include "driver.h"
@@ -114,26 +104,25 @@ ATARI_INPUT_PORTS_END
 /*-------------------
 / Switch definitions
 /--------------------*/
-/* The game dispatches on col*8+bit, and ATARI_sw2m maps a switch number
-   straight onto that, so these numbers are the game's own event codes -- and
+/* The game dispatches on col*8+bit and ATARI_sw2m maps a switch number
+   straight onto that, so these numbers are the game's own event codes, and
    the same hex numbers the wiring sheets print against the connector pins.
 
-   The handler table at $8B06 gives one thread per switch, and its shape sorts
-   them.  Nine switches point at the do-nothing stub $8A9C and so have no
-   handler at all: $00, $04, $27, $2D, $2E, $2F and $34-$37.  The first two are
-   the flipper buttons, which is why holding them produces no coil write -- the
-   flippers are gated in hardware, not pulsed by the CPU.
+   The handler table at $8B06 holds one thread per switch.  Ten point at the
+   do-nothing stub $8A9C: $00, $04, $27, $2D-$2F and $34-$37.  $00 and $04 are
+   the flipper buttons, gated in hardware rather than pulsed by the CPU, and
+   $27 is the volume pot.
 
-   The rest fall into groups whose handlers are the same size as each other:
+   The rest group by handler size:
 
-     $01-$03   three pop bumpers (measured: upper, mid, lower)
+     $01-$03   three pop bumpers, upper, mid and lower
      $05-$07   three of a kind
-     $0C-$13   eight of a kind -- IPDB lists eight messenger balls
+     $0C-$13   eight of a kind; IPDB lists eight messenger balls
      $14-$17   four of a kind, and $17 fires reset-left-bank
      $18-$1B   four of a kind
      $1C-$1F   four of a kind, and $1F fires reset-right-bank
-     $20-$23   four of a kind, same sizes as $18-$1B
-     $28-$2C   the cabinet, named outright by P9 and P10
+     $20-$23   four of a kind, the same sizes as $18-$1B
+     $28-$2C   the cabinet, named by P9 and P10
      $30-$33   four on column 6
 */
 #define swRFlipper    0   /* P11 pin 13, RT FLIPPER; no handler */
@@ -151,15 +140,15 @@ ATARI_INPUT_PORTS_END
 #define swMsgr7      18
 #define swMsgr8      19
 #define swLDrop1     20   /* $14-$17; the diagram draws these four along the
-                           top edge of the left four-by-four grid.  Measured,
-                           they light lamps $45-$48 -- four lanes by four
-                           levels is what the machine is named after */
+                           top edge of the left four-by-four grid; they light
+                           lamps $45-$48.  Four lanes by four levels is what
+                           the machine is named after */
 #define swLDrop2     21
 #define swLDrop3     22
 #define swLDrop4     23   /* $17 - resets the left bank */
 #define swLane1      24   /* $18-$1B, the four the diagram draws along the
-                           bottom edge of the left grid; measured, they light
-                           $2D, $2E, $2F and $34 */
+                           bottom edge of the left grid; they light $2D, $2E,
+                           $2F and $34 */
 #define swLane2      25
 #define swLane3      26
 #define swLane4      27
@@ -173,8 +162,8 @@ ATARI_INPUT_PORTS_END
                            own legend */
 #define swRStand     38   /* $26, "RIGHT SIDE STANDING TARGETS" */
 #define swVolume     39   /* $27, a cabinet volume control - no game handler */
-/* The playfield diagram's own legend names these, and P9 pins 20, 19, 18, 17
-   and P10 pin 11 agree:
+/* The playfield diagram's legend and P9 pins 20, 19, 18, 17 and P10 pin 11
+   name these:
        SW 25 = left side standing targets    SW 26 = right side
        SW 27 = volume   SW 28 = start   SW 29 = tilt
        SW 2A = left coin   SW 2B = right coin   SW 2C = test */
@@ -228,9 +217,9 @@ ATARI_INPUT_PORTS_END
                and those solenoid and switch numbers match this file
      L55-L58   the cluster above the pops, lit by switches $1C-$1F
 
-   One loose end: L11-L17 would be image byte 2 bits 1-7, and bits 4-6 of that
-   byte are the task bank, so three lamps of the left grid have nowhere to sit.
-   Everything else checks out, so it is recorded rather than worked around. */
+   L11-L17 are the exception: they would be image byte 2 bits 1-7, and bits
+   4-6 of that byte are the task bank, so three lamps of the left grid have no
+   position under this numbering. */
 
 /*---------------------
 /  Ball state handling
@@ -378,18 +367,13 @@ static sim_tSimData fourx4SimData = {
 /   of each register byte is SEG1 and the low nibble SEG2, and the same for
 /   SEG3/SEG4 on the second device.
 /
-/   The emulation agrees: in a one-player game the SEG1 bus reads a score plus
-/   a heat of 01 while the SEG2 bus reads a blank score -- player 2 is not
-/   playing -- plus a credit count of 02.
+/   In a one-player game the SEG1 bus reads a score plus a heat of 01, and the
+/   SEG2 bus a blank score -- player 2 is not playing -- plus a credit count.
 /
-/   SEG4 is not unused, as was assumed here before.  The wiring sheet draws
-/   three displays on the playfield, one of one digit, one of six and one of
-/   two, and device 1 feeds both buses: its high nibble reads 000000 through
-/   a game, which is the six-digit one, and its low nibble carries a separate
-/   two-digit value.  SEG3 was pointed at the low nibble, so the six-digit
-/   display was not shown at all and the two-digit one was being read as a
-/   six-digit number.  Which of the two remaining displays is the one-digit
-/   one is not established. --*/
+/   Device 1 feeds SEG3 and SEG4.  Its high nibble is the six-digit playfield
+/   display and its low nibble a separate two-digit one.  Which of the three
+/   displays the wiring sheet draws on the playfield is the one-digit one is
+/   not established. --*/
 static core_tLCDLayout fourx4_disp[] = {
   { 0, 0, 0, 6, CORE_SEG7 }, { 0,16, 6, 2, CORE_SEG7 },   /* SEG1: player 1, lap (heat) */
   { 2, 0, 8, 6, CORE_SEG7 }, { 2,16,14, 2, CORE_SEG7 },   /* SEG2: player 2, credit */

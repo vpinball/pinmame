@@ -577,10 +577,8 @@ MACHINE_DRIVER_END
 /------------------------------------------*/
 #define ATARI4_SLICE_DEVS 7  /* $2000,$2100,$2200,$2300,$2400,$2600,$2700 */
 
-/*-- CPU: 1.5 MHz, given by one of the two owners.  It is close to the
-/   12.096 MHz / 8 = 1.512 MHz that Atari's other 6502 boards of the era use
-/   and that had been assumed here, so the two agree to under a percent, but
-/   the owner's figure is the one with a machine behind it.
+/*-- CPU: 1.5 MHz, given by one of the two owners.  Atari's other 6502 boards
+/   of the era run 12.096 MHz / 8 = 1.512 MHz, within a percent of it.
 /
 /   IRQ: 60 Hz, the AC line frequency.  A mains zero-crossing interrupt is the
 /   usual arrangement for a pinball of this period, and this is a US 60 Hz
@@ -662,8 +660,8 @@ static UINT8 slice_read(int dev, int offset) {
   /   ALLPOT reads back as the complement of the switches.  $93D6 wants only
   /   bits 2, 3 and 4 of the first pack; $992D and $9938 take whole bytes.
   /
-  /   Measured: bits 6 and 7 of the first pack must read 0 or the game never
-  /   leaves its power-up state -- displays stay blank and no task starts.
+  /   Bits 6 and 7 of the first pack must read 0 or the game never leaves its
+  /   power-up state -- displays stay blank and no task starts.
   /   Bits 0, 1, 2, 3, 4 and 5 can be anything.  So switches 7 and 8 of the
   /   first CTS 206-8 have to be closed, which the stock dip default already
   /   does; what they select is not known. --*/
@@ -716,14 +714,10 @@ static void slice_write(int dev, int offset, UINT8 data) {
   /   So one register byte carries two digits, one per segment bus, and the
   /   register index is the digit position: four buses of eight. --*/
   /*-- The register index is the digit position, counting up from the least
-  /   significant.  Measured by hammering a pop bumper through a game and
-  /   counting how often each nibble changes: on device 0 the high nibbles of
-  /   $2001, $2002, $2003 and $2004 changed 254, 124, 12 and 1 times, a clean
-  /   factor of ten per place, and $2000 changed exactly once -- it is the
-  /   units digit, which goes to 0 on the first score and stays there because
-  /   nothing scores less than ten.  $2005 never left blank.  So the score
-  /   reads $2005 down to $2000, and the display layout, which puts the most
-  /   significant digit first, needs the index turned around.
+  /   significant: a six-digit score reads $2005 down to $2000.  $2000 is the
+  /   units digit and holds 0 whenever a score shows, since nothing in the
+  /   game scores less than ten.  The display layout puts the most significant
+  /   digit first, so the index is reversed here.
   /
   /   Device 0 carries the two-digit heat and credit displays in registers 6
   /   and 7, past the end of the six-digit score, so only the first six turn
@@ -746,17 +740,16 @@ static void slice_write(int dev, int offset, UINT8 data) {
   /     $200B low  OUT10-13 (13E -> 13EA)  hole, ball feed, reset L/R bank
   /     $200B high OUT10-13 (12E -> 12E/A) extra game, SOL D, SOL E, SOL F
   /
-  /   Measured pulse widths agree: of all 33 ports only $200A, $200B and
-  /   $210A ever go high for under a dozen frames, and $200B bit 1 -- the ball
-  /   feed -- fires exactly once, at the start of a game.
+  /   Of all 33 ports only $200A, $200B and $210A go high for under a dozen
+  /   frames, and $200B bit 1 -- the ball feed -- fires once, at the start of
+  /   a game.
   /
-  /   The ROM says the same.  The pulse engine at $9286 pops the next queued
-  /   solenoid, sets its image bit and loads a countdown from the table at
-  /   $8802; when that expires it ANDs the two solenoid bytes with $8817,
-  /   which holds 11 00.  So every solenoid is dropped on expiry except
-  /   $200A bits 0 and 4 -- and those two are exactly the entries whose
-  /   timing byte is FF rather than a pulse length.  Bits 0 and 4 of $200A
-  /   are the two flipper enables, held for as long as the button is in. --*/
+  /   The pulse engine at $9286 pops the next queued solenoid, sets its image
+  /   bit and loads a countdown from the table at $8802; when that expires it
+  /   ANDs the two solenoid bytes with $8817, which holds 11 00.  Every
+  /   solenoid is dropped on expiry except $200A bits 0 and 4, whose timing
+  /   bytes are FF rather than a pulse length: they are the two flipper
+  /   enables, held for as long as the button is in. --*/
   /*-- $2600 and $2700 are two POKEYs.  The CPU board carries a CO12294 at
   /   position C and a second one the photograph does not show; the game drives
   /   their frequency and control registers through the same ramp engine that
@@ -784,21 +777,18 @@ static void slice_write(int dev, int offset, UINT8 data) {
   /
   /   The ROM numbers every output as blitIndex*8 + bit, where blitIndex is the
   /   port's slot in the 33-entry list at $8844 that $91B9 blits from the image
-  /   at $3082.  That is not a guess: the solenoid pulse engine at $92BE builds
-  /   exactly that number -- TYA, three ASLs, ADC the bit index -- and uses it
-  /   to index the per-solenoid timing table at $8802.  The solenoid numbering
-  /   already in this driver is the same scheme, and it agrees with the SOL 1
-  /   to SOL 16 labels on the playfield diagram.
+  /   at $3082.  The solenoid pulse engine at $92BE builds that number -- TYA,
+  /   three ASLs, ADC the bit index -- to index the per-solenoid timing table
+  /   at $8802, and the solenoid numbering in this driver is the same scheme.
   /
-  /   Which ports are lamps comes from the four lamp-layer routines at $9344,
-  /   $936B, $938D and $93AF.  Each takes an on/off flag and ORs or ANDs a
-  /   33-byte RAM mask ($30E5, $3106, $3127, $3148) into the output image,
-  /   looping the image index from $12 down to 2.  So image bytes 2-18 are the
-  /   lamp range; 0 and 1 are the solenoids and 19-32 the score digits.
+  /   The four lamp-layer routines at $9344, $936B, $938D and $93AF each take
+  /   an on/off flag and OR or AND a 33-byte RAM mask ($30E5, $3106, $3127,
+  /   $3148) into the output image, looping the image index from $12 down to 2.
+  /   Image bytes 2-18 are the lamp range; 0 and 1 are the solenoids and 19-32
+  /   the score digits.
   /
-  /   Using the blit index as the lamp column makes a PinMAME lamp number and
-  /   the ROM's own output number the same value, which is what anyone reading
-  /   the ROM alongside the lamp viewer wants:
+  /   The lamp column is the blit index, so a PinMAME lamp number and the ROM's
+  /   own output number are the same value:
   /
   /     col  2  $230F   bits 0-3 only; 4-6 are the task bank, see slice_write
   /     col  3  $210A   col  8  $220B   col 13  $2301
@@ -808,11 +798,10 @@ static void slice_write(int dev, int offset, UINT8 data) {
   /     col  7  $220A   col 12  $2300   col 17  $2400
   /                                     col 18  $2401
   /
-  /   Measured, by holding one switch at a time and subtracting the bits that
-  /   move in attract anyway.  Each of these latches and stays latched, and a
-  /   second hit of the same switch does nothing -- $210A walks 10, 30, 70, F0
-  /   as $14, $15 and $16 are hit in turn, which is a four-target bank showing
-  /   how many are down:
+  /   Which switch lights which bit.  Each bit latches and stays latched, and a
+  /   second hit of the same switch does nothing; $210A walks 10, 30, 70, F0 as
+  /   $0C, $0D and $0E are hit in turn, a four-target bank showing how many are
+  /   down:
   /
   /     sw $0C $0D $0E -> $210A.5 .6 .7      sw $0F -> $210B.4
   /     sw $10 $11 $12 -> $2101.5 .6 .7      sw $13 -> $220A.0
@@ -821,36 +810,31 @@ static void slice_write(int dev, int offset, UINT8 data) {
   /     sw $1C $1D $1E -> $2201.5 .6 .7      sw $1F -> $230B.0
   /     sw $20 $21 $22 -> $210B.5 .6 .7      sw $23 -> $2100.4
   /
-  /   (These are switch numbers as the game and this driver number them.
-  /   ATARI_m2sw is col*8 + row - 8, so the swMatrix index is eight higher
-  /   than the switch number -- a harness that pokes the matrix directly
-  /   reads eight too high, which is a trap worth naming.)
+  /   Those are switch numbers, not swMatrix indices: ATARI_m2sw is
+  /   col*8 + row - 8, so the matrix index is eight higher than the number.
   /
   /   $2301, $230A, $240A and $240B move constantly in attract and settle when
-  /   a ball is in play, which is the general illumination chase.  $2300, $2400
-  /   and $2401 stayed at 00 through every state reached here, including tilt.
+  /   a ball is in play: general illumination.  $2300, $2400 and $2401 stay at
+  /   00 in attract, in play and on tilt.
   /
   /   The playfield diagram labels its lamps L11 upwards in hex, and those
-  /   labels land on these numbers with no offset at all.  Six independent
-  /   checks, every one of them exact:
+  /   labels land on these numbers with no offset:
   /
-  /     $2101.5 .6 .7, $220A.0  = 53, 54, 55, 56 = L35 L36 L37 L38, which the
-  /                               diagram draws as one run of lane lamps
+  /     $2101.5 .6 .7, $220A.0  = 53, 54, 55, 56 = L35 L36 L37 L38, one run of
+  /                               lane lamps on the diagram
   /     $220B.5 .6 .7, $2200.0  = 69, 70, 71, 72 = L45 L46 L47 L48
-  /     $2201.5 .6 .7, $230B.0  = 85, 86, 87, 88 = L55 L56 L57 L58, the
-  /                               cluster the diagram draws above the pops
+  /     $2201.5 .6 .7, $230B.0  = 85, 86, 87, 88 = L55 L56 L57 L58, the cluster
+  /                               the diagram draws above the pops
   /     $210A.5 .6 .7           = 29, 30, 31     = L1D L1E L1F, the bottom row
   /                               of the left four by four grid (L11-L20)
   /     $210B.5 .6 .7           = 37, 38, 39     = L25 L26 L27, row two of the
   /                               right grid (L21-L30)
   /     $2100.5 .6 .7           = 45, 46, 47     = L2D L2E L2F, row four of it
   /
-  /   One thing does not fit yet.  L11-L17 would be image byte 2 bits 1-7, and
-  /   bits 4-6 of that byte are the task bank.  Three lamps of the left grid
-  /   therefore have nowhere to live under this numbering.  Everything else
-  /   checks out, so this is recorded as an open question rather than a reason
-  /   to move the map: settling it needs the main PCB schematic, which is the
-  /   sheet missing from the set, or somebody at the machine. --*/
+  /   L11-L17 are the exception: they would be image byte 2 bits 1-7, and bits
+  /   4-6 of that byte are the task bank, so three lamps of the left grid have
+  /   no position under this numbering.  The main PCB schematic would settle
+  /   it; the set available is sheet 4 of 7. --*/
   {
     static const struct { UINT8 dev, reg, col; } lampport[] = {
       {3,0x0f, 2}, {1,0x0a, 3}, {1,0x0b, 4}, {1,0x00, 5}, {1,0x01, 6},
@@ -891,7 +875,7 @@ static WRITE_HANDLER(slice2_w) { slice_write(5 + (offset >> 8), offset, data); }
 /   it runs in decimal mode.  Only the low nibble is real, so only it is kept. --*/
 /*-- The Forth task records sit at $1nE9-$1nFF within the mirrored RAM.  Their
 /   dispatch stubs ($1nEF-$1nFF) are never written by any instruction in the
-/   ROM -- verified by exhaustive search and by runtime watch -- yet the task
+/   ROM, yet the task
 /   switcher copies a stub out of them on every switch.  The only arrangement
 /   under which that can work is one where every task's stub region reads back
 /   the live zero page, so a switch into a task that has not run yet inherits
@@ -913,10 +897,8 @@ static WRITE_HANDLER(slice2_w) { slice_write(5 + (offset >> 8), offset, data); }
 /       +$04  $1iED  sleep timer, 2 bytes, decremented by 8 per tick at $9541
 /       +$06  $1iEF  17-byte interpreter context: IP at $F8/$F9, and $FA-$FC
 /
-/   No instruction anywhere in the ROM writes that context -- verified by an
-/   exhaustive opcode scan, by an exhaustive search for the 17-byte copy loop
-/   shape, and by watching every write at runtime.  The save is not missing: it
-/   is free, because zero page IS the current task's record.  Simply running a
+/   No instruction anywhere in the ROM writes that context.  There is no save
+/   step to find: zero page IS the current task's record.  Simply running a
 /   task writes that task's state, and $96B9 (the variant START-TASK uses) reads
 /   $E9 and $EB to start the incoming task on its own stack bases -- reads that
 /   only make sense through the bank.
@@ -954,8 +936,8 @@ static NVRAM_HANDLER(ATARI4) {
   core_nvram(file, read_or_write, atari4_CMOS, 0x100, 0x00);
 }
 /*-- $2500 is a 256 by 4 CMOS, so only the low nibble of each byte exists.
-/   The write handler masks it off, and the game agrees: every read of it in
-/   the ROM is followed immediately by ORA #$F0 or AND #$0F.
+/   The write handler masks it off; every read of it in the ROM is followed
+/   immediately by ORA #$F0 or AND #$0F.
 /
 /   The only 6502 code that touches it is the record routine at $8EF8 -- the
 /   three other apparent references are thread cells whose bytes happen to
@@ -1011,8 +993,7 @@ MEMORY_END
 /   first act, and kicks $230C with $10 on the way out.  $230C is also poked
 /   twice inside the power-up self-test's busy-wait at $DFD1/$DFDD, where
 /   nothing else happens at all -- a register written inside a delay loop is a
-/   watchdog, not an interrupt control.  The previous enable/disable latch here
-/   was invented when neither was known. --*/
+/   watchdog, not an interrupt control. --*/
 static INTERRUPT_GEN(ATARI4_irq) {
   if (++slice.wdog > ATARI4_WDOG_IRQS) {
     logerror("4x4 watchdog timeout: $230C not kicked for %d interrupts\n", slice.wdog);

@@ -197,11 +197,10 @@
       COREPORT_DIPSET(0x8000, "1" )
 
 /*-- 4x4 has sixteen DIPs, not the thirty-two ATARI2_COMPORTS declares: they
-/   are read as two POKEY pot scans, eight bits each.  The count matters
-/   beyond the menu -- sim_run takes the first game inport as
-/   CORE_COREINPORT + (dips+31)/16, so a driver whose MDRV_DIPS disagrees
-/   with the number of ports its COMPORTS macro declares hands the
-/   simulator a DIP port and it reads the defaults as held keys. --*/
+/   are read as two POKEY pot scans of eight bits each.  The count has to
+/   match the number of ports declared here, because sim_run takes the first
+/   game inport as CORE_COREINPORT + (dips+31)/16; if the two disagree the
+/   simulator reads a DIP port and takes its defaults for held keys. --*/
 #define ATARI4_COMPORTS \
   PORT_START /* 0 */ \
     /* switch column 1 */ \

@@ -267,7 +267,7 @@ static struct {
   double acc;           /* chip clocks owed to the current output sample */
 } pkmix;
 
-/*-- What this game actually asks of a POKEY, from the ROM.
+/*-- What this game asks of a POKEY.
 /
 /   The sound image is sixteen bytes at $31D6 and $961E blits it to registers
 /   0-7 of each chip -- AUDF1-4 and AUDC1-4 and nothing else.  Everything
@@ -279,17 +279,16 @@ static struct {
 /             through ALLPOT, see slice2_r in atari.c
 /     $992F   POTGO again, on the second chip as well
 /
-/   So AUDCTL stays 0 for the life of the machine.  The code below handles
-/   the joined sixteen-bit channels, the 1.79 MHz channel clocking, the
-/   15 kHz base and the nine-bit polynomial, and none of them can ever be
-/   reached here -- they are kept because they are what the part does, not
-/   because this game needs them.  The two high-pass filters, AUDCTL bits 1
-/   and 2, are not implemented for the same reason: with AUDCTL fixed at 0
-/   they cannot come on.  Nor can two-tone mode, which is SKCTL bit 3, and
-/   the only value SKCTL is given is $03.
+/   AUDCTL therefore stays 0 for the life of the machine.  The joined
+/   sixteen-bit channels, the 1.79 MHz channel clocking, the 15 kHz base and
+/   the nine-bit polynomial are all implemented below but unreachable in this
+/   game; they are here because they are what the part does.  The two
+/   high-pass filters are AUDCTL bits 1 and 2 and so are unreachable too, and
+/   are not implemented.  Two-tone mode is SKCTL bit 3, and the only value
+/   SKCTL is given is $03.
 /
-/   What is left that matters is the reset: until SKCTL bits 0-2 are nonzero
-/   the chip is held with its polynomial counters stopped. --*/
+/   SKCTL's reset does apply: until bits 0-2 are nonzero the chip is held with
+/   its polynomial counters stopped. --*/
 
 /*-- Divisor in chip clocks.  A channel normally counts the 64 kHz or 15 kHz
 /   base clock, which is the chip clock divided by 28 or 114; AUDCTL can clock
