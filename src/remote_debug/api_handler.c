@@ -560,7 +560,14 @@ static void handle_api_debugger_trace(const http_request_t *req, http_response_t
 			respond_error(resp, 400, "mode must be 1 (read), 2 (write) or 3 (rw)");
 			return;
 		}
-		remote_debug_trace_add(parse_hex(addr_buf), range, mode, bank);
+		switch (remote_debug_trace_add(parse_hex(addr_buf), range, mode, bank)) {
+			case -1:
+				respond_error(resp, 400, "trace table full");
+				return;
+			case -2:
+				respond_error(resp, 400, "addr/len outside the CPU address space");
+				return;
+		}
 	}
 	else if (strcmp(cmd_buf, "clear") == 0) {
 		remote_debug_trace_clear();

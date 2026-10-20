@@ -1180,18 +1180,36 @@ void remote_debug_watchpoint_delete(int index)
 	remote_debug_unlock();
 }
 
-void remote_debug_trace_add(UINT32 adr, int len, int mode, int bank)
+int remote_debug_trace_add(UINT32 adr, int len, int mode, int bank)
 {
+	trace_range_t *r;
 	remote_debug_lock();
-	if (trace_addr_count < TRACE_ADDR_MAX) {
-		trace_range_t *r = &trace_ranges[trace_addr_count];
-		r->adr = adr;
-		r->len = len;
-		r->mode = mode;
-		r->bank = bank;
-		trace_addr_count++;
+	if (Machine && cpu_gettotalcpu() > 0) {
+		/* the range must fit in the largest CPU address space */
+		UINT64 space = 0;
+		int cpu;
+		for (cpu = 0; cpu < cpu_gettotalcpu(); cpu++) {
+			UINT64 s = (UINT64)1 << cputype_address_bits(Machine->drv->cpu[cpu].cpu_type);
+			if (s > space)
+				space = s;
+		}
+		if (len < 1 || (UINT64)adr + (UINT64)len > space) {
+			remote_debug_unlock();
+			return -2;
+		}
 	}
+	if (trace_addr_count >= TRACE_ADDR_MAX) {
+		remote_debug_unlock();
+		return -1;
+	}
+	r = &trace_ranges[trace_addr_count];
+	r->adr = adr;
+	r->len = len;
+	r->mode = mode;
+	r->bank = bank;
+	trace_addr_count++;
 	remote_debug_unlock();
+	return 0;
 }
 
 void remote_debug_trace_clear(void)
@@ -1202,6 +1220,13 @@ void remote_debug_trace_clear(void)
 	trace_count = 0;
 	trace_total = 0;
 	remote_debug_unlock();
+}
+
+/* Nonzero if [a, a+alen) and [b, b+blen) overlap; written with
+ * differences so that it does not wrap near the top of 32 bits. */
+static int ranges_overlap(UINT32 a, UINT32 alen, UINT32 b, UINT32 blen)
+{
+	return a - b < blen || b - a < alen;
 }
 
 /* The byte at offset `offset` of a `length` byte write of `data`, in the
@@ -1231,8 +1256,7 @@ void remote_debug_memref(UINT32 adr, int length, int write, UINT32 data)
 		int hit;
 		if (!wp->enabled)
 			continue;
-		/* ranges [adr, adr+length) and [wp->adr, wp->adr+wp->len) overlap? */
-		if (!(adr < wp->adr + (UINT32)wp->len && wp->adr < adr + (UINT32)length))
+		if (!ranges_overlap(adr, (UINT32)length, wp->adr, (UINT32)wp->len))
 			continue;
 		/* bank filter (only meaningful for the 0x4000-0x7FFF window) */
 		if (wp->bank != -1 && current_bank != wp->bank)
@@ -1285,7 +1309,7 @@ void remote_debug_memref(UINT32 adr, int length, int write, UINT32 data)
 			continue;
 		if (!(r->mode & (write ? REMOTE_DEBUG_WP_WRITE : REMOTE_DEBUG_WP_READ)))
 			continue;
-		if (adr < r->adr + (UINT32)r->len && r->adr < adr + (UINT32)length) {
+		if (ranges_overlap(adr, (UINT32)length, r->adr, (UINT32)r->len)) {
 			trace_entry_t *e = &trace_log[trace_head];
 			e->adr = adr;
 			e->length = length;

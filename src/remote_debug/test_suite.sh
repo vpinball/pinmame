@@ -152,6 +152,19 @@ assert_contains "$TRACE" '{"addr":0,"bank":-1,"len":8192,"mode":2}' "Trace range
 assert_contains "$TRACE" '"write":1,"value":' "Trace logs the written value"
 assert_status "$BASE/api/debugger/trace?cmd=add&addr=0000&mode=4" 400 "400 on bad trace mode"
 curl -s "$BASE/api/debugger/trace?cmd=clear" > /dev/null
+# the range must fit in the 16 bit address space, without wrapping
+assert_status "$BASE/api/debugger/trace?cmd=add&addr=FFFF&len=1" 200 "Trace range at the top of the address space"
+assert_status "$BASE/api/debugger/trace?cmd=add&addr=FFFF&len=2" 400 "400 on trace range past the address space"
+assert_status "$BASE/api/debugger/trace?cmd=add&addr=FFFFFFFF&len=0x10" 400 "400 on trace range that wraps"
+# 128 ranges at most; one more is refused, not dropped
+curl -s "$BASE/api/debugger/trace?cmd=clear" > /dev/null
+for i in $(seq 0 127); do
+    curl -s "$BASE/api/debugger/trace?cmd=add&addr=$(printf '%X' $((0x3000 + i)))&mode=2" > /dev/null
+done
+assert_status "$BASE/api/debugger/trace?cmd=add&addr=3080" 400 "400 when the trace table is full"
+N=$(curl -s "$BASE/api/debugger/trace" | python3 -c "import json,sys;print(len(json.load(sys.stdin)['watched']))")
+[ "$N" == "128" ] && echo "  [PASS] Trace table holds 128 ranges" || fail "trace table holds $N ranges, expected 128"
+curl -s "$BASE/api/debugger/trace?cmd=clear" > /dev/null
 
 echo "12b. Bank-aware memory access..."
 # The 0x4000-0x7FFF window is bank-switched ROM; reading it with an explicit

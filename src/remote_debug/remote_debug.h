@@ -156,8 +156,10 @@ void remote_debug_get_callstack(char **buffer, int *len);
 /* Add the range [adr, adr+len) to the set of traced ranges; every access
  * to it that matches mode (REMOTE_DEBUG_WP_READ/WRITE/RW) is recorded in a
  * ring buffer, writes with the value written. bank -1 matches any bank;
- * a specific bank only matters for the 0x4000-0x7FFF ROM window. */
-void remote_debug_trace_add(UINT32 adr, int len, int mode, int bank);
+ * a specific bank only matters for the 0x4000-0x7FFF ROM window.
+ * Returns 0, -1 if the table of traced ranges is full, or -2 if the range
+ * does not fit in the address space of the machine's CPUs. */
+int remote_debug_trace_add(UINT32 adr, int len, int mode, int bank);
 
 /* Clear the traced address set and the recorded log. */
 void remote_debug_trace_clear(void);

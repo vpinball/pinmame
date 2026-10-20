@@ -292,6 +292,8 @@ but ignored (reads always go through the current memory map).
 - `GET /api/debugger/trace?cmd=add&addr=HEX[&len=N][&mode=1|2|3][&bank=HEX]`:
   trace accesses to `len` bytes from `addr` (default 1). `mode` is 1 (read),
   2 (write) or 3 (both, the default); `bank` restricts to that ROM bank.
+  Up to 128 ranges; adding one more, or a range that does not fit in the
+  address space of the machine's CPUs, answers HTTP 400.
 - `GET /api/debugger/trace?cmd=clear` / `GET /api/debugger/trace`: clear /
   list `{watched: [{addr, bank, len, mode}, ...], total, logs: [{cpu, pc, adr,
   len, write, value, bank}, ...]}`. `value` is the value written (`null` for
