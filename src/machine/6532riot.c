@@ -286,21 +286,24 @@ int riot6532_read(int which, int offset)
 			if ( old_timer_enabled ) // was timer enabled? re-enable it
 				timer_enable(p->t, 1);
 
-			if ( old_timer_enabled ) {
+			if ( (p->irq_state & RIOT_TIMERIRQ) || !old_timer_enabled ) {
+				/* the timer has expired: it keeps counting down at the 1T rate (p->time is the
+				   time of the expiry, the emulation timer only stops to save events). Reading it
+				   clears the flag and the timer counts again with the programmed prescaler, so the
+				   flag comes back when it reaches zero (as in MAME's mos6530.cpp) */
+				const INT64 ttc = (INT64)((timer_get_time() - p->time) * p->sec_to_cycles + 0.5);
+				val = 255 - (int)(ttc & 0xff);
+				p->timer_start = val;
+				timer_reset(p->t, V_CYCLES_TO_TIME(p->timer_divider * p->timer_start + 1));
+				p->time = timer_get_time();
+			}
+			else {
 				const int ttc = V_TIME_TO_CYCLES(timer_get_time() - p->time);
-				if ( p->irq_state & RIOT_TIMERIRQ ) {
-					val = 255 - ttc;
-				}
-				else {
-					const int diff = (ttc + (p->timer_divider - 1)) / p->timer_divider;
-					val = p->timer_start - diff;
-				}
-
+				const int diff = (ttc + (p->timer_divider - 1)) / p->timer_divider;
+				val = p->timer_start - diff;
 				if (val < 0)
 					val = 0;
 			}
-			else
-				val = 0x00;
 
 			p->irq_state &= ~RIOT_TIMERIRQ;
 			p->timer_irq_enabled = offset&0x08;
