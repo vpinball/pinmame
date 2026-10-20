@@ -145,13 +145,8 @@ extern "C" void alt_sound_handle(int boardNo, int cmd)
 		return;
 	}
 
-	//DAR@20230519 not sure what this does
-	int	attenuation = osd_get_mastervolume();
-
-	float master_vol = processor->getMasterVol();
-	while (attenuation++ < 0) {
-		master_vol /= 1.122018454f; // = (10 ^ (1/20)) = 1dB
-	}
+	// follow the master volume (-32..+32 dB, positive values are a gain), like the emulated sound
+	const float master_vol = powf(10.f, (float)osd_get_mastervolume() / 20.f);
 	processor->setMasterVol(master_vol);
 	ALT_DEBUG(0, "Master Volume (Post Attenuation): %.02f", master_vol);
 
