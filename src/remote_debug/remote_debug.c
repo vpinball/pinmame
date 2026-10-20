@@ -106,6 +106,7 @@ typedef struct {
 	UINT32 adr;
 	int length;
 	int write;
+	UINT32 value;   /* value written (writes only) */
 	UINT32 pc;
 	int cpunum;
 	int bank;
@@ -115,10 +116,17 @@ typedef struct {
 static trace_entry_t trace_log[TRACE_LOG_SIZE];
 static int trace_head = 0;
 static int trace_count = 0;
+static UINT32 trace_total = 0;  /* entries recorded since the last clear */
+
+typedef struct {
+	UINT32 adr;
+	int len;
+	int mode;   /* REMOTE_DEBUG_WP_READ/WRITE/RW */
+	int bank;   /* -1: any bank */
+} trace_range_t;
 
 #define TRACE_ADDR_MAX 128
-static UINT32 trace_addrs[TRACE_ADDR_MAX];
-static int trace_addr_banks[TRACE_ADDR_MAX];  /* -1: any bank */
+static trace_range_t trace_ranges[TRACE_ADDR_MAX];
 static int trace_addr_count = 0;
 
 /* ------------------------------------------------------------------ */
@@ -1172,12 +1180,15 @@ void remote_debug_watchpoint_delete(int index)
 	remote_debug_unlock();
 }
 
-void remote_debug_trace_add(UINT32 adr, int bank)
+void remote_debug_trace_add(UINT32 adr, int len, int mode, int bank)
 {
 	remote_debug_lock();
 	if (trace_addr_count < TRACE_ADDR_MAX) {
-		trace_addrs[trace_addr_count] = adr;
-		trace_addr_banks[trace_addr_count] = bank;
+		trace_range_t *r = &trace_ranges[trace_addr_count];
+		r->adr = adr;
+		r->len = len;
+		r->mode = mode;
+		r->bank = bank;
 		trace_addr_count++;
 	}
 	remote_debug_unlock();
@@ -1189,12 +1200,13 @@ void remote_debug_trace_clear(void)
 	trace_addr_count = 0;
 	trace_head = 0;
 	trace_count = 0;
+	trace_total = 0;
 	remote_debug_unlock();
 }
 
 /* Memory access hook; like remote_debug_breakpoint_hook() this runs with
  * the debugger lock effectively held by the emulator thread. */
-void remote_debug_memref(UINT32 adr, int length, int write)
+void remote_debug_memref(UINT32 adr, int length, int write, UINT32 data)
 {
 	int i, active_cpu, current_bank;
 
@@ -1220,9 +1232,10 @@ void remote_debug_memref(UINT32 adr, int length, int write)
 		   || (wp->mode == REMOTE_DEBUG_WP_READ && !write)
 		   || (wp->mode == REMOTE_DEBUG_WP_WRITE && write);
 		/* optional value condition: only halt when the byte at the
-		 * watched address satisfies the comparison */
+		 * watched address satisfies the comparison. This runs before the
+		 * access, so for a byte write test the value being written */
 		if (hit && wp->cond_op != COND_NONE) {
-			UINT8 v = cpunum_read_byte(active_cpu, wp->adr);
+			UINT8 v = (write && length == 1 && adr == wp->adr) ? (UINT8)data : cpunum_read_byte(active_cpu, wp->adr);
 			int ok;
 			switch (wp->cond_op) {
 				case COND_EQ: ok = (v == wp->cond_val); break;
@@ -1253,19 +1266,24 @@ void remote_debug_memref(UINT32 adr, int length, int write)
 	}
 
 	for (i = 0; i < trace_addr_count; i++) {
-		if (trace_addr_banks[i] != -1 && current_bank != trace_addr_banks[i])
+		const trace_range_t *r = &trace_ranges[i];
+		if (r->bank != -1 && current_bank != r->bank)
 			continue;
-		if (adr < trace_addrs[i] + 1 && trace_addrs[i] < adr + (UINT32)length) {
+		if (!(r->mode & (write ? REMOTE_DEBUG_WP_WRITE : REMOTE_DEBUG_WP_READ)))
+			continue;
+		if (adr < r->adr + (UINT32)r->len && r->adr < adr + (UINT32)length) {
 			trace_entry_t *e = &trace_log[trace_head];
 			e->adr = adr;
 			e->length = length;
 			e->write = write;
+			e->value = data;
 			e->cpunum = active_cpu;
 			e->pc = activecpu_get_reg(REG_PC);
 			e->bank = current_bank;
 			trace_head = (trace_head + 1) % TRACE_LOG_SIZE;
 			if (trace_count < TRACE_LOG_SIZE)
 				trace_count++;
+			trace_total++;
 			break;
 		}
 	}
@@ -1362,15 +1380,21 @@ void remote_debug_get_trace(char **buffer, int *len)
 	remote_debug_lock();
 	sb_appendf(&sb, "{\"watched\": [");
 	for (i = 0; i < trace_addr_count; i++)
-		sb_appendf(&sb, "%s{\"addr\": %u, \"bank\": %d}",
-		           (i > 0) ? "," : "", trace_addrs[i], trace_addr_banks[i]);
-	sb_appendf(&sb, "], \"logs\": [");
+		sb_appendf(&sb, "%s{\"addr\": %u, \"bank\": %d, \"len\": %d, \"mode\": %d}",
+		           (i > 0) ? "," : "", trace_ranges[i].adr, trace_ranges[i].bank,
+		           trace_ranges[i].len, trace_ranges[i].mode);
+	sb_appendf(&sb, "], \"total\": %u, \"logs\": [", trace_total);
 	for (i = 0; i < trace_count; i++) {
 		int idx = (trace_head - trace_count + i + TRACE_LOG_SIZE) % TRACE_LOG_SIZE;
 		const trace_entry_t *e = &trace_log[idx];
+		char value[16];
+		if (e->write)
+			snprintf(value, sizeof(value), "%u", e->value);
+		else
+			strcpy(value, "null");
 		sb_appendf(&sb,
-			"%s{\"cpu\": %d, \"pc\": %u, \"adr\": %u, \"len\": %d, \"write\": %d, \"bank\": %d}",
-			(i > 0) ? "," : "", e->cpunum, e->pc, e->adr, e->length, e->write, e->bank);
+			"%s{\"cpu\": %d, \"pc\": %u, \"adr\": %u, \"len\": %d, \"write\": %d, \"value\": %s, \"bank\": %d}",
+			(i > 0) ? "," : "", e->cpunum, e->pc, e->adr, e->length, e->write, value, e->bank);
 	}
 	sb_appendf(&sb, "]}");
 	remote_debug_unlock();

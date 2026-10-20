@@ -339,10 +339,16 @@
                 <h2>Memory Trace</h2>
                 <div class="tool-bar">
                     Addr: <input type="text" id="trace-addr" style="width:70px;" placeholder="hex">
+                    Len: <input type="text" id="trace-len" style="width:44px;" value="1" title="traced bytes (decimal)">
+                    <select id="trace-mode">
+                        <option value="1">R</option>
+                        <option value="2">W</option>
+                        <option value="3" selected>RW</option>
+                    </select>
                     Bank: <input type="text" id="trace-bank" style="width:44px;" placeholder="any" title="ROM bank (hex), optional (0x4000-0x7FFF only)">
                     <button class="btn btn-success" onclick="Trace.add()">+ Trace</button>
                     <button class="btn btn-danger" onclick="Trace.clear()">Clear</button>
-                    <span class="hint">logs every access to traced addresses</span>
+                    <span class="hint">logs every access to the traced ranges</span>
                 </div>
                 <div id="trace-watched" class="hint" style="margin-bottom:4px;"></div>
                 <div style="max-height:180px;overflow-y:auto;">
@@ -1451,7 +1457,9 @@ const Trace = {
     async add() {
         const addr = Fmt.parseHex(document.getElementById('trace-addr').value);
         if (isNaN(addr)) { Toast.show('Trace: invalid address'); return; }
-        let url = `/api/debugger/trace?cmd=add&addr=${addr.toString(16)}`;
+        const len = parseInt(document.getElementById('trace-len').value, 10) || 1;
+        const mode = document.getElementById('trace-mode').value;
+        let url = `/api/debugger/trace?cmd=add&addr=${addr.toString(16)}&len=${len}&mode=${mode}`;
         const bankStr = document.getElementById('trace-bank').value.trim();
         if (bankStr) {
             const bank = Fmt.parseHex(bankStr);
@@ -1471,10 +1479,12 @@ const Trace = {
         const data = await Api.get('/api/debugger/trace');
         document.getElementById('trace-watched').textContent =
             data.watched.length
-                ? 'traced: ' + data.watched.map((w) => (w.bank !== -1 ? Fmt.hex(w.bank, 2) + ':' : '') + Fmt.hex(w.addr, 4)).join(', ')
+                ? 'traced: ' + data.watched.map((w) => (w.bank !== -1 ? Fmt.hex(w.bank, 2) + ':' : '') + Fmt.hex(w.addr, 4) +
+                    (w.len > 1 ? '+' + w.len : '') + (w.mode !== 3 ? (w.mode === 2 ? ' W' : ' R') : '')).join(', ') +
+                    ` (${data.total} logged)`
                 : 'no traced addresses';
         const table = document.getElementById('trace-view');
-        table.innerHTML = '<tr><th>CPU</th><th>PC</th><th>Bank</th><th>Access</th><th>Addr</th><th>Len</th></tr>';
+        table.innerHTML = '<tr><th>CPU</th><th>PC</th><th>Bank</th><th>Access</th><th>Addr</th><th>Len</th><th>Value</th></tr>';
         [...data.logs].reverse().slice(0, 200).forEach((e) => {
             const row = table.insertRow();
             row.insertCell().textContent = e.cpu;
@@ -1485,6 +1495,7 @@ const Trace = {
             row.insertCell().textContent = e.write ? 'W' : 'R';
             row.insertCell().textContent = Fmt.hex(e.adr, 4);
             row.insertCell().textContent = e.len;
+            row.insertCell().textContent = e.value === null ? '' : Fmt.hex(e.value, e.len * 2);
         });
     },
 };

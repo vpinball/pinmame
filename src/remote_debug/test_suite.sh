@@ -142,7 +142,16 @@ echo "12. Memory trace..."
 curl -s "$BASE/api/debugger/trace?cmd=clear" > /dev/null
 curl -s "$BASE/api/debugger/trace?cmd=add&addr=0100" > /dev/null
 TRACE=$(curl -s "$BASE/api/debugger/trace" | tr -d ' ')
-assert_contains "$TRACE" '"watched":[{"addr":256,"bank":-1}]' "Trace address registered"
+assert_contains "$TRACE" '"watched":[{"addr":256,"bank":-1,"len":1,"mode":3}]' "Trace address registered"
+curl -s "$BASE/api/debugger/trace?cmd=add&addr=0000&len=0x2000&mode=2" > /dev/null
+curl -s "$BASE/api/debugger/control?cmd=resume" > /dev/null
+sleep 0.5
+curl -s "$BASE/api/debugger/control?cmd=pause" > /dev/null
+TRACE=$(curl -s "$BASE/api/debugger/trace" | tr -d ' ')
+assert_contains "$TRACE" '{"addr":0,"bank":-1,"len":8192,"mode":2}' "Trace range registered"
+assert_contains "$TRACE" '"write":1,"value":' "Trace logs the written value"
+assert_status "$BASE/api/debugger/trace?cmd=add&addr=0000&mode=4" 400 "400 on bad trace mode"
+curl -s "$BASE/api/debugger/trace?cmd=clear" > /dev/null
 
 echo "12b. Bank-aware memory access..."
 # The 0x4000-0x7FFF window is bank-switched ROM; reading it with an explicit
@@ -317,6 +326,23 @@ if [ -n "$CH" ]; then
     P=$(curl -s "$BASE/api/info" | tr -d ' ')
     assert_contains "$P" '"paused":1' "Value-cond WP (achievable) halts"
     curl -s "$BASE/api/debugger/watchpoints?cmd=clear" > /dev/null
+    # the condition is tested on the value being written: take a value the
+    # game writes there from the trace, and once halted the byte must hold it
+    curl -s "$BASE/api/debugger/trace?cmd=clear" > /dev/null
+    curl -s "$BASE/api/debugger/trace?cmd=add&addr=$CH&mode=2" > /dev/null
+    curl -s "$BASE/api/debugger/control?cmd=resume" > /dev/null; sleep 1
+    curl -s "$BASE/api/debugger/control?cmd=pause" > /dev/null
+    V=$(curl -s "$BASE/api/debugger/trace" | python3 -c "import json,sys;l=json.load(sys.stdin)['logs'];print(l[-1]['value']) if l else print('')")
+    curl -s "$BASE/api/debugger/trace?cmd=clear" > /dev/null
+    if [ -n "$V" ]; then
+        curl -s "$BASE/api/debugger/watchpoints?cmd=add&addr=$CH&mode=2&cond=eq&val=$(printf '%X' "$V")" > /dev/null
+        curl -s "$BASE/api/debugger/control?cmd=resume" > /dev/null; sleep 1.5
+        P=$(curl -s "$BASE/api/info" | tr -d ' ')
+        assert_contains "$P" '"paused":1' "Value-cond WP on a traced value halts"
+        M=$(curl -s "$BASE/api/debugger/memory?addr=$CH&size=1" | tr -d ' ')
+        assert_contains "$M" "\"data\":[$V]" "Value-cond WP halts on the write that sets the value"
+        curl -s "$BASE/api/debugger/watchpoints?cmd=clear" > /dev/null
+    fi
 else
     echo "  [INFO] no churning byte found, skipped"
 fi
