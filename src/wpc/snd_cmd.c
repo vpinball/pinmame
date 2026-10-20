@@ -84,6 +84,7 @@
 
  static BOOL init_pinsound;
  static BOOL pinsound_studio_enabled;
+ static BOOL pinsound_handshake_done; // reinit_pinSound has talked to PinSound Studio (until pinsound_exit)
  static FILE *fp_pinsound_log;
  static DWORD start_time_pinsound_log;
  static BOOL sys11_patch;
@@ -325,6 +326,8 @@ static BOOL readSlot(const HANDLE hFile, char * msg)
 
 static void pinsound_exit()
 {
+	pinsound_handshake_done = FALSE;
+
 	// send stop-all command to the PinSound Studio
 	if (pinsound_studio_enabled)
 	{
@@ -363,10 +366,16 @@ void reinit_pinSound(void)
 	if (!(pmoptions.sound_mode == 2 || pmoptions.sound_mode == 3) || options.samplerate == 0) // if not internal or external pinsound enabled, or if sound in general is disabled -> return
 		return;
 
-	// called for each board: skip the ones without a sound system name (e.g. the DE DMD board),
-	// PinSound Studio would only answer "unsupported sound system: (null)"
+	// called after each board's init: wait for a board with a sound system name (none yet after e.g. the
+	// DE DMD board), PinSound Studio would only answer "unsupported sound system: (null)"
 	if (!sndbrd_typestr(0) && !sndbrd_typestr(1))
 		return;
+
+	// and talk to it only once: for a second named board (e.g. System 11's background music board),
+	// creating the read slot again would fail
+	if (pinsound_handshake_done)
+		return;
+	pinsound_handshake_done = TRUE;
 
 	init_pinsound = FALSE;
 
