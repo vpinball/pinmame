@@ -6,6 +6,10 @@
 #include "snd_cmd.h"
 #include "sndbrd.h"
 #include "gpsnd.h"
+#include "sound/mc6840.h"
+#if MC6840_SOUND
+#include <math.h>
+#endif
 
 /*----------------------------------------
 / Game Plan Sound System
@@ -425,6 +429,77 @@ static struct {
 #define GPS_PIA0  0
 #define GPS_PIA1  1
 
+#if MC6840_SOUND
+/*-- Optional MSU-1 emulation with the MC6840 running in the sound stream --*/
+// Enabled by MC6840_SOUND (src/sound/mc6840.h).
+// The 6840 (src/sound/mc6840.c, compiled through stsnd.c) runs from the 6802's
+// E clock, sample by sample in a 192 kHz stream; Q1-Q3 come out as the chip makes
+// them (+-1 squares, 0 when off) instead of looped triangle samples, at the same 4 bit volumes
+// from the PIAs as below. The noise is the same random sample and hold, at the
+// rate pia1b_w sets, computed on the fly.
+
+#define MSU1_STREAM_RATE (4*48000)
+#define MSU1_Q_LEVEL     0.577f // RMS of the old triangle samples, so the levels stay the same
+
+static struct {
+	int active;
+	int stream;
+	struct mc6840 ptm;
+	UINT32 clk_acc, clk_step; // E clocks per sample, 16.16
+	float dc_x[3], dc_y[3], dc_r;
+	float vol[4];             // Q1, Q2, Q3, noise
+	double noise_phase, noise_step;
+	UINT32 noise_seed;
+	int noise_sign;
+	float noise_val;
+} gpsptm;
+
+static void msu1_ptm_update(int param, INT16 *buffer, int length)
+{
+	float *out = (float *)buffer;
+	int i, k;
+	for (i = 0; i < length; i++) {
+		struct mc6840_clock_result r;
+		float s = 0.f;
+		int n;
+		gpsptm.clk_acc += gpsptm.clk_step;
+		n = gpsptm.clk_acc >> 16;
+		gpsptm.clk_acc &= 0xffff;
+		mc6840_clock(&gpsptm.ptm, n, NULL, &r);
+		for (k = 0; k < 3; k++) {
+			// +-1 while the output is enabled, 0 when off (as the stopped samples), DC blocked for duty cycles other than 50%
+			const float x = !(gpsptm.ptm.t[k].cr & 0x80) ? 0.f : 2.f * (n ? (float)r.high[k] / (float)n : (float)r.level[k]) - 1.f;
+			gpsptm.dc_y[k] = x - gpsptm.dc_x[k] + gpsptm.dc_r * gpsptm.dc_y[k];
+			if (fabsf(gpsptm.dc_y[k]) < 1e-12f) gpsptm.dc_y[k] = 0.f; // no denormals on idle outputs
+			gpsptm.dc_x[k] = x;
+			s += gpsptm.dc_y[k] * MSU1_Q_LEVEL * gpsptm.vol[k];
+		}
+		gpsptm.noise_phase += gpsptm.noise_step;
+		while (gpsptm.noise_phase >= 1.) {
+			gpsptm.noise_phase -= 1.;
+			gpsptm.noise_seed = gpsptm.noise_seed * 1103515245u + 12345u;
+			gpsptm.noise_sign = !gpsptm.noise_sign;
+			gpsptm.noise_val = (float)((gpsptm.noise_seed >> 16) & 0x7fff) * (1.f / 32768.f);
+			if (!gpsptm.noise_sign) gpsptm.noise_val = -gpsptm.noise_val;
+		}
+		// the four channels of the sample based code, mixed here (same levels), so only one stream gets resampled
+		out[i] = s + gpsptm.noise_val * gpsptm.vol[3];
+	}
+}
+
+static void msu1_ptm_vol(int idx, int vol)
+{
+	stream_update(gpsptm.stream, 0);
+	gpsptm.vol[idx] = vol * (1.f / 100.f);
+}
+
+static READ_HANDLER(msu1_ptm_r)
+{
+	stream_update(gpsptm.stream, 0);
+	return mc6840_r(&gpsptm.ptm, offset);
+}
+#endif
+
 static void gps_irq(int state) {
 //	logerror("sound irq\n");
 	cpu_set_irq_line(gps_locals.brdData.cpuNo, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
@@ -442,6 +517,13 @@ static WRITE_HANDLER(pia0a_w)
 	logerror("pia0a_w: %02x\n", data);
 	indexq1 = data  & 0x0f;
 	indexq2 = (data  & 0xf0) >> 4;
+#if MC6840_SOUND
+	if (gpsptm.active) {
+		msu1_ptm_vol(0, volumemsu1[indexq1]);
+		msu1_ptm_vol(1, volumemsu1[indexq2]);
+		return;
+	}
+#endif
   	mixer_set_volume(gps_locals.channel,volumemsu1[indexq1]); 	// Q1
   	mixer_set_volume(gps_locals.channel+1,volumemsu1[indexq2]);  	// q2
 }
@@ -476,6 +558,13 @@ static WRITE_HANDLER(pia1a_w)
 	logerror("pia1a_w: %02x\n", data);
 	indexq3 = data & 0x0f;
 	indexn = (data & 0xf0) >> 4;
+#if MC6840_SOUND
+	if (gpsptm.active) {
+		msu1_ptm_vol(2, volumemsu1[indexq3]);
+		msu1_ptm_vol(3, volumemsu1[indexn]);
+		return;
+	}
+#endif
 	mixer_set_volume(gps_locals.channel+2,volumemsu1[indexq3]);      // q3
 // pia a channels 4 - 7 seems to be volume of the noise generator
 	mixer_set_volume(gps_locals.channel+3,volumemsu1[indexn]);       // noise
@@ -483,6 +572,13 @@ static WRITE_HANDLER(pia1a_w)
 
 static void playnoise(int param) { // 0..31
    int f = (625000 / 23) / param;
+#if MC6840_SOUND
+   if (gpsptm.active) {
+      stream_update(gpsptm.stream, 0);
+      gpsptm.noise_step = f / (double)MSU1_STREAM_RATE;
+      return;
+   }
+#endif
    mixer_set_sample_frequency(gps_locals.channel+3, f);
    logerror("*** playsam noise frequency %08d data  ***\n", f);
    logerror("*** playsam noise param %08d data  ***\n",param);
@@ -649,6 +745,20 @@ static void gpsm_init(struct sndbrdData *brdData)
 	int s = 0;
 	memset(&gps_locals, 0x00, sizeof(gps_locals));
 	gps_locals.brdData = *brdData;
+#if MC6840_SOUND
+	if (gpsptm.active) {
+		pia_config(GPS_PIA0, PIA_STANDARD_ORDERING, &gps_pia[0]);
+		pia_config(GPS_PIA1, PIA_STANDARD_ORDERING, &gps_pia[1]);
+		install_mem_read_handler(gps_locals.brdData.cpuNo, 0x0840, 0x0847, msu1_ptm_r);
+		stream_update(gpsptm.stream, 0);
+		mc6840_reset(&gpsptm.ptm, NULL);
+		memset(gpsptm.vol, 0, sizeof(gpsptm.vol));
+		gpsptm.noise_step = 625000. / MSU1_STREAM_RATE;
+		gps_locals.stateca1 = 0;
+		timer_set(TIME_IN_NSEC(814000000),0,oneshoot); // fire ca1 only once
+		return;
+	}
+#endif
 	for (i = 0;i < 32000;i++) {
 		s = (s ? 0 : 1);
 		if (s) {
@@ -707,6 +817,13 @@ static void softreset (int param) {
 
 static WRITE_HANDLER(m6840_w ) {
   int w;
+#if MC6840_SOUND
+  if (gpsptm.active) {
+	stream_update(gpsptm.stream, 0);
+	mc6840_w(&gpsptm.ptm, offset, data);
+	return;
+  }
+#endif
 //  logerror("M6840: offset %d = %02x\n", offset, data);
   m6840d.ax[offset]=data;
   if (offset == 3) {
@@ -951,10 +1068,28 @@ const struct sndbrdIntf gpMSU3Intf = {
 
 
 static int msu1_sh_start(const struct MachineSound *msound)  {
+#if MC6840_SOUND
+  memset(&gpsptm, 0, sizeof(gpsptm));
+  mc6840_reset(&gpsptm.ptm, NULL);
+  gpsptm.clk_step = (UINT32)(MSU1_INTCLOCK * 65536. / MSU1_STREAM_RATE + 0.5);
+  gpsptm.dc_r = (float)(1. - 2. * 3.14159265358979 * 10. / MSU1_STREAM_RATE); // ~10 Hz
+  gpsptm.noise_step = 625000. / MSU1_STREAM_RATE;
+  gpsptm.noise_seed = 0xdeadbabe;
+  gpsptm.stream = stream_init_float("MC6840", 25, MSU1_STREAM_RATE, 0, msu1_ptm_update, 1); // the 4 channels of gpsm_init are at 25 each
+  if (gpsptm.stream < 0)
+    return 1;
+  gpsptm.active = 1;
+#endif
   return 0;
 }
 
 static void msu1_sh_stop(void) {
+#if MC6840_SOUND
+  if (gpsptm.active) {
+    gpsptm.active = 0;
+    return;
+  }
+#endif
 	mixer_stop_sample(gps_locals.channel);
 	mixer_stop_sample(gps_locals.channel+1);
 	mixer_stop_sample(gps_locals.channel+2);	
