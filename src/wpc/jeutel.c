@@ -265,7 +265,23 @@ static SWITCH_UPDATE(JEUTEL) {
 }
 
 
-// sound section
+/* Sound section.
+
+   The command protocol is in the A3 sound ROM's NMI handler at 0x0066, which
+   sorts the latched byte by value:
+
+     0x00         silence -- clears the two sound slots and resets the AY
+     0x01-0x3f    an AY sound, held in the slot at 0x4008
+     0x40-0x7f    a speech phrase, looked up in the table at 0x0266 and
+                  clocked out to the TMS5110 a bit at a time
+     0x80-0x85    passed to the routine at 0x010a
+     0xfe / 0xff  clear / set the flag at 0x4015
+
+   A 0x01-0x3f sound plays until the main CPU sends something else; silence is
+   a command of its own, not something the sound board reaches by itself.  So a
+   game left standing holds one sound: with a ball in play and no switch
+   closing, sound 0x07 repeats its 194 ms sweep indefinitely, which is the
+   period the real machine's sound has on video too. */
 
 static struct {
   UINT8 sndCmd;
@@ -479,11 +495,10 @@ MACHINE_DRIVER_END
 /  START is switch 34 (C41) and TEST is switch 38 (C45).
 /
 /  Solenoid 9 is the receptacle kicker (manual: bobine B73 "Réceptacle").  With
-/  a credit on and C35 held closed the game pulses bit 8 repeatedly at ~1.7 s
-/  intervals and never
-/  stops, which is a machine retrying the ball-serve because the trough switch
-/  never clears.  Letting the simulator clear C35 on that pulse is what allows
-/  a ball into play.
+/  a credit on and C35 held closed the game pulses bit 8 every 0.96 s and never
+/  stops: it is retrying the ball-serve because the trough switch never clears.
+/  Clearing C35 on that pulse, which is what Papillon's simulator does, is what
+/  puts a ball into play.
 /===========================================================================*/
 
 /*-- playfield switches (column 0: C00-C07) --*/
