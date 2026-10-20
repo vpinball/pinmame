@@ -1204,6 +1204,15 @@ void remote_debug_trace_clear(void)
 	remote_debug_unlock();
 }
 
+/* The byte at offset `offset` of a `length` byte write of `data`, in the
+ * byte order of the active CPU. */
+static UINT8 written_byte(UINT32 data, int length, UINT32 offset)
+{
+	if (activecpu_endianess() == CPU_IS_BE)
+		offset = (UINT32)length - 1 - offset;
+	return (UINT8)(data >> (8 * offset));
+}
+
 /* Memory access hook; like remote_debug_breakpoint_hook() this runs with
  * the debugger lock effectively held by the emulator thread. */
 void remote_debug_memref(UINT32 adr, int length, int write, UINT32 data)
@@ -1233,10 +1242,15 @@ void remote_debug_memref(UINT32 adr, int length, int write, UINT32 data)
 		   || (wp->mode == REMOTE_DEBUG_WP_WRITE && write);
 		/* optional value condition: only halt when the byte at the
 		 * watched address satisfies the comparison. This runs before the
-		 * access, so for a byte write test the value being written */
+		 * access, so when the write covers that byte test the value being
+		 * written */
 		if (hit && wp->cond_op != COND_NONE) {
-			UINT8 v = (write && length == 1 && adr == wp->adr) ? (UINT8)data : cpunum_read_byte(active_cpu, wp->adr);
+			UINT8 v;
 			int ok;
+			if (write && wp->adr - adr < (UINT32)length)
+				v = written_byte(data, length, wp->adr - adr);
+			else
+				v = cpunum_read_byte(active_cpu, wp->adr);
 			switch (wp->cond_op) {
 				case COND_EQ: ok = (v == wp->cond_val); break;
 				case COND_NE: ok = (v != wp->cond_val); break;

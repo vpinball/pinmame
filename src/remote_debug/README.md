@@ -269,6 +269,8 @@ but ignored (reads always go through the current memory map).
   `bank` restricts to that ROM bank (0x4000-0x7FFF only). With `cond`+`val`
   the watchpoint only halts when the byte at `addr` satisfies the comparison
   (e.g. `mode=2&cond=eq&val=05` = "break on the write that sets it to 5").
+  On a write that covers `addr`, 16 and 32 bit ones included, the byte
+  being written is tested (in the byte order of the CPU).
   Note: debugger writes go straight to RAM and do not trigger watchpoints —
   only the emulated CPU's own accesses do.
 - `GET /api/debugger/watchpoints?cmd=clear`
