@@ -371,7 +371,7 @@ static int jvh_sw2m(int no) {
 }
 static int jvh_m2sw(int col, int row) {
   if (col < 1) return row-7;
-  return (col-1)*10 + row;
+  return (col-1)*10 + row + 1;
 }
 
 MACHINE_DRIVER_START(jvh)
