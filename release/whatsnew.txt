@@ -118,6 +118,7 @@ Added VGM recording for machines using MSM5205/MSM6585 sound
 Fixed flipped left/right channel for Alvin G. BSMT2000 sound (must have regressed at some point when extending the BSMT2000 core)
 Fixed the Alvin G. BSMT2000 sound board's diagnostic LED (blinks now)
 Fixed noise filter/pass and injection filter/pass in the Votrax/SC01 emulation (some GTS80(A)s and Taitos)
+Added optional closure timing and noise balance fixes to the Votrax/SC01 emulation (from MAME, measured on a real SC-01-A by Tamas Geczy; P, T and K release bursts restored): enable via the VOTRAX_CLOSURE_FIX define in src/sound/votrax.c, off by default
 Used YMFM's OPL cores (OPL/YM3526, OPL2/YM3812, OPL3/YMF262) for a more accurate emulation (Tabart; AlvinG, JVH, Mephisto, Sleic; Lancelot)
 Credits saved, and more lamps found on Stargame games Space Ship and White Force
 Fixed some corner cases in the arm7/AT91 emulation
