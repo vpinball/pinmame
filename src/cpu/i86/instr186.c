@@ -134,10 +134,25 @@ static void PREFIX186(_outsw)(void)    /* Opcode 0x6f */
 	I.regs.w[SI] += 2 * I.DirVal; /* GOL 11/27/01 */
 }
 
+#ifdef I186
+static void PREFIX186(_rotshft_bcl)(void)    /* Opcode 0xd2 */
+{
+	PREFIX86(_rotate_shift_Byte)(FETCHOP,I.regs.b[CL] & 0x1f);
+}
+
+static void PREFIX186(_rotshft_wcl)(void)    /* Opcode 0xd3 */
+{
+	PREFIX86(_rotate_shift_Word)(FETCHOP,I.regs.b[CL] & 0x1f);
+}
+#endif
+
 static void PREFIX186(_rotshft_bd8)(void)    /* Opcode 0xc0 */
 {
 	unsigned ModRM = FETCH;
 	unsigned count = FETCH;
+#ifdef I186
+	count &= 0x1f; // the 80186/188 only use the low 5 bits of the count (the 8086 does not mask it)
+#endif
 
 	PREFIX86(_rotate_shift_Byte)(ModRM,count);
 }
@@ -146,6 +161,9 @@ static void PREFIX186(_rotshft_wd8)(void)    /* Opcode 0xc1 */
 {
 	unsigned ModRM = FETCH;
 	unsigned count = FETCH;
+#ifdef I186
+	count &= 0x1f;
+#endif
 
 	PREFIX86(_rotate_shift_Word)(ModRM,count);
 }
