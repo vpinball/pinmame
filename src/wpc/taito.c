@@ -269,10 +269,13 @@ static int TAITO_m2lamp(int col, int row) {
 }
 
 static int TAITO_sw2m(int no) {
+	if (no >= 1000) return no - 1000; // see TAITO_m2sw
 	return ((no%10)+1)*8 + (no/10);
 }
 
 static int TAITO_m2sw(int col, int row) {
+	if ((col == 0 && row > 0) || col > 10)
+		return 1000 + col*8 + row; // no switch number reaches these matrix positions
 	return (row*10) + (col-1);
 }
 

@@ -890,7 +890,7 @@ static int spinb_sw2m(int no) {
 
 /*Col 1, Row 1 = 30... Col 2, Row 1 = 40, etc..*/
 static int spinb_m2sw(int col, int row) {
-	return col*10 + row + 20 - 1;
+	return col*10 + row + 20;
 }
 
 static void setirqline(int state) {
