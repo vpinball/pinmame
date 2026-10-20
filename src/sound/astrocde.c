@@ -80,7 +80,7 @@ static void astrocade_update(int num, int newpos)
 	for(i=pos; i<newpos; i++)
 	{
 		int data, data16;
-		if (current_count_N[i] == 0)
+		if (current_count_N[num] == 0)
 		{
 			randbyte = (rand() >> 7) & 0xff;
 		}

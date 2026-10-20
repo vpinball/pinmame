@@ -1283,11 +1283,19 @@ MEMORY_END
 //     10000 - 13FFE (RAM - 16K minus 1 byte... which should suffice all needs)
 //     13FFF         (DATA CMD FROM CPU)
 //     14000 - FFFFF (ROM1 and ROM2)
+// The region only covers the DMD ROMs a game has (0x14000 bytes when there is no ROM1/ROM2),
+// and the boot RAM test reads up to 0x1ffff: read unpopulated space as open bus
+static READ_HANDLER(dmd_extrom_r)
+{
+	const UINT32 addr = 0x14000 + offset;
+	return addr < memory_region_length(SPINB_MEMREG_DMD) ? memory_region(SPINB_MEMREG_DMD)[addr] : 0xff;
+}
+
 static MEMORY_READ_START(spinbdmd_readmem)
 	{ 0x00000, 0x0ffff, MRA_ROM },
 	{ 0x10000, 0x13ffe, MRA_RAM },
 	{ 0x13fff, 0x13fff, dmd_readcmd },
-	{ 0x14000, 0xfffff, MRA_ROM },
+	{ 0x14000, 0xfffff, dmd_extrom_r },
 MEMORY_END
 
 static MEMORY_WRITE_START(spinbdmd_writemem)

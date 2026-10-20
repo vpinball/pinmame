@@ -168,8 +168,10 @@ static void dmd32_vblank(int which) {
   assert(crtc6845_rasterized_height_r(0) == 64); // As the implementation requires this to be always true
   unsigned int src = /*((base >> 3) & 0x000F) | ((base << 1) & 0x0100) |*/ ((base << 2) & 0x7C00);
   const core_tLCDLayout* layout = core_gameData->lcdLayout->importedLayout ? core_gameData->lcdLayout->importedLayout : core_gameData->lcdLayout;
-  core_dmd_submit_frame(layout, dmdlocals.RAMbankPtr +  src,           2); // First frame has been displayed 2/3 of the time (500kHz row clock)
-  core_dmd_submit_frame(layout, dmdlocals.RAMbankPtr + (src | 0x0200), 1); // Second frame has been displayed 1/3 of the time (1MHz row clock)
+  // wrap within the 32K of RAM, an unexpected start address would otherwise read past it
+  const UINT8* frame = dmdlocals.RAM + (((unsigned int)(dmdlocals.RAMbankPtr - dmdlocals.RAM) + src) & 0x7C00);
+  core_dmd_submit_frame(layout, frame,          2); // First frame has been displayed 2/3 of the time (500kHz row clock)
+  core_dmd_submit_frame(layout, frame + 0x0200, 1); // Second frame has been displayed 1/3 of the time (1MHz row clock)
   if (crtc6845_cursor_address_r(0)) // Guessing that the CURSOR signal is used to generate FIRQ
     cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_FIRQ_LINE, PULSE_LINE);
 

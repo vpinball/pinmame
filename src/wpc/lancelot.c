@@ -101,7 +101,7 @@ static void timer_callback(int n) {
 static WRITE_HANDLER(snd_w) {
   if (!data || data == 0x80) return;
   if (data > 0x80 && data < 0x90) { // music, probably won't play at all without the microcontroller's ROM
-    locals.musicStart = (UINT16)memory_region(REGION_USER2)[data - 0x80] | ((UINT16)memory_region(REGION_USER2)[1 + data - 0xf80] << 8);
+    locals.musicStart = (UINT16)memory_region(REGION_USER2)[data - 0x80] | ((UINT16)memory_region(REGION_USER2)[1 + data - 0x80] << 8);
     locals.musicStop = (UINT16)memory_region(REGION_USER2)[4 + data - 0x80] | ((UINT16)memory_region(REGION_USER2)[5 + data - 0x80] << 8);
     timer_adjust(locals.sndtimer2, 0, 0, 0.001);
     return;
@@ -184,7 +184,7 @@ static WRITE_HANDLER(disp_w) {
 
 static WRITE_HANDLER(col_w) {
   locals.col = data & 0x0f;
-  if (locals.col) {
+  if (locals.col && locals.col <= 8) { // only 8 digit strobes, higher values select none
     int i;
     for (i = 0; i < 6; i++) {
       int seg = (5 - i) * 8 + 8 - locals.col;

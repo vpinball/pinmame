@@ -444,7 +444,9 @@ static READ32_HANDLER(samswitch_r)
 			case 0x1100000:
 			{
 				//Must convert from our 8x8 matrix to a 4x16 matrix - and return 16 bits.
-				data = MAKE16BIT(coreGlobals.swMatrix[2+samlocals.sw_stb*2], coreGlobals.swMatrix[1+samlocals.sw_stb*2]);
+				//Only strobes 0-3 have switches (some boot code also scans the upper ones, which read as open)
+				if (samlocals.sw_stb < 4)
+					data = MAKE16BIT(coreGlobals.swMatrix[2+samlocals.sw_stb*2], coreGlobals.swMatrix[1+samlocals.sw_stb*2]);
 				data ^= 0xffff;
 				break;
 			}
