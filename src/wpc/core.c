@@ -3,6 +3,7 @@
 /***********************************************/
 #include <stdarg.h>
 #include <math.h>
+#include <ctype.h>
 #include "driver.h"
 #include "sim.h"
 #include "snd_cmd.h"
@@ -2252,6 +2253,184 @@ void core_updInvSw(int swNo, int inv) {
   }
 }
 
+/*--------------------------------------------------------------------
+/  Switch log, kept along with the .inp file of -record/-playback
+/
+/  The host (VPinMAME Controller.Switch, libpinmame PinmameSetSwitch)
+/  writes the switch matrix directly, so its switches never reach the
+/  input ports the .inp file holds. While recording, host changes are
+/  queued and applied by a 1 kHz emulated timer, which logs them with
+/  its tick count to <name>.sw. On playback the same timer applies the
+/  logged changes at the same ticks and live host changes are dropped.
+/  Both runs start from the NVRAM saved as <name>.nv (see mame.c) and
+/  with the real-time clock fixed at the time the recording started.
+/  A reset ends the recording or the playback.
+/---------------------------------------------------------------------*/
+#define SWLOG_HZ       1000
+#define SWLOG_QUEUE    4096 /* power of 2 */
+#define SWLOG_RECORD   1
+#define SWLOG_PLAYBACK 2
+
+static struct {
+  volatile int mode;
+  int rtcSet;                      /* the clock was fixed here, release it at the end */
+  mame_file *file;
+  UINT32 tick;
+  volatile int head;               /* next queue slot, taken by the host threads */
+  int tail;                        /* next queue slot to apply */
+  volatile int queue[SWLOG_QUEUE]; /* 0 = free, else swNo*4 + value*2 + 1 */
+  int held;                        /* change put off to the next tick */
+  UINT32 nextTick;                 /* playback: next logged change, 0 = none */
+  int nextSw, nextVal;
+} swlog;
+
+void core_setHostSw(int swNo, int value) {
+  if (swlog.mode == SWLOG_RECORD) {
+    const int slot = (atomic_increment(&swlog.head) - 1) & (SWLOG_QUEUE-1);
+    atomic_exchange_int(&swlog.queue[slot], swNo*4 + (value ? 2 : 0) + 1);
+  }
+  else if (swlog.mode == 0)
+    core_setSw(swNo, value);
+  /* playback: the log drives the switches */
+}
+
+/* <name>.<ext> in the input log directory, a trailing .inp left out */
+mame_file *core_swlog_fopen(const char *name, const char *ext, int write) {
+  char fn[256];
+  int len = (int)strlen(name);
+  if (len > 4 && strcmp(name + len - 4, ".inp") == 0) len -= 4;
+  snprintf(fn, sizeof(fn), "%.*s.%s", len, name, ext);
+  return mame_fopen(fn, 0, FILETYPE_INPUTLOG, write);
+}
+
+static int swlog_readEvent(const char *line) {
+  unsigned int tick;
+  int sw, value;
+  if (sscanf(line, "%u %d %d", &tick, &sw, &value) != 3)
+    return 0;
+  swlog.nextTick = tick; swlog.nextSw = sw; swlog.nextVal = value;
+  return 1;
+}
+
+static void swlog_readNext(void) {
+  char line[128];
+  swlog.nextTick = 0;
+  while (mame_fgets(line, sizeof(line), swlog.file))
+    if (swlog_readEvent(line))
+      break;
+}
+
+static void swlog_tick(int param) {
+  int done[16], nDone = 0;
+
+  swlog.tick++;
+  if (swlog.mode == SWLOG_PLAYBACK) {
+    while (swlog.nextTick == swlog.tick) {
+      core_setSw(swlog.nextSw, swlog.nextVal);
+      swlog_readNext();
+    }
+    return;
+  }
+  for (;;) {
+    int ev, sw, value, ii;
+    if (swlog.held) { ev = swlog.held; swlog.held = 0; }
+    else if ((ev = atomic_exchange_int(&swlog.queue[swlog.tail & (SWLOG_QUEUE-1)], 0)) != 0) swlog.tail++;
+    else break;
+    sw = ev >> 2; value = (ev >> 1) & 1;
+    if (!core_getSw(sw) == !value)
+      continue;
+    /* one change per switch and tick, so that short pulses still get through */
+    for (ii = 0; ii < nDone && done[ii] != sw; ii++) ;
+    if (ii < nDone || nDone == 16) { swlog.held = ev; break; }
+    done[nDone++] = sw;
+    core_setSw(sw, value);
+    mame_fprintf(swlog.file, "%u %d %d\n", swlog.tick, sw, value);
+  }
+}
+
+static void swlog_start(void) {
+  const char *name = options.playback_name ? options.playback_name : options.record_name;
+  char line[128], rtc[32] = "";
+  struct tm t;
+
+  memset(&swlog, 0, sizeof(swlog));
+  if (!name || !*name)
+    return;
+  swlog.file = core_swlog_fopen(name, "sw", options.playback_name == NULL);
+  if (!swlog.file) {
+    logerror("switch log: cannot open %s.sw\n", name);
+    return;
+  }
+  if (options.playback_name) {
+    char game[32] = "";
+    while (mame_fgets(line, sizeof(line), swlog.file) && !swlog_readEvent(line)) {
+      if (strncmp(line, "game ", 5) == 0) sscanf(line + 5, "%31s", game);
+      else if (strncmp(line, "rtc ", 4) == 0) sscanf(line + 4, "%31[^\r\n]", rtc);
+    }
+    if (strcmp(game, Machine->gamedrv->name)) {
+      logerror("switch log: %s.sw was recorded with %s, not %s\n", name, game, Machine->gamedrv->name);
+      mame_fclose(swlog.file); swlog.file = NULL;
+      return;
+    }
+    if (rtc[0] && !rtc_is_fixed())
+      swlog.rtcSet = (rtc_set_start(rtc) == 0);
+    swlog.mode = SWLOG_PLAYBACK;
+  }
+  else {
+    rtc_now_tm(&t);
+    strftime(rtc, sizeof(rtc), "%Y-%m-%d %H:%M:%S", &t);
+    if (!rtc_is_fixed())
+      swlog.rtcSet = (rtc_set_start(rtc) == 0);
+    mame_fprintf(swlog.file, "# PinMAME switch log: <tick (%d Hz)> <switch> <0/1>\ngame %s\nrtc %s\n",
+                 SWLOG_HZ, Machine->gamedrv->name, rtc);
+    swlog.mode = SWLOG_RECORD;
+  }
+  timer_pulse(TIME_IN_HZ(SWLOG_HZ), 0, swlog_tick);
+}
+
+static void swlog_stop(void) {
+  if (!swlog.file)
+    return;
+  swlog.mode = 0;
+  mame_fclose(swlog.file);
+  swlog.file = NULL;
+  if (swlog.rtcSet)
+    rtc_release();
+  /* after a reset the game runs live */
+  options.record_name = options.playback_name = NULL;
+}
+
+/* For the front-ends without a command line (VPinMAME, libpinmame): open the .inp file
+   their record/playback setting names, the switch log goes along with it */
+int core_inputlog_open(int game, const char *record, const char *playback) {
+  INP_HEADER inp_header;
+
+  if (playback && *playback) {
+    if (!(options.playback = mame_fopen(playback, 0, FILETYPE_INPUTLOG, 0)))
+      return -1;
+    /* skip the header */
+    mame_fread(options.playback, &inp_header, sizeof(INP_HEADER));
+    if (!isalnum((UINT8)inp_header.name[0]))
+      mame_fseek(options.playback, 0, SEEK_SET);
+    options.playback_name = playback;
+  }
+  else if (record && *record) {
+    if (!(options.record = mame_fopen(record, 0, FILETYPE_INPUTLOG, 1)))
+      return -1;
+    memset(&inp_header, 0, sizeof(INP_HEADER));
+    strncpy(inp_header.name, drivers[game]->name, sizeof(inp_header.name)-1);
+    mame_fwrite(options.record, &inp_header, sizeof(INP_HEADER));
+    options.record_name = record;
+  }
+  return 0;
+}
+
+void core_inputlog_close(void) {
+  if (options.playback) { mame_fclose(options.playback); options.playback = NULL; }
+  if (options.record)   { mame_fclose(options.record);   options.record = NULL; }
+  options.record_name = options.playback_name = NULL;
+}
+
 /*-------------------------------------
 /  Read the status of a solenoid
 /  For the standard solenoids this is
@@ -2567,6 +2746,7 @@ static MACHINE_INIT(core) {
         }
       }
     }
+    swlog_start();
     /*-- init switch matrix --*/
     memcpy((void*)coreGlobals.invSw, (void*)core_gameData->wpc.invSw, sizeof(core_gameData->wpc.invSw));
     memcpy((void*)coreGlobals.swMatrix, (void*)coreGlobals.invSw, sizeof(coreGlobals.invSw));
@@ -2774,6 +2954,7 @@ static MACHINE_STOP(core) {
   g_raw_dmd_frame_count = 0;
 #endif
 
+  swlog_stop();
   mech_emuExit();
   if (coreData->stop) coreData->stop();
   snd_cmd_exit();
