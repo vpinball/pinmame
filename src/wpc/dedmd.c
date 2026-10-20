@@ -337,8 +337,13 @@ static WRITE_HANDLER(dmd64_ctrl_w) {
     sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.busy = 1);
     dmdlocals.cmd = dmdlocals.ncmd;
   }
-  if (dmdlocals.ctrl & ~data & 0x02) // Reset (applied at falling edge)
+  if (dmdlocals.ctrl & ~data & 0x02) { // Reset (applied at falling edge)
+    // also drop the pending interrupts (assumed, not checked against the schematics), else the restarted
+    // board would take the command interrupt from before the reset and read the old command again
+    dmdlocals.irq1 = dmdlocals.irq2 = 0;
+    dmd64_update_irq();
     cpu_set_reset_line(dmdlocals.brdData.cpuNo, PULSE_LINE);
+  }
   dmdlocals.ctrl = data;
 }
 
