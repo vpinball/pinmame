@@ -3389,6 +3389,10 @@ void m68k_op_asr_8_s(void)
 	uint src = MASK_OUT_ABOVE_8(*r_dst);
 	uint res = src >> shift;
 
+	if(CYC_FIX && shift != 0) {
+		USE_CYCLES(shift<<CYC_SHIFT);
+    }
+
 	if(GET_MSB_8(src))
 		res |= m68ki_shift_8_table[shift];
 
@@ -3408,6 +3412,10 @@ void m68k_op_asr_16_s(void)
 	uint src = MASK_OUT_ABOVE_16(*r_dst);
 	uint res = src >> shift;
 
+	if(CYC_FIX && shift != 0) {
+		USE_CYCLES(shift<<CYC_SHIFT);
+    }
+
 	if(GET_MSB_16(src))
 		res |= m68ki_shift_16_table[shift];
 
@@ -3426,6 +3434,10 @@ void m68k_op_asr_32_s(void)
 	uint shift = (((REG_IR >> 9) - 1) & 7) + 1;
 	uint src = *r_dst;
 	uint res = src >> shift;
+
+	if(CYC_FIX && shift != 0) {
+		USE_CYCLES(shift<<CYC_SHIFT);
+    }
 
 	if(GET_MSB_32(src))
 		res |= m68ki_shift_32_table[shift];
@@ -3728,6 +3740,10 @@ void m68k_op_asl_8_s(void)
 	uint src = MASK_OUT_ABOVE_8(*r_dst);
 	uint res = MASK_OUT_ABOVE_8(src << shift);
 
+	if(CYC_FIX && shift != 0) {
+		USE_CYCLES(shift<<CYC_SHIFT);
+    }
+
 	*r_dst = MASK_OUT_BELOW_8(*r_dst) | res;
 
 	FLAG_X = FLAG_C = src << shift;
@@ -3745,6 +3761,10 @@ void m68k_op_asl_16_s(void)
 	uint src = MASK_OUT_ABOVE_16(*r_dst);
 	uint res = MASK_OUT_ABOVE_16(src << shift);
 
+	if(CYC_FIX && shift != 0) {
+		USE_CYCLES(shift<<CYC_SHIFT);
+    }
+
 	*r_dst = MASK_OUT_BELOW_16(*r_dst) | res;
 
 	FLAG_N = NFLAG_16(res);
@@ -3761,6 +3781,10 @@ void m68k_op_asl_32_s(void)
 	uint shift = (((REG_IR >> 9) - 1) & 7) + 1;
 	uint src = *r_dst;
 	uint res = MASK_OUT_ABOVE_32(src << shift);
+
+	if(CYC_FIX && shift != 0) {
+		USE_CYCLES(shift<<CYC_SHIFT);
+    }
 
 	*r_dst = res;
 
@@ -4643,6 +4667,8 @@ void m68k_op_bchg_32_r_d(void)
 {
 	uint* r_dst = &DY;
 	uint mask = 1 << (DX & 0x1f);
+	if(CYC_FIX && !(mask & 0xffff0000))
+		ADD_CYCLES(2); /* 2 less for bits 0-15 */
 
 	FLAG_Z = *r_dst & mask;
 	*r_dst ^= mask;
@@ -4752,6 +4778,8 @@ void m68k_op_bchg_32_s_d(void)
 {
 	uint* r_dst = &DY;
 	uint mask = 1 << (OPER_I_8() & 0x1f);
+	if(CYC_FIX && !(mask & 0xffff0000))
+		ADD_CYCLES(2); /* 2 less for bits 0-15 */
 
 	FLAG_Z = *r_dst & mask;
 	*r_dst ^= mask;
@@ -4861,6 +4889,8 @@ void m68k_op_bclr_32_r_d(void)
 {
 	uint* r_dst = &DY;
 	uint mask = 1 << (DX & 0x1f);
+	if(CYC_FIX && !(mask & 0xffff0000))
+		ADD_CYCLES(2); /* 2 less for bits 0-15 */
 
 	FLAG_Z = *r_dst & mask;
 	*r_dst &= ~mask;
@@ -4970,6 +5000,8 @@ void m68k_op_bclr_32_s_d(void)
 {
 	uint* r_dst = &DY;
 	uint mask = 1 << (OPER_I_8() & 0x1f);
+	if(CYC_FIX && !(mask & 0xffff0000))
+		ADD_CYCLES(2); /* 2 less for bits 0-15 */
 
 	FLAG_Z = *r_dst & mask;
 	*r_dst &= ~mask;
@@ -7866,6 +7898,8 @@ void m68k_op_bset_32_r_d(void)
 {
 	uint* r_dst = &DY;
 	uint mask = 1 << (DX & 0x1f);
+	if(CYC_FIX && !(mask & 0xffff0000))
+		ADD_CYCLES(2); /* 2 less for bits 0-15 */
 
 	FLAG_Z = *r_dst & mask;
 	*r_dst |= mask;
@@ -7975,6 +8009,8 @@ void m68k_op_bset_32_s_d(void)
 {
 	uint* r_dst = &DY;
 	uint mask = 1 << (OPER_I_8() & 0x1f);
+	if(CYC_FIX && !(mask & 0xffff0000))
+		ADD_CYCLES(2); /* 2 less for bits 0-15 */
 
 	FLAG_Z = *r_dst & mask;
 	*r_dst |= mask;

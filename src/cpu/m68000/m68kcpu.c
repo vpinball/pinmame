@@ -556,6 +556,78 @@ void m68k_set_instr_hook_callback(void  (*callback)(void))
 	CALLBACK_INSTR_HOOK = callback ? callback : default_instr_hook_callback;
 }
 
+#if M68K_CYCLE_FIX
+/* 68000 cycle counts with the data sheet values, built from m68ki_cycles[0] on first use */
+static uint8 m68ki_cycles_fixed[0x10000];
+static int m68ki_cycles_fixed_built = 0;
+
+static void m68ki_build_fixed_cycles(void)
+{
+	uint op;
+	for(op = 0; op < 0x10000; op++)
+	{
+		const uint mode = (op >> 3) & 7;
+		const uint reg = op & 7;
+		const int imm = (mode == 7 && reg == 4);
+		const uint opmode = (op >> 6) & 7;
+		int c = m68ki_cycles[0][op];
+
+		/* Bcc.b: 10 taken, 8 not taken */
+		if((op & 0xf000) == 0x6000 && ((op >> 8) & 0xf) >= 2 && (op & 0xff) != 0)
+			c += 2;
+		/* ADDQ.W #,An: 8 */
+		else if((op & 0xf1f8) == 0x5048)
+			c += 4;
+		/* ADD/SUB/AND/OR <ea>,Dn: .L takes 8 instead of 6 from Dn/An, the 2 extra cycles for #imm are .L only */
+		else if(((op & 0xf000) == 0xd000 || (op & 0xf000) == 0x9000 || (op & 0xf000) == 0xc000 || (op & 0xf000) == 0x8000) && opmode <= 2)
+		{
+			if(opmode == 2 && (mode == 0 || (mode == 1 && ((op & 0xf000) == 0xd000 || (op & 0xf000) == 0x9000))))
+				c += 2;
+			else if(opmode < 2 && imm)
+				c -= 2;
+		}
+		/* ADDA/SUBA: same rules */
+		else if(((op & 0xf000) == 0xd000 || (op & 0xf000) == 0x9000) && (opmode == 3 || opmode == 7))
+		{
+			if(opmode == 7 && mode <= 1)
+				c += 2;
+			else if(opmode == 3 && imm)
+				c -= 2;
+		}
+		/* DBRA: 10 looping, 14 when the count expires (the handler adds the difference) */
+		else if((op & 0xfff8) == 0x51c8)
+			c -= 2;
+		/* ANDI.L #,Dn: 16 */
+		else if((op & 0xfff8) == 0x0280)
+			c += 2;
+		/* MOVEM: the address calculation is the one of a word access, minus 4
+		   ((An)+ for memory to registers and -(An) for registers to memory are right already) */
+		else if((op & 0xfb80) == 0x4880 && (mode == 2 || mode == 5 || mode == 6 || (mode == 7 && (reg <= 1 || ((op & 0x0400) && reg <= 3)))))
+		{
+			const int l = (op & 0x0040) != 0;
+			if(mode == 7 && reg >= 2)
+				c += l ? -4 : 0;
+			else
+				c += l ? -8 : -4;
+		}
+		m68ki_cycles_fixed[op] = (uint8)c;
+	}
+	m68ki_cycles_fixed_built = 1;
+}
+
+void m68k_set_cycle_fix(int enable)
+{
+	CYC_FIX = 0;
+	if(CPU_TYPE_IS_000(CPU_TYPE))
+	{
+		if(enable && !m68ki_cycles_fixed_built)
+			m68ki_build_fixed_cycles();
+		CYC_FIX = enable ? 1 : 0;
+		CYC_INSTRUCTION = enable ? m68ki_cycles_fixed : m68ki_cycles[0];
+	}
+}
+#endif /* M68K_CYCLE_FIX */
+
 #include <stdio.h>
 /* Set the CPU type. */
 void m68k_set_cpu_type(unsigned int cpu_type)

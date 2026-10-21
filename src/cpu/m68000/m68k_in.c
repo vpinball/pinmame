@@ -1816,7 +1816,7 @@ M68KMAKE_OP(asr, 8, s, .)
 	uint src = MASK_OUT_ABOVE_8(*r_dst);
 	uint res = src >> shift;
 
-	if(shift != 0) {
+	if(CYC_FIX && shift != 0) {
 		USE_CYCLES(shift<<CYC_SHIFT);
     }
 
@@ -1839,7 +1839,7 @@ M68KMAKE_OP(asr, 16, s, .)
 	uint src = MASK_OUT_ABOVE_16(*r_dst);
 	uint res = src >> shift;
 
-	if(shift != 0) {
+	if(CYC_FIX && shift != 0) {
 		USE_CYCLES(shift<<CYC_SHIFT);
     }
 
@@ -1862,7 +1862,7 @@ M68KMAKE_OP(asr, 32, s, .)
 	uint src = *r_dst;
 	uint res = src >> shift;
 
-	if(shift != 0) {
+	if(CYC_FIX && shift != 0) {
 		USE_CYCLES(shift<<CYC_SHIFT);
     }
 
@@ -2059,7 +2059,7 @@ M68KMAKE_OP(asl, 8, s, .)
 	uint src = MASK_OUT_ABOVE_8(*r_dst);
 	uint res = MASK_OUT_ABOVE_8(src << shift);
 
-	if(shift != 0) {
+	if(CYC_FIX && shift != 0) {
 		USE_CYCLES(shift<<CYC_SHIFT);
     }
 
@@ -2080,7 +2080,7 @@ M68KMAKE_OP(asl, 16, s, .)
 	uint src = MASK_OUT_ABOVE_16(*r_dst);
 	uint res = MASK_OUT_ABOVE_16(src << shift);
 
-	if(shift != 0) {
+	if(CYC_FIX && shift != 0) {
 		USE_CYCLES(shift<<CYC_SHIFT);
     }
 
@@ -2101,7 +2101,7 @@ M68KMAKE_OP(asl, 32, s, .)
 	uint src = *r_dst;
 	uint res = MASK_OUT_ABOVE_32(src << shift);
 
-	if(shift != 0) {
+	if(CYC_FIX && shift != 0) {
 		USE_CYCLES(shift<<CYC_SHIFT);
     }
 
@@ -2292,6 +2292,8 @@ M68KMAKE_OP(bchg, 32, r, d)
 {
 	uint* r_dst = &DY;
 	uint mask = 1 << (DX & 0x1f);
+	if(CYC_FIX && !(mask & 0xffff0000))
+		ADD_CYCLES(2); /* 2 less for bits 0-15 */
 
 	FLAG_Z = *r_dst & mask;
 	*r_dst ^= mask;
@@ -2313,6 +2315,8 @@ M68KMAKE_OP(bchg, 32, s, d)
 {
 	uint* r_dst = &DY;
 	uint mask = 1 << (OPER_I_8() & 0x1f);
+	if(CYC_FIX && !(mask & 0xffff0000))
+		ADD_CYCLES(2); /* 2 less for bits 0-15 */
 
 	FLAG_Z = *r_dst & mask;
 	*r_dst ^= mask;
@@ -2334,6 +2338,8 @@ M68KMAKE_OP(bclr, 32, r, d)
 {
 	uint* r_dst = &DY;
 	uint mask = 1 << (DX & 0x1f);
+	if(CYC_FIX && !(mask & 0xffff0000))
+		ADD_CYCLES(2); /* 2 less for bits 0-15 */
 
 	FLAG_Z = *r_dst & mask;
 	*r_dst &= ~mask;
@@ -2355,6 +2361,8 @@ M68KMAKE_OP(bclr, 32, s, d)
 {
 	uint* r_dst = &DY;
 	uint mask = 1 << (OPER_I_8() & 0x1f);
+	if(CYC_FIX && !(mask & 0xffff0000))
+		ADD_CYCLES(2); /* 2 less for bits 0-15 */
 
 	FLAG_Z = *r_dst & mask;
 	*r_dst &= ~mask;
@@ -3159,6 +3167,8 @@ M68KMAKE_OP(bset, 32, r, d)
 {
 	uint* r_dst = &DY;
 	uint mask = 1 << (DX & 0x1f);
+	if(CYC_FIX && !(mask & 0xffff0000))
+		ADD_CYCLES(2); /* 2 less for bits 0-15 */
 
 	FLAG_Z = *r_dst & mask;
 	*r_dst |= mask;
@@ -3180,6 +3190,8 @@ M68KMAKE_OP(bset, 32, s, d)
 {
 	uint* r_dst = &DY;
 	uint mask = 1 << (OPER_I_8() & 0x1f);
+	if(CYC_FIX && !(mask & 0xffff0000))
+		ADD_CYCLES(2); /* 2 less for bits 0-15 */
 
 	FLAG_Z = *r_dst & mask;
 	*r_dst |= mask;
@@ -4421,11 +4433,13 @@ M68KMAKE_OP(dbf, 16, ., .)
 		REG_PC -= 2;
 		m68ki_trace_t0();			   /* auto-disable (see m68kcpu.h) */
 		m68ki_branch_16(offset);
-		USE_CYCLES(CYC_DBCC_F_NOEXP);
+		if(CYC_FIX)
+			USE_CYCLES(CYC_DBCC_F_NOEXP);
 		return;
 	}
 	REG_PC += 2;
-	USE_CYCLES(CYC_DBCC_F_EXP);
+	if(CYC_FIX)
+		USE_CYCLES(CYC_DBCC_F_EXP);
 }
 
 
@@ -5332,7 +5346,7 @@ M68KMAKE_OP(lsr, 8, s, .)
 	uint src = MASK_OUT_ABOVE_8(*r_dst);
 	uint res = src >> shift;
 
-	if(shift != 0) {
+	if(CYC_FIX && shift != 0) {
                 USE_CYCLES(shift<<CYC_SHIFT);
         }
 
@@ -5352,7 +5366,7 @@ M68KMAKE_OP(lsr, 16, s, .)
 	uint src = MASK_OUT_ABOVE_16(*r_dst);
 	uint res = src >> shift;
 
-	if(shift != 0) {
+	if(CYC_FIX && shift != 0) {
                 USE_CYCLES(shift<<CYC_SHIFT);
         }
 
@@ -5372,7 +5386,7 @@ M68KMAKE_OP(lsr, 32, s, .)
 	uint src = *r_dst;
 	uint res = src >> shift;
 
-	if(shift != 0) {
+	if(CYC_FIX && shift != 0) {
                 USE_CYCLES(shift<<CYC_SHIFT);
         }
 
@@ -5517,7 +5531,7 @@ M68KMAKE_OP(lsl, 8, s, .)
 	uint src = MASK_OUT_ABOVE_8(*r_dst);
 	uint res = MASK_OUT_ABOVE_8(src << shift);
 
-	if(shift != 0) {
+	if(CYC_FIX && shift != 0) {
                 USE_CYCLES(shift<<CYC_SHIFT);
         }
 
@@ -5537,7 +5551,7 @@ M68KMAKE_OP(lsl, 16, s, .)
 	uint src = MASK_OUT_ABOVE_16(*r_dst);
 	uint res = MASK_OUT_ABOVE_16(src << shift);
 
-	if(shift != 0) {
+	if(CYC_FIX && shift != 0) {
                 USE_CYCLES(shift<<CYC_SHIFT);
         }
 
@@ -5557,7 +5571,7 @@ M68KMAKE_OP(lsl, 32, s, .)
 	uint src = *r_dst;
 	uint res = MASK_OUT_ABOVE_32(src << shift);
 
-	if(shift != 0) {
+	if(CYC_FIX && shift != 0) {
                 USE_CYCLES(shift<<CYC_SHIFT);
         }
 
@@ -7321,7 +7335,11 @@ M68KMAKE_OP(moveq, 32, ., .)
 M68KMAKE_OP(muls, 16, ., d)
 {
 	uint* r_dst = &DX;
-	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(DY) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+	uint src = DY;
+	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(src) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_muls_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -7335,7 +7353,11 @@ M68KMAKE_OP(muls, 16, ., d)
 M68KMAKE_OP(muls, 16, ., .)
 {
 	uint* r_dst = &DX;
-	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(M68KMAKE_GET_OPER_AY_16) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+	uint src = M68KMAKE_GET_OPER_AY_16;
+	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(src) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_muls_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -7349,7 +7371,11 @@ M68KMAKE_OP(muls, 16, ., .)
 M68KMAKE_OP(mulu, 16, ., d)
 {
 	uint* r_dst = &DX;
-	uint res = MASK_OUT_ABOVE_16(DY) * MASK_OUT_ABOVE_16(*r_dst);
+	uint src = MASK_OUT_ABOVE_16(DY);
+	uint res = src * MASK_OUT_ABOVE_16(*r_dst);
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_mulu_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -7363,7 +7389,11 @@ M68KMAKE_OP(mulu, 16, ., d)
 M68KMAKE_OP(mulu, 16, ., .)
 {
 	uint* r_dst = &DX;
-	uint res = M68KMAKE_GET_OPER_AY_16 * MASK_OUT_ABOVE_16(*r_dst);
+	uint src = M68KMAKE_GET_OPER_AY_16;
+	uint res = src * MASK_OUT_ABOVE_16(*r_dst);
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_mulu_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -8277,7 +8307,7 @@ M68KMAKE_OP(ror, 8, s, .)
 	uint src = MASK_OUT_ABOVE_8(*r_dst);
 	uint res = ROR_8(src, shift);
 
-	if(orig_shift != 0) {
+	if(CYC_FIX && orig_shift != 0) {
                 USE_CYCLES(orig_shift<<CYC_SHIFT);
         }
 
@@ -8297,7 +8327,7 @@ M68KMAKE_OP(ror, 16, s, .)
 	uint src = MASK_OUT_ABOVE_16(*r_dst);
 	uint res = ROR_16(src, shift);
 
-	if(shift != 0) {
+	if(CYC_FIX && shift != 0) {
                 USE_CYCLES(shift<<CYC_SHIFT);
         }
 
@@ -8317,7 +8347,7 @@ M68KMAKE_OP(ror, 32, s, .)
 	uint64 src = *r_dst;
 	uint res = ROR_32(src, shift);
 
-	if(shift != 0) {
+	if(CYC_FIX && shift != 0) {
                 USE_CYCLES(shift<<CYC_SHIFT);
         }
 
@@ -8434,7 +8464,7 @@ M68KMAKE_OP(rol, 8, s, .)
 	uint src = MASK_OUT_ABOVE_8(*r_dst);
 	uint res = ROL_8(src, shift);
 
-	if(orig_shift != 0) {
+	if(CYC_FIX && orig_shift != 0) {
                 USE_CYCLES(orig_shift<<CYC_SHIFT);
         }
 
@@ -8454,7 +8484,7 @@ M68KMAKE_OP(rol, 16, s, .)
 	uint src = MASK_OUT_ABOVE_16(*r_dst);
 	uint res = ROL_16(src, shift);
 
-	if(shift != 0) {
+	if(CYC_FIX && shift != 0) {
                 USE_CYCLES(shift<<CYC_SHIFT);
         }
 
@@ -8474,7 +8504,7 @@ M68KMAKE_OP(rol, 32, s, .)
 	uint64 src = *r_dst;
 	uint res = ROL_32(src, shift);
 
-	if(shift != 0) {
+	if(CYC_FIX && shift != 0) {
                 USE_CYCLES(shift<<CYC_SHIFT);
         }
 
@@ -8607,7 +8637,7 @@ M68KMAKE_OP(roxr, 8, s, .)
 	uint src = MASK_OUT_ABOVE_8(*r_dst);
 	uint res = ROR_9(src | (XFLAG_AS_1() << 8), shift);
 
-	if(shift != 0) {
+	if(CYC_FIX && shift != 0) {
                 USE_CYCLES(shift<<CYC_SHIFT);
         }
 
@@ -8629,7 +8659,7 @@ M68KMAKE_OP(roxr, 16, s, .)
 	uint src = MASK_OUT_ABOVE_16(*r_dst);
 	uint res = ROR_17(src | (XFLAG_AS_1() << 16), shift);
 
-	if(shift != 0) {
+	if(CYC_FIX && shift != 0) {
                 USE_CYCLES(shift<<CYC_SHIFT);
         }
 
@@ -8653,7 +8683,7 @@ M68KMAKE_OP(roxr, 32, s, .)
 	uint64 src   = *r_dst;
 	uint64 res   = src | (((uint64)XFLAG_AS_1()) << 32);
 
-	if(shift != 0) {
+	if(CYC_FIX && shift != 0) {
                 USE_CYCLES(shift<<CYC_SHIFT);
         }
 
@@ -8831,7 +8861,7 @@ M68KMAKE_OP(roxl, 8, s, .)
 	uint src = MASK_OUT_ABOVE_8(*r_dst);
 	uint res = ROL_9(src | (XFLAG_AS_1() << 8), shift);
 
-	if(shift != 0) {
+	if(CYC_FIX && shift != 0) {
                 USE_CYCLES(shift<<CYC_SHIFT);
         }
 
@@ -8853,7 +8883,7 @@ M68KMAKE_OP(roxl, 16, s, .)
 	uint src = MASK_OUT_ABOVE_16(*r_dst);
 	uint res = ROL_17(src | (XFLAG_AS_1() << 16), shift);
 
-	if(shift != 0) {
+	if(CYC_FIX && shift != 0) {
                 USE_CYCLES(shift<<CYC_SHIFT);
         }
 
@@ -8877,7 +8907,7 @@ M68KMAKE_OP(roxl, 32, s, .)
 	uint64 src   = *r_dst;
 	uint64 res   = src | (((uint64)XFLAG_AS_1()) << 32);
 
-	if(shift != 0) {
+	if(CYC_FIX && shift != 0) {
                 USE_CYCLES(shift<<CYC_SHIFT);
         }
 
@@ -9367,7 +9397,8 @@ M68KMAKE_OP(scc, 8, ., d)
 	if(M68KMAKE_CC)
 	{
 		DY |= 0xff;
-                //!! USE_CYCLES(CYC_SCC_R_TRUE);
+		if(CYC_FIX)
+			USE_CYCLES(2); /* 6 when true */
 		return;
 	}
 	DY &= 0xffffff00;
