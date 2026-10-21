@@ -269,7 +269,7 @@
                     <div style="margin-bottom:5px;">
                         <input type="text" id="wp-bank" placeholder="bank" style="width:40px;" title="ROM bank (hex), optional (0x4000-0x7FFF only)">
                         <input type="text" id="wp-addr" placeholder="addr" style="width:60px;" title="address (hex)">
-                        <input type="text" id="wp-len" placeholder="len" style="width:36px;" value="1" title="watched bytes (decimal)">
+                        <input type="text" id="wp-len" placeholder="len" style="width:36px;" value="1" title="watched bytes (decimal, or hex with 0x/$)">
                         <select id="wp-mode">
                             <option value="1">R</option>
                             <option value="2">W</option>
@@ -339,10 +339,16 @@
                 <h2>Memory Trace</h2>
                 <div class="tool-bar">
                     Addr: <input type="text" id="trace-addr" style="width:70px;" placeholder="hex">
+                    Len: <input type="text" id="trace-len" style="width:44px;" value="1" title="traced bytes (decimal, or hex with 0x/$)">
+                    <select id="trace-mode">
+                        <option value="1">R</option>
+                        <option value="2">W</option>
+                        <option value="3" selected>RW</option>
+                    </select>
                     Bank: <input type="text" id="trace-bank" style="width:44px;" placeholder="any" title="ROM bank (hex), optional (0x4000-0x7FFF only)">
                     <button class="btn btn-success" onclick="Trace.add()">+ Trace</button>
                     <button class="btn btn-danger" onclick="Trace.clear()">Clear</button>
-                    <span class="hint">logs every access to traced addresses</span>
+                    <span class="hint">logs every access to the traced ranges</span>
                 </div>
                 <div id="trace-watched" class="hint" style="margin-bottom:4px;"></div>
                 <div style="max-height:180px;overflow-y:auto;">
@@ -493,6 +499,15 @@ const Fmt = {
         else if (s.toLowerCase().startsWith('0x')) s = s.substring(2);
         if (!/^[0-9a-fA-F]+$/.test(s)) return NaN;
         return parseInt(s, 16);
+    },
+    /* parse a length like the API does: decimal, or hex with a 0x/$ prefix
+       (NaN when invalid) */
+    parseLen(s) {
+        if (typeof s !== 'string') return NaN;
+        s = s.trim();
+        if (s.startsWith('$') || s.toLowerCase().startsWith('0x')) return this.parseHex(s);
+        if (!/^[0-9]+$/.test(s)) return NaN;
+        return parseInt(s, 10);
     },
     hex(v, pad) { return v.toString(16).toUpperCase().padStart(pad || 4, '0'); },
 };
@@ -1235,7 +1250,8 @@ const Points = {
         } else {
             const addr = Fmt.parseHex(document.getElementById('wp-addr').value);
             if (isNaN(addr)) { Toast.show('Watchpoint: invalid address'); return; }
-            const len = parseInt(document.getElementById('wp-len').value, 10) || 1;
+            const len = Fmt.parseLen(document.getElementById('wp-len').value.trim() || '1');
+            if (isNaN(len) || len < 1) { Toast.show('Watchpoint: invalid length'); return; }
             const mode = document.getElementById('wp-mode').value;
             let url = `/api/debugger/watchpoints?cmd=add&addr=${addr.toString(16)}&len=${len}&mode=${mode}`;
             const bankStr = document.getElementById('wp-bank').value.trim();
@@ -1451,7 +1467,10 @@ const Trace = {
     async add() {
         const addr = Fmt.parseHex(document.getElementById('trace-addr').value);
         if (isNaN(addr)) { Toast.show('Trace: invalid address'); return; }
-        let url = `/api/debugger/trace?cmd=add&addr=${addr.toString(16)}`;
+        const len = Fmt.parseLen(document.getElementById('trace-len').value.trim() || '1');
+        if (isNaN(len) || len < 1) { Toast.show('Trace: invalid length'); return; }
+        const mode = document.getElementById('trace-mode').value;
+        let url = `/api/debugger/trace?cmd=add&addr=${addr.toString(16)}&len=${len}&mode=${mode}`;
         const bankStr = document.getElementById('trace-bank').value.trim();
         if (bankStr) {
             const bank = Fmt.parseHex(bankStr);
@@ -1471,10 +1490,12 @@ const Trace = {
         const data = await Api.get('/api/debugger/trace');
         document.getElementById('trace-watched').textContent =
             data.watched.length
-                ? 'traced: ' + data.watched.map((w) => (w.bank !== -1 ? Fmt.hex(w.bank, 2) + ':' : '') + Fmt.hex(w.addr, 4)).join(', ')
+                ? 'traced: ' + data.watched.map((w) => (w.bank !== -1 ? Fmt.hex(w.bank, 2) + ':' : '') + Fmt.hex(w.addr, 4) +
+                    (w.len > 1 ? '+' + w.len : '') + (w.mode !== 3 ? (w.mode === 2 ? ' W' : ' R') : '')).join(', ') +
+                    ` (${data.total} logged)`
                 : 'no traced addresses';
         const table = document.getElementById('trace-view');
-        table.innerHTML = '<tr><th>CPU</th><th>PC</th><th>Bank</th><th>Access</th><th>Addr</th><th>Len</th></tr>';
+        table.innerHTML = '<tr><th>CPU</th><th>PC</th><th>Bank</th><th>Access</th><th>Addr</th><th>Len</th><th>Value</th></tr>';
         [...data.logs].reverse().slice(0, 200).forEach((e) => {
             const row = table.insertRow();
             row.insertCell().textContent = e.cpu;
@@ -1485,6 +1506,7 @@ const Trace = {
             row.insertCell().textContent = e.write ? 'W' : 'R';
             row.insertCell().textContent = Fmt.hex(e.adr, 4);
             row.insertCell().textContent = e.len;
+            row.insertCell().textContent = e.value === null ? '' : Fmt.hex(e.value, e.len * 2);
         });
     },
 };
