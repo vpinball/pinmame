@@ -99,6 +99,7 @@ struct ymfm_ym2203
 		address = 0;
 		memset(ssg_regs, 0, sizeof(ssg_regs));
 		memset(ssg_center, 0, sizeof(ssg_center));
+		memset(ssg_last, 0, sizeof(ssg_last));
 	}
 
 	void write(uint32_t offset, uint8_t data)
@@ -116,6 +117,7 @@ struct ymfm_ym2203
 	uint8_t address = 0;
 	uint8_t ssg_regs[16] = {};
 	int32_t ssg_center[3] = {};		/* half the level of each SSG channel when it is high */
+	int32_t ssg_last[3] = {};		/* previous output of each SSG channel */
 };
 
 // C-wirings for 2203intf.c
@@ -136,7 +138,10 @@ void ymfm_ym2203_write(void* obj, uint32_t offset, uint8_t data) { ((ymfm_ym2203
 // fm gets the FM output, ssg the sum of the three SSG channels. These are unipolar (0 when low, the
 // channel's level when high): each one is centred around 0 by removing half its level, as ay8910.c
 // does, so that what is left for the DC filter in 2203intf.c is small and a note's first edge does
-// not overshoot. The level is the last non-zero output, or 0 once the channel's amplitude is set to 0
+// not overshoot. The level is the last non-zero output seen on two samples in a row, or 0 once the
+// channel's amplitude is set to 0: ymfm resamples the SSG to the output rate, so the sample on an edge
+// is a mix of the low and high states, and taking half of that as the level would shift the whole
+// following half period (the tone came out uneven, up to 3dB too quiet on the RMS)
 void ymfm_ym2203_generate(void* obj, int16_t* fm, int32_t* ssg, uint32_t numsamples)
 {
 	constexpr uint32_t MAX_SAMPLES = 256;
@@ -156,10 +161,11 @@ void ymfm_ym2203_generate(void* obj, int16_t* fm, int32_t* ssg, uint32_t numsamp
 			for (int ch = 0; ch < 3; ch++)
 			{
 				const int32_t v = o[index].data[1 + ch];
-				if (v > 0)
+				if (v > 0 && v == self->ssg_last[ch])
 					self->ssg_center[ch] = v / 2;
 				else if ((self->ssg_regs[8 + ch] & 0x1f) == 0)
 					self->ssg_center[ch] = 0;
+				self->ssg_last[ch] = v;
 				sum += v - self->ssg_center[ch];
 			}
 			ssg[sampindex + index] = sum;
