@@ -55,6 +55,7 @@ void streams_sh_stop(void)
 void streams_sh_update(void)
 {
 	int channel;
+	int frame_len[MIXER_MAX_CHANNELS];	/* samples rendered this frame, for each stream */
 
 	if (Machine->sample_rate == 0) return;
 
@@ -63,8 +64,23 @@ void streams_sh_update(void)
 	{
 		if (stream_buffer[channel])
 		{
-			const int newpos = SAMPLES_THIS_FRAME(channel);
-			int buflen = newpos - stream_buffer_pos[channel];
+			int newpos = SAMPLES_THIS_FRAME(channel);
+			int buflen;
+
+			/* the joined channels of a stream are resampled separately by the mixer and can need a few
+			   more or less samples than the first one (one silent channel takes the mixer's no latency path),
+			   so render what the most demanding one needs, and give all of it to every channel below */
+			if (stream_joined_channels[channel] > 1)
+			{
+				int i;
+				for (i = 1;i < stream_joined_channels[channel];i++)
+				{
+					const int pos = SAMPLES_THIS_FRAME(channel+i);
+					if (pos > newpos)
+						newpos = pos;
+				}
+			}
+			buflen = newpos - stream_buffer_pos[channel];
 
 			assert(buflen + stream_buffer_pos[channel] < BUFFER_LEN);
 
@@ -88,6 +104,7 @@ void streams_sh_update(void)
 					(*stream_callback_multi[channel])(stream_param[channel],(INT16**)buf,buflen);
 				}
 
+				frame_len[channel] = stream_buffer_pos[channel] + (buflen > 0 ? buflen : 0);
 				for (i = 0;i < stream_joined_channels[channel];i++)
 					stream_buffer_pos[channel+i] = 0;
 			}
@@ -112,7 +129,7 @@ void streams_sh_update(void)
 			int i;
 			for (i = 0;i < stream_joined_channels[channel];i++)
 				mixer_play_streamed_sample_16(channel+i,
-						stream_buffer[channel+i],SAMPLES_THIS_FRAME(channel+i),
+						stream_buffer[channel+i],stream_joined_channels[channel] > 1 ? frame_len[channel] : SAMPLES_THIS_FRAME(channel+i),
 						stream_sample_rate[channel]);
 		}
 	}
