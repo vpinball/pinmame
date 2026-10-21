@@ -157,7 +157,7 @@ static void dispStrobe(void) {
 static WRITE_HANDLER(disp_w) {
   data ^= 0xff;
   // top 5 bits: switch column strobes
-  locals.swCol = core_BitColToNum(data >> 3);
+  locals.swCol = core_LowestBitColToNum(data >> 3); // all strobes active once during boot
   // bottom 3 bits: serial display data
   HC4094_data_w (0, GET_BIT0);
   HC4094_strobe_w(0, GET_BIT2);

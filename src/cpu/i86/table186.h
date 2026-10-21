@@ -210,8 +210,8 @@ static void (*PREFIX186(_instruction)[256])(void) =
 	 PREFIX86(_iret),              /* 0xcf */
 	 PREFIX86(_rotshft_b),         /* 0xd0 */
 	 PREFIX86(_rotshft_w),         /* 0xd1 */
-	 PREFIX86(_rotshft_bcl),       /* 0xd2 */
-	 PREFIX86(_rotshft_wcl),       /* 0xd3 */
+	 PREFIX186(_rotshft_bcl),      /* 0xd2 */
+	 PREFIX186(_rotshft_wcl),      /* 0xd3 */
 	 PREFIX86(_aam),               /* 0xd4 */
 	 PREFIX86(_aad),               /* 0xd5 */
 	 PREFIX86(_invalid),
@@ -473,8 +473,8 @@ static void (*PREFIX186(_instruction)[256])(void) =
 	case 0xcf:    PREFIX86(_iret)(); break;\
 		  case 0xd0:    PREFIX86(_rotshft_b)(); break;\
 		  case 0xd1:    PREFIX86(_rotshft_w)(); break;\
-		  case 0xd2:    PREFIX86(_rotshft_bcl)(); break;\
-		  case 0xd3:    PREFIX86(_rotshft_wcl)(); break;\
+		  case 0xd2:    PREFIX186(_rotshft_bcl)(); break;\
+		  case 0xd3:    PREFIX186(_rotshft_wcl)(); break;\
 	case 0xd4:    PREFIX86(_aam)(); break;\
 	case 0xd5:    PREFIX86(_aad)(); break;\
 	case 0xd6:    PREFIX86(_invalid)(); break;\

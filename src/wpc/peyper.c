@@ -73,6 +73,7 @@ static int PEYPER_sw2m(int no) {
 }
 
 static int PEYPER_m2sw(int col, int row) {
+  if (col < 1) return row - 8; // inverse of 8 + no for no < 0
   return (col - 1) * 10 + row;
 }
 

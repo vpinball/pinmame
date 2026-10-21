@@ -13,7 +13,7 @@ Latest Info
 What is it?
 -----------
   PinMAME emulates the hardware found in almost every solid state pinball machine created from
-  the earliest days of CPU-controlled machines (mid 1970's) through 2014 (Stern SAM),
+  the earliest days of CPU-controlled machines (mid 1970's) through 2014 / 2017 (Stern SAM / PinHeck),
   with around 770 emulated unique Pinball machines and many more clones/revisions (overall more than 2700 sets).
   In addition to official revisions, PinMAME also allows for homebrew modifications, similar in spirit to HBMAME
   (these are all marked as 'MOD' in the naming).
@@ -271,6 +271,9 @@ PinMAME Specific Command line switches
                          the WPC serial port of the Printer Kit or WPC95 AV board)
   -sound_mode 0-3       (Sound processing mode; 0=PinMAME, 1=Alternative, 2=PinSound,
                          3=PinSound + Recordings)
+  -[no]bsmt2000_lle     (BSMT2000 sound, i.e. Data East, Sega, Stern Whitestar and Alvin G.:
+                         run the chip's own program instead of the high level emulation;
+                         needs bsmt2000.bin in bsmt2000.zip in the roms folder, uses more CPU)
 
 Headless and scripted runs
 --------------------------
@@ -517,3 +520,5 @@ Note from the PinMAME Development team
 We're working hard to improve this great emulator, and welcome your feedback!!
 Please do not hesitate to contact us with questions, bug reports, suggestions,
 code patches, whatever!
+NOTE that we will not accept any recent pinball machine emulation code, so please
+make sure that what you're contributing has been out of production for many years!

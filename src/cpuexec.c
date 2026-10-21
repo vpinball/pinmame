@@ -1047,6 +1047,12 @@ static void cpu_timeslice(void)
 		const double now = timer_get_time();
 		if (now - options.time_fence - time_fence_global_offset >= 0.)
 		{
+#if defined(LIBPINMAME)
+			// Apply host writes here, before parking: the host thread that queued them is the one
+			// that advances the fence, so it cannot do that until they are applied.
+			extern void libpinmame_drain_pending_writes(void);
+			libpinmame_drain_pending_writes();
+#endif
 			if (now - options.time_fence - time_fence_global_offset >= 1.0)
 			{
 				// We are ahead by a large amount: realign external clock

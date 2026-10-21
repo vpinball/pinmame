@@ -481,10 +481,11 @@ PINMAMEAPI PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback, void* co
 PINMAMEAPI void PinmameSetConfig(const PinmameConfig* const p_config);
 // Overrides the folder searched for a file type, which otherwise is a folder below PinmameConfig::vpmPath ("roms",
 // "nvram", ...). Several folders can be given separated by ';'. The override is kept across PinmameSetConfig() calls,
-// NULL or "" removes it again. Paths can't be changed while a game is running
+// NULL or "" removes it again, which resets the type to that default folder (a relative one like "roms" if
+// PinmameSetConfig() wasn't called yet). Paths can't be changed while a game is running
 PINMAMEAPI PINMAME_STATUS PinmameSetPath(const PINMAME_FILE_TYPE fileType, const char* const p_path);
-// The folder(s) currently searched for a file type, or NULL for an unknown type. Owned by libpinmame and valid until
-// the next PinmameSetPath() or PinmameSetConfig()
+// The folder(s) currently searched for a file type, or NULL for an unknown type or if neither PinmameSetConfig() nor
+// PinmameSetPath() set one yet. Owned by libpinmame and valid until the next PinmameSetPath() or PinmameSetConfig()
 PINMAMEAPI const char* PinmameGetPath(const PINMAME_FILE_TYPE fileType);
 PINMAMEAPI int PinmameGetCheat();
 PINMAMEAPI void PinmameSetCheat(const int cheat);
@@ -555,6 +556,7 @@ PINMAMEAPI int PinmameGetChangedNVRAM(PinmameNVRAMState* const p_nvramStates);
 PINMAMEAPI PINMAME_NVRAM_SAVE_RESULT PinmameSaveNVRAM(const uint32_t minIdleMs, const uint32_t timeoutMs);
 PINMAMEAPI int PinmameReadMainCPUByte(uint32_t address, uint8_t* const p_value);
 PINMAMEAPI int PinmameReadMainCPUMemory(uint32_t address, uint8_t* const p_buffer, int size);
+PINMAMEAPI int PinmameWriteMainCPUMemory(uint32_t address, const uint8_t* const p_buffer, int size);
 PINMAMEAPI const uint8_t* PinmameGetRawMemoryRegion(const int region);
 PINMAMEAPI size_t PinmameGetRawMemoryRegionLength(const int region);
 PINMAMEAPI void PinmameSetUserData(void* const p_userData);
@@ -565,5 +567,7 @@ PINMAMEAPI void PinmameSetMsgAPI(MsgPluginAPI* msgPluginAPI, unsigned int endpoi
 // Provide a 'Pinball Memory Maps' (see https://github.com/tomlogic/pinmame-nvram-maps) to expose additional internal game states
 PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t* game, size_t gameSize);
 
-// Provide a 'PinMAME game definition' (see https://github.com/vpinball/pinmame-game-defs) to name the emulated machine's I/O states
-PINMAMEAPI void PinmameSetGameDef(uint8_t* game, size_t gameSize);
+// Provide a 'PinMAME game definition' (see https://github.com/vpinball/pinmame-game-defs) to name the emulated machine's I/O states.
+// The data is copied. It applies to every following PinmameRun() until replaced, so set it (or clear it with NULL/0) before each
+// game is started; it can't be changed while a game is running (PINMAME_STATUS_GAME_ALREADY_RUNNING)
+PINMAMEAPI PINMAME_STATUS PinmameSetGameDef(const uint8_t* game, size_t gameSize);

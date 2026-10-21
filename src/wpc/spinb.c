@@ -890,7 +890,7 @@ static int spinb_sw2m(int no) {
 
 /*Col 1, Row 1 = 30... Col 2, Row 1 = 40, etc..*/
 static int spinb_m2sw(int col, int row) {
-	return col*10 + row + 20 - 1;
+	return col*10 + row + 20;
 }
 
 static void setirqline(int state) {
@@ -930,7 +930,9 @@ static MACHINE_INIT(spinb) {
   /* Setup DMD Serial Port Callback */
   i8051_set_serial_tx_callback(dmd_serial_callback);
 
-  core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_PREINTEGRATED_LINEAR_4, CORE_DMD_PWM_PREINTEGRATED_LINEAR_4, 0);
+  // Gun Shot has no display at all
+  if ((core_gameData->lcdLayout->type & CORE_SEGALL) == CORE_DMD)
+    core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_PREINTEGRATED_LINEAR_4, CORE_DMD_PWM_PREINTEGRATED_LINEAR_4, 0);
 
   /* Init the dmd & sound board */
   sndbrd_0_init(core_gameData->hw.soundBoard,   2, memory_region(SPINB_MEMREG_SND1),NULL,NULL);
@@ -1283,11 +1285,19 @@ MEMORY_END
 //     10000 - 13FFE (RAM - 16K minus 1 byte... which should suffice all needs)
 //     13FFF         (DATA CMD FROM CPU)
 //     14000 - FFFFF (ROM1 and ROM2)
+// The region only covers the DMD ROMs a game has (0x14000 bytes when there is no ROM1/ROM2),
+// and the boot RAM test reads up to 0x1ffff: read unpopulated space as open bus
+static READ_HANDLER(dmd_extrom_r)
+{
+	const UINT32 addr = 0x14000 + offset;
+	return addr < memory_region_length(SPINB_MEMREG_DMD) ? memory_region(SPINB_MEMREG_DMD)[addr] : 0xff;
+}
+
 static MEMORY_READ_START(spinbdmd_readmem)
 	{ 0x00000, 0x0ffff, MRA_ROM },
 	{ 0x10000, 0x13ffe, MRA_RAM },
 	{ 0x13fff, 0x13fff, dmd_readcmd },
-	{ 0x14000, 0xfffff, MRA_ROM },
+	{ 0x14000, 0xfffff, dmd_extrom_r },
 MEMORY_END
 
 static MEMORY_WRITE_START(spinbdmd_writemem)

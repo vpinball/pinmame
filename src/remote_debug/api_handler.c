@@ -535,20 +535,39 @@ static void handle_api_debugger_callstack(const http_request_t *req, http_respon
 
 static void handle_api_debugger_trace(const http_request_t *req, http_response_t *resp)
 {
-	char cmd_buf[32], addr_buf[32], bank_buf[32];
+	char cmd_buf[32], addr_buf[32], len_buf[32], mode_buf[32], bank_buf[32];
 	char *body = NULL;
 	int len = 0;
 	get_query_param(req->query, "cmd", cmd_buf, (int)sizeof(cmd_buf));
 	if (strcmp(cmd_buf, "add") == 0) {
-		int bank;
+		int range, mode, bank;
 		get_query_param(req->query, "addr", addr_buf, (int)sizeof(addr_buf));
+		get_query_param(req->query, "len", len_buf, (int)sizeof(len_buf));
+		get_query_param(req->query, "mode", mode_buf, (int)sizeof(mode_buf));
 		get_query_param(req->query, "bank", bank_buf, (int)sizeof(bank_buf));
 		if (!addr_buf[0]) {
 			respond_error(resp, 400, "missing parameter: addr");
 			return;
 		}
+		range = len_buf[0] ? parse_int(len_buf) : 1;
+		mode = mode_buf[0] ? parse_int(mode_buf) : REMOTE_DEBUG_WP_RW;
 		bank = bank_buf[0] ? (int)parse_hex(bank_buf) : -1;
-		remote_debug_trace_add(parse_hex(addr_buf), bank);
+		if (range < 1 || range > 0x10000) {
+			respond_error(resp, 400, "len must be 1-65536");
+			return;
+		}
+		if (mode < REMOTE_DEBUG_WP_READ || mode > REMOTE_DEBUG_WP_RW) {
+			respond_error(resp, 400, "mode must be 1 (read), 2 (write) or 3 (rw)");
+			return;
+		}
+		switch (remote_debug_trace_add(parse_hex(addr_buf), range, mode, bank)) {
+			case -1:
+				respond_error(resp, 400, "trace table full");
+				return;
+			case -2:
+				respond_error(resp, 400, "addr/len outside the CPU address space");
+				return;
+		}
 	}
 	else if (strcmp(cmd_buf, "clear") == 0) {
 		remote_debug_trace_clear();
@@ -1557,7 +1576,7 @@ static const api_route_t api_routes[] = {
 	{"/api/debugger/memory/find", handle_api_debugger_memory_find,
 	 "?pattern=HEXBYTES[&addr=HEX][&size=N][&cpu=N][&bank=HEX] - search memory"},
 	{"/api/debugger/trace", handle_api_debugger_trace,
-	 "memory access trace; ?cmd=add&addr=HEX[&bank=HEX] | ?cmd=clear"},
+	 "memory access trace; ?cmd=add&addr=HEX[&len=N][&mode=1|2|3][&bank=HEX] | ?cmd=clear"},
 	{"/api/debugger/nvram", handle_api_debugger_nvram,
 	 "NVRAM blocks with size and, if mapped, CPU and address; ?cmd=clear - wipe NVRAM"},
 	{"/api/debugger/nvram/dump", handle_api_debugger_nvram_dump,

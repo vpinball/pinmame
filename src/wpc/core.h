@@ -717,6 +717,13 @@ INLINE unsigned int core_BitColToNum(unsigned int n)
 #endif
 }
 
+// Same as core_BitColToNum for strobes where several bits can be active at once
+// (seen at power-up, before the CPU drives the port): uses the lowest one
+INLINE unsigned int core_LowestBitColToNum(unsigned int n)
+{
+   return core_BitColToNum(n & (0u - n));
+}
+
 //
 INLINE int core_lowToHigh(UINT8 prev, UINT8 state, UINT8 mask) { return ~prev & state & mask; }
 INLINE int core_highToLow(UINT8 prev, UINT8 state, UINT8 mask) { return prev & ~state & mask; }

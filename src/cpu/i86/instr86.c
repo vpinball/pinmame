@@ -127,6 +127,10 @@ static void PREFIX86(_rotate_shift_Byte)(unsigned ModRM, unsigned count)
 	}
 	else
 	{
+		/* The 8086 doesn't mask the count. A C shift by 32 or more is undefined though, and
+		   any shift count above 31 gives the same result and carry as 31, so cap it there */
+		const unsigned shift = (count < 32) ? count : 31;
+
 		ICOUNT -= (ModRM >= 0xc0) ? cycles.rot_reg_base + cycles.rot_reg_bit : cycles.rot_m8_base + cycles.rot_m8_bit;
 
 		switch (ModRM & 0x38)
@@ -166,14 +170,14 @@ static void PREFIX86(_rotate_shift_Byte)(unsigned ModRM, unsigned count)
 			break;
 		case 0x20:
 		case 0x30:	/* SHL eb,count */
-			dst <<= count;
+			dst <<= shift;
 			SetCFB(dst);
 			I.AuxVal = 1;
 			SetSZPF_Byte(dst);
 			PutbackRMByte(ModRM,(BYTE)dst);
 			break;
 		case 0x28:	/* SHR eb,count */
-			dst >>= count-1;
+			dst >>= shift-1;
 			I.CarryVal = dst & 0x1;
 			dst >>= 1;
 			SetSZPF_Byte(dst);
@@ -181,7 +185,7 @@ static void PREFIX86(_rotate_shift_Byte)(unsigned ModRM, unsigned count)
 			PutbackRMByte(ModRM,(BYTE)dst);
 			break;
 		case 0x38:	/* SAR eb,count */
-			dst = ((INT8)dst) >> (count-1);
+			dst = ((INT8)dst) >> (shift-1);
 			I.CarryVal = dst & 0x1;
 			dst = ((INT8)((BYTE)dst)) >> 1;
 			SetSZPF_Byte(dst);
@@ -318,6 +322,10 @@ static void PREFIX86(_rotate_shift_Word)(unsigned ModRM, unsigned count)
 	}
 	else
 	{
+		/* The 8086 doesn't mask the count. A C shift by 32 or more is undefined though, and
+		   any shift count above 31 gives the same result and carry as 31, so cap it there */
+		const unsigned shift = (count < 32) ? count : 31;
+
 		ICOUNT -= (ModRM >= 0xc0) ? cycles.rot_reg_base + cycles.rot_reg_bit : cycles.rot_m8_base + cycles.rot_m16_bit;
 
 		switch (ModRM & 0x38)
@@ -357,14 +365,14 @@ static void PREFIX86(_rotate_shift_Word)(unsigned ModRM, unsigned count)
 			break;
 		case 0x20:
 		case 0x30:	/* SHL ew,count */
-			dst <<= count;
+			dst <<= shift;
 			SetCFW(dst);
 			I.AuxVal = 1;
 			SetSZPF_Word(dst);
 			PutbackRMWord(ModRM,dst);
 			break;
 		case 0x28:	/* SHR ew,count */
-			dst >>= count-1;
+			dst >>= shift-1;
 			I.CarryVal = dst & 0x1;
 			dst >>= 1;
 			SetSZPF_Word(dst);
@@ -372,7 +380,7 @@ static void PREFIX86(_rotate_shift_Word)(unsigned ModRM, unsigned count)
 			PutbackRMWord(ModRM,dst);
 			break;
 		case 0x38:	/* SAR ew,count */
-			dst = ((INT16)dst) >> (count-1);
+			dst = ((INT16)dst) >> (shift-1);
 			I.CarryVal = dst & 0x01;
 			dst = ((INT16)((WORD)dst)) >> 1;
 			SetSZPF_Word(dst);

@@ -196,6 +196,7 @@ int osd_start_audio_stream(int stereo)
 	consecutive_lows = 0;
 	consecutive_mids = 0;
 	consecutive_highs = 0;
+	current_adjustment = 0; // left over from a previous game otherwise, with sound disabled it would wrap samples_this_frame around
 
 	is_stereo = stereo;
 

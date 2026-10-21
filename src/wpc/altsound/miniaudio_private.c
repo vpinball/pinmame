@@ -53,21 +53,67 @@ ma_decoder_config altsound_ma_decoder_config_init(ma_format outputFormat, ma_uin
     return ma_decoder_config_init(outputFormat, outputChannels, outputSampleRate);
 }
 
+static void altsound_ma_device_data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount)
+{
+    (void)pInput;
+    ma_engine_read_pcm_frames((ma_engine*)pDevice->pUserData, pOutput, frameCount, NULL);
+}
+
 ma_result altsound_ma_engine_init_device(ma_uint32 channels, ma_uint32 sampleRate,
     ma_engine_process_proc onProcess, void* pProcessUserData, ma_engine* pEngine)
 {
-    ma_engine_config config = ma_engine_config_init();
-    config.channels = channels;
-    config.sampleRate = sampleRate;
+    // The engine would create the device itself, but then the device converter upmixes
+    // stereo to all speakers of a multichannel output (e.g. the shakers of a 7.1 setup).
+    // Create it here instead, so that the output only goes to the matching channels (front left/right), like BASS did
+    ma_channel channelMap[MA_MAX_CHANNELS];
+    ma_device_config deviceConfig;
+    ma_engine_config config;
+    ma_result result;
+    ma_device* pDevice = (ma_device*)ma_malloc(sizeof(ma_device), NULL);
+    if (pDevice == NULL)
+        return MA_OUT_OF_MEMORY;
+
+    ma_channel_map_init_standard(ma_standard_channel_map_default, channelMap, MA_MAX_CHANNELS, channels);
+
+    deviceConfig = ma_device_config_init(ma_device_type_playback);
+    deviceConfig.playback.format = ma_format_f32;
+    deviceConfig.playback.channels = channels;
+    deviceConfig.playback.pChannelMap = channelMap;
+    deviceConfig.playback.channelMixMode = ma_channel_mix_mode_simple;
+    deviceConfig.sampleRate = sampleRate;
+    deviceConfig.dataCallback = altsound_ma_device_data_callback;
+    deviceConfig.pUserData = pEngine;
+    deviceConfig.noPreSilencedOutputBuffer = MA_TRUE;
+    deviceConfig.noClip = MA_TRUE;
+
+    result = ma_device_init(NULL, &deviceConfig, pDevice);
+    if (result != MA_SUCCESS) {
+        ma_free(pDevice, NULL);
+        return result;
+    }
+
+    config = ma_engine_config_init();
+    config.pDevice = pDevice;
     config.onProcess = onProcess;
     config.pProcessUserData = pProcessUserData;
 
-    return ma_engine_init(&config, pEngine);
+    result = ma_engine_init(&config, pEngine);
+    if (result != MA_SUCCESS) {
+        ma_device_uninit(pDevice);
+        ma_free(pDevice, NULL);
+    }
+    return result;
 }
 
 void altsound_ma_engine_uninit(ma_engine* pEngine)
 {
+    // The engine does not own the device, so it only stops it
+    ma_device* pDevice = ma_engine_get_device(pEngine);
     ma_engine_uninit(pEngine);
+    if (pDevice != NULL) {
+        ma_device_uninit(pDevice);
+        ma_free(pDevice, NULL);
+    }
 }
 
 ma_result altsound_ma_engine_start(ma_engine* pEngine)

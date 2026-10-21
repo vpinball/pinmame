@@ -865,6 +865,15 @@ static void print_game_info(int OUTPUT_XML, FILE* out, const struct GameDriver* 
 
 	fprintf(out, SELECT(L1P "name %s" L1N, " name=\"%s\""), xml_normalize_string(OUTPUT_XML,game->name));
 
+	if (game->source_file)
+	{
+		const char *start = strrchr(game->source_file, '/');
+		if (!start)
+			start = strrchr(game->source_file, '\\');
+		start = start ? start + 1 : game->source_file;
+		fprintf(out, SELECT(L1P "sourcefile %s" L1N, " sourcefile=\"%s\""), xml_normalize_string(OUTPUT_XML,start));
+	}
+
 	if (game->clone_of && !(game->clone_of->flags & NOT_A_DRIVER))
 		fprintf(out, SELECT(L1P "cloneof %s" L1N, " cloneof=\"%s\""), xml_normalize_string(OUTPUT_XML,game->clone_of->name));
 
@@ -969,6 +978,7 @@ void print_mame_xml(FILE* out, const struct GameDriver* games[])
 		"<!ELEMENT " XML_ROOT " (" XML_TOP "+)>\n"
 		"\t<!ELEMENT " XML_TOP " (description, year?, manufacturer, history?, biosset*, rom*, disk*, sample*, chip*, video?, sound?, input?, dipswitch*, driver?)>\n"
 		"\t\t<!ATTLIST " XML_TOP " name CDATA #REQUIRED>\n"
+		"\t\t<!ATTLIST " XML_TOP " sourcefile CDATA #IMPLIED>\n"
 		"\t\t<!ATTLIST " XML_TOP " runnable (yes|no) \"yes\">\n"
 		"\t\t<!ATTLIST " XML_TOP " cloneof CDATA #IMPLIED>\n"
 		"\t\t<!ATTLIST " XML_TOP " romof CDATA #IMPLIED>\n"

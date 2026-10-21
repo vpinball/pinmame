@@ -14,6 +14,9 @@
 #include <vector>
 #include <algorithm>
 #include <format>
+#include <mutex>
+#include <condition_variable>
+#include <chrono>
 #include <map>
 
 #if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || defined(__ia64__) || defined(__x86_64__)
@@ -64,6 +67,7 @@ static inline bool IsEmulationRunning() { return _isRunning == 1; }
 static int _timeToQuit = 0;
 static PinmameConfig* _p_Config = nullptr;
 static std::thread* _p_gameThread = nullptr;
+static std::atomic<std::thread::id> _gameThreadId; // set by the game thread itself, so it is valid before PinmameRun stores _p_gameThread
 static void* _p_userData = nullptr;
 
 static char _aliasFromFile[50];
@@ -299,6 +303,7 @@ static struct MsgLocals
 
    unsigned int onGetMachineStateId;
    unsigned int onReadMemoryId;
+   unsigned int onWriteMemoryId;
 
    struct MemMapState
    {
@@ -630,6 +635,11 @@ extern "C" int osd_update_audio_stream(INT16* p_buffer)
 {
    if (msgLocals.registered)
    {
+      // Sound disabled (sample rate 0): nothing to stream. Sending empty 0 Hz updates makes the host
+      // try (and fail) to open an audio stream on every frame.
+      if (Machine->sample_rate == 0)
+         return 0;
+
       const int samplesThisFrame = mixer_samples_this_frame();
 
       // Data are only valid in the context of the call, we need to copy the data to feed them on the message thread.
@@ -1289,9 +1299,13 @@ static int StartGame(const int gameNum)
 	memset(_mechInit, 0, sizeof(_mechInit));
 	memset(_mechInfo, 0, sizeof(_mechInfo));
 
+	_gameThreadId = std::this_thread::get_id();
+
 	const int err = run_game(gameNum);
 
 	OnStateChange(0);
+
+	_gameThreadId = std::thread::id();
 
 	return err;
 }
@@ -2147,6 +2161,148 @@ PINMAMEAPI int PinmameReadMainCPUMemory(const uint32_t address, uint8_t* const p
 }
 
 /******************************************************
+ * PinmameWriteMainCPUMemory
+ ******************************************************/
+
+extern "C" void time_fence_post(void);
+
+namespace {
+
+struct PendingWrite
+{
+	const PinMAMEWriteMemoryOp* ops;
+	uint32_t count;
+	bool done;
+};
+
+std::mutex g_writeMutex;
+std::condition_variable g_writeCv;
+std::vector<PendingWrite*> g_writeQueue;
+
+} /* anonymous namespace */
+
+/* Dispatched through the memory map rather than a pointer from memory_get_write_ptr(),
+   because write handlers carry platform semantics a pointer write would bypass: WPC
+   gates CMOS on a protection register, early Bally stores only the high nibble,
+   Gottlieb System 80 mirrors each byte to 32 addresses. Applying a whole batch here
+   means the machine cannot run between the ops of one request. The CPU context is
+   installed once for the batch rather than per byte. */
+
+static void ApplyWrites(const std::vector<PendingWrite*>& batch)
+{
+	cpuintrf_push_context(0);
+
+	for (const PendingWrite* w : batch)
+	{
+		for (uint32_t op = 0; op < w->count; op++)
+		{
+			for (uint32_t i = 0; i < w->ops[op].size; i++)
+			{
+				cpunum_write_byte(0, w->ops[op].address + i, w->ops[op].data[i]);
+			}
+		}
+	}
+
+	cpuintrf_pop_context();
+}
+
+/* Called once per frame from osd_update_video_and_audio(), on the emulation thread. */
+extern "C" void libpinmame_drain_pending_writes(void)
+{
+	static std::vector<PendingWrite*> batch;   /* static, so the queue keeps its capacity */
+
+	{
+		std::lock_guard<std::mutex> lock(g_writeMutex);
+		if (g_writeQueue.empty())
+		{
+			return;
+		}
+		batch.swap(g_writeQueue);
+	}
+
+	ApplyWrites(batch);
+
+	{
+		std::lock_guard<std::mutex> lock(g_writeMutex);
+		for (PendingWrite* w : batch)
+		{
+			w->done = true;
+		}
+	}
+
+	batch.clear();
+	g_writeCv.notify_all();
+}
+
+static bool SubmitWrite(const PinMAMEWriteMemoryOp* const ops, const uint32_t count)
+{
+	PendingWrite w { ops, count, false };
+
+	/* Already on the emulation thread: apply directly rather than waiting for our own drain. */
+	if (std::this_thread::get_id() == _gameThreadId.load())
+	{
+		ApplyWrites({ &w });
+		return true;
+	}
+
+	std::unique_lock<std::mutex> lock(g_writeMutex);
+	g_writeQueue.push_back(&w);
+
+	/* The emulator may be parked at the time fence, which only this caller's thread advances:
+	   wake it so it applies the write there instead of waiting for a fence that cannot come. */
+	time_fence_post();
+
+	/* Bounded, so a stalled or paused emulator cannot hang the caller. */
+	if (g_writeCv.wait_for(lock, std::chrono::milliseconds(250), [&w] { return w.done; }))
+		return true;
+
+	/* Still queued: withdraw it, and nothing is applied. */
+	if (std::erase(g_writeQueue, &w) != 0)
+		return false;
+
+	/* Already taken by the drain, which is applying it from w and the caller's ops on the
+	   emulation thread: wait for it to finish, so neither is released while in use, and
+	   report it applied, because it is. The drain is running, so this wait is short. */
+	g_writeCv.wait(lock, [&w] { return w.done; });
+	return true;
+}
+
+/* Like every other API call, only in run state 1 and under the shared lock: the game thread cannot leave state 1
+   (and tear down) while a write is queued or applied, a state change waits at most for SubmitWrite's bounded wait.
+   Nothing is applied unless all ops lie within the main CPU's address space (no wrapping through the address mask). */
+static bool WriteMemory(const PinMAMEWriteMemoryOp* const ops, const uint32_t count)
+{
+	const std::shared_lock lock(_stateMutex);
+	if (!IsEmulationRunning())
+	{
+		return false;
+	}
+
+	const uint64_t addressSpace = (uint64_t)cpunum_address_mask(0) + 1;
+	for (uint32_t op = 0; op < count; op++)
+	{
+		if (ops[op].size && (ops[op].data == nullptr || (uint64_t)ops[op].address + ops[op].size > addressSpace))
+		{
+			return false;
+		}
+	}
+
+	return SubmitWrite(ops, count);
+}
+
+PINMAMEAPI int PinmameWriteMainCPUMemory(const uint32_t address, const uint8_t* const p_buffer, const int size)
+{
+	if (p_buffer == nullptr || size <= 0)
+	{
+		return 0;
+	}
+
+	const PinMAMEWriteMemoryOp op { address, (uint32_t)size, p_buffer };
+
+	return WriteMemory(&op, 1) ? size : 0;
+}
+
+/******************************************************
  * PinmameGetRawMemoryRegion
  ******************************************************/
 
@@ -2215,6 +2371,19 @@ static void OnSaveNVRAM(const unsigned int eventId, void* userData, void* msgDat
    // exactly why it cannot write anything itself: PinmameSaveNVRAM hands the work
    // to the emulation thread and waits for it.
    msg->result = PinmameSaveNVRAM(msg->minIdleMs, msg->timeoutMs);
+}
+
+static void OnWriteMemory(const unsigned int eventId, void* userData, void* msgData)
+{
+   auto msg = static_cast<PinMAMEWriteMemoryMsg*>(msgData);
+   if (msg->version != 1)
+      return;
+
+   msg->applied = 0;
+   if (msg->ops == nullptr || msg->count == 0)
+      return;
+
+   msg->applied = WriteMemory(msg->ops, msg->count) ? msg->count : 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2684,7 +2853,7 @@ static void SetupMsgApiGameStates()
    // DIP switches
    for (uint16_t i = 0; i < coreData->coreDips; i++)
    {
-      addDevice(PMPI_GROUP_DIPSWITCH, fmtString("DIP #%02d", i + 1), nullptr, i + 1, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_SWITCH, GetDIPSwitchState, SetDIPSwitchState, i + 1);
+      addDevice(PMPI_GROUP_DIPSWITCH, fmtString("DIP #%02d", i + 1), nullptr, i + 1, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_SWITCH, GetDIPSwitchState, SetDIPSwitchState, i);
    }
    setupGroup(PMPI_GROUP_DIPSWITCH, "DIP Switches", "Hardware onboard DIP switches");
 
@@ -3104,6 +3273,8 @@ static void SetupMsgApi()
    msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.onReadMemoryId, OnReadMemory, nullptr);
    msgLocals.onSaveNVRAMId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_SAVE_NVRAM);
    msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.onSaveNVRAMId, OnSaveNVRAM, nullptr);
+   msgLocals.onWriteMemoryId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_WRITE_MEMORY);
+   msgLocals.msgApi->SubscribeMsg(msgLocals.endpointId, msgLocals.onWriteMemoryId, OnWriteMemory, nullptr);
 
    msgLocals.controllerProvider = std::make_unique<PinballPlugin::Controller::CtrlItemProvider<ControllerDef>>(msgLocals.msgApi, msgLocals.endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG);
 
@@ -3125,11 +3296,13 @@ static void ReleaseMsgApi()
    msgLocals.msgApi->UnsubscribeMsg(msgLocals.onGetMachineStateId, OnGetMachineState, nullptr);
    msgLocals.msgApi->UnsubscribeMsg(msgLocals.onReadMemoryId, OnReadMemory, nullptr);
    msgLocals.msgApi->UnsubscribeMsg(msgLocals.onSaveNVRAMId, OnSaveNVRAM, nullptr);
+   msgLocals.msgApi->UnsubscribeMsg(msgLocals.onWriteMemoryId, OnWriteMemory, nullptr);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onDmdCmdId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onConsoleDataId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onGetMachineStateId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onReadMemoryId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onSaveNVRAMId);
+   msgLocals.msgApi->ReleaseMsgID(msgLocals.onWriteMemoryId);
 
    msgLocals.controllerProvider = nullptr;
 
@@ -3712,7 +3885,7 @@ PINMAMEAPI void PinmameSetMemMap(uint8_t* platform, size_t platformSize, uint8_t
 	}
 }
 
-static void SetGameDefImpl(uint8_t* game, size_t gameSize)
+static void SetGameDefImpl(const uint8_t* game, size_t gameSize)
 {
    msgLocals.gameDefStates.clear();
    if (!game || gameSize == 0)
@@ -3721,7 +3894,7 @@ static void SetGameDefImpl(uint8_t* game, size_t gameSize)
    // Machine definitions (see https://github.com/vpinball/pinmame-game-defs) declare their
    // I/O devices in 'inputs'/'outputs' arrays. Each item binds to a group identifying the
    // state group it belongs to and a device which is the public address reported as mappingId.
-   const json gameDef = json::parse(std::string(reinterpret_cast<char*>(game), gameSize));
+   const json gameDef = json::parse(std::string(reinterpret_cast<const char*>(game), gameSize));
    static const std::pair<const char*, uint32_t> groupMap[] = {
       { "pinmame.input.switch",    PMPI_GROUP_SWITCH },
       { "pinmame.input.dip",       PMPI_GROUP_DIPSWITCH },
@@ -3740,9 +3913,13 @@ static void SetGameDefImpl(uint8_t* game, size_t gameSize)
             || !item["binding"].contains("group") || !item["binding"]["group"].is_string()
             || !item["binding"].contains("device") || !item["binding"]["device"].is_number_integer())
             continue;
+         // mappingIds are 16 bit (negative switch numbers as their uint16 pattern), skip what doesn't fit instead of wrapping onto another device
+         const long long device = item["binding"]["device"].get<long long>();
+         if (device < -32768 || device > 65535)
+            continue;
          for (const auto& [name, groupId] : groupMap)
             if (item["binding"]["group"] == name)
-               msgLocals.gameDefStates[std::make_pair(groupId, static_cast<uint16_t>(static_cast<int16_t>(item["binding"]["device"].get<int>())))] = item["label"].get<std::string>();
+               msgLocals.gameDefStates[std::make_pair(groupId, static_cast<uint16_t>(device))] = item["label"].get<std::string>();
       }
    }
 }
@@ -3751,8 +3928,14 @@ static void SetGameDefImpl(uint8_t* game, size_t gameSize)
  * PinmameSetGameDef
  ******************************************************/
 
-PINMAMEAPI void PinmameSetGameDef(uint8_t* game, size_t gameSize)
+PINMAMEAPI PINMAME_STATUS PinmameSetGameDef(const uint8_t* game, size_t gameSize)
 {
+	// the definition is applied when a game starts (SetupMsgApiGameStates), which reads it from the main thread
+	if (_isRunning) {
+		libpinmame_log_error("PinmameSetGameDef(): cannot change the game definition while a game is running");
+		return PINMAME_STATUS_GAME_ALREADY_RUNNING;
+	}
+
 	// Same failure containment as PinmameSetMemMap: the definition file is host-provided
 	// input that may be truncated or hand-edited, so parsing errors must not cross the C boundary.
 	try {
@@ -3762,4 +3945,5 @@ PINMAMEAPI void PinmameSetGameDef(uint8_t* game, size_t gameSize)
 		msgLocals.gameDefStates.clear();
 		libpinmame_log_error("PinmameSetGameDef(): failed to parse game definition: %s", e.what());
 	}
+	return PINMAME_STATUS_OK;
 }

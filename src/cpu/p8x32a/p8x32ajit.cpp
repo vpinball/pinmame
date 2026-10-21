@@ -208,7 +208,7 @@ struct Emit {
 			a.mov(x86::esi, cog(dst));
 			a.mov(cog(dst), x86::eax);
 			a.mov(x86::rdi, x86::qword_ptr(ST, (int)offsetof(p8x32a_jst, loop)));
-			a.mov(x86::byte_ptr(x86::rdi, (int)offsetof(p8x32a_loop, dirty)), 1);
+			a.mov(x86::byte_ptr(x86::rdi, (int)offsetof(p8x32a_loop, dirty)), 1); // DIRTY_IO
 			a.mov(x86::rdi, x86::qword_ptr(ST, (int)offsetof(p8x32a_jst, code)));
 			a.bt(x86::dword_ptr(x86::rdi, (int)((dst >> 5) * 4)), dst & 31);
 			a.jnc(same);
@@ -322,7 +322,7 @@ struct Emit {
 		if (!dyn && !imm && src_of(i) == 0x1F1) {
 			// a CNT source keeps the loop from idling
 			a.mov(x86::rdi, x86::qword_ptr(ST, (int)offsetof(p8x32a_jst, loop)));
-			a.mov(x86::byte_ptr(x86::rdi, (int)offsetof(p8x32a_loop, dirty)), 1);
+			a.mov(x86::byte_ptr(x86::rdi, (int)offsetof(p8x32a_loop, dirty)), 1); // DIRTY_IO
 		}
 		if (cond == 0) goto end;
 		if (cond != 15) {
@@ -515,7 +515,7 @@ struct Emit {
 			a.mov(x86::esi, m);
 			a.mov(m, x86::eax);
 			a.mov(x86::rdi, x86::qword_ptr(ST, (int)offsetof(p8x32a_jst, loop)));
-			a.mov(x86::byte_ptr(x86::rdi, (int)offsetof(p8x32a_loop, dirty)), 1);
+			a.mov(x86::byte_ptr(x86::rdi, (int)offsetof(p8x32a_loop, dirty)), 1); // DIRTY_IO
 			// a fixed code slot changed: report it
 			a.mov(x86::rdi, x86::qword_ptr(ST, (int)offsetof(p8x32a_jst, code)));
 			if (dyn) a.bt(x86::dword_ptr(x86::rdi), DADR);

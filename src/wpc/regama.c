@@ -25,7 +25,7 @@ static INTERRUPT_GEN(vblank) {
 
 static WRITE_HANDLER(riot_porta_w) {
   locals.bitCnt = 0;
-  locals.swCol = core_BitColToNum(0x3f & ~data);
+  locals.swCol = core_LowestBitColToNum(0x3f & ~data); // 0xc0 at power-up
   if (!(data & 0x0f)) {
     coreGlobals.lampMatrix[4] = (coreGlobals.lampMatrix[4] & 0x7f) | (data & 0x80);
   }

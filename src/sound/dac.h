@@ -12,8 +12,9 @@ extern "C" {
 
 struct DACinterface
 {
-	int num;	/* total number of DACs */
+	int num; /* total number of DACs */
 	int mixing_level[MAX_DAC];
+	int dc_offset_correction[MAX_DAC]; /* nonzero: write only through DAC_DC_offset_correction_data_16_w() (internally = float stream) */
 };
 
 int DAC_sh_start(const struct MachineSound *msound);

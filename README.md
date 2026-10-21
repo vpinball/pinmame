@@ -5,7 +5,7 @@
 ## What is it?
 
 PinMAME emulates the hardware found in almost every solid state pinball machine created from
-the earliest days of CPU-controlled machines (mid 1970's) through 2014 (Stern SAM),
+the earliest days of CPU-controlled machines (mid 1970's) through 2014 / 2017 (Stern SAM / PinHeck),
 with around 770 emulated unique Pinball machines and many more clones/revisions (overall more than 2700 sets).
 In addition to official revisions, PinMAME also allows for homebrew modifications, similar in spirit to HBMAME
 (these are all marked as 'MOD' in the naming).
@@ -54,6 +54,24 @@ to drive (at least) real WPC machines with PinMAME/P-ROC, [PPUC](https://github.
 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs, to drive real pinball machines via
 PinMAME and special hardware, see http://www.lisy80.com & http://www.lisy.dev, also README.lisy)
 platforms (see PROC and LISY_X defines in makefile.unix).
+
+## Downloads
+
+Builds are available on the [Releases](https://github.com/vpinball/pinmame/releases) page (and as artifacts of each CI run).
+The archives are named `<name>-<version>-<platform>`:
+
+- `VPinMAME` - the COM library used by Visual Pinball (`VPinMAME.dll` + `Setup.exe` for x86, `VPinMAME64.dll` + `Setup64.exe` for x64). Take the one matching your Visual Pinball build (32 or 64 bit), but both variants can coexist. Run `Setup(64).exe`, press `Install` and then setup the defaults/paths
+- `PinMAME` - the standalone command line emulator for Windows (mainly useful for development)
+- `PinMAME32` - the standalone emulator for Windows with a graphical UI (mainly useful for development)
+- `libpinmame` - the library (shared and static) for Windows (incl. MinGW and ARM64), Linux (x64/aarch64), macOS, iOS/tvOS and Android (already included in the Visual Pinball X 10.8.1+ download)
+- `xpinmame` - the standalone emulator for Linux and macOS (X11) (mainly useful for development)
+- `sdl3pinmame` - the standalone emulator for Linux and macOS using SDL3 (CI artifacts only) (mainly useful for development)
+
+Variants:
+
+- `win-x86` / `win-x64` - 32 bit / 64 bit Windows
+- `-sc` - additionally includes the sets for the colorized Stern S.A.M. ROMs (Legacy-colored MODs). Only needed if you use these ROMs
+- `-md` (PinMAME32 only) - built with the MAME debugger enabled (mainly useful for development)
 
 ## What does it do?
 
@@ -201,3 +219,4 @@ Start PinMAME in headless mode with the debugger active:
 # Note from the PinMAME Development team
 
 We're working hard to improve this great emulator, and welcome your feedback!! Please do not hesitate to contact us with questions, bug reports, suggestions, code patches, whatever!
+NOTE that we will not accept any recent pinball machine emulation code, so please make sure that what you're contributing has been out of production for many years!

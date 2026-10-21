@@ -40,8 +40,8 @@ extern "C" {
   // Global options
   int verbose = 0;
   /* pinDMD */
-  extern char g_fShowPinDMD;
-  extern char g_fShowWinDMD;
+  extern int g_fShowPinDMD;
+  extern int g_fShowWinDMD;
   extern int g_low_latency_throttle;
   int g_cpu_affinity_mask = 0;
 }

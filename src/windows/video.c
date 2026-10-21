@@ -460,7 +460,7 @@ static BOOL WINAPI devices_enum_callback(GUID *lpGUID, LPSTR lpDriverDescription
 //	osd_create_display
 //============================================================
 #ifdef VPINMAME
-extern char g_fShowWinDMD;
+extern int g_fShowWinDMD;
 #endif
 
 int osd_create_display(const struct osd_create_params *params, UINT32 *rgb_components)

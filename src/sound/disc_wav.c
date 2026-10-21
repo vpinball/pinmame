@@ -102,7 +102,7 @@ int dss_sinewave_step(struct node_description *node)
 	/*                    boils out to                           */
 	/*     phase step = (2Pi*output freq)/sample freq)           */
 	/* Also keep the new phasor in the 2Pi range.                */
-	context->phase=fmod((context->phase+(((2.0*M_PI)*node->input[1])/Machine->sample_rate)),2.0*M_PI);
+	context->phase=fmod((context->phase+(((2.0*M_PI)*node->input[1])/DISCRETE_SAMPLE_RATE)),2.0*M_PI);
 
 	return 0;
 }
@@ -187,7 +187,7 @@ int dss_squarewave_step(struct node_description *node)
 	/*                    boils out to                           */
 	/*     phase step = (2Pi*output freq)/sample freq)           */
 	/* Also keep the new phasor in the 2Pi range.                */
-	context->phase=fmod((context->phase+(((2.0*M_PI)*node->input[1])/Machine->sample_rate)),2.0*M_PI);
+	context->phase=fmod((context->phase+(((2.0*M_PI)*node->input[1])/DISCRETE_SAMPLE_RATE)),2.0*M_PI);
 
 	return 0;
 }
@@ -287,7 +287,7 @@ int dss_squarewfix_reset(struct node_description *node)
 {
 	struct dss_squarewfix_context *context=(struct dss_squarewfix_context*)node->context;
 
-	context->sampleStep = 1.0 / Machine->sample_rate;
+	context->sampleStep = 1.0 / DISCRETE_SAMPLE_RATE;
 	context->flip_flop = 1;
 
 	/* Do the intial time shift and convert freq to off/on times */
@@ -373,7 +373,7 @@ int dss_squarewave2_step(struct node_description *node)
 	/*     phase step = 2Pi/(output period/sample period)        */
 	/*                    boils out to                           */
 	/*     phase step = 2Pi/(output period*sample freq)          */
-	newphase = context->phase + ((2.0 * M_PI) / ((node->input[2] + node->input[3]) * Machine->sample_rate));
+	newphase = context->phase + ((2.0 * M_PI) / ((node->input[2] + node->input[3]) * DISCRETE_SAMPLE_RATE));
 	/* Keep the new phasor in the 2Pi range.*/
 	context->phase = fmod(newphase, 2.0 * M_PI);
 
@@ -471,7 +471,7 @@ int dss_trianglewave_step(struct node_description *node)
 	/*                    boils out to                           */
 	/*     phase step = (2Pi*output freq)/sample freq)           */
 	/* Also keep the new phasor in the 2Pi range.                */
-	context->phase=fmod((context->phase+(((2.0*M_PI)*node->input[1])/Machine->sample_rate)),2.0*M_PI);
+	context->phase=fmod((context->phase+(((2.0*M_PI)*node->input[1])/DISCRETE_SAMPLE_RATE)),2.0*M_PI);
 
 	return 0;
 }
@@ -550,7 +550,7 @@ int dss_sawtoothwave_step(struct node_description *node)
 	/*                    boils out to                           */
 	/*     phase step = (2Pi*output freq)/sample freq)           */
 	/* Also keep the new phasor in the 2Pi range.                */
-	context->phase=fmod((context->phase+(((2.0*M_PI)*node->input[1])/Machine->sample_rate)),2.0*M_PI);
+	context->phase=fmod((context->phase+(((2.0*M_PI)*node->input[1])/DISCRETE_SAMPLE_RATE)),2.0*M_PI);
 
 	return 0;
 }
@@ -639,7 +639,7 @@ int dss_noise_step(struct node_description *node)
 	/*                    boils out to                           */
 	/*     phase step = (2Pi*output freq)/sample freq)           */
 	/* Also keep the new phasor in the 2Pi range.                */
-	context->phase=fmod((context->phase+(((2.0*M_PI)*node->input[1])/Machine->sample_rate)),2.0*M_PI);
+	context->phase=fmod((context->phase+(((2.0*M_PI)*node->input[1])/DISCRETE_SAMPLE_RATE)),2.0*M_PI);
 
 	return 0;
 }
@@ -861,7 +861,7 @@ int dss_lfsr_init(struct node_description *node)
 
 	/* Initialise the object */
 	context=(struct dss_lfsr_context*)node->context;
-	context->sampleStep = 1.0 / Machine->sample_rate;
+	context->sampleStep = 1.0 / DISCRETE_SAMPLE_RATE;
 	context->shiftStep = 1.0 / node->input[2];
 	context->t = 0;
 

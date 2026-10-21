@@ -24,6 +24,9 @@ typedef struct mips32_state mips32_state;
 
 #define MIPS32_REGIONS 4
 
+/* fast_run skips idle loops (loop_skip in mips32.c); undefine to run them */
+#define MIPS32_IDLE_LOOPS
+
 #if defined(_MSC_VER)
 #define MIPS32_ALIGN64 __declspec(align(64))
 #elif defined(__GNUC__) || defined(__clang__)
@@ -83,6 +86,12 @@ struct mips32_state {
 	int prov_kind;
 	unsigned prov_set, prov_reg, prov_gen, prov_n;
 	uint32_t prov_v, prov_mask, prov_tok, unc, unc_tok;
+#ifdef MIPS32_IDLE_LOOPS
+	/* idle loops (fast_run): the last taken backward branch's target, its cycle and registers, stores that changed memory */
+	uint32_t lp_head, lp_state, lp_wr, lp_wr0;
+	uint64_t lp_cyc, lp_len;
+	uint32_t lp_gpr[32], lp_hi, lp_lo;
+#endif
 };
 
 void mips32_init(mips32_state *s, const mips32_bus *bus, int shadow_sets, uint32_t prid);

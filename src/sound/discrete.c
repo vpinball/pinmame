@@ -183,7 +183,7 @@ struct discrete_module module_list[]=
 	{ DSD_SQUAREW566  ,"DSD_SQUAREW566"  ,dsd_squarew566_init  ,dss_default_kill     ,dsd_squarew566_reset  ,dsd_squarew566_step  },
 	{ DSD_TRIANGLEW566,"DSD_TRIANGLEW566",dsd_trianglew566_init,dss_default_kill     ,dsd_trianglew566_reset,dsd_trianglew566_step},
 
-	{ DSO_OUTPUT      ,"DSO_OUTPUT"      ,dso_output_init      ,NULL                 ,NULL                  ,dso_output_step      },
+	{ DSO_OUTPUT      ,"DSO_OUTPUT"      ,dso_output_init      ,NULL                 ,dso_output_reset      ,dso_output_step      },
 	{ DSS_NULL        ,"DSS_NULL"        ,NULL                 ,NULL                 ,NULL                  ,NULL                 }
 };
 
@@ -203,6 +203,8 @@ static void discrete_stream_update_stereo(int ch, INT16 **buffer, int length)
 	/* Now we must do length iterations of the node list, one output for each step */
 	int loop,loop2,loop3;
 	struct node_description *node;
+	float * const out_l = (float *)buffer[0]; /* float stream */
+	float * const out_r = (float *)buffer[1];
 
 	for(loop=0;loop<length;loop++)
 	{
@@ -222,11 +224,11 @@ static void discrete_stream_update_stereo(int ch, INT16 **buffer, int length)
 		}
 
 		/* Now put the output into the buffers */
-		buffer[0][loop]=((struct dso_output_context*)(output_node->context))->left;
-		buffer[1][loop]=((struct dso_output_context*)(output_node->context))->right;
+		out_l[loop]=((struct dso_output_context*)(output_node->context))->left;
+		out_r[loop]=((struct dso_output_context*)(output_node->context))->right;
 	}
 #ifdef DISCRETE_WAVELOG
-	wav_add_data_16lr(wav_file, buffer[0],buffer[1], length);
+	wav_add_data_float_lr(wav_file, out_l, out_r, length);
 #endif
 }
 
@@ -235,6 +237,7 @@ static void discrete_stream_update_mono(int ch,INT16 *buffer, int length)
 	/* Now we must do length iterations of the node list, one output for each step */
 	int loop,loop2,loop3;
 	struct node_description *node;
+	float * const out = (float *)buffer; /* float stream */
 
 	for(loop=0;loop<length;loop++)
 	{
@@ -255,10 +258,10 @@ static void discrete_stream_update_mono(int ch,INT16 *buffer, int length)
 		}
 
 		/* Now put the output into the buffer */
-		buffer[loop]=(((struct dso_output_context*)(output_node->context))->left+((struct dso_output_context*)(output_node->context))->right)/2;
+		out[loop]=(((struct dso_output_context*)(output_node->context))->left+((struct dso_output_context*)(output_node->context))->right)*0.5f;
 	}
 #ifdef DISCRETE_WAVELOG
-	wav_add_data_16(wav_file, buffer, length);
+	wav_add_data_float(wav_file, out, length);
 #endif
 }
 
@@ -305,7 +308,7 @@ int discrete_sh_start (const struct MachineSound *msound)
 	int loop,loop2,search,failed;
 
 #ifdef DISCRETE_WAVELOG
-	wav_file = wav_open("discrete.wav", (int)(Machine->sample_rate+0.5), ((Machine->drv->sound_attributes&SOUND_SUPPORTS_STEREO) == SOUND_SUPPORTS_STEREO) ? 2: 1);
+	wav_file = wav_open("discrete.wav", (int)(DISCRETE_SAMPLE_RATE+0.5), ((Machine->drv->sound_attributes&SOUND_SUPPORTS_STEREO) == SOUND_SUPPORTS_STEREO) ? 2: 1);
 #endif
 #ifdef DISCRETE_DEBUGLOG
 	if(!disclogfile) disclogfile=fopen("discrete.log", "w");
@@ -477,7 +480,7 @@ int discrete_sh_start (const struct MachineSound *msound)
 		vol[0] = MIXER((int)output_node->input[2],MIXER_PAN_LEFT);
 		vol[1] = MIXER((int)output_node->input[2],MIXER_PAN_RIGHT);
 		/* Initialise a stereo, stream, we always use stereo even if only a mono system */
-		discrete_stream=stream_init_multi(2,stereo_names,vol,Machine->sample_rate,0,discrete_stream_update_stereo);
+		discrete_stream=stream_init_multi_float(2,stereo_names,vol,DISCRETE_SAMPLE_RATE,0,discrete_stream_update_stereo,1);
 		discrete_log("discrete_sh_start() - Stereo Audio Stream Initialised", node_count);
 		discrete_stereo=1;
 	}
@@ -485,7 +488,7 @@ int discrete_sh_start (const struct MachineSound *msound)
 	{
 		int vol = (int)output_node->input[2];
 		/* Initialise a stereo, stream, we always use stereo even if only a mono system */
-		discrete_stream=stream_init("Discrete Sound",vol,Machine->sample_rate,0,discrete_stream_update_mono);
+		discrete_stream=stream_init_float("Discrete Sound",vol,DISCRETE_SAMPLE_RATE,0,discrete_stream_update_mono,1);
 		discrete_log("discrete_sh_start() - Mono Audio Stream Initialised", node_count);
 	}
 

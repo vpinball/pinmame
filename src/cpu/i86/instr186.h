@@ -15,6 +15,10 @@ static void PREFIX186(_push_d8)(void);
 static void PREFIX186(_imul_d8)(void);
 static void PREFIX186(_rotshft_bd8)(void);
 static void PREFIX186(_rotshft_wd8)(void);
+#ifdef I186
+static void PREFIX186(_rotshft_bcl)(void);
+static void PREFIX186(_rotshft_wcl)(void);
+#endif
 static void PREFIX186(_enter)(void);
 static void PREFIX186(_leave)(void);
 static void PREFIX186(_insb)(void);

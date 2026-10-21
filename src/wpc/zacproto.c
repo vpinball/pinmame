@@ -1,19 +1,38 @@
+// license:BSD-3-Clause
+
 /* Zaccaria Prototype Solid State machines */
 /* CPU: National Semiconductor SC/MP ISP-8A 500D */
 
+/* Sound emulation: 2MHz clock, divided by latch U36 (128..255, U44/U45),
+   clocks an 8 bit down counter (U46/U47), one of whose bits (selected by U37, which also mutes) drives the speaker */
+
+#include <math.h>
 #include "driver.h"
 #include "cpu/scamp/scamp.h"
 #include "core.h"
 #include "sim.h"
 
+#define ZACPROTO_SND_CLOCK 2000000. /* 4MHz XTAL / 2 */
+#define ZACPROTO_SND_RATE (4*48000) /* the mixer then resamples it (band-limited) to the output rate */
+#define ZACPROTO_DC_CUTOFF_HZ 1.6   /* output coupling capacitor, as in the discrete output node (disc_out.c) */
+
 static struct {
   core_tSeg segments;
   UINT32 solenoids;
-  UINT16 sols2;
   int vblankCount;
-  int dispCount, output, enable;
-  UINT8 sndCmd;
+  int dispCount;
 } locals;
+
+static struct {
+  int stream;
+  UINT8 u36;    /* preset divider for U44/U45 */
+  UINT8 u37;    /* bits 0-2: counter bit select (U48), bit 3: sound on */
+  UINT8 u44u45; /* divider counter */
+  UINT8 u46u47; /* frequency counter */
+  int level;    /* speaker level 0/1, updated on each divider reload (as MAME) */
+  double clk, clkStep; /* fractional 2MHz clocks per output sample */
+  double dcInteg, dcPrev, dcCoeff;
+} snd;
 
 static INTERRUPT_GEN(vblank) {
   locals.vblankCount++;
@@ -87,28 +106,56 @@ static WRITE_HANDLER(sol_w) {
 }
 
 static WRITE_HANDLER(sound_w) {
-  if (data) {
-    if (!offset) {
-      locals.sndCmd = (locals.sndCmd & 0x40) | (data & 0x3f);
-    } else {
-      locals.enable = (data & 0x02) >> 1;
-      locals.sndCmd = (locals.sndCmd & 0x3f) | ((data & 0x01) << 6);
-      if (!locals.enable)
-        locals.output = (data & 0x1c) >> 2;
+  stream_update(snd.stream, 0);
+  data &= 0x3f;
+  if (offset) {
+    data ^= 0x0e;
+    /* the schematic labels bit 1 as enable, but the pin numbers show bit 4 (as MAME) */
+    snd.u37 = (data >> 1) & 0x0f;
+    snd.u36 = (snd.u36 & 0x3f) | ((data & 0x01) << 6) | 0x80;
+  } else
+    snd.u36 = (snd.u36 & 0x40) | data | 0x80;
+}
+
+static void zacProto_snd_update(int param, INT16 *buffer, int length) {
+  float * const out = (float *)buffer; /* float stream */
+  int i;
+  for (i = 0; i < length; i++) {
+    int n, k, high = 0;
+    double x;
+    snd.clk += snd.clkStep;
+    n = (int)snd.clk;
+    snd.clk -= n;
+    for (k = 0; k < n; k++) {
+      if (--snd.u44u45 == 0) {
+        snd.u44u45 = snd.u36;
+        snd.u46u47--;
+        snd.level = (snd.u37 & 0x08) && ((snd.u46u47 >> (snd.u37 & 0x07)) & 1); /* muted and low are both 0 */
+      }
+      high += snd.level;
     }
-    logerror("sound %d: snd data = %02x, enable = %x, output = %x\n", offset, locals.sndCmd, locals.enable, locals.output);
-    discrete_sound_w(1, ((locals.sndCmd << (7-locals.output)) & 0xff) >> (7-locals.output));
-    discrete_sound_w(2, 1);
+    x = n ? (double)high / n : snd.level; /* averaged over the sample (otherwise aliasing) */
+    snd.dcInteg = snd.dcInteg * snd.dcCoeff + (x - snd.dcPrev);
+    snd.dcPrev = x;
+    out[i] = (float)snd.dcInteg;
   }
 }
 
-static void zacProto_sndTimer(int data) {
-  if (locals.sndCmd) {
-    locals.sndCmd--;
-    discrete_sound_w(1, ((locals.sndCmd << (7-locals.output)) & 0xff) >> (7-locals.output));
-  } else
-    discrete_sound_w(2, 0);
+static void zacProto_sh_reset(void) {
+  snd.u36 = 0x80; snd.u37 = snd.u44u45 = snd.u46u47 = 0; snd.level = 0;
+  snd.clk = snd.dcInteg = snd.dcPrev = 0.;
 }
+
+static int zacProto_sh_start(const struct MachineSound *msound) {
+  const double w = (2.*M_PI*ZACPROTO_DC_CUTOFF_HZ) / ZACPROTO_SND_RATE;
+  zacProto_sh_reset();
+  snd.clkStep = ZACPROTO_SND_CLOCK / ZACPROTO_SND_RATE;
+  snd.dcCoeff = (1. - sin(w)) / cos(w);
+  snd.stream = stream_init_float("Zaccaria Prototype", 50, ZACPROTO_SND_RATE, 0, zacProto_snd_update, 1); /* 0/1 at 50, as MAME's speaker at 0.5 */
+  return snd.stream < 0;
+}
+
+static struct CustomSound_interface zacProto_custInt = {zacProto_sh_start, NULL, NULL, zacProto_sh_reset};
 
 static WRITE_HANDLER(lamp_w) {
   coreGlobals.tmpLampMatrix[offset] = data;
@@ -133,25 +180,6 @@ static MEMORY_WRITE_START(writemem)
   { 0x0e09, 0x0e16, lamp_w },
 MEMORY_END
 
-static DISCRETE_SOUND_START(zacProto_discInt)
-	DISCRETE_INPUT(NODE_01,1,0x0003,0) // tone
-	DISCRETE_INPUT(NODE_02,2,0x0003,0) // enable
-	DISCRETE_MULTADD(NODE_05,1,NODE_01,2,90)
-	DISCRETE_SINEWAVE(NODE_10,NODE_02,NODE_05,20000,10000,0)
-	DISCRETE_GAIN(NODE_20,NODE_10,12)
-	/* TODO: needs a DISCRETE_CRFILTER before the output - the node below is unipolar,
-	   a sine of BIAS 10000 gained x12 (AMPL is peak-to-peak, so the mean is the bias),
-	   about +120000 of DC - far past the 32767 the output stage clamps to, so most of
-	   the waveform is lost in the clip, and it is there even in silence: a disabled
-	   wave node in disc_wav.c still outputs its BIAS.
-	   On the real board the output coupling capacitor removes that; by35snd.c is the
-	   one driver here that models it (DISCRETE_CRFILTER, "capacitor in series between
-	   pre-amp and output amp"). A plausible placeholder until the schematic is checked
-	   is RES_K(10)/CAP_U(10), i.e. a 10uF electrolytic into a ~10k amp input, which
-	   corners at ~1.6Hz - low enough to touch nothing audible */
-	DISCRETE_OUTPUT(NODE_20, 50)
-DISCRETE_SOUND_END
-
 static core_tLCDLayout disp[] = {
   {0, 0, 4, 1,CORE_SEG8D},{0, 2, 5, 2,CORE_SEG7},{0, 6, 7, 1,CORE_SEG8D},{0, 8, 8, 3,CORE_SEG7},
   {3, 2, 0, 2,CORE_SEG7S},
@@ -172,8 +200,7 @@ MACHINE_DRIVER_START(zacProto)
   MDRV_CPU_VBLANK_INT(vblank, 1)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_DIPS(24)
-  MDRV_SOUND_ADD(DISCRETE, zacProto_discInt)
-  MDRV_TIMER_ADD(zacProto_sndTimer, 250)
+  MDRV_SOUND_ADD(CUSTOM, zacProto_custInt)
 MACHINE_DRIVER_END
 
 INPUT_PORTS_START(strike) \
@@ -275,7 +302,7 @@ ROM_START(strike) \
     ROM_LOAD("strike4.bin", 0x1400, 0x0400, CRC(ca0eddd0) SHA1(52f9faf791c56b68b1806e685d0479ea67aba019))
 ROM_END
 
-CORE_GAMEDEFNV(strike, "Strike", 1978, "Zaccaria", zacProto, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(strike, "Strike", 1978, "Zaccaria", zacProto, 0)
 
 INPUT_PORTS_START(skijump) \
   CORE_PORTS \
@@ -378,7 +405,7 @@ ROM_START(skijump) \
 ROM_END
 #define init_skijump init_strike
 
-CORE_GAMEDEFNV(skijump,"Ski Jump", 1978, "Zaccaria", zacProto, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(skijump,"Ski Jump", 1978, "Zaccaria", zacProto, 0)
 
 INPUT_PORTS_START(spacecty) \
   CORE_PORTS \
@@ -479,4 +506,4 @@ ROM_START(spacecty) \
 ROM_END
 #define init_spacecty init_strike
 
-CORE_GAMEDEFNV(spacecty,"Space City", 1979, "Zaccaria", zacProto, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(spacecty,"Space City", 1979, "Zaccaria", zacProto, 0)
