@@ -29,10 +29,10 @@ onwards** is listed separately below as not expected rather than as missing.
 
 | Status                           | Machines | Share |
 | -------------------------------- | -------: | ----: |
-| Fully working                    |      574 | 69.0% |
+| Fully working                    |      575 | 69.1% |
 | Partially working                |       31 |  3.7% |
 | Emulated but not working         |        1 |  0.1% |
-| Not emulated                     |       97 | 11.7% |
+| Not emulated                     |       96 | 11.5% |
 | Not emulated — released recently |      129 | 15.5% |
 | **Total**                        |  **832** |       |
 
@@ -41,13 +41,13 @@ onwards** is listed separately below as not expected rather than as missing.
 | Decade | Total | Fully working | Partial | Not working | Not emulated |
 | ------ | ----: | ------------: | ------: | ----------: | -----------: |
 | 1970s  |   170 |           111 |       5 |           0 |           54 |
-| 1980s  |   328 |           279 |      23 |           1 |           25 |
+| 1980s  |   328 |           280 |      23 |           1 |           24 |
 | 1990s  |   148 |           142 |       3 |           0 |            3 |
 | 2000s  |    25 |            24 |       0 |           0 |            1 |
 | 2010s  |    73 |            18 |       0 |           0 |           55 |
 | 2020s  |    88 |             0 |       0 |           0 |           88 |
 
-## Fully working (574)
+## Fully working (575)
 
 Every known ROM set runs, and the driver flags nothing wrong with any of them.
 
@@ -308,6 +308,7 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | Touchdown                                      | 1984 | Gottlieb               | Alphanumeric | `touchdn`                                            |             |       |
 | UFO-X                                          | 1984 | Playmatic              | Alphanumeric | `ufo_x`                                              |             |       |
 | Andromeda                                      | 1985 | Game Plan              | Alphanumeric | `andromea`, `andromed`                               |             |       |
+| Apocalypse Now                                 | 1985 | Jeutel                 | Alphanumeric | `apocalypse_now`                                     |             |       |
 | Ator                                           | 1985 | Videodens              | Alphanumeric | `ator`, `ator2`                                      |             |       |
 | Beat the Clock                                 | 1985 | Bally                  | Alphanumeric | `beatclc2`, `beatclck`                               |             |       |
 | Bounty Hunter                                  | 1985 | Gottlieb               | Alphanumeric | `bountgfp`, `bounthfp`, `bountyh` + 1 more           |             |       |
@@ -678,7 +679,7 @@ does not boot or does not play.
 | ------- | ---: | ------------ | ------------ | ---------------- | --------- | ------------ |
 | 4X4     | 1983 | Atari        | Alphanumeric | `fourx4`         |           | does not run |
 
-## Not emulated (97)
+## Not emulated (96)
 
 No driver. These machines are old enough to be in scope, so they are the candidates for
 future work.
@@ -756,7 +757,6 @@ future work.
 | Valkyrie                                    | 1982 | Jeutel                    | Alphanumeric |
 | Vulcan IV                                   | 1982 | Rowamet                   | Alphanumeric |
 | Sky Warrior                                 | 1983 | I.D.I.                    | Alphanumeric |
-| Apocalypse Now                              | 1985 | Jeutel                    | Alphanumeric |
 | Nosferatu                                   | 1985 | Achille and Chalvignac    | Alphanumeric |
 | Evolution                                   | 1986 | Jeutel                    | Alphanumeric |
 | Out Law                                     | 1986 | ManilaMatic               | Alphanumeric |
@@ -1146,8 +1146,8 @@ scripts/gen_supported_machines.py
 
 The script reads a cached copy of OPDB and re-downloads only with `--refresh`; `--check`
 fails if this file is out of date. Machine data comes from the OPDB snapshot of
-**2026-10-20**; driver data from `src/wpc` at the commit this file was generated from, on
-**2026-10-20**.
+**2026-10-21**; driver data from `src/wpc` at the commit this file was generated from, on
+**2026-10-21**.
 
 A machine is one OPDB *group*, so a title and its remakes are one row, dated and credited
 to the original. Its status is that of the *worst* of its ROM sets, so "fully working"
