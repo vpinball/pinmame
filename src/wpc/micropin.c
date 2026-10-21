@@ -305,6 +305,7 @@ static DISCRETE_SOUND_START(mp_discInt)
   DISCRETE_ADDER4(NODE_44,1,NODE_33,NODE_34,NODE_35,NODE_36)
   DISCRETE_ADDER4(NODE_50,1,NODE_41,NODE_42,NODE_43,NODE_44)
 
+  /* TODO +-25000 per note, so several at once exceed 16bit full scale (about +-100000 with four) - level unverified */
   DISCRETE_OUTPUT(NODE_50, 70)
 DISCRETE_SOUND_END
 

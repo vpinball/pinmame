@@ -29,10 +29,10 @@ onwards** is listed separately below as not expected rather than as missing.
 
 | Status                           | Machines | Share |
 | -------------------------------- | -------: | ----: |
-| Fully working                    |      571 | 68.6% |
-| Partially working                |       34 |  4.1% |
+| Fully working                    |      575 | 69.1% |
+| Partially working                |       31 |  3.7% |
 | Emulated but not working         |        1 |  0.1% |
-| Not emulated                     |       97 | 11.7% |
+| Not emulated                     |       96 | 11.5% |
 | Not emulated — released recently |      129 | 15.5% |
 | **Total**                        |  **832** |       |
 
@@ -40,14 +40,14 @@ onwards** is listed separately below as not expected rather than as missing.
 
 | Decade | Total | Fully working | Partial | Not working | Not emulated |
 | ------ | ----: | ------------: | ------: | ----------: | -----------: |
-| 1970s  |   170 |           108 |       8 |           0 |           54 |
-| 1980s  |   328 |           279 |      23 |           1 |           25 |
+| 1970s  |   170 |           111 |       5 |           0 |           54 |
+| 1980s  |   328 |           280 |      23 |           1 |           24 |
 | 1990s  |   148 |           142 |       3 |           0 |            3 |
 | 2000s  |    25 |            24 |       0 |           0 |            1 |
 | 2010s  |    73 |            18 |       0 |           0 |           55 |
 | 2020s  |    88 |             0 |       0 |           0 |           88 |
 
-## Fully working (571)
+## Fully working (575)
 
 Every known ROM set runs, and the driver flags nothing wrong with any of them.
 
@@ -109,10 +109,13 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | Rio                                            | 1978 | Game Plan              | Alphanumeric | `rio`                                                |             |       |
 | Rotation VIII                                  | 1978 | Midway                 | Alphanumeric | `rota_101`, `rota_115`, `rotation`                   |             |       |
 | Silverball Mania                               | 1978 | Bally                  | Alphanumeric | `slbmania`, `slbmanib`, `slbmanic` + 1 more          |             |       |
+| Ski Jump                                       | 1978 | Zaccaria               | Alphanumeric | `skijump`                                            |             |       |
+| Space City                                     | 1978 | Zaccaria               | Alphanumeric | `futurwld`, `futurwldf`, `spacecty`                  |             |       |
 | Space Gambler                                  | 1978 | Playmatic              | Alphanumeric | `spcgambl`                                           |             |       |
 | Space Riders                                   | 1978 | Atari                  | Alphanumeric | `spcrider`, `spcridef`                               |             |       |
 | Spectra IV                                     | 1978 | Valley                 | Alphanumeric | `spectra`                                            |             |       |
 | Stars                                          | 1978 | Stern Electronics      | Alphanumeric | `stars`, `starsfp`, `starsb` + 1 more                |             |       |
+| Strike                                         | 1978 | Zaccaria               | Alphanumeric | `strike`                                             |             |       |
 | Strikes and Spares                             | 1978 | Bally                  | Alphanumeric | `stk_sprs`, `stk_sprb`, `stk_sprc`                   |             |       |
 | Voltan Escapes Cosmic Doom                     | 1978 | Bally                  | Alphanumeric | `voltan`, `voltanb`, `voltanc` + 1 more              |             |       |
 | Wild Fyre                                      | 1978 | Stern Electronics      | Alphanumeric | `wildfyfp`, `wildfyre`, `wildfyrc`                   |             |       |
@@ -305,6 +308,7 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | Touchdown                                      | 1984 | Gottlieb               | Alphanumeric | `touchdn`                                            |             |       |
 | UFO-X                                          | 1984 | Playmatic              | Alphanumeric | `ufo_x`                                              |             |       |
 | Andromeda                                      | 1985 | Game Plan              | Alphanumeric | `andromea`, `andromed`                               |             |       |
+| Apocalypse Now                                 | 1985 | Jeutel                 | Alphanumeric | `apocalypse_now`                                     |             |       |
 | Ator                                           | 1985 | Videodens              | Alphanumeric | `ator`, `ator2`                                      |             |       |
 | Beat the Clock                                 | 1985 | Bally                  | Alphanumeric | `beatclc2`, `beatclck`                               |             |       |
 | Bounty Hunter                                  | 1985 | Gottlieb               | Alphanumeric | `bountgfp`, `bounthfp`, `bountyh` + 1 more           |             |       |
@@ -396,7 +400,7 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | Spring Break                                   | 1987 | Gottlieb               | Alphanumeric | `sprbrafp`, `sprbreak`, `sprbrffp` + 7 more          |             |       |
 | Star Wars                                      | 1987 | Sonic                  | Alphanumeric | `sonstwar`, `sonstwr2`                               |             |       |
 | Star's Phoenix                                 | 1987 | Zaccaria               | Alphanumeric | `nstrpffp`, `nstrphfp`, `nstrphnf` + 5 more          |             |       |
-| Thunder Man                                    | 1987 | Apple Time             | Alphanumeric | `thndrman`                                           |             |       |
+| Thunder Man                                    | 1987 | Apple Time             | Alphanumeric | `thndrman`, `thndrmne`, `thndrmnz` + 1 more          |             |       |
 | Victory                                        | 1987 | Gottlieb               | Alphanumeric | `victory`, `victoryf`, `victoryg` + 7 more           |             |       |
 | White Force                                    | 1987 | Unidesa                | Alphanumeric | `whtforce`                                           |             |       |
 | Wolf Man                                       | 1987 | Peyper                 | Alphanumeric | `wolfman`                                            |             |       |
@@ -625,7 +629,7 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | Rob Zombie's Spookshow International           | 2016 | Spooky Pinball         | DMD          | `rzspook_026`                                        | yes         |       |
 | The Jetsons                                    | 2017 | Spooky Pinball         | DMD          | `jetsons_004`                                        | yes         |       |
 
-## Partially working (34)
+## Partially working (31)
 
 At least one ROM set is flagged as wrong, missing or not running — most often the sound
 hardware. The machine itself usually plays. Where only some revisions are affected the
@@ -635,9 +639,6 @@ regional variant or a prototype is at fault while the production ROMs are fine.
 | Machine                   | Year | Manufacturer | Display      | PinMAME ROM sets                              | Simulator   | Notes                                                             |
 | ------------------------- | ---: | ------------ | ------------ | --------------------------------------------- | ----------- | ----------------------------------------------------------------- |
 | Sinbad / Eye Of The Tiger | 1978 | Gottlieb     | Alphanumeric | `sinbad`, `sinbadn`, `sahalove`               |             | imperfect sound in `sahalove`; 2 other revisions clean            |
-| Ski Jump                  | 1978 | Zaccaria     | Alphanumeric | `skijump`                                     |             | imperfect sound                                                   |
-| Space City                | 1978 | Zaccaria     | Alphanumeric | `futurwld`, `futurwldf`, `spacecty`           |             | imperfect sound in `spacecty`; 2 other revisions clean            |
-| Strike                    | 1978 | Zaccaria     | Alphanumeric | `strike`                                      |             | imperfect sound                                                   |
 | Genie                     | 1979 | Gottlieb     | Alphanumeric | `genie`, `hexagone`                           |             | imperfect sound in `hexagone`; 1 other revision clean             |
 | Hot Wheels                | 1979 | Zaccaria     | Alphanumeric | `hotwheel`, `hotwheelf`                       |             | imperfect sound                                                   |
 | KISS                      | 1979 | Bally        | Alphanumeric | `kiss`, `kissb`, `kissc` + 5 more             |             | does not run in `kissp`, `kissp2`; 6 other revisions clean        |
@@ -678,7 +679,7 @@ does not boot or does not play.
 | ------- | ---: | ------------ | ------------ | ---------------- | --------- | ------------ |
 | 4X4     | 1983 | Atari        | Alphanumeric | `fourx4`         |           | does not run |
 
-## Not emulated (97)
+## Not emulated (96)
 
 No driver. These machines are old enough to be in scope, so they are the candidates for
 future work.
@@ -756,7 +757,6 @@ future work.
 | Valkyrie                                    | 1982 | Jeutel                    | Alphanumeric |
 | Vulcan IV                                   | 1982 | Rowamet                   | Alphanumeric |
 | Sky Warrior                                 | 1983 | I.D.I.                    | Alphanumeric |
-| Apocalypse Now                              | 1985 | Jeutel                    | Alphanumeric |
 | Nosferatu                                   | 1985 | Achille and Chalvignac    | Alphanumeric |
 | Evolution                                   | 1986 | Jeutel                    | Alphanumeric |
 | Out Law                                     | 1986 | ManilaMatic               | Alphanumeric |
@@ -1146,8 +1146,8 @@ scripts/gen_supported_machines.py
 
 The script reads a cached copy of OPDB and re-downloads only with `--refresh`; `--check`
 fails if this file is out of date. Machine data comes from the OPDB snapshot of
-**2026-10-12**; driver data from `src/wpc` at the commit this file was generated from, on
-**2026-10-12**.
+**2026-10-21**; driver data from `src/wpc` at the commit this file was generated from, on
+**2026-10-21**.
 
 A machine is one OPDB *group*, so a title and its remakes are one row, dated and credited
 to the original. Its status is that of the *worst* of its ROM sets, so "fully working"

@@ -84,6 +84,7 @@
 
  static BOOL init_pinsound;
  static BOOL pinsound_studio_enabled;
+ static BOOL pinsound_handshake_done; // reinit_pinSound has talked to PinSound Studio (until pinsound_exit)
  static FILE *fp_pinsound_log;
  static DWORD start_time_pinsound_log;
  static BOOL sys11_patch;
@@ -100,7 +101,7 @@ extern UINT8 debugger_focus;
 
 #define MAX_CMD_LENGTH   6
 #define MAX_NAME_LENGTH 30
-#define MAX_LINE_LENGTH 100
+#define MAX_LINE_LENGTH 256
 #define SMDCMD_DIGITTOGGLE SMDCMD_ZERO
 
 static int playCmd(int length, int *cmd);
@@ -283,8 +284,9 @@ static BOOL readSlot(const HANDLE hFile, char * msg)
 		return FALSE;
 	}
 
-	// if there are any data waiting to be read
-	if (msgSize > 0)
+	// if there are any data waiting to be read (MAILSLOT_NO_MESSAGE is (DWORD)-1: on x64 the ~4 GB
+	// GlobalAlloc() can succeed and ReadFile() then blocks forever on the empty slot)
+	if (msgSize != MAILSLOT_NO_MESSAGE && msgSize > 0)
 	{
 		// Allocate buffer memory
 		buffer = (LPTSTR) GlobalAlloc(GPTR, msgSize); //Combines GMEM_FIXED and GMEM_ZEROINIT.
@@ -324,6 +326,8 @@ static BOOL readSlot(const HANDLE hFile, char * msg)
 
 static void pinsound_exit()
 {
+	pinsound_handshake_done = FALSE;
+
 	// send stop-all command to the PinSound Studio
 	if (pinsound_studio_enabled)
 	{
@@ -361,6 +365,17 @@ void reinit_pinSound(void)
 
 	if (!(pmoptions.sound_mode == 2 || pmoptions.sound_mode == 3) || options.samplerate == 0) // if not internal or external pinsound enabled, or if sound in general is disabled -> return
 		return;
+
+	// called after each board's init: wait for a board with a sound system name (none yet after e.g. the
+	// DE DMD board), PinSound Studio would only answer "unsupported sound system: (null)"
+	if (!sndbrd_typestr(0) && !sndbrd_typestr(1))
+		return;
+
+	// and talk to it only once: for a second named board (e.g. System 11's background music board),
+	// creating the read slot again would fail
+	if (pinsound_handshake_done)
+		return;
+	pinsound_handshake_done = TRUE;
 
 	init_pinsound = FALSE;
 
@@ -737,11 +752,12 @@ int manual_sound_commands(struct mame_bitmap *bitmap) {
   return TRUE; /* not in sound command mode */
 }
 
+/* A heading matches the whole name, in any case: "amazonh:" is not "amazonh2:", and "dcs:" is DCS */
 static int checkName(const char *buf, const char *name) {
   while (*name)
-    if ((*buf == '\0') || (*(buf++) != *(name++)))
+    if ((*buf == '\0') || (tolower((unsigned char)*(buf++)) != tolower((unsigned char)*(name++))))
       return FALSE;
-  return TRUE;
+  return (*buf == ':') || (*buf == '\0') || isspace((unsigned char)*buf);
 }
 
 static void readCmds(int boardNo, const char *head) {
@@ -750,24 +766,42 @@ static void readCmds(int boardNo, const char *head) {
 
   if (f) {
     char buffer[MAX_LINE_LENGTH];
-    while (mame_fgets(buffer, MAX_LINE_LENGTH, f)) {
+    while (mame_fgets(buffer, MAX_LINE_LENGTH-1, f)) {
+      buffer[MAX_LINE_LENGTH-1] = '\0';
+      /* a line longer than the buffer: skip the rest, or it is read as a heading */
+      if (!strchr(buffer, '\r')) {
+        char rest[MAX_LINE_LENGTH];
+        while (mame_fgets(rest, MAX_LINE_LENGTH-1, f)) {
+          rest[MAX_LINE_LENGTH-1] = '\0';
+          if (strchr(rest, '\r'))
+            break;
+        }
+      }
       /* LOG(("line=%s",buffer)); */
       if (buffer[0] == ':') {
         if (getData) {
           struct cmds tmpCmd;
           char *tmp = &buffer[1];
-          int   cmd = 0;
+          int   cmd = 0, digit;
 
           /*-- fetch commands --*/
           tmpCmd.length = 0;
           for (;;) {
             if (isdigit(*tmp))
-              cmd = cmd*16 + (*tmp) - '0';
+              digit = (*tmp) - '0';
             else if ((*tmp >= 'a') && (*tmp <= 'f'))
-              cmd = cmd*16 + (*tmp) - 'a' + 10;
+              digit = (*tmp) - 'a' + 10;
+            else if ((*tmp >= 'A') && (*tmp <= 'F'))
+              digit = (*tmp) - 'A' + 10;
             else
               break;
+            cmd = cmd*16 + digit;
             if (tmpCmd.length++ & 0x01) {
+              /* no room for this byte (and the board number): drop the entry */
+              if (tmpCmd.length/2 + ((getData == 2) && (boardNo >= 0)) > MAX_CMD_LENGTH) {
+                tmpCmd.length = -1;
+                break;
+              }
               if ((getData == 2) && (boardNo >= 0)) {
                 tmpCmd.cmd[tmpCmd.length/2-1] = boardNo; tmpCmd.length += 2;
               }
@@ -777,6 +811,8 @@ static void readCmds(int boardNo, const char *head) {
             }
             tmp += 1;
           }
+          if (tmpCmd.length < 0)
+            continue;
           tmpCmd.length /= 2;
           strncpy(tmpCmd.name, &tmp[1], MAX_NAME_LENGTH);
 

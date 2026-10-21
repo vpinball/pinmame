@@ -697,7 +697,7 @@ int dst_ramp_reset(struct node_description *node)
 	context=(struct dss_ramp_context*)node->context;
 
 	node->output=node->input[5];
-	context->step = node->input[2] / Machine->sample_rate;
+	context->step = node->input[2] / DISCRETE_SAMPLE_RATE;
 	context->dir = ((node->input[4] - node->input[3]) == fabs(node->input[4] - node->input[3]));
 	context->last_en = 0;
 	return 0;
@@ -787,7 +787,7 @@ int dst_oneshot_reset(struct node_description *node)
 {
 	struct dst_oneshot_context *context=(struct dst_oneshot_context*)node->context;
 	context->countdown=0;
-	context->stepsize=1.0/Machine->sample_rate;
+	context->stepsize=1.0/DISCRETE_SAMPLE_RATE;
 	context->state=0;
  	node->output=0;
  	return 0;
@@ -917,7 +917,7 @@ int dst_ladder_reset(struct node_description *node)
 	/* Setup filter constants */
 	context->state = 0;
 	context->t = 0;
-	context->step = 1.0 / Machine->sample_rate;
+	context->step = 1.0 / DISCRETE_SAMPLE_RATE;
 	context->exponent=-1.0 * ((struct discrete_ladder*)node->custom)->smoothing_cap * ((struct discrete_ladder*)node->custom)->smoothing_res;
 
 	return 0;

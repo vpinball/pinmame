@@ -209,7 +209,7 @@ int stream_init_multi_float(int channels,const char **names,const int *default_m
 		if ((stream_buffer[channel+i] = malloc((is_float ? sizeof(float) : sizeof(INT16))*BUFFER_LEN)) == 0)
 			return -1;
 
-		stream_is_float[channel] = is_float;
+		stream_is_float[channel+i] = is_float;
 
 		stream_sample_rate[channel+i] = sample_rate;
 		stream_buffer_pos[channel+i] = 0;

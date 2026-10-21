@@ -3,13 +3,7 @@
 
 #include "driver.h"
 
-#define int8_t   signed char
-#define uint8_t  unsigned char
-#define int16_t  signed short
-#define uint16_t unsigned short
-#define int32_t  signed int
-#define uint32_t unsigned int
-#define uint64_t unsigned long long
+#include <stdint.h>
 
 void vgm_start(struct RunningMachine *machine);
 void vgm_stop(void);

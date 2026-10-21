@@ -671,7 +671,9 @@ INLINE int limit( int val, int max, int min ) {
 
 /* flags that drive the IRQ output: BRDY (bit 3) does not, as in MAME's current Y8950 (ymfm).
    The DELTA-T unit sets BRDY at reset and register 04 starts with every flag unmasked, so
-   letting BRDY through kept the IRQ output asserted from the start: timer flags made no edge. */
+   letting BRDY through kept the IRQ output asserted from the start: timer flags made no edge.
+   EOS (bit 4, ADPCM end of sample) still drives it here, while ymfm masks that one as well;
+   TODO: left as is on purpose, until a machine using the Y8950's ADPCM (only Tecnoplay so far) shows it matters */
 #define OPL_IRQ_FLAGS(OPL)	((OPL)->statusmask & ~0x08)
 
 /* status set and IRQ handling */

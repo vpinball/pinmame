@@ -143,6 +143,27 @@ int mc3417_sh_start(const struct MachineSound *msound)
 }
 
 
+#ifdef PINMAME
+/* one sample through the output low-pass filtering */
+static float mc3417_output_filter(struct mc3417_data *chip, double data)
+{
+#if ENABLE_LOWPASS_ESTIMATE
+	if (!chip->filter_f)
+		return (float)data;
+	filter_insert(chip->filter_f, chip->filter_state, (float)data);
+	return filter_compute(chip->filter_f, chip->filter_state);
+#elif defined(SALLEN_KEY)
+	int i;
+	for (i = 0; i < (HACK_REMOVE_FIRST_SALLEN_KEY ? 2 : 4); i++) //!! opt.!?
+		data = filter2_step_with(&chip->f[i], data);
+	return (float)data;
+#else
+	filter_insert(chip->filter_f, chip->filter_state, (float)data);
+	return filter_compute(chip->filter_f, chip->filter_state);
+#endif
+}
+#endif
+
 static void mc3417_update(int num, INT16 *buffer, int length)
 {
 	struct mc3417_data *chip = &mc3417[num];
@@ -193,7 +214,11 @@ static void mc3417_update(int num, INT16 *buffer, int length)
 		float tmp = (float)chip->curr_value;
 		int i;
 		for (i = 0; i < length; i++, tmp *= 0.95f)
+#ifdef PINMAME
+			buffer_f[i] = mc3417_output_filter(chip, tmp); // filtered too, so that no jump happens to the raw value, and the filters stay in sync
+#else
 			buffer_f[i] = tmp;
+#endif
 
 		chip->next_value = tmp; // update next_value with the faded value
 
@@ -211,32 +236,8 @@ static void mc3417_update(int num, INT16 *buffer, int length)
 		int i;
 
 #ifdef PINMAME
-#if ENABLE_LOWPASS_ESTIMATE
-		if (chip->filter_f)
-			for (i = 0; i < length; i++, data += slope)
-			{
-				filter_insert(chip->filter_f, chip->filter_state, (float)data);
-				buffer_f[i] = filter_compute(chip->filter_f, chip->filter_state);
-			}
-		else
-			for (i = 0; i < length; i++, data += slope)
-				buffer_f[i] = (float)data;
-#else // ENABLE_LOWPASS_ESTIMATE
 		for (i = 0; i < length; i++, data += slope)
-		{
-#ifdef SALLEN_KEY
-			// run the sample through the staged filter
-			double v = data;
-			int iii;
-			for(iii = 0; iii < (HACK_REMOVE_FIRST_SALLEN_KEY ? 2 : 4); iii++) //!! opt.!?
-				v = filter2_step_with(&chip->f[iii], v);
-			buffer_f[i] = (float)v;
-#else
-			filter_insert(chip->filter_f, chip->filter_state, (float)data);
-			buffer_f[i] = filter_compute(chip->filter_f, chip->filter_state);
-#endif
-		}
-#endif
+			buffer_f[i] = mc3417_output_filter(chip, data);
 #else // PINMAME
 		for (i = 0; i < length; i++, data += slope)
 			buffer_f[i] = (float)data;

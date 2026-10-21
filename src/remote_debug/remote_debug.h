@@ -86,9 +86,10 @@ void remote_debug_quit(void);
  * checks breakpoints and halts execution on a hit. */
 void remote_debug_breakpoint_hook(void);
 
-/* Memory access hook, called from the READ/WRITE macros in memory.c;
- * checks watchpoints and records trace log entries. */
-void remote_debug_memref(UINT32 adr, int length, int write);
+/* Memory access hook, called from the READ/WRITE macros in memory.c
+ * before the access is done; checks watchpoints and records trace log
+ * entries. data is the value being written (0 for reads). */
+void remote_debug_memref(UINT32 adr, int length, int write, UINT32 data);
 
 /* ------------------------------------------------------------------ */
 /* Breakpoints / watchpoints                                          */
@@ -152,10 +153,13 @@ void remote_debug_get_callstack(char **buffer, int *len);
 /* Memory access trace                                                */
 /* ------------------------------------------------------------------ */
 
-/* Add an address to the set of traced addresses; every access to a
- * traced address is recorded in a ring buffer. bank -1 matches any bank;
- * a specific bank only matters for the 0x4000-0x7FFF ROM window. */
-void remote_debug_trace_add(UINT32 adr, int bank);
+/* Add the range [adr, adr+len) to the set of traced ranges; every access
+ * to it that matches mode (REMOTE_DEBUG_WP_READ/WRITE/RW) is recorded in a
+ * ring buffer, writes with the value written. bank -1 matches any bank;
+ * a specific bank only matters for the 0x4000-0x7FFF ROM window.
+ * Returns 0, -1 if the table of traced ranges is full, or -2 if the range
+ * does not fit in the address space of the machine's CPUs. */
+int remote_debug_trace_add(UINT32 adr, int len, int mode, int bank);
 
 /* Clear the traced address set and the recorded log. */
 void remote_debug_trace_clear(void);

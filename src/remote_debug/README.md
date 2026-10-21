@@ -172,7 +172,7 @@ Everything is `GET`. Parameter conventions:
 | Parameters | Base |
 |------------|------|
 | `addr`, `val`, `bank`, `pattern`, `data`, `cond` values | hexadecimal, `0x`/`$` prefix optional |
-| `size`, `lines`, `before`, `cpu`, `sw`, `idx`, `len`, `mode`, `ignore` | decimal |
+| `size`, `lines`, `before`, `cpu`, `sw`, `idx`, `len`, `mode`, `ignore` | decimal, or hexadecimal with a `0x`/`$` prefix |
 
 The live reference is served at `GET /api/doc`.
 
@@ -269,6 +269,8 @@ but ignored (reads always go through the current memory map).
   `bank` restricts to that ROM bank (0x4000-0x7FFF only). With `cond`+`val`
   the watchpoint only halts when the byte at `addr` satisfies the comparison
   (e.g. `mode=2&cond=eq&val=05` = "break on the write that sets it to 5").
+  On a write that covers `addr`, 16 and 32 bit ones included, the byte
+  being written is tested (in the byte order of the CPU).
   Note: debugger writes go straight to RAM and do not trigger watchpoints —
   only the emulated CPU's own accesses do.
 - `GET /api/debugger/watchpoints?cmd=clear`
@@ -287,10 +289,18 @@ but ignored (reads always go through the current memory map).
   (`bank` searches within that ROM bank)
 - Note: debugger writes into the WPC RAM range go directly to RAM and are
   **not** blocked by the WPC memory protection hardware simulation.
-- `GET /api/debugger/trace?cmd=add&addr=HEX[&bank=HEX]`: trace accesses to an
-  address (`bank` restricts to that ROM bank).
+- `GET /api/debugger/trace?cmd=add&addr=HEX[&len=N][&mode=1|2|3][&bank=HEX]`:
+  trace accesses to `len` bytes from `addr` (default 1). `mode` is 1 (read),
+  2 (write) or 3 (both, the default); `bank` restricts to that ROM bank.
+  Up to 128 ranges; adding one more, or a range that does not fit in the
+  address space of the machine's CPUs, answers HTTP 400.
 - `GET /api/debugger/trace?cmd=clear` / `GET /api/debugger/trace`: clear /
-  list `{watched: [{addr, bank}, ...], logs: [{cpu, pc, adr, len, write, bank}, ...]}`.
+  list `{watched: [{addr, bank, len, mode}, ...], total, logs: [{cpu, pc, adr,
+  len, write, value, bank}, ...]}`. `value` is the value written (`null` for
+  reads), `logs` keeps the last 1024 accesses and `total` counts all of them
+  since the last clear, so a client polling the log can tell if it missed some.
+  E.g. to log every write the game makes to its NVRAM, take the blocks from
+  `/api/debugger/nvram` and trace them with `mode=2`.
 - `GET /api/debugger/nvram`: where the battery backed memory of the running
   machine is, as `{blocks: [{size, cpu, addr}]}` (`cpu`/`addr` are -1 for a
   block that is not part of a CPU's memory). Works for all generations.
@@ -518,6 +528,9 @@ via `ROMPATH=/path`):
 - `./test_suite_s11.sh` — the same for a Williams System 11 game (default
   `f14_l1`): M6808 main CPU, sequential switch/lamp numbers, operator
   buttons, NVRAM, callstack.
+- `./test_suite_capcom.sh` — value conditions on 16 bit writes and trace
+  range bounds on a Capcom game (default `bsv103`): big endian M68306 with
+  a 32 bit address space.
 - `./test_breakpoint.sh` — end-to-end breakpoint hit test.
 - `./re_demo.sh` — guided tour of the RE tooling (coverage, execution
   trace, tracepoints, value-condition watchpoint with callstack, monitor

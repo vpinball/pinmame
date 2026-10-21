@@ -45,12 +45,16 @@ const struct sndbrdIntf de1sIntf = {
 
 static struct MSM5205interface de1s_msm5205Int = {
 /* chip          interrupt */
-     1, 384000,	{ de1s_msmIrq }, { MSM5205_S48_4B }, { 0 }, { 60 }
+     1, 384000,	{ de1s_msmIrq }, { MSM5205_S48_4B }, { 0 }, { 50 }
 };
 
+/* Levels measured over all 13 DE1S games (all sound commands): at the former 40/60, the YM2151 music was a median 3.5dB below the MSM5205
+   (Phantom of the Opera and Monday Night Football ~16dB) (also see https://github.com/vpinball/pinmame/pull/701).
+   At 55/50 the music is now just a median 1dB above, the MSM5205 peaks at -6dBFS and the YM2151 at -3..-12dBFS (the loudest games clip only slightly, i.e. King Kong 0.0007%).
+   BUT the overall loudness differs ~15dB between games (Time Machine being quietest), on the real machine that's the job for the volume pot, not compensated here for (yet) */
 static struct YM2151interface de1s_ym2151Int = {
   1, 3579545, /* Hz */
-  { YM3012_VOL(40,MIXER_PAN_LEFT,40,MIXER_PAN_RIGHT) },
+  { YM3012_VOL(55,MIXER_PAN_LEFT,55,MIXER_PAN_RIGHT) },
   { de1s_ym2151IRQ }, { de1s_ym2151Port }
 };
 
@@ -360,7 +364,9 @@ static WRITE_HANDLER(de2s_bsmtcmdLo_w)
   //cpu_set_irq_line(de2slocals.brdData.cpuNo, M6809_IRQ_LINE, HOLD_LINE);
 }
 
-static READ_HANDLER(de2s_bsmtready_r) { return 0x80; } // BSMT is always ready
+/* D7 = 1: the BSMT took the last word and is ready for the next one (the sound program polls it
+   before each write). The HLE is always ready; with the LLE this is the chip's real handshake. */
+static READ_HANDLER(de2s_bsmtready_r) { return BSMT2000_status_0_r() ? 0x80 : 0x00; }
 
 /* D7 is the BSMT reset line: the sound program sets it, writes the mode register (e.g. 1), then clears it.
    The chip restarts on the release (1->0) and reads its mode from that register select latch (as MAME's decobsmt).
@@ -384,7 +390,7 @@ static INTERRUPT_GEN(de2s_firq) {
 /* by Steve Ellenoff ( 10/11/2004 - 10/28/2004 )
 
    Hardware: CPU/Sound Bd. II w/ ATMEL Processor
-             SPI Part Nº: 520-5300-00
+             SPI Part NÂº: 520-5300-00
 
    Uses an Atmel AT9140008 CPU (ARM7TDMI Core) and Xilinx FPGA for sound.
    Board is 100% compatible with previous generation hardware (all games using 8Mb roms)

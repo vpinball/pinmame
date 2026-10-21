@@ -740,8 +740,8 @@ int rc_set_option3(struct rc_option *option, const char *arg, int priority)
                return -1;
             }
             strcpy(str, arg);
-            //if(*(char **)option->dest)
-               //free(*(char **)option->dest); //!! this works around a cheat option crash here when pressing install in setup :/
+            if(*(char **)option->dest)
+               free(*(char **)option->dest);
             *(char **)option->dest = str;
          }
          break;

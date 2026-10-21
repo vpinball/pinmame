@@ -124,7 +124,7 @@ typedef struct
 	UINT8		sp;				/* Stack Pointer */
 	UINT8		sr;				/* Status Register */
 	UINT8		irq_state[3];	/* State of the three IRQs */
-	UINT8		rf[0x0ff];		/* Register file */				/*SJE*/
+	UINT8		rf[0x100];		/* Register file (R0-R255) */	/*SJE*/
 	UINT8		pf[0x100];		/* Perpherial file */
 	int 		(*irq_callback)(int irqline);
 	UINT8		idle_state;		/* Set after the execution of an idle instruction */

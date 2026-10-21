@@ -24,6 +24,9 @@ static struct {
   UINT8* RAM;
   UINT8* RAMbankPtr;
 
+  // dmd64 stuff
+  int irq1, irq2; // pending command (IRQ1) and frame (IRQ2) interrupts
+
   // dmd16 stuff
   UINT8 framedata[2][16][2][8]; // 2 PWM frames of 16 rows of 128 bits
   UINT32 row_latch, last_row_latch;
@@ -165,8 +168,10 @@ static void dmd32_vblank(int which) {
   assert(crtc6845_rasterized_height_r(0) == 64); // As the implementation requires this to be always true
   unsigned int src = /*((base >> 3) & 0x000F) | ((base << 1) & 0x0100) |*/ ((base << 2) & 0x7C00);
   const core_tLCDLayout* layout = core_gameData->lcdLayout->importedLayout ? core_gameData->lcdLayout->importedLayout : core_gameData->lcdLayout;
-  core_dmd_submit_frame(layout, dmdlocals.RAMbankPtr +  src,           2); // First frame has been displayed 2/3 of the time (500kHz row clock)
-  core_dmd_submit_frame(layout, dmdlocals.RAMbankPtr + (src | 0x0200), 1); // Second frame has been displayed 1/3 of the time (1MHz row clock)
+  // wrap within the 32K of RAM, an unexpected start address would otherwise read past it
+  const UINT8* frame = dmdlocals.RAM + (((unsigned int)(dmdlocals.RAMbankPtr - dmdlocals.RAM) + src) & 0x7C00);
+  core_dmd_submit_frame(layout, frame,          2); // First frame has been displayed 2/3 of the time (500kHz row clock)
+  core_dmd_submit_frame(layout, frame + 0x0200, 1); // Second frame has been displayed 1/3 of the time (1MHz row clock)
   if (crtc6845_cursor_address_r(0)) // Guessing that the CURSOR signal is used to generate FIRQ
     cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_FIRQ_LINE, PULSE_LINE);
 
@@ -257,10 +262,33 @@ const struct sndbrdIntf dedmd64Intf = {
   dmd_data_w, dmd_busy_r, dmd64_ctrl_w, dmd_status_r, SNDBRD_NOTSOUND
 };
 
-static WRITE16_HANDLER(crtc6845_msb_address_w)  { cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_2, CLEAR_LINE); if (ACCESSING_MSB) crtc6845_address_0_w(offset,data>>8);  }
-static WRITE16_HANDLER(crtc6845_msb_register_w) { cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_2, CLEAR_LINE); if (ACCESSING_MSB) crtc6845_register_0_w(offset,data>>8); }
-static READ16_HANDLER(crtc6845_msb_address_r)   { cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_2, CLEAR_LINE); return 0; }
-static READ16_HANDLER(crtc6845_msb_register_r)  { cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_2, CLEAR_LINE); return ACCESSING_MSB ? crtc6845_register_0_r(offset)<<8 : 0; }
+// The 68000 core only keeps a single interrupt level: asserting or clearing one line overwrites the other.
+// So the 2 interrupt sources of this board (command ready on IRQ1, new frame on IRQ2) are tracked here,
+// and only the highest pending one is presented to the CPU. Without this, a command interrupt raised
+// shortly before a frame interrupt (or before the CRTC access that acknowledges it) was silently lost,
+// the board never read the command, and the main CPU ended up resetting the DMD board (black or frozen
+// display for about a second, e.g. during Baywatch's video mode).
+static void dmd64_update_irq(void) {
+  if (dmdlocals.irq2)
+    cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_2, HOLD_LINE);
+  else if (dmdlocals.irq1)
+    cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_1, HOLD_LINE);
+  else
+    cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_1, CLEAR_LINE);
+}
+// Interrupts are released when the CPU acknowledges them (HOLD_LINE), then the other one is presented again if still pending
+static int dmd64_irq_ack(int irqline) {
+  if (irqline == MC68000_IRQ_2) dmdlocals.irq2 = 0;
+  else if (irqline == MC68000_IRQ_1) dmdlocals.irq1 = 0;
+  if (dmdlocals.irq1 || dmdlocals.irq2) dmd64_update_irq();
+  return cpunum_default_irq_vector(dmdlocals.brdData.cpuNo);
+}
+static void dmd64_clear_irq2(void) { if (dmdlocals.irq2) { dmdlocals.irq2 = 0; dmd64_update_irq(); } }
+
+static WRITE16_HANDLER(crtc6845_msb_address_w)  { dmd64_clear_irq2(); if (ACCESSING_MSB) crtc6845_address_0_w(offset,data>>8);  }
+static WRITE16_HANDLER(crtc6845_msb_register_w) { dmd64_clear_irq2(); if (ACCESSING_MSB) crtc6845_register_0_w(offset,data>>8); }
+static READ16_HANDLER(crtc6845_msb_address_r)   { dmd64_clear_irq2(); return 0; }
+static READ16_HANDLER(crtc6845_msb_register_r)  { dmd64_clear_irq2(); return ACCESSING_MSB ? crtc6845_register_0_r(offset)<<8 : 0; }
 static WRITE16_HANDLER(dmd64_status_w)          { if (ACCESSING_LSB) sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.status = data & 0xff); }
 static READ16_HANDLER(dmd64_latch_r);
 static READ16_HANDLER(dmd64_ram_r)              { const UINT16 v = dmd64RAM[offset]; return (v >> 8) | (v << 8); }
@@ -298,23 +326,30 @@ static void dmd64_init(struct sndbrdData *brdData) {
   dmdlocals.brdData = *brdData;
   crtc6845_init(0);
   crtc6845_set_vsync(0, (12000000. / 4.) / 16., dmd64_vblank); // See explanation above for frequency (12MHz -> 3MHz -> 3MHz/16)
+  cpu_set_irq_callback(dmdlocals.brdData.cpuNo, dmd64_irq_ack);
   core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_FILTER_DE_192x64, CORE_DMD_PWM_COMBINER_SUM_2_1, 0);
 }
 
 static WRITE_HANDLER(dmd64_ctrl_w) {
   if (~dmdlocals.ctrl & data & 0x01) { // Cmd ready
-    cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_1, HOLD_LINE);
+    dmdlocals.irq1 = 1;
+    dmd64_update_irq();
     sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.busy = 1);
     dmdlocals.cmd = dmdlocals.ncmd;
   }
-  if (dmdlocals.ctrl & ~data & 0x02) // Reset (applied at falling edge)
+  if (dmdlocals.ctrl & ~data & 0x02) { // Reset (applied at falling edge)
+    // also drop the pending interrupts (assumed, not checked against the schematics), else the restarted
+    // board would take the command interrupt from before the reset and read the old command again
+    dmdlocals.irq1 = dmdlocals.irq2 = 0;
+    dmd64_update_irq();
     cpu_set_reset_line(dmdlocals.brdData.cpuNo, PULSE_LINE);
+  }
   dmdlocals.ctrl = data;
 }
 
 static READ16_HANDLER(dmd64_latch_r) {
   sndbrd_data_cb(dmdlocals.brdData.boardNo, dmdlocals.busy = 0);
-  cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_1, CLEAR_LINE);
+  if (dmdlocals.irq1) { dmdlocals.irq1 = 0; dmd64_update_irq(); }
   return dmdlocals.cmd;
 }
 
@@ -326,7 +361,8 @@ static void dmd64_vblank(int which) {
   unsigned int src = (base & 0x3C00) << 2;
   core_dmd_submit_frame(core_gameData->lcdLayout, (UINT8*)dmd64RAM +  src,           2); // First frame has been displayed 2/3 of the time
   core_dmd_submit_frame(core_gameData->lcdLayout, (UINT8*)dmd64RAM + (src | 0x0800), 1); // Second frame has been displayed 1/3 of the time
-  cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_2, HOLD_LINE); // Note that IRQ2 is not caused by VSYNC (unwired) but generated from ROWDATA, but this seems precise enough
+  dmdlocals.irq2 = 1; // Note that IRQ2 is not caused by VSYNC (unwired) but generated from ROWDATA, but this seems precise enough
+  dmd64_update_irq();
 }
 
 /*------------------------------*/

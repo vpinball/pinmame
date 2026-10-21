@@ -57,7 +57,7 @@ jobs:
             vpinmame: VPinMAME64.dll
             setup: Setup64.exe
             artifact-suffix: -sc
-            extra-flags: -D CMAKE_CXX_FLAGS=//DSAM_INCLUDE_COLORED
+            extra-flags: -D SAM_INCLUDE_COLORED=ON
           - platform: win-x86
             platform-name: Win32
             vpinmame: VPinMAME.dll
@@ -67,7 +67,7 @@ jobs:
             vpinmame: VPinMAME.dll
             setup: Setup.exe
             artifact-suffix: -sc
-            extra-flags: -D CMAKE_CXX_FLAGS=//DSAM_INCLUDE_COLORED
+            extra-flags: -D SAM_INCLUDE_COLORED=ON
     steps:
       - uses: actions/checkout@v6
       - uses: ilammy/setup-nasm@v1

@@ -70,11 +70,10 @@ struct dst_rcfilter_context
  *
  * DST_CRFILTER - Usage of node_description values for CR filter
  *
- * input[0]    - Enable input value
- * input[1]    - input value
- * input[2]    - Resistor value (initialization only)
- * input[3]    - Capacitor Value (initialization only)
- * input[4]    - Voltage reference. Usually 0V.
+ * input[0]    - input value
+ * input[1]    - Resistor value
+ * input[2]    - Capacitor Value
+ * input[3]    - Voltage reference. Usually 0V (not set by DISCRETE_CRFILTER)
  *
  ************************************************************************/
 #define DST_CRFILTER__IN        node->input[0]
@@ -115,8 +114,6 @@ int dst_crfilter_reset(struct node_description *node)
 
 int dst_crfilter_init(struct node_description *node)
 {
-	struct dst_rcfilter_context *context = (struct dst_rcfilter_context*)node->context;
-
 	/* Allocate memory for the context array and the node execution order array */
 	if((node->context=malloc(sizeof(struct dst_rcfilter_context)))==NULL)
 	{
@@ -186,8 +183,8 @@ static void calculate_filter1_coefficients(double fc, double type,
 
 	/* calculate digital filter coefficents */
 	/*w = 2.0*M_PI*fc; no pre-warping */
-	w = Machine->sample_rate*2.0*tan(M_PI*fc/Machine->sample_rate); /* pre-warping */
-	two_over_T = 2.0*Machine->sample_rate;
+	w = DISCRETE_SAMPLE_RATE*2.0*tan(M_PI*fc/DISCRETE_SAMPLE_RATE); /* pre-warping */
+	two_over_T = 2.0*DISCRETE_SAMPLE_RATE;
 
 	den = w + two_over_T;
 	*a1 = (w - two_over_T)/den;
@@ -226,13 +223,15 @@ int dst_filter1_step(struct node_description *node)
 
 int dst_filter1_reset(struct node_description *node)
 {
+	struct dss_filter1_context *context = (struct dss_filter1_context*)node->context;
+	context->x1 = context->y1 = 0;
 	node->output=0;
 	return 0;
 }
 
 int dst_filter1_init(struct node_description *node)
 {
-	struct dss_filter1_context *context = (struct dss_filter1_context*)node->context;
+	struct dss_filter1_context *context;
 
 	/* Allocate memory for the context array and the node execution order array */
 	if((node->context=malloc(sizeof(struct dss_filter1_context)))==NULL)
@@ -245,6 +244,7 @@ int dst_filter1_init(struct node_description *node)
 		/* Initialise memory */
 		memset(node->context,0,sizeof(struct dss_filter1_context));
 	}
+	context = (struct dss_filter1_context*)node->context;
 
 	calculate_filter1_coefficients(node->input[2], node->input[3],
 								   &context->a1, &context->b0, &context->b1);
@@ -320,12 +320,12 @@ static void calculate_filter2_coefficients(double fc, double d, double type,
 	double w;	/* cutoff freq, in radians/sec */
 	double w_squared;
 	double den;	/* temp variable */
-	double two_over_T = 2.0*Machine->sample_rate;
+	double two_over_T = 2.0*DISCRETE_SAMPLE_RATE;
 	double two_over_T_squared = two_over_T * two_over_T;
 
 	/* calculate digital filter coefficents */
 	/*w = 2.0*M_PI*fc; no pre-warping */
-	w = two_over_T*tan(M_PI*fc/Machine->sample_rate); /* pre-warping */
+	w = two_over_T*tan(M_PI*fc/DISCRETE_SAMPLE_RATE); /* pre-warping */
 	w_squared = w*w;
 
 	den = two_over_T_squared + d*w*two_over_T + w_squared;
@@ -378,13 +378,15 @@ int dst_filter2_step(struct node_description *node)
 
 int dst_filter2_reset(struct node_description *node)
 {
+	struct dss_filter2_context *context = (struct dss_filter2_context*)node->context;
+	context->x1 = context->x2 = context->y1 = context->y2 = 0;
 	node->output=0;
 	return 0;
 }
 
 int dst_filter2_init(struct node_description *node)
 {
-	struct dss_filter2_context *context = (struct dss_filter2_context*)node->context;
+	struct dss_filter2_context *context;
 
 	/* Allocate memory for the context array and the node execution order array */
 	if((node->context=malloc(sizeof(struct dss_filter2_context)))==NULL)
@@ -397,6 +399,7 @@ int dst_filter2_init(struct node_description *node)
 		/* Initialise memory */
 		memset(node->context,0,sizeof(struct dss_filter2_context));
 	}
+	context = (struct dss_filter2_context*)node->context;
 
 	calculate_filter2_coefficients(node->input[2], node->input[3], node->input[4],
 								   &context->a1, &context->a2,
@@ -668,7 +671,7 @@ struct dss_rcdisc_context
 /* input[1]    - input value                                            */
 /* input[2]    - Resistor value (initialisation only)                   */
 /* input[3]    - Capacitor Value (initialisation only)                  */
-/* input[4]    - NOT USED                                               */
+/* input[4]    - Voltage reference (DISCRETE_RCFILTER_VREF, else 0)     */
 /* input[5]    - Pre-calculated value for exponent                      */
 /*                                                                      */
 /************************************************************************/
@@ -684,20 +687,20 @@ int dst_rcfilter_step(struct node_description *node)
 	}
 	else
 	{
-		node->output=0;
+		node->output=node->input[4]; /* the capacitor is referenced to VREF */
 	}
 	return 0;
 }
 
 int dst_rcfilter_reset(struct node_description *node)
 {
-	node->output=0;
+	node->output=node->input[4];
 	return 0;
 }
 
 int dst_rcfilter_init(struct node_description *node)
 {
-	node->input[5]=-1.0/(node->input[2]*node->input[3]*Machine->sample_rate);
+	node->input[5]=-1.0/(node->input[2]*node->input[3]*DISCRETE_SAMPLE_RATE);
 	node->input[5]=1-exp(node->input[5]);
 	/* Initialise the object */
 	dst_rcfilter_reset(node);
@@ -753,7 +756,7 @@ int dst_rcdisc_reset(struct node_description *node)
 
 	context->state = 0;
 	context->t = 0;
-	context->step = 1.0 / Machine->sample_rate;
+	context->step = 1.0 / DISCRETE_SAMPLE_RATE;
 	context->exponent0=-1.0 * node->input[2]*node->input[3];
 
 	return 0;
@@ -817,7 +820,7 @@ int dst_rcdisc2_reset(struct node_description *node)
 
 	context->state = 0;
 	context->t = 0;
-	context->step = 1.0 / Machine->sample_rate;
+	context->step = 1.0 / DISCRETE_SAMPLE_RATE;
 	context->exponent0=-1.0 * node->input[2]*node->input[5];
 	context->exponent1=-1.0 * node->input[4]*node->input[5];
 
@@ -908,7 +911,7 @@ int dst_rcdisc5_reset(struct node_description *node)
 int dst_rcdisc5_init(struct node_description *node)
 {
 	/* Allocate memory for the context array and the node execution order array */
-	if((node->context=malloc(sizeof(struct dss_rcdisc_context)))==NULL)
+	if((node->context=malloc(sizeof(struct dst_rcdisc_context)))==NULL)
 	{
 		discrete_log("dss_rcdisc5_init() - Failed to allocate local context memory.");
 		return 1;
@@ -916,7 +919,7 @@ int dst_rcdisc5_init(struct node_description *node)
 	else
 	{
 		/* Initialise memory */
-		memset(node->context,0,sizeof(struct dss_rcdisc_context));
+		memset(node->context,0,sizeof(struct dst_rcdisc_context));
 	}
 
 	/* Initialise the object */
@@ -1044,6 +1047,8 @@ int dst_rcdisc2N_step(struct node_description *node)
 
 int dst_rcdisc2N_reset(struct node_description *node)
 {
+	struct dss_rcdisc2_context *context = (struct dss_rcdisc2_context*)node->context;
+	context->x1 = context->y1 = 0;
 	node->output=0;
 	return 0;
 }
@@ -1073,7 +1078,7 @@ int dst_rcdisc2N_init(struct node_description *node)
 	calculate_filter1_coefficients(f2, DISC_FILTER_LOWPASS, &context->a1_1, &context->b0_1, &context->b1_1);
 
 	/* Initialise the object */
-	dst_rcdisc2_reset(node);
+	dst_rcdisc2N_reset(node);
 
 	return 0;
 }

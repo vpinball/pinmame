@@ -25,10 +25,10 @@ int	g_fHandleMechanics  = FALSE;	// Signals wpc core to handle the mechanics for
 int g_fMechSamples      = TRUE;		// Signal the common library to load the mech samples
 HANDLE g_hGameRunning   = INVALID_HANDLE_VALUE;
 int volatile g_fPause   = 0;		// referenced in usrintf.c to pause the game
-char g_fShowPinDMD      = FALSE;	// pinDMD not active by default
+int g_fShowPinDMD       = FALSE;	// pinDMD not active by default (int, as rc_bool options store an int)
 int g_fDumpFrames       = FALSE;	// dump frames
 
-char g_fShowWinDMD      = TRUE;		// DMD active by default
+int g_fShowWinDMD       = TRUE;		// DMD active by default (int, as rc_bool options store an int)
 
 BOOL cabinetMode        = FALSE;
 

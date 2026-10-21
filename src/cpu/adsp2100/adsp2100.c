@@ -340,20 +340,20 @@ extern WRITE16_HANDLER(dcs_latch_w);
 
 INLINE UINT32 RWORD_PGM(UINT32 addr)
 {
+	addr &= 0x3fff; // 14 bit program address bus: a PC running past 0x3fff wraps
 #ifdef PINMAME
 	if (!WPC_gWPC95 && (addr == 0x3000)) return dcs_latch_r(0,0xffff)<<8;
 #endif /* PINMAME */
-	addr <<= 2;
-	return *(UINT32 *)&OP_ROM[ADSP2100_PGM_OFFSET + addr];
+	return *(UINT32 *)&OP_ROM[ADSP2100_PGM_OFFSET + (addr << 2)];
 }
 
 INLINE void WWORD_PGM(UINT32 addr, UINT32 data)
 {
+	addr &= 0x3fff;
 #ifdef PINMAME
 	if (!WPC_gWPC95 && (addr == 0x3000)) dcs_latch_w(0, (data>>8), 0xffff);
 #endif /* PINMAME */
-	addr <<= 2;
-	ADSP2100_WRPGM(&OP_ROM[ADSP2100_PGM_OFFSET + addr], data);
+	ADSP2100_WRPGM(&OP_ROM[ADSP2100_PGM_OFFSET + (addr << 2)], data);
 }
 
 #define ROPCODE() RWORD_PGM(adsp2100.pc)
@@ -869,9 +869,9 @@ else {
 resume_from_speedup:
 #endif /* WPCDCSSPEEDUP */
 
-		// advance to the next instruction
+		// advance to the next instruction (14 bit PC)
 		if (adsp2100.pc != adsp2100.loop)
-			adsp2100.pc++;
+			adsp2100.pc = (adsp2100.pc + 1) & 0x3fff;
 
 		// handle looping
 		else
@@ -885,7 +885,7 @@ resume_from_speedup:
 			{
 				loop_stack_pop();
 				pc_stack_pop_val();
-				adsp2100.pc++;
+				adsp2100.pc = (adsp2100.pc + 1) & 0x3fff;
 			}
 		}
 		// parse the instruction
@@ -1179,7 +1179,8 @@ resume_from_speedup:
 						0x02, 0x90, 0x37, 0x00,
 						0xe3, 0x9f, 0x37, 0x00
 					};
-					if (memcmp(&OP_ROM[ADSP2100_PGM_OFFSET + ((adsp2100.pc) << 2)],
+					if (adsp2100.pc <= 0x3ffd && // the 3 signature words must be inside the program memory
+						memcmp(&OP_ROM[ADSP2100_PGM_OFFSET + ((adsp2100.pc) << 2)],
 						signature, sizeof(signature)) == 0)
 					{
 						extern UINT32 dcs_speedup_1993(UINT32 pc);

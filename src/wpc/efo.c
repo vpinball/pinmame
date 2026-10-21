@@ -212,7 +212,7 @@ static int efo_sw2m(int no) {
 }
 
 static int efo_m2sw(int col, int row) {
-  return col * 10 + row;
+  return col * 10 + row + 1;
 }
 
 extern MACHINE_DRIVER_EXTERN(ZSU);
