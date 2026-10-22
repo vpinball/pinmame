@@ -122,3 +122,4 @@ void mixer_set_stereo_volume(const int ch, const int l_vol, const int r_vol);
 void mixer_set_reverb_filter(const int ch, const float delay, const float force);
 
 void mixer_set_channel_legacy_resample(const int ch, const UINT8 enable);
+int mixer_channel_is_resampled(const int ch);

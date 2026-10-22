@@ -1521,6 +1521,29 @@ void mixer_set_reverb_filter(const int ch, const float delay, const float force)
 	memset(channel->reverbBuffer, 0, sizeof(channel->reverbBuffer[0][0])*2*REVERB_LENGTH);
 }
 
+/* nonzero when a streamed channel's samples go through the exact rate paths (raw copy or libsamplerate) on at
+   least one side, zero when they all take the stepping path (silent so far, zero volume or legacy resampling),
+   which takes a slightly different number of samples per frame than libsamplerate */
+int mixer_channel_is_resampled(const int ch)
+{
+	const struct mixer_channel_data * const channel = &mixer_channel[ch];
+	int side;
+
+	if (!mixer_sound_enabled || channel->legacy_resample)
+		return 0;
+	if (channel->from_frequency == channel->to_frequency)
+		return 1;
+
+	for (side = 0; side < 2; side++)
+	{
+		if (side == 0 ? (is_stereo && channel->pan == MIXER_PAN_RIGHT) : (!is_stereo || channel->pan == MIXER_PAN_LEFT))
+			continue; /* side not used by this channel */
+		if (!channel->lr_silence[side] && (side == 0 ? channel->left_volume : channel->right_volume) * channel->mixing_level != 0)
+			return 1;
+	}
+	return 0;
+}
+
 void mixer_set_channel_legacy_resample(const int ch, const UINT8 enable)
 {
 	struct mixer_channel_data * const channel = &mixer_channel[ch];
