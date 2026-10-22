@@ -110,6 +110,7 @@ static struct {
   int    dispCol;
 
   int    lastCol;
+  int    viaIrq; // IRQ outputs of U7 (bit 0) and U8 (bit 1), timing accurate VIA only
 } alvglocals;
 
 static UINT16 segMapper(UINT16 value) {
@@ -247,7 +248,11 @@ static WRITE_HANDLER( xvia_0_ca2_w ) { LOG(("%x:WARNING: N.C.: U7-CA2-W: data=%x
 static WRITE_HANDLER( xvia_0_cb2_w )
 {
 	//printf("NMI: U7-CB2-W: data=%x\n",data);
+#if VIA6522_ACCURATE // inverted CB2, the shift register output drives it
+	cpu_set_nmi_line(ALVG_CPUNO, data ? CLEAR_LINE : ASSERT_LINE);
+#else
 	cpu_set_nmi_line(ALVG_CPUNO, PULSE_LINE);
+#endif
 }
 
 /* U8 - 6522 */
@@ -315,11 +320,25 @@ static WRITE_HANDLER( xvia_1_ca2_w ) { 	alvglocals.diagnosticLed = data; }
 static WRITE_HANDLER( xvia_1_cb2_w ) { LOG(("WARNING: N.C.: U8-CB2-W: data=%x\n",data)); }
 
 //IRQ:  IRQ to Main CPU
+#if !VIA6522_ACCURATE
 static void via_irq(int state) {
 //	printf("IN VIA_IRQ - STATE = %x\n",state);
 	cpu_set_irq_line(ALVG_CPUNO, 0, state?ASSERT_LINE:CLEAR_LINE);
 //	cpu_set_irq_line(ALVG_CPUNO, 0, PULSE_LINE);
 }
+#else
+// Both VIA IRQ outputs are wired to the CPU IRQ line; the timing accurate VIA
+// only reports changes, so the two have to be combined
+static void via_n_irq(int via, int state) {
+	if (state)
+		alvglocals.viaIrq |= 1 << via;
+	else
+		alvglocals.viaIrq &= ~(1 << via);
+	cpu_set_irq_line(ALVG_CPUNO, 0, alvglocals.viaIrq ? ASSERT_LINE : CLEAR_LINE);
+}
+static void via_0_irq(int state) { via_n_irq(0, state); }
+static void via_1_irq(int state) { via_n_irq(1, state); }
+#endif
 
 /*U12 - 8255*/
 /*
@@ -468,14 +487,22 @@ static struct via6522_interface via_0_interface =
 	/*inputs : A/B           */ xvia_0_a_r, xvia_0_b_r,
 	/*inputs : CA1/B1,CA2/B2 */ xvia_0_ca1_r, xvia_0_cb1_r, xvia_0_ca2_r, xvia_0_cb2_r,
 	/*outputs: A/B,CA2/B2    */ xvia_0_a_w, xvia_0_b_w, xvia_0_ca2_w, xvia_0_cb2_w,
+#if VIA6522_ACCURATE
+	/*irq                    */ via_0_irq
+#else
 	/*irq                    */ via_irq
+#endif
 };
 static struct via6522_interface via_1_interface =
 {
 	/*inputs : A/B           */ xvia_1_a_r, xvia_1_b_r,
 	/*inputs : CA1/B1,CA2/B2 */ xvia_1_ca1_r, xvia_1_cb1_r, xvia_1_ca2_r, xvia_1_cb2_r,
 	/*outputs: A/B,CA2/B2    */ xvia_1_a_w, xvia_1_b_w, xvia_1_ca2_w, xvia_1_cb2_w,
+#if VIA6522_ACCURATE
+	/*irq                    */ via_1_irq
+#else
 	/*irq                    */ via_irq
+#endif
 };
 
 /*
@@ -559,8 +586,10 @@ static INTERRUPT_GEN(alvg_vblank) {
 }
 
 static SWITCH_UPDATE(alvg) {
+#if !VIA6522_ACCURATE // not needed with the timing accurate VIA, NMI comes from the U7 shift register
   via_irq(1);			//Why is this necessary? - Seems to help switch scanning..
   xvia_0_cb2_w(0,1);	//Force an NMI call - fixes lamps in Pistol Poker & sending data to DMD
+#endif
 
   if (inports) {
     coreGlobals.swMatrix[0] = (inports[ALVG_COMINPORT] & 0x0700)>>8;								 	    //Column 0 Switches

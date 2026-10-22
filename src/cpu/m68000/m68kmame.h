@@ -44,6 +44,11 @@
 
 #define M68K_USE_64_BIT             OPT_OFF
 
+/* OPT_ON: the 68000/68306 use the cycle counts of the data sheet (see
+ * m68k_set_cycle_fix()) instead of the old ones, which run them 1-16% too fast
+ */
+#define M68K_CYCLE_FIX              OPT_OFF
+
 
 #define m68ki_remaining_cycles m68k_ICount
 

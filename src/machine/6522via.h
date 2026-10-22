@@ -15,6 +15,12 @@
 
 #define MAX_VIA 8
 
+// 1 = timing accurate core after MAME (timers, shift register, T1 PB7 output),
+// Gottlieb System 3 and Alvin G. then take their main CPU IRQ/NMI from the VIAs
+#ifndef VIA6522_ACCURATE
+#define VIA6522_ACCURATE 0
+#endif
+
 #define	VIA_PB	    0
 #define	VIA_PA	    1
 #define	VIA_DDRB    2

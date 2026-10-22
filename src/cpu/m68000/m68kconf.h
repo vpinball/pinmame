@@ -156,6 +156,12 @@
 #define M68K_USE_64_BIT  OPT_ON
 
 
+/* If ON, the 68000 uses the cycle counts of the data sheet (see
+ * m68k_set_cycle_fix()) instead of the ones this core always used.
+ */
+#define M68K_CYCLE_FIX   OPT_OFF
+
+
 /* Set to your compiler's static inline keyword to enable it, or
  * set it to blank to disable it.
  * If you define INLINE in the makefile, it will override this value.
