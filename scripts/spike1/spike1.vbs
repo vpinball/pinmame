@@ -16,8 +16,13 @@
 'An optional topper numbers its switches from 121 (Game of Thrones' TOPPER DRAGON is 121).
 
 'The flippers are worked by the node boards: a flipper button switch closing fires the flipper
-'coil on the board itself, with no GameOn solenoid in between. So a table only closes the button
-'switches (vpmKeyDown does) and moves its flippers from the flipper solenoids. The lower flipper
+'coil on the board itself. So a table only closes the button switches (vpmKeyDown does) and moves
+'its flippers from the flipper solenoids. GameOnSolenoid (33) is on while the flippers are enabled,
+'as SAM's: the game arms their reflexes on the boards while a ball is in play and disarms them at a
+'tilt and when a ball or the game ends. The boards fire the slings and pops the same way, armed and
+'disarmed with the flippers, so a table that kicks its own slings and pops switches them with
+'SolCallback(GameOnSolenoid) = "vpmNudge.SolGameOn" and vpmNudge.TiltObj set (UseSolenoids = 2
+'does it through vpmFlips). The lower flipper
 'coils come out as sLLFlipper/sLRFlipper (48/46) on every title, besides their own Driver Reference
 'numbers; an upper flipper is its coil's number only (Game of Thrones LE: 18 left, 16 right;
 'WWE: 22 left). Titles with upper flippers have a second leaf on each flipper button, which the
@@ -25,8 +30,8 @@
 'with staged flipper buttons sets Spike1StagedFlippers = True: the upper leaves then follow the
 'staged keys only.
 
-'Solenoid map: coils by their Driver Reference number, 1-32; a coil numbered 0 or above 32 as
-'51 and up, in number order. Lamps are the LED channels by their Light Reference number (an RGB
+'Solenoid map: coils by their Driver Reference number, 1-32; GAME ON as 33; a coil numbered 0 or
+'above 32 as 51 and up, in number order. Lamps are the LED channels by their Light Reference number (an RGB
 'LED is three channels; the GI strings and flashers are LED channels too). The boards fade the
 'LEDs, so for lamps that fade as on the machine set Const UseVPMModSol = 2: core.vbs then asks for
 'the lamps and coils as levels (0 to 1). A held flipper's coil then reads its hold duty, which is
@@ -61,6 +66,7 @@ Const swUp       = 110 ' Service Plus
 Const swDown     = 111 ' Service Minus
 Const swCancel   = 112 ' Service Back
 Const swCoinDoor = 116 ' power interlock: set = door CLOSED
+Const GameOnSolenoid = 33 ' on while the flippers are enabled: off at a tilt, between balls and after a game
 
 ' The cabinet, by title (0 where a title has no such switch)
 Dim swCoin1, swCoin2, swCoin3, swCoin4, swStartButton, swTournament, swLaunch, swTilt, swSlamTilt

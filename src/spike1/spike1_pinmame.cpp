@@ -179,6 +179,15 @@ int spike1_pinmame_coil(unsigned index, int *number, const char **name)
 	return 1;
 }
 
+int spike1_pinmame_coil_reflex_armed(int number)
+{
+	const spike1_devices *d = devices();
+	if (!d) return 0;
+	for (const auto &c : d->coils())
+		if (c.number == number) return d->reflex_armed(c.node, c.position) ? 1 : 0;
+	return 0;
+}
+
 unsigned spike1_pinmame_coil_output(int number)
 {
 	spike1_devices *d = devices();

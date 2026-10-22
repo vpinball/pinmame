@@ -2395,10 +2395,10 @@ static void SetupMsgApiGameStates()
       }
       // 33..36
       {
-         // 33, SAM: fake GameOn solenoid for fast flip
+         // 33, SAM, Spike 1: fake GameOn solenoid for fast flip (Spike 1: the flippers' reflexes armed on the node boards)
          // Note: core_getSol returns it replicated 4 times for 33..36 while core_getAllSol only returns it as 33 (34..36 are unused)
-         if (core_gameData->gen & GEN_SAM)
-            addPhysSol(fmtString("SAM Fake GameOn"), nullptr, nullptr, 33, GetSolenoid2State, GetSolenoid2VPMState, 0x00000010, 32);
+         if (core_gameData->gen & (GEN_SAM | GEN_SPIKE1))
+            addPhysSol(fmtString("%s Fake GameOn", (core_gameData->gen & GEN_SAM) ? "SAM" : "Spike 1"), nullptr, nullptr, 33, GetSolenoid2State, GetSolenoid2VPMState, 0x00000010, 32);
          // 33..36: Whitestar various extension boards (stored in 0x00F0 of solenoids2, which is upper flipper for other hardwares)
          // Note: core_getSol does not implement this while core_getAllSol does
          else if (core_gameData->gen & GEN_ALLWS)

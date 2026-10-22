@@ -2285,7 +2285,7 @@ int core_getSol(int solNo) {
         mask = 1<<(solNo - 33 + 4);
       return coreGlobals.solenoids2 & mask;
     }
-    else if (core_gameData->gen & GEN_SAM) // SAM only: fake GameOn solenoid for fast flips
+    else if (core_gameData->gen & (GEN_SAM | GEN_SPIKE1)) // SAM, Spike 1: fake GameOn solenoid for fast flips
        return coreGlobals.solenoids2 & 0x10;
   }
   else if (solNo <= 44) { // 37-44 WPC95 & S11 extra
@@ -2362,7 +2362,7 @@ UINT64 core_getAllSol(void) {
       uFlip |= (uFlip & 0x40)<<1;
     sol |= (((UINT64)uFlip)<<28);
   }
-  else if (core_gameData->gen & GEN_SAM) // 33 SAM fake GameOn sol for fast flips
+  else if (core_gameData->gen & (GEN_SAM | GEN_SPIKE1)) // 33 SAM, Spike 1 fake GameOn sol for fast flips
      sol |= (((UINT64)(coreGlobals.solenoids2 & 0x10)) << 28);
   else if (core_gameData->gen & GEN_ALLWS) // 33..36 various aux board outputs
      sol |= ((UINT64)(coreGlobals.solenoids2 & 0x00f0)) << 28;
@@ -2417,8 +2417,8 @@ void core_getAllPhysicSols(float* const state)
     state[34] = uFlip & 0x40 ? 1.0f : 0.0f;
     state[35] = uFlip & 0x80 ? 1.0f : 0.0f;
   }
-  /*-- 33 [SAM only] fake GameOn solenoid for fast flips --*/
-  if (core_gameData->gen & GEN_SAM)
+  /*-- 33 [SAM, Spike 1] fake GameOn solenoid for fast flips --*/
+  if (core_gameData->gen & (GEN_SAM | GEN_SPIKE1))
     state[32] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 33 - 1].value;
   /*-- 33..36 Whitestar various aux board outputs --*/
   else if (core_gameData->gen & GEN_ALLWS)

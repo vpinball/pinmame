@@ -126,6 +126,10 @@ public:
 	// went since the last look shows at its power, so one shorter than the look is not lost; the
 	// 1 ms pulses of the game's power-on driver check, too short to move a coil, show nothing
 	uint8_t coil_output(uint8_t node, uint8_t position, uint64_t now_ns);
+	// Whether a board fires a coil on its own now: a reflex with power, on a driver the game has not
+	// switched off. The game arms the flippers', slings' and pops' reflexes while a ball is in play
+	// and disarms them when it tilts and when a ball or the game ends - it sends them with no power
+	bool reflex_armed(uint8_t node, uint8_t position) const;
 	// An LED channel's level at now_ns, 0-255: on its way to the level the game last set, over that
 	// update's fade time
 	uint8_t led_level(uint8_t node, uint8_t position, uint64_t now_ns) const;

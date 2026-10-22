@@ -97,7 +97,7 @@ Harness options: `--dmd <s>` prints the DMD every s seconds, `--list-switches` t
 the time is emulated, in steps of `--slice`, and 0 ms toggles it and back at once, before the game
 can read it), `--led <name>` prints that LED channel's level as it changes, `--reads <file>` writes
 the time and board of every switch read (GetInputState) to a file,
-`--outputs` prints coil changes as they happen and the lit LEDs at the end, `--wav <file>` records
+`--outputs` prints coil changes and each coil's reflex as the game arms and disarms it as they happen and the lit LEDs at the end, `--wav <file>` records
 the sound, `--insert <s>` saves
 the LCD insert every s seconds as a PPM file in the state directory (`--rgb <s>` the same for the
 RGB matrix, which needs `--display-link rgbdotmatrix-0_1_1.hex` as the PinMAME set gives it), `--node-dump <file>`
@@ -382,7 +382,13 @@ code (its symbols are in the program) rather than from any other emulator:
   101-116, its DIP switches 101-108 from the DIP settings; a topper's own switches from 121);
   coils 1-32 as solenoids 1-32 by their Driver Reference numbers, other coils from solenoid 51, and
   the coils the game names LEFT FLIPPER and RIGHT FLIPPER, or LEFT and RIGHT FLIPPER POWER (with
-  their HOLD coils), also as the flipper outputs 48 and 46; LED channels as lamps by their Light
+  their HOLD coils), also as the flipper outputs 48 and 46; solenoid 33 is GAME ON, as on SAM: the
+  flippers enabled, that is their reflexes armed on the boards with power. The game arms the
+  flipper, sling and pop reflexes while a ball is in play and disarms them at a tilt and when a
+  ball or the game ends (verified in the harness on Supreme: node-bus command 0x41 with zeros for
+  all five reflex coils at the third tilt warning), so a table switches its own slings and pops
+  with it; the solenoids then run through 48 at least, so GAME ON and the flipper outputs are
+  physical outputs too; LED channels as lamps by their Light
   Reference numbers (a motor drive is no lamp); the motors the boards run on their own, then their
   steppers, as mechs (`GetMech(n)`: Ghostbusters' Slimer is mech 0; the 1000s, 100s, 10s, 1s and
   credit reels of Whoa Nellie, Primus and Pabst Can Crusher - one hardware, one set of switch

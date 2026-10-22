@@ -59,6 +59,8 @@
 #define SPIKE1_MAXMECHS   8              /* Whoa Nellie's five reels are the most a title has */
 #define SPIKE1_FIRSTCUSTSOL CORE_FIRSTCUSTSOL /* solenoid 51 */
 #define SPIKE1_NCUSTSOLS  (CORE_MODOUT_SOL_MAX - SPIKE1_FIRSTCUSTSOL + 1)
+#define SPIKE1_GAMEONSOL  33             /* GAME ON, as SAM's: the flippers enabled - their reflexes armed */
+#define SPIKE1_GAMEONBIT  0x10           /* its bit in solenoids2, where the core takes SAM's */
 #define SPIKE1_IOFREQ     1000           /* the I/O exchange: the node boards scan their switches far faster than a frame */
 
 /* The numbers a title's manual gives the switches PinMAME's keys reach; they differ between titles */
@@ -308,8 +310,8 @@ static void spike1_swChanged(int m)
 
 static void spike1_sync_io(void)
 {
-  int i;
-  UINT32 sols = 0, sols2 = coreGlobals.solenoids2 & ~(UINT32)(CORE_LLFLIPSOLBITS | CORE_LRFLIPSOLBITS);
+  int i, gameOn = 0;
+  UINT32 sols = 0, sols2 = coreGlobals.solenoids2 & ~(UINT32)(CORE_LLFLIPSOLBITS | CORE_LRFLIPSOLBITS | SPIKE1_GAMEONBIT);
   UINT8 lamps[CORE_MAXLAMPCOL];
   const double now = timer_get_time(), frame = 1.0 / Machine->drv->frames_per_second;
   /* switches that changed, the DIP switches from the DIP settings */
@@ -352,12 +354,18 @@ static void spike1_sync_io(void)
       if (level && sol <= 32) sols |= CORE_SOLBIT(sol);
     }
   }
+  /* the flipper outputs, and GAME ON: the flippers enabled. The game arms the flippers' reflexes on
+     the boards - with the slings' and pops' - while a ball is in play, and disarms them when it
+     tilts and when a ball or the game ends, so a table switches its own slings and pops with it */
   for (i = 0; i < 4; i++) {
     const int coil = locals.flipCoil[i >> 1][i & 1]; /* a flipper coil always has a solenoid, so its level is taken above */
     if (coil >= 0 && locals.coilLevel[coil]) sols2 |= (i >> 1) ? CORE_LRFLIPSOLBITS : CORE_LLFLIPSOLBITS;
+    if (coil >= 0 && spike1_pinmame_coil_reflex_armed(coil)) gameOn = 1;
   }
+  if (gameOn) sols2 |= SPIKE1_GAMEONBIT;
   coreGlobals.solenoids = coreGlobals.pulsedSolState = sols;
   coreGlobals.solenoids2 = sols2;
+  coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + SPIKE1_GAMEONSOL - 1].value = gameOn ? 1.0f : 0.0f;
   /* LEDs */
   memset(lamps, 0, sizeof(lamps));
   for (i = 0; i < (int)locals.nLeds; i++) {
@@ -681,7 +689,8 @@ static void spike1_map_outputs(void)
     locals.ledLamp[i] = number >= 1 && number <= coreGlobals.nLamps && !(kind & SPIKE1_LED_MOTOR) ? number : 0;
     locals.nLeds = i + 1;
   }
-  coreGlobals.nSolenoids = cust ? SPIKE1_FIRSTCUSTSOL - 1 + cust : 32;
+  /* through the lower flippers (45-48) at least, so GAME ON (33) and they are physical outputs too */
+  coreGlobals.nSolenoids = cust ? SPIKE1_FIRSTCUSTSOL - 1 + cust : CORE_FIRSTLFLIPSOL + 3;
   coreGlobals.nGI = 0;
   core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps, CORE_MODOUT_NONE);
   core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_NONE);

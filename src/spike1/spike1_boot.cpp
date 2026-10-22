@@ -317,6 +317,7 @@ int main(int argc, char **argv)
 
 	std::vector<uint8_t> coil_levels;
 	std::vector<int32_t> mech_positions;
+	std::vector<bool> reflexes_armed;
 	FILE *wav = wav_path.empty() ? nullptr : std::fopen(wav_path.c_str(), "wb");
 	uint32_t wav_frames = 0, wav_rate = 0;
 	std::vector<int16_t> audio(2 * 4096);
@@ -350,6 +351,7 @@ int main(int argc, char **argv)
 		if (show_outputs) {
 			const auto &coils = linux_os.devices().coils();
 			coil_levels.resize(coils.size());
+			reflexes_armed.resize(coils.size());
 			for (size_t i = 0; i < coils.size(); i++) {
 				const uint8_t level = linux_os.devices().coil_level(coils[i].node, coils[i].position, linux_os.now_ns());
 				if (level != coil_levels[i])
@@ -357,6 +359,11 @@ int main(int argc, char **argv)
 						level ? ("on " + std::to_string(level * 100 / 255) + "%").c_str() : "off");
 				coil_levels[i] = level;
 			}
+			for (size_t i = 0; i < coils.size(); i++)
+				if (linux_os.devices().reflex_armed(coils[i].node, coils[i].position) != reflexes_armed[i]) {
+					reflexes_armed[i] = !reflexes_armed[i];
+					std::printf("[%10.6f] coil %u %s reflex %s\n", now_s, coils[i].number, coils[i].name.c_str(), reflexes_armed[i] ? "armed" : "disarmed");
+				}
 			int16_t position = 0;
 			bool moving = false;
 			for (size_t i = 0; linux_os.devices().motor_at(i, position, moving, linux_os.now_ns()); i++) {

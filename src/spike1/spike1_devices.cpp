@@ -1633,6 +1633,13 @@ uint8_t spike1_devices::coil_level(uint8_t node, uint8_t position, uint64_t now_
 	return 0;
 }
 
+bool spike1_devices::reflex_armed(uint8_t node, uint8_t position) const
+{
+	if (node > 127 || position >= COILS_PER_NODE) return false;
+	const coil &c = m_coil[node][position];
+	return c.reflex && (c.reflex_power1 || c.reflex_power2) && !((m_coil_mask[node] >> position) & 1);
+}
+
 uint8_t spike1_devices::coil_output(uint8_t node, uint8_t position, uint64_t now_ns)
 {
 	if (node > 127 || position >= COILS_PER_NODE) return 0;
