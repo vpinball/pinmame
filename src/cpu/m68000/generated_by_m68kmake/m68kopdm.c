@@ -23,9 +23,13 @@ void m68k_op_dbf_16(void)
 		REG_PC -= 2;
 		m68ki_trace_t0();			   /* auto-disable (see m68kcpu.h) */
 		m68ki_branch_16(offset);
+		if(CYC_FIX)
+			USE_CYCLES(CYC_DBCC_F_NOEXP);
 		return;
 	}
 	REG_PC += 2;
+	if(CYC_FIX)
+		USE_CYCLES(CYC_DBCC_F_EXP);
 }
 
 
@@ -4446,6 +4450,10 @@ void m68k_op_lsr_8_s(void)
 	uint src = MASK_OUT_ABOVE_8(*r_dst);
 	uint res = src >> shift;
 
+	if(CYC_FIX && shift != 0) {
+                USE_CYCLES(shift<<CYC_SHIFT);
+        }
+
 	*r_dst = MASK_OUT_BELOW_8(*r_dst) | res;
 
 	FLAG_N = NFLAG_CLEAR;
@@ -4462,6 +4470,10 @@ void m68k_op_lsr_16_s(void)
 	uint src = MASK_OUT_ABOVE_16(*r_dst);
 	uint res = src >> shift;
 
+	if(CYC_FIX && shift != 0) {
+                USE_CYCLES(shift<<CYC_SHIFT);
+        }
+
 	*r_dst = MASK_OUT_BELOW_16(*r_dst) | res;
 
 	FLAG_N = NFLAG_CLEAR;
@@ -4477,6 +4489,10 @@ void m68k_op_lsr_32_s(void)
 	uint shift = (((REG_IR >> 9) - 1) & 7) + 1;
 	uint src = *r_dst;
 	uint res = src >> shift;
+
+	if(CYC_FIX && shift != 0) {
+                USE_CYCLES(shift<<CYC_SHIFT);
+        }
 
 	*r_dst = res;
 
@@ -4709,6 +4725,10 @@ void m68k_op_lsl_8_s(void)
 	uint src = MASK_OUT_ABOVE_8(*r_dst);
 	uint res = MASK_OUT_ABOVE_8(src << shift);
 
+	if(CYC_FIX && shift != 0) {
+                USE_CYCLES(shift<<CYC_SHIFT);
+        }
+
 	*r_dst = MASK_OUT_BELOW_8(*r_dst) | res;
 
 	FLAG_N = NFLAG_8(res);
@@ -4725,6 +4745,10 @@ void m68k_op_lsl_16_s(void)
 	uint src = MASK_OUT_ABOVE_16(*r_dst);
 	uint res = MASK_OUT_ABOVE_16(src << shift);
 
+	if(CYC_FIX && shift != 0) {
+                USE_CYCLES(shift<<CYC_SHIFT);
+        }
+
 	*r_dst = MASK_OUT_BELOW_16(*r_dst) | res;
 
 	FLAG_N = NFLAG_16(res);
@@ -4740,6 +4764,10 @@ void m68k_op_lsl_32_s(void)
 	uint shift = (((REG_IR >> 9) - 1) & 7) + 1;
 	uint src = *r_dst;
 	uint res = MASK_OUT_ABOVE_32(src << shift);
+
+	if(CYC_FIX && shift != 0) {
+                USE_CYCLES(shift<<CYC_SHIFT);
+        }
 
 	*r_dst = res;
 
@@ -11534,7 +11562,11 @@ void m68k_op_moveq_32(void)
 void m68k_op_muls_16_d(void)
 {
 	uint* r_dst = &DX;
-	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(DY) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+	uint src = DY;
+	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(src) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_muls_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -11548,7 +11580,11 @@ void m68k_op_muls_16_d(void)
 void m68k_op_muls_16_ai(void)
 {
 	uint* r_dst = &DX;
-	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(OPER_AY_AI_16()) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+	uint src = OPER_AY_AI_16();
+	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(src) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_muls_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -11562,7 +11598,11 @@ void m68k_op_muls_16_ai(void)
 void m68k_op_muls_16_pi(void)
 {
 	uint* r_dst = &DX;
-	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(OPER_AY_PI_16()) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+	uint src = OPER_AY_PI_16();
+	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(src) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_muls_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -11576,7 +11616,11 @@ void m68k_op_muls_16_pi(void)
 void m68k_op_muls_16_pd(void)
 {
 	uint* r_dst = &DX;
-	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(OPER_AY_PD_16()) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+	uint src = OPER_AY_PD_16();
+	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(src) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_muls_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -11590,7 +11634,11 @@ void m68k_op_muls_16_pd(void)
 void m68k_op_muls_16_di(void)
 {
 	uint* r_dst = &DX;
-	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(OPER_AY_DI_16()) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+	uint src = OPER_AY_DI_16();
+	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(src) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_muls_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -11604,7 +11652,11 @@ void m68k_op_muls_16_di(void)
 void m68k_op_muls_16_ix(void)
 {
 	uint* r_dst = &DX;
-	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(OPER_AY_IX_16()) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+	uint src = OPER_AY_IX_16();
+	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(src) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_muls_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -11618,7 +11670,11 @@ void m68k_op_muls_16_ix(void)
 void m68k_op_muls_16_aw(void)
 {
 	uint* r_dst = &DX;
-	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(OPER_AW_16()) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+	uint src = OPER_AW_16();
+	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(src) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_muls_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -11632,7 +11688,11 @@ void m68k_op_muls_16_aw(void)
 void m68k_op_muls_16_al(void)
 {
 	uint* r_dst = &DX;
-	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(OPER_AL_16()) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+	uint src = OPER_AL_16();
+	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(src) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_muls_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -11646,7 +11706,11 @@ void m68k_op_muls_16_al(void)
 void m68k_op_muls_16_pcdi(void)
 {
 	uint* r_dst = &DX;
-	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(OPER_PCDI_16()) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+	uint src = OPER_PCDI_16();
+	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(src) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_muls_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -11660,7 +11724,11 @@ void m68k_op_muls_16_pcdi(void)
 void m68k_op_muls_16_pcix(void)
 {
 	uint* r_dst = &DX;
-	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(OPER_PCIX_16()) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+	uint src = OPER_PCIX_16();
+	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(src) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_muls_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -11674,7 +11742,11 @@ void m68k_op_muls_16_pcix(void)
 void m68k_op_muls_16_i(void)
 {
 	uint* r_dst = &DX;
-	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(OPER_I_16()) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+	uint src = OPER_I_16();
+	uint res = MASK_OUT_ABOVE_32(MAKE_INT_16(src) * MAKE_INT_16(MASK_OUT_ABOVE_16(*r_dst)));
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_muls_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -11688,7 +11760,11 @@ void m68k_op_muls_16_i(void)
 void m68k_op_mulu_16_d(void)
 {
 	uint* r_dst = &DX;
-	uint res = MASK_OUT_ABOVE_16(DY) * MASK_OUT_ABOVE_16(*r_dst);
+	uint src = MASK_OUT_ABOVE_16(DY);
+	uint res = src * MASK_OUT_ABOVE_16(*r_dst);
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_mulu_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -11702,7 +11778,11 @@ void m68k_op_mulu_16_d(void)
 void m68k_op_mulu_16_ai(void)
 {
 	uint* r_dst = &DX;
-	uint res = OPER_AY_AI_16() * MASK_OUT_ABOVE_16(*r_dst);
+	uint src = OPER_AY_AI_16();
+	uint res = src * MASK_OUT_ABOVE_16(*r_dst);
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_mulu_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -11716,7 +11796,11 @@ void m68k_op_mulu_16_ai(void)
 void m68k_op_mulu_16_pi(void)
 {
 	uint* r_dst = &DX;
-	uint res = OPER_AY_PI_16() * MASK_OUT_ABOVE_16(*r_dst);
+	uint src = OPER_AY_PI_16();
+	uint res = src * MASK_OUT_ABOVE_16(*r_dst);
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_mulu_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -11730,7 +11814,11 @@ void m68k_op_mulu_16_pi(void)
 void m68k_op_mulu_16_pd(void)
 {
 	uint* r_dst = &DX;
-	uint res = OPER_AY_PD_16() * MASK_OUT_ABOVE_16(*r_dst);
+	uint src = OPER_AY_PD_16();
+	uint res = src * MASK_OUT_ABOVE_16(*r_dst);
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_mulu_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -11744,7 +11832,11 @@ void m68k_op_mulu_16_pd(void)
 void m68k_op_mulu_16_di(void)
 {
 	uint* r_dst = &DX;
-	uint res = OPER_AY_DI_16() * MASK_OUT_ABOVE_16(*r_dst);
+	uint src = OPER_AY_DI_16();
+	uint res = src * MASK_OUT_ABOVE_16(*r_dst);
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_mulu_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -11758,7 +11850,11 @@ void m68k_op_mulu_16_di(void)
 void m68k_op_mulu_16_ix(void)
 {
 	uint* r_dst = &DX;
-	uint res = OPER_AY_IX_16() * MASK_OUT_ABOVE_16(*r_dst);
+	uint src = OPER_AY_IX_16();
+	uint res = src * MASK_OUT_ABOVE_16(*r_dst);
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_mulu_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -11772,7 +11868,11 @@ void m68k_op_mulu_16_ix(void)
 void m68k_op_mulu_16_aw(void)
 {
 	uint* r_dst = &DX;
-	uint res = OPER_AW_16() * MASK_OUT_ABOVE_16(*r_dst);
+	uint src = OPER_AW_16();
+	uint res = src * MASK_OUT_ABOVE_16(*r_dst);
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_mulu_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -11786,7 +11886,11 @@ void m68k_op_mulu_16_aw(void)
 void m68k_op_mulu_16_al(void)
 {
 	uint* r_dst = &DX;
-	uint res = OPER_AL_16() * MASK_OUT_ABOVE_16(*r_dst);
+	uint src = OPER_AL_16();
+	uint res = src * MASK_OUT_ABOVE_16(*r_dst);
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_mulu_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -11800,7 +11904,11 @@ void m68k_op_mulu_16_al(void)
 void m68k_op_mulu_16_pcdi(void)
 {
 	uint* r_dst = &DX;
-	uint res = OPER_PCDI_16() * MASK_OUT_ABOVE_16(*r_dst);
+	uint src = OPER_PCDI_16();
+	uint res = src * MASK_OUT_ABOVE_16(*r_dst);
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_mulu_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -11814,7 +11922,11 @@ void m68k_op_mulu_16_pcdi(void)
 void m68k_op_mulu_16_pcix(void)
 {
 	uint* r_dst = &DX;
-	uint res = OPER_PCIX_16() * MASK_OUT_ABOVE_16(*r_dst);
+	uint src = OPER_PCIX_16();
+	uint res = src * MASK_OUT_ABOVE_16(*r_dst);
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_mulu_cycles_fix(src));
 
 	*r_dst = res;
 
@@ -11828,7 +11940,11 @@ void m68k_op_mulu_16_pcix(void)
 void m68k_op_mulu_16_i(void)
 {
 	uint* r_dst = &DX;
-	uint res = OPER_I_16() * MASK_OUT_ABOVE_16(*r_dst);
+	uint src = OPER_I_16();
+	uint res = src * MASK_OUT_ABOVE_16(*r_dst);
+
+	if(CYC_FIX)
+		USE_CYCLES(m68ki_mulu_cycles_fix(src));
 
 	*r_dst = res;
 

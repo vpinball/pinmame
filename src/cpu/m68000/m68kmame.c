@@ -257,6 +257,9 @@ void m68000_init(void)
 void m68000_reset(void* param)
 {
 	m68k_pulse_reset();
+#if M68K_CYCLE_FIX
+	m68k_set_cycle_fix(1);
+#endif
 }
 
 void m68000_exit(void)
@@ -2339,6 +2342,9 @@ void m68306_reset(void* param) {
   timer_enable(m68306_duart.timer, 0);						//Reset the timer
 
   m68k_pulse_reset();
+#if M68K_CYCLE_FIX
+  m68k_set_cycle_fix(1);
+#endif
 }
 
 void m68306_set_context(void *src)
