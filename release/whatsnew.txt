@@ -111,6 +111,7 @@ Improved the BSMT2000 sound emulation to follow the chip's own program more clos
  - proper reset on Data East/Sega/Stern sound boards: now restarts when the reset line is released, so the chip picks the mode the game sets (e.g. Batman, Star Trek 25th and Hook, in practice no audible change though)
  - proper reset on Alvin G. sound boards: reset line is wired now, so games set up the chip's mode themselves (in practice no audible change though)
 Also added an optional low level emulation of the BSMT2000 sound chip, running the chip's own program (needs bsmt2000.bin, in bsmt2000.zip in the roms folder): enable via the 'bsmt2000_lle' setting (registry key/command line), off by default as it costs more CPU
+Added optional data sheet cycle counts for the 68000 CPU (Capcom, Data East 192x64 DMD, Mr. Game, Technoplay): enable via the M68K_CYCLE_FIX define in src/cpu/m68000/m68kmame.h, off by default. The old counts run these CPUs 1-16% too fast, which e.g. changes the speed of the Technoplay attract mode lamp shows by 11-16%
 Fixed VGM recording for machines using OKI6295 sound
 Added VGM recording for machines using BSMT2000 sound
 Added VGM recording for machines using MSM5205/MSM6585 sound

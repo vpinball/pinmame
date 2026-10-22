@@ -316,6 +316,11 @@
 #define CYC_MOVEM_L      m68ki_cpu.cyc_movem_l
 #define CYC_SHIFT        m68ki_cpu.cyc_shift
 #define CYC_RESET        m68ki_cpu.cyc_reset
+#if M68K_CYCLE_FIX
+#define CYC_FIX          m68ki_cpu.cyc_fix
+#else
+#define CYC_FIX          0
+#endif
 
 
 #define CALLBACK_INT_ACK     m68ki_cpu.int_ack_callback
@@ -797,6 +802,9 @@ typedef struct
 	uint cyc_movem_l;
 	uint cyc_shift;
 	uint cyc_reset;
+#if M68K_CYCLE_FIX
+	uint cyc_fix;           /* 68000 data sheet cycle counts, see m68k_set_cycle_fix() */
+#endif
 	uint8* cyc_instruction;
 	uint8* cyc_exception;
 
@@ -1927,6 +1935,31 @@ INLINE void m68ki_check_interrupts(void)
 {
 	if(CPU_INT_LEVEL > FLAG_INT_MASK)
 		m68ki_exception_interrupt(CPU_INT_LEVEL>>8);
+}
+
+
+/* Cycle count corrections for CYC_FIX (68000 data sheet): MULU takes 38+2n
+ * (n = bits set in the source), MULS 38+2n (n = 01/10 patterns in the source
+ * with a 0 appended), the table has 54 for both.
+ */
+INLINE int m68ki_bit_count_16(uint v)
+{
+	v &= 0xffff;
+	v = v - ((v >> 1) & 0x5555);
+	v = (v & 0x3333) + ((v >> 2) & 0x3333);
+	v = (v + (v >> 4)) & 0x0f0f;
+	return (v + (v >> 8)) & 0x1f;
+}
+
+INLINE int m68ki_mulu_cycles_fix(uint src)
+{
+	return 38 + 2*m68ki_bit_count_16(src) - 54;
+}
+
+INLINE int m68ki_muls_cycles_fix(uint src)
+{
+	const uint v = (src << 1) & 0x1fffe;
+	return 38 + 2*m68ki_bit_count_16((v ^ (v >> 1)) & 0xffff) - 54;
 }
 
 
