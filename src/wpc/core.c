@@ -92,6 +92,7 @@ void vp_setDIP(int bank, int value) { }
 #else
   int g_fHandleKeyboard = 1;
   int g_fHandleMechanics = 0xff;
+  int g_fDumpFrames = 0; /* toggled with F6, see usrintrf.c */
   #define OnSolenoid(nSolenoid, IsActive)
   #define OnStateChange(nChange)
   #define vp_getSolMask64() ((UINT64)(-1))
@@ -1180,7 +1181,8 @@ void core_dmd_send_dmddevice(const int width, const int height, const float* con
 
 // Save main DMD bitplane and raw frames to a capture file
 // DMD frame capture can be enabled either by:
-// - setting g_fDumpFrames (not supported as it is only available through keyboard input which VPinMame doesn't have)
+// - the -dmd_dump_dir option (PinMAME, libpinmame)
+// - setting g_fDumpFrames with F6 (PinMAME, writes to DmdDump/ in the current directory; not supported in VPinMame as it doesn't get the keyboard input)
 // - setting g_fShowPinDMD (enable dmddevice.dll) and g_fShowWinDMD (enable VPinMAME rendering) simultaneously
 // TODO this is not yet implemented for Strikes N' Spares which has 2 DMDs
 #if defined(VPINMAME) || defined(PINMAME) || defined(LIBPINMAME)
@@ -1237,6 +1239,11 @@ static void core_dmd_capture_frame(const int width, const int height, const UINT
     ptr = strrchr(DumpFilename, '\\');
     strcpy_s(ptr + 1, 11, "DmdDump\\");
     strcat_s(DumpFilename, MAX_PATH, Machine->gamedrv->name);
+  }
+#elif defined(PINMAME) && !defined(LIBPINMAME)
+  else if (g_fDumpFrames) {
+    /* F6: like VPinMAME, into an existing DmdDump/ folder, appending */
+    snprintf(DumpFilename, sizeof(DumpFilename), "DmdDump/%s", Machine->gamedrv->name);
   }
 #endif
   else
@@ -1365,7 +1372,7 @@ static void core_dmd_video_update(struct mame_bitmap *bitmap, const struct recta
     unsigned int colRawFrameId;
     const UINT8* colRawFrame = (pmoptions.dmd_colorize && layout->length >= 128 && !core_dmd_has_16_shades()) ? core_dmd_update_identify(layout, &colRawFrameId) : NULL;
     core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, lumFrame, colRawFrame);
-    if (pmoptions.dmd_dump_dir && pmoptions.dmd_dump_dir[0] && layout->length >= 128) {
+    if (((pmoptions.dmd_dump_dir && pmoptions.dmd_dump_dir[0]) || g_fDumpFrames) && layout->length >= 128) {
       unsigned int rawFrameId;
       const UINT8* rawFrame = core_dmd_update_identify(layout, &rawFrameId);
       (void)rawFrameId; /* only rawFrame is needed here */

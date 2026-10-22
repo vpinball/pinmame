@@ -3867,6 +3867,16 @@ int handle_user_interface(struct mame_bitmap *bitmap)
 	if (input_ui_pressed(IPT_UI_LOAD_STATE))
 		do_loadsave(bitmap, LOADSAVE_LOAD);
 
+#if defined(PINMAME) && !defined(VPINMAME) && !defined(LIBPINMAME)
+	/* Dump Frames (DmdDump/<game>.txt, the folder has to exist) */
+	if (input_ui_pressed(IPT_UI_DUMPFRAME))
+	{
+		extern int g_fDumpFrames;
+		g_fDumpFrames = !g_fDumpFrames;
+		usrintf_showmessage("DMD frame dump %s", g_fDumpFrames ? "on" : "off");
+	}
+#endif
+
 #if defined(VPINMAME) || defined(LIBPINMAME)
 { extern int g_fPause;
   extern int g_fDumpFrames;
