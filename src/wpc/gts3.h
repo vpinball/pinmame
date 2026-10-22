@@ -245,6 +245,7 @@ typedef struct {
   UINT8  prn[8];
 
   UINT8 irq;
+  UINT8 viaIrq; // IRQ outputs of U4 (bit 0) and U5 (bit 1), timing accurate VIA only
 
   int modsol_rate_counter;
 } tGTS3locals;

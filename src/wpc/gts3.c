@@ -213,7 +213,11 @@ static WRITE_HANDLER( xvia_0_ca2_w )
 static WRITE_HANDLER( xvia_0_cb2_w )
 {
 	//logerror1("NMI: via_0_cb2_w: %x\n",data);
+#if VIA6522_ACCURATE // inverted CB2, the shift register output drives it
+	cpu_set_nmi_line(GTS3_CPUNO, data ? CLEAR_LINE : ASSERT_LINE);
+#else
 	cpu_set_nmi_line(GTS3_CPUNO, PULSE_LINE);
+#endif
 }
 
 /* U5 */
@@ -344,9 +348,24 @@ static WRITE_HANDLER( xvia_1_cb2_w ) {
 //IRQ:  IRQ to Main CPU
 static void GTS3_irq(int state) {
 	// logerror("IN VIA_IRQ - STATE = %x\n",state);
+#if !VIA6522_ACCURATE // IRQ comes from the VIAs otherwise
 	cpu_set_irq_line(GTS3_CPUNO, 0, GTS3locals.irq?ASSERT_LINE:CLEAR_LINE);
 	GTS3locals.irq = !GTS3locals.irq;
+#endif
 }
+
+#if VIA6522_ACCURATE
+// Both VIA IRQ outputs are wired to the CPU IRQ line
+static void GTS3_via_irq(int via, int state) {
+	if (state)
+		GTS3locals.viaIrq |= 1 << via;
+	else
+		GTS3locals.viaIrq &= ~(1 << via);
+	cpu_set_irq_line(GTS3_CPUNO, 0, GTS3locals.viaIrq ? ASSERT_LINE : CLEAR_LINE);
+}
+static void GTS3_u4_irq(int state) { GTS3_via_irq(0, state); }
+static void GTS3_u5_irq(int state) { GTS3_via_irq(1, state); }
+#endif
 
 /*
 
@@ -387,14 +406,22 @@ static struct via6522_interface via_0_interface =
 	/*inputs : A/B         */ xvia_0_a_r, xvia_0_b_r,
 	/*inputs : CA1/B1,CA2/B2 */ 0, xvia_0_cb1_r, xvia_0_ca2_r, xvia_0_cb2_r,
 	/*outputs: A/B,CA2/B2   */ xvia_0_a_w, xvia_0_b_w, xvia_0_ca2_w, xvia_0_cb2_w,
+#if VIA6522_ACCURATE
+	/*irq                  */ GTS3_u4_irq
+#else
 	/*irq                  */ 0 /* GTS3_irq */
+#endif
 };
 static struct via6522_interface via_1_interface =
 {
 	/*inputs : A/B         */ xvia_1_a_r, xvia_1_b_r,
 	/*inputs : CA1/B1,CA2/B2 */ xvia_1_ca1_r, xvia_1_cb1_r, xvia_1_ca2_r, xvia_1_cb2_r,
 	/*outputs: A/B,CA2/B2   */ xvia_1_a_w, xvia_1_b_w, xvia_1_ca2_w, xvia_1_cb2_w,
+#if VIA6522_ACCURATE
+	/*irq                  */ GTS3_u5_irq
+#else
 	/*irq                  */ 0 /* GTS3_irq */
+#endif
 };
 
 static INTERRUPT_GEN(GTS3_interface_update) {
@@ -1009,7 +1036,9 @@ static READ_HANDLER(aux1_r) {
 }
 
 static INTERRUPT_GEN(alphanmi) {
+#if !VIA6522_ACCURATE // NMI comes from the U4 shift register otherwise
 	xvia_0_cb2_w(0,0);
+#endif
 }
 
 //Show Sound Diagnostic LEDS
