@@ -696,6 +696,12 @@ int rtc_is_fixed(void)
 	return rtc_fixed;
 }
 
+/* back to the host clock */
+void rtc_release(void)
+{
+	rtc_fixed = 0;
+}
+
 /* seconds since the fixed start, from the emulated clock */
 static INT64 rtc_elapsed(void)
 {

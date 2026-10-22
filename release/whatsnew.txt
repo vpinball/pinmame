@@ -13,6 +13,11 @@ Add a HTTP remote debugger (see 'src/remote_debug/README.md' for all details), m
 
 Workaround a crash / race-condition when reading PinMAME state, e.g. when exiting VPX
 
+-record/-playback now also keep the switches set by VPinMAME (Controller.Switch) and libPinMAME (PinmameSetSwitch)
+ in <name>.sw next to the .inp, and the NVRAM the recording started from in <name>.nv. Both runs get the real-time clock
+ of the recording, so a session replays exactly. VPinMAME takes the 'record'/'playback' settings (registry keys),
+ libPinMAME PinmameSetRecord()/PinmameSetPlayback()
+
 Cleanup PinMAME32 UI a bit (historic/leftover MAME options like vector display, trackball or lightgun)
 
 Add -skip_gamewarnings option, for headless runs of not-yet-working/imperfect games

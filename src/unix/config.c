@@ -443,6 +443,7 @@ int config_init (int argc, char *argv[])
 			fprintf(stderr, "failed to open %s for playback\n", playbackname);
 			exit(1);
 		}
+		options.playback_name = playbackname;
 	}
 
 	/* check for game name embedded in .inp header */
@@ -675,6 +676,7 @@ int config_init (int argc, char *argv[])
 			fprintf(stderr_file, "failed to open %s for recording\n", recordname);
 			exit(1);
 		}
+		options.record_name = recordname;
 	}
 
 	if (options.record)

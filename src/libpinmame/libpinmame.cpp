@@ -58,6 +58,8 @@ char g_szGameName[256] = {}; // String containing requested game name (may be di
 // machine stop). The API only touches the emulation in state 1, under a shared lock of _stateMutex: the game thread
 // takes it exclusively to change the state, so it can't leave state 1 (and tear down) while an API call is in flight
 static std::atomic<int> _isRunning = 0;
+static char _recordName[256] = {};   // PinmameSetRecord()
+static char _playbackName[256] = {}; // PinmameSetPlayback()
 static std::shared_mutex _stateMutex;
 static inline bool IsEmulationRunning() { return _isRunning == 1; }
 static int _timeToQuit = 0;
@@ -1052,7 +1054,12 @@ static int StartGame(const int gameNum)
 
 	_gameThreadId = std::this_thread::get_id();
 
+	if (core_inputlog_open(gameNum, _recordName, _playbackName))
+		libpinmame_log_error("StartGame(): cannot open %s.inp", _playbackName[0] ? _playbackName : _recordName);
+
 	const int err = run_game(gameNum);
+
+	core_inputlog_close();
 
 	OnStateChange(0);
 
@@ -1215,6 +1222,32 @@ PINMAMEAPI int PinmameGetCheat()
 PINMAMEAPI void PinmameSetCheat(const int cheat)
 {
 	options.cheat = cheat;
+}
+
+/******************************************************
+ * PinmameSetRecord
+ ******************************************************/
+
+PINMAMEAPI PINMAME_STATUS PinmameSetRecord(const char* const p_name)
+{
+	if (_isRunning)
+		return PINMAME_STATUS_GAME_ALREADY_RUNNING;
+
+	snprintf(_recordName, sizeof(_recordName), "%s", p_name ? p_name : "");
+	return PINMAME_STATUS_OK;
+}
+
+/******************************************************
+ * PinmameSetPlayback
+ ******************************************************/
+
+PINMAMEAPI PINMAME_STATUS PinmameSetPlayback(const char* const p_name)
+{
+	if (_isRunning)
+		return PINMAME_STATUS_GAME_ALREADY_RUNNING;
+
+	snprintf(_playbackName, sizeof(_playbackName), "%s", p_name ? p_name : "");
+	return PINMAME_STATUS_OK;
 }
 
 /******************************************************
