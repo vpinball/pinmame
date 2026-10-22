@@ -45,6 +45,7 @@ public:
 		// game's own board tables, so nothing about a title is hard-coded here
 		std::function<uint32_t (const std::string &)> symbol;
 		std::function<uint32_t (const std::string &)> symbol_size; // the symbol's size in bytes, 0 if unknown
+		std::function<std::vector<std::string> (const std::string &prefix)> symbols_with_prefix; // the names that start with prefix
 		// The title's files beside the game program (node firmware, the LCD insert's image): their
 		// names, and one file's bytes (false when it is not there)
 		std::function<std::vector<std::string> ()> game_files;
@@ -227,7 +228,6 @@ private:
 	uint64_t m_adc_next_ns = 0;   // when the buffer being sampled is complete
 	uint32_t m_adc_phase = 0;
 	bool m_power_off = false;
-	bool m_cpu_inputs_from_1 = false; // WWE's SDK: the CPU board's inputs at positions 1-15 a bit lower on the wire (wire_bytes())
 
 	// Node bus: the RS-485 link to the playfield and cabinet node boards
 	std::deque<uint8_t> m_nb_reply;          // reply bytes for the game's read, the last ones maybe still on the wire
@@ -399,6 +399,8 @@ private:
 	uint8_t m_sw_changed[128][8] = {}; // changed since the game last read them
 	uint8_t m_sw_active_high[128][8] = {};
 	void load_device_table();
+	// The board inputs (node, position) the game's compiled switch maps read each switch number at
+	std::map<uint16_t, std::vector<std::pair<uint8_t, uint8_t>>> compiled_switch_inputs();
 	void apply_manual_numbers(const std::vector<std::pair<int, size_t>> &device);
 	void wire_bytes(uint8_t node, uint8_t *out, uint32_t len);
 	int32_t cpu_spi_message(uint32_t req, uint32_t arg, std::string &note);

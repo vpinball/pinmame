@@ -85,6 +85,8 @@ public:
 	// Address of a symbol in the game program's symbol table, 0 when it has none by that name
 	uint32_t symbol(const std::string &name) const;
 	uint32_t symbol_size(const std::string &name) const;
+	// The names of the game program's symbols that start with prefix, in order
+	std::vector<std::string> symbols_with_prefix(const std::string &prefix) const;
 	// A symbolic link of the machine's root filesystem the game reads with readlink(), outside the
 	// title's own files: /usr/local/spike/display.hex names the display a title has
 	void add_link(const std::string &path, const std::string &target) { m_links[path] = target; }

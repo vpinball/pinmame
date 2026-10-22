@@ -958,6 +958,15 @@ void spike1_devices::load_device_table()
 	for (uint32_t i = 0; i < boards[1]; i++) { guest_read(boards[0] + i * boards[2] + 12, &raw[i], 4); if (raw[i] >= 0x10000) upper = true; }
 	for (uint32_t i = 0; i < boards[1]; i++) node_of[i] = uint8_t((upper ? raw[i] >> 16 : raw[i]) & 0x7f);
 
+	// The device table is what the switch test names a board's inputs from; the switch code reads
+	// them through the program's compiled maps (compiled_switch_inputs()), which place a few
+	// switches elsewhere: Supreme, Primus, Whoa Nellie and Pabst read SLAM TILT at cabinet input
+	// 21 where their tables have 22, KISS the reverse, and WWE's SDK the CPU board's DIP switches
+	// 2-8 and service buttons an input lower than its table (DIP 2 at 1, SERVICE SELECT at 8, BACK
+	// at 11, as the later titles' tables have them). A switch the maps read at none of its table
+	// positions is wired where they read it - on its own board when they read it there
+	const std::map<uint16_t, std::vector<std::pair<uint8_t, uint8_t>>> compiled = compiled_switch_inputs();
+	std::string moved;
 	std::vector<std::pair<switch_info, uint16_t>> found; // with their switch-table flags
 	std::vector<std::pair<int, size_t>> device(devices[1], { 0, 0 }); // device index -> (type, index in m_coils/m_leds)
 	// An entry's four u16 fields from +16: [board][type][flags][position] up to node firmware 0.52,
@@ -998,6 +1007,17 @@ void spike1_devices::load_device_table()
 		s.node = node;
 		s.position = position;
 		s.name = name;
+		const auto read_at = compiled.find(s.number);
+		if (read_at != compiled.end() &&
+		    std::find(read_at->second.begin(), read_at->second.end(), std::make_pair(s.node, s.position)) == read_at->second.end()) {
+			auto input = std::find_if(read_at->second.begin(), read_at->second.end(),
+				[&](const std::pair<uint8_t, uint8_t> &i) { return i.first == s.node; });
+			if (input == read_at->second.end()) input = read_at->second.begin();
+			moved += " " + name + " " + std::to_string(input->first) + "-" + std::to_string(input->second) +
+				" (" + std::to_string(s.node) + "-" + std::to_string(s.position) + "),";
+			s.node = input->first;
+			s.position = input->second;
+		}
 		uint16_t flags = 0;
 		if (have_table && s.number < table[1]) guest_read(table[0] + s.number * table[2] + 0x10, &flags, 2);
 		else if (have_dedicated && s.number >= 129 && s.number - 129u < dedicated[1]) guest_read(dedicated[0] + (s.number - 129u) * dedicated[2] + 0x10, &flags, 2);
@@ -1030,14 +1050,8 @@ void spike1_devices::load_device_table()
 		    n.find("INTERLOCK") != std::string::npos || n.find("DC SENSE") != std::string::npos)
 			set_switch(f.first.node, f.first.position, true, 0);
 	}
-	// WWE's SDK gives the CPU board's inputs after DIP 1 a position one too high in this table (DIP 2
-	// at 2, SERVICE SELECT at 9 and BACK at 12, where the later titles have 1, 8 and 11). The board
-	// is the same: the game's own switch map for board 0 (g_node_switch_map) has DIP 1-8 on bits
-	// 0-7, ENTER, PLUS, MINUS and ESCAPE on 8-11 and the interlock on 16, as this table has for the
-	// later titles. wire_bytes() puts positions 1-15 a bit lower
-	m_cpu_inputs_from_1 = false;
-	for (const auto &f : found)
-		if (f.first.node == 0 && f.first.position == 2 && upper_name(f.first.name) == "DIP 2") m_cpu_inputs_from_1 = true;
+	if (!moved.empty())
+		log("devices: where the game's switch maps read what its device table puts elsewhere:" + moved.substr(0, moved.size() - 1));
 	for (auto &f : found) m_switches.push_back(f.first);
 	apply_manual_numbers(device);
 	std::string closed;
@@ -1045,6 +1059,42 @@ void spike1_devices::load_device_table()
 	log("devices: " + std::to_string(m_coils.size()) + " coils, " + std::to_string(m_leds.size()) + " LED channels, " +
 		std::to_string(m_switches.size()) + " switches from the game's tables, " + std::to_string(installed) +
 		" balls installed; closed at rest:" + (closed.empty() ? " none" : closed.substr(0, closed.size() - 1)));
+}
+
+// Where the game's switch code reads each switch. The program's board records (g_node_data) give
+// each board's node address and then its switch map (g_smap_<board>): an entry for each of 64
+// inputs, the first word the switch's word in the game's switch bits (0xf0 | word for the
+// dedicated switches, numbered from 129) and the u16 after it its bit, then the map's own state,
+// 0x54 bytes. The entries are 8 bytes from Supreme on and 56 in WWE's and Spider-Man's SDKs. A
+// program without the records has none here: Heavy Metal's SDK builds its maps from the device
+// table as it starts, and a map the program fills in itself (Game of Thrones' topper) is empty
+std::map<uint16_t, std::vector<std::pair<uint8_t, uint8_t>>> spike1_devices::compiled_switch_inputs()
+{
+	constexpr uint32_t MAP_INPUTS = 64, MAP_STATE_BYTES = 0x54;
+	std::map<uint16_t, std::vector<std::pair<uint8_t, uint8_t>>> inputs;
+	const uint32_t records = m_cfg.symbol("g_node_data"), records_size = m_cfg.symbol_size ? m_cfg.symbol_size("g_node_data") : 0;
+	if (!records || records_size < 8 || !m_cfg.symbols_with_prefix) return inputs;
+	std::vector<uint32_t> words(records_size / 4);
+	if (!guest_read(records, words.data(), uint32_t(words.size() * 4))) return inputs;
+	for (const auto &name : m_cfg.symbols_with_prefix("g_smap_")) {
+		const uint32_t map = m_cfg.symbol(name), size = m_cfg.symbol_size(name);
+		if (!map || size <= MAP_STATE_BYTES || (size - MAP_STATE_BYTES) % MAP_INPUTS) continue;
+		const uint32_t entry = (size - MAP_STATE_BYTES) / MAP_INPUTS;
+		const auto ref = std::find(words.begin() + 1, words.end(), map); // the record's map, after its node address
+		if (entry < 8 || ref == words.end() || (*(ref - 1) & 0xff) > 127) continue;
+		const uint8_t node = uint8_t(*(ref - 1));
+		for (uint32_t position = 0; position < MAP_INPUTS; position++) {
+			uint32_t e[2];
+			if (!guest_read(map + position * entry, e, 8)) break;
+			const uint32_t word = e[0], mask = e[1] & 0xffff;
+			if (!mask || (mask & (mask - 1)) || word > 0xff) continue;
+			unsigned bit = 0;
+			while (!((mask >> bit) & 1)) bit++;
+			const uint16_t number = uint16_t(word & 0xf0 ? 129 + (word & 0xf) * 16 + bit : 1 + word * 16 + bit);
+			inputs[number].push_back({ node, uint8_t(position) });
+		}
+	}
+	return inputs;
 }
 
 const spike1_devices::switch_info *spike1_devices::find_switch(const std::string &name) const
@@ -1081,12 +1131,6 @@ void spike1_devices::wire_bytes(uint8_t node, uint8_t *out, uint32_t len)
 	}
 	for (uint32_t i = 0; i < len; i++)
 		out[i] = i < 8 ? uint8_t(~(m_sw_read[n][i] ^ m_sw_active_high[n][i])) : 0xff;
-	if (node == 0 && m_cpu_inputs_from_1 && len >= 2) { // positions 1-15 one bit lower (see load_device_table()); bit 15 idles high
-		const uint16_t w = uint16_t(out[0] | out[1] << 8);
-		const uint16_t board = uint16_t((w & 1) | ((w >> 1) & 0x7ffe) | 0x8000);
-		out[0] = uint8_t(board);
-		out[1] = uint8_t(board >> 8);
-	}
 }
 
 // The CPU board's own inputs (DIP switches, service buttons, the door's power sense - board 0)

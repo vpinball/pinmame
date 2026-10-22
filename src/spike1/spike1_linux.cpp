@@ -261,6 +261,14 @@ uint32_t spike1_linux::symbol(const std::string &name) const
 	return it == m_symbols.end() ? 0 : it->second;
 }
 
+std::vector<std::string> spike1_linux::symbols_with_prefix(const std::string &prefix) const
+{
+	std::vector<std::string> names;
+	for (auto it = m_symbols.lower_bound(prefix); it != m_symbols.end() && it->first.compare(0, prefix.size(), prefix) == 0; ++it)
+		names.push_back(it->first);
+	return names;
+}
+
 // The pre-ARMv6 kernel helpers (Documentation/arm/kernel_user_helpers.rst), as real code so no
 // per-instruction hook is needed. get_tls reads the word the thread switch keeps up to date
 void spike1_linux::write_kuser_page()
@@ -338,6 +346,7 @@ bool spike1_linux::start(const config &cfg, std::string &error)
 	dev.log = m_cfg.log;
 	dev.symbol = [this](const std::string &name) { return symbol(name); };
 	dev.symbol_size = [this](const std::string &name) { return symbol_size(name); };
+	dev.symbols_with_prefix = [this](const std::string &prefix) { return symbols_with_prefix(prefix); };
 	dev.game_files = [this, game_dir]() {
 		std::vector<std::string> names;
 		for (const auto &e : m_vfs.list(game_dir)) if (!e.directory) names.push_back(e.name);

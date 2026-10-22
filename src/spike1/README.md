@@ -182,11 +182,16 @@ code (its symbols are in the program) rather than from any other emulator:
   carry position p in byte p/8, bit p%8, active low unless the switch table marks it active high.
   At rest: a trough opto per installed ball (`hook_balls_installed_in_game`), the firmware's other
   closed-at-rest marks and the coin door's power sense. WWE's SDK asks GetInputState for the eight
-  switch bytes alone, and its device table gives the CPU board's inputs after DIP 1 a position one
-  too high (DIP 2 at 2, SERVICE SELECT at 9, BACK at 12; the later titles have 1, 8 and 11). The
-  board is the same: the game's own switch map for board 0 (`g_node_switch_map`) has DIP 1-8 on
-  bits 0-7, ENTER, PLUS, MINUS and ESCAPE on 8-11 and the interlock on 16, so `wire_bytes()` puts
-  that table's positions 1-15 a bit lower.
+  switch bytes alone.
+- **Where the game reads a switch**: the device table is what the switch test names the inputs
+  from, but the switch code reads each board through its compiled switch map (`g_node_data` gives
+  each board's node address and its `g_smap_<board>`: per input, the switch's word and bit).
+  The two disagree on a few switches, and a switch is wired where the map reads it. Supreme,
+  Primus, Whoa Nellie and Pabst read SLAM TILT at cabinet input 21 where their tables have 22, and
+  KISS the reverse, so a slam at the table's input does nothing. WWE's SDK reads the CPU board's
+  DIP switches 2-8 and service buttons an input lower than its table (DIP 2 at 1, SERVICE SELECT
+  at 8, BACK at 11, as the later titles' tables have them). Heavy Metal's SDK has no compiled maps:
+  it builds them from the device table as it starts. `--list-switches` shows where each one is.
 - **Short switch closures**: a ball through a VPX trigger closes it for a few ms, and VPX runs a
   frame's physics in a burst, so its Hit and UnHit can come within a fraction of a millisecond.
   The game reads each change once: `sys_node_board_device_switch_update_inputs()` counts the edges
@@ -470,8 +475,8 @@ attract mode with its DMD, and its playfield LCD plays the attract clips (the sh
 of WrestleMania" logo and the WWE logo, decrypted by the game with the key from `wwe_135h.txt`,
 at 20 fps); it takes coins and
 starts a game. It needed `syncfs` (system call 373), 8-byte switch reads, its own table layouts,
-80-byte board blocks, its CPU board inputs a bit lower than its table gives them (above; without
-that, each service button acts as the next one), the framebuffer, views for its clips and the
+80-byte board blocks, its CPU board inputs where its switch map reads them (above; at its table's
+positions, each service button acts as the next one), the framebuffer, views for its clips and the
 attract video nudge above. BACK in attract mode adds a service credit, as the game intends. Stern's `WWE_LE-1_35.iso.zip` copy here had an unreadable area on its disk; the
 `.iso` inside it builds the same set.
 
