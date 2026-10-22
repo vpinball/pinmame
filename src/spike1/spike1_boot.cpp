@@ -444,12 +444,11 @@ int main(int argc, char **argv)
 	}
 	const double wall = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
 
-	const char *state = linux_os.state() == spike1_linux::status::running ? "still running" :
-		linux_os.state() == spike1_linux::status::exited ? "exited" : "stopped";
+	const char *state = linux_os.state() == spike1_linux::status::running ? "still running" : "stopped";
 	const double idle = linux_os.cycles() ? 100.0 * double(linux_os.idle_cycles()) / double(linux_os.cycles()) : 0.0;
-	std::printf("\n%s after %.3f s emulated (%.3f s wall, %llu system calls, %u threads alive, %.1f%% idle)\n", state,
+	std::printf("\n%s after %.3f s emulated (%.3f s wall, %llu system calls, %u threads alive, %.1f%% idle, %u restarts)\n", state,
 		double(linux_os.now_ns()) / 1e9, wall, (unsigned long long)linux_os.syscall_count(),
-		unsigned(linux_os.thread_count()), idle);
+		unsigned(linux_os.thread_count()), idle, unsigned(linux_os.restarts()));
 	if (!linux_os.stop_reason().empty()) std::printf("reason: %s\n", linux_os.stop_reason().c_str());
 	return 0;
 }

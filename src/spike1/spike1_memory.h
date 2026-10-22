@@ -43,6 +43,10 @@ public:
 
 	// Registers the blocks as fast windows of `space`
 	void attach(address_space &space);
+	// A new process: the program image, its heap and mmaps, the stack and every file view go, and
+	// the blocks come back zero-filled, as the kernel gives a new program fresh pages. False when the
+	// host has no memory for them
+	bool reset();
 
 	// Host address of [addr, addr + len), or null when the range is not inside one block. A range
 	// inside the read-only file view is only handed out when `for_write` is false

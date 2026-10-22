@@ -55,6 +55,12 @@ public:
 	explicit spike1_devices(spike1_memory &mem);
 
 	void start(const config &cfg);
+	// The game program has ended: the kernel lets go of what the process held - its mapping of the
+	// framebuffer, the serial line's unread input, the sound it queued, the line-sense sampling it
+	// started - and the boards carry on; the next run polls them from the first again
+	void process_exited();
+	// A new run of the program, loaded but not started: it reads the board's video key again
+	void process_started();
 	// What the board keeps across power cycles - its EEPROMs - as one block; set_nvram() after
 	// start() puts a saved block back (and ignores one it does not recognise)
 	std::vector<uint8_t> nvram() const;
@@ -215,6 +221,7 @@ private:
 	std::vector<eeprom> m_eeproms;
 	std::vector<digipot> m_digipots;
 
+	std::vector<uint8_t> m_video_key; // what provide_video_key() gave, for each run of the program
 	// The LCD's framebuffer: where the game mapped it, the line the shown buffer starts at, the
 	// panel's frame time (from the timing the game sets; 60 Hz until it does) and the frames shown
 	uint32_t m_fb_addr = 0, m_fb_len = 0, m_fb_yoffset = 0;

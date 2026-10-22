@@ -330,16 +330,9 @@ bool spike1_linux::start(const config &cfg, std::string &error)
 	m_vfs.add_directory("/data");
 	m_vfs.add_directory("/tmp");
 	for (const auto &f : m_cfg.files) m_vfs.add_file(f.path, f.data, f.size);
-	std::vector<uint8_t> elf;
-	if (!read_whole(m_cfg.executable, elf)) { error = "game program not found: " + m_cfg.executable; return false; }
-	uint32_t entry, phdr, phnum, sp;
-	if (!load_elf(elf, entry, phdr, phnum, error) || !build_stack(entry, phdr, phnum, sp, error))
-		return false;
-	for (const auto &s : m_cfg.symbols) {
-		m_symbols[s.name] = s.address;
-		m_symbol_sizes[s.name] = s.size;
-	}
-	write_kuser_page();
+	m_restart_ns = 0;
+	m_restarts = 0;
+	if (!start_process(error)) return false;
 	const std::string game_dir = m_cfg.executable.substr(0, m_cfg.executable.rfind('/'));
 	spike1_devices::config dev;
 	dev.trace = m_cfg.trace;
@@ -355,6 +348,27 @@ bool spike1_linux::start(const config &cfg, std::string &error)
 	dev.read_game_file = [this, game_dir](const std::string &name, std::vector<uint8_t> &out) { return read_whole(game_dir + "/" + name, out); };
 	m_devices.start(dev);
 	if (!m_cfg.nvram.empty() && !set_nvram(m_cfg.nvram)) log("nvram: the saved block is not a Spike 1 NVRAM block; starting with a new machine");
+	m_wall_base_ns = host_wall_ns();
+	m_cycles = m_idle_cycles = 0;
+	m_cpu.set_swi([this](uint32_t comment) { on_swi(comment); });
+	m_status = status::running;
+	m_stop_reason.clear();
+	return true;
+}
+
+bool spike1_linux::start_process(std::string &error)
+{
+	if (!m_mem.reset()) { error = "no host memory for the guest"; return false; }
+	std::vector<uint8_t> elf;
+	if (!read_whole(m_cfg.executable, elf)) { error = "game program not found: " + m_cfg.executable; return false; }
+	uint32_t entry, phdr, phnum, sp;
+	if (!load_elf(elf, entry, phdr, phnum, error) || !build_stack(entry, phdr, phnum, sp, error))
+		return false;
+	for (const auto &s : m_cfg.symbols) {
+		m_symbols[s.name] = s.address;
+		m_symbol_sizes[s.name] = s.size;
+	}
+	write_kuser_page();
 
 	m_fds.clear();
 	for (int fd = 0; fd < 3; fd++) {
@@ -365,8 +379,7 @@ bool spike1_linux::start(const config &cfg, std::string &error)
 		m_fds[fd] = f;
 	}
 	m_cwd = "/";
-	m_wall_base_ns = host_wall_ns();
-	m_cycles = m_idle_cycles = 0;
+	for (auto &sa : m_sigactions) sa = sigaction_entry();
 
 	m_threads.clear();
 	auto main_thread = std::make_unique<thread>();
@@ -378,11 +391,34 @@ bool spike1_linux::start(const config &cfg, std::string &error)
 	m_current = main_thread.get();
 	m_threads.push_back(std::move(main_thread));
 	m_next_tid = 101;
+	m_block = block_kind::none;
+	m_sigreturned = false;
 	m_cpu.enter_user_mode(m_current->ctx);
-	m_cpu.set_swi([this](uint32_t comment) { on_swi(comment); });
-	m_status = status::running;
-	m_stop_reason.clear();
 	log("start: " + m_cfg.executable + " entry " + hex(entry) + " sp " + hex(sp) + " brk " + hex(m_mem.brk(0)));
+	return true;
+}
+
+// The program has ended: the kernel closes its files and lets go of its threads and memory, and the
+// board's game_monitor (/etc/init.d/game_monitor: run the game, print "RESTARTING GAME", sleep 1,
+// run it again) starts it a second later. The files it wrote, the CPU board's devices and the node
+// boards carry on as they are - a slam tilt ends the program on purpose and comes back this way
+void spike1_linux::end_process(const std::string &how)
+{
+	for (auto &t : m_threads) t->st = thread::state::done;
+	m_fds.clear();
+	m_devices.process_exited();
+	m_restart_ns = now_ns() + 1000000000ull;
+	m_cpu.end_slice();
+	log("exit: " + how + "; game_monitor starts the program again in 1 s");
+}
+
+bool spike1_linux::restart_process()
+{
+	m_restart_ns = 0;
+	std::string error;
+	if (!start_process(error)) { stop("restart: " + error); return false; }
+	m_restarts++;
+	m_devices.process_started();
 	return true;
 }
 
@@ -390,8 +426,9 @@ bool spike1_linux::power_down(uint64_t max_ns, int slice_cycles)
 {
 	const uint64_t start = now_ns();
 	const uint32_t syncs = m_syncs;
+	if (m_restart_ns) { log("nvram: power down between runs of the program - nothing to commit"); return false; }
 	m_devices.power_off();
-	while (m_status == status::running && m_syncs == syncs && now_ns() - start < max_ns) run(slice_cycles);
+	while (m_status == status::running && !m_restart_ns && m_syncs == syncs && now_ns() - start < max_ns) run(slice_cycles);
 	const bool synced = m_syncs != syncs;
 	log("nvram: power down - " + std::string(synced ? "the game committed its NVRAM after " : "no NVRAM commit within ") +
 		std::to_string((now_ns() - start) / 1000000) + " ms");
@@ -404,11 +441,13 @@ spike1_linux::status spike1_linux::run(int cycles)
 	constexpr int QUANTUM = 200000;
 	int64_t budget = cycles;
 	while (budget > 0 && m_status == status::running) {
+		if (m_restart_ns && now_ns() >= m_restart_ns && !restart_process()) break;
 		wake_due();
-		thread *t = pick_next();
+		thread *t = m_restart_ns ? nullptr : pick_next();
 		if (!t) {
-			// every thread is blocked: let time pass up to the next wake-up without running anything
-			const uint64_t next = next_wake_ns();
+			// every thread is blocked, or game_monitor waits to start the program again: let time
+			// pass up to the next wake-up without running anything
+			const uint64_t next = m_restart_ns ? m_restart_ns : next_wake_ns();
 			if (!next) { stop("deadlock: every thread waits with no timeout"); break; }
 			const uint64_t now = now_ns();
 			uint64_t idle = next > now ? uint64_t(double(next - now) * m_cfg.clock_hz / 1e9) + 1 : 1;
@@ -581,10 +620,7 @@ void spike1_linux::exit_thread(int32_t code, std::string &note)
 	}
 	note = "thread " + std::to_string(t.tid) + " (" + t.name + ") exited with " + std::to_string(code);
 	m_cpu.end_slice();
-	if (!thread_count()) {
-		m_status = status::exited;
-		m_stop_reason = "the last thread exited";
-	}
+	if (!thread_count()) end_process("the last thread exited");
 }
 
 // ---------------------------------------------------------------- system calls
@@ -630,9 +666,7 @@ int32_t spike1_linux::syscall(uint32_t nr, const uint32_t a[7], bool &handled, s
 		exit_thread(int32_t(a[0]), note);
 		return 0;
 	case 248: // exit_group
-		m_status = status::exited;
-		m_stop_reason = "exit status " + std::to_string(int32_t(a[0]));
-		m_cpu.end_slice();
+		end_process("exit status " + std::to_string(int32_t(a[0])));
 		note = "process exited";
 		return 0;
 	case 20:  return 100;   // getpid

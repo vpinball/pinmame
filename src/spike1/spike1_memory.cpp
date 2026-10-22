@@ -43,11 +43,10 @@ void spike1_memory::release(uint8_t *mem, size_t size)
 
 spike1_memory::spike1_memory()
 {
-	m_low   = { 0, LOW_SIZE, allocate(LOW_SIZE) };
-	m_stack = { STACK_TOP - STACK_SIZE, STACK_SIZE, allocate(STACK_SIZE) };
-	m_kuser = { KUSER_BASE, KUSER_SIZE, allocate(KUSER_SIZE) };
-	m_free.push_back({ MMAP_BASE, LOW_SIZE - MMAP_BASE });
-	m_view_free.push_back({ FILE_BASE, FILE_LIMIT - FILE_BASE });
+	m_low   = { 0, LOW_SIZE, nullptr };
+	m_stack = { STACK_TOP - STACK_SIZE, STACK_SIZE, nullptr };
+	m_kuser = { KUSER_BASE, KUSER_SIZE, nullptr };
+	reset();
 }
 
 spike1_memory::~spike1_memory()
@@ -68,6 +67,25 @@ void spike1_memory::attach(address_space &space)
 	// read-only: a guest write there reaches unmapped_write() and stops the machine, as the
 	// game's own write to its read-only mapping would end it on the board
 	if (m_file.mem) space.add_fast_window(m_file.base, m_file.mem, m_file.size, false);
+}
+
+bool spike1_memory::reset()
+{
+	bool allocated = true;
+	for (block *b : { &m_low, &m_stack, &m_kuser }) {
+		release(b->mem, b->size);
+		b->mem = allocate(b->size);
+		allocated = allocated && b->mem;
+	}
+	close_map(m_file_map);
+	m_file = block();
+	for (view &v : m_views) close_map(v.map);
+	m_views.clear();
+	m_free.assign(1, { MMAP_BASE, LOW_SIZE - MMAP_BASE });
+	m_view_free.assign(1, { FILE_BASE, FILE_LIMIT - FILE_BASE });
+	m_brk_base = m_brk = 0;
+	if (m_space) attach(*m_space); // the old blocks' windows go with them
+	return allocated;
 }
 
 uint8_t *spike1_memory::host(uint32_t addr, uint32_t len, bool for_write)

@@ -174,6 +174,7 @@ void spike1_devices::start(const config &cfg)
 	m_fb_frame_ns = 16666667;
 	m_fb_pans = 0;
 	m_fb_startup_seen = m_fb_background_asked = false;
+	m_video_key.clear();
 	m_nb_reply.clear();
 	m_nb_arriving.clear();
 	m_nb_line_free_ns = m_nb_sent_ns = m_nb_busy_ns = 0;
@@ -212,6 +213,23 @@ void spike1_devices::start(const config &cfg)
 		pot.reg[4] = 0x1ff;             // TCON: all terminals connected
 		m_digipots.push_back(pot);
 	}
+}
+
+void spike1_devices::process_exited()
+{
+	m_fb_addr = m_fb_len = 0;
+	m_nb_reply.clear();
+	m_nb_arriving.clear();
+	m_nb_poll = 0;
+	m_audio.clear();
+	m_audio_until_ns = 0;
+	m_adc_next_ns = 0; // sampling starts with the next run's first read, as in the first run
+}
+
+void spike1_devices::process_started()
+{
+	m_fb_startup_seen = m_fb_background_asked = false;
+	if (m_video_key.size() == 16) provide_video_key(m_video_key.data());
 }
 
 // [slave, u16][size, u32][bytes] per EEPROM, little endian
@@ -1991,6 +2009,7 @@ bool spike1_devices::provide_video_key(const uint8_t key[16])
 {
 	const uint32_t at = video_key_at();
 	if (!at) return false;
+	m_video_key.assign(key, key + 16);
 	if (!needs_video_key()) return true; // the game has its key already
 	if (!guest_write(at, key, 16)) return false;
 	log("lcd: video key provided at " + hex(at));

@@ -12,8 +12,9 @@
 // the CPU; when every thread is blocked, time skips ahead to the next wake-up without running
 // instructions. Time is emulated time: CPU cycles at the configured clock.
 //
-// Bring-up stage: any system call that is not implemented yet stops the process with a message -
-// that is the work list.
+// When the program exits, the board's game_monitor starts it again a second later as a new process
+// (restart_process()); the machine runs on. A fault or a system call that is not implemented stops
+// the machine with a message instead - that is the work list.
 
 #pragma once
 
@@ -51,7 +52,7 @@ public:
 		std::function<void (const std::string &)> log;
 	};
 
-	enum class status { running, exited, stopped };
+	enum class status { running, stopped };
 
 	spike1_linux(spike1_cpu_device &cpu, spike1_memory &mem);
 	~spike1_linux();
@@ -68,6 +69,7 @@ public:
 
 	status state() const { return m_status; }
 	const std::string &stop_reason() const { return m_stop_reason; }
+	uint32_t restarts() const { return m_restarts; } // runs of the program game_monitor started after an exit
 	uint64_t cycles() const { return m_cycles; }
 	uint64_t idle_cycles() const { return m_idle_cycles; }
 	uint64_t now_ns() const;
@@ -133,10 +135,12 @@ private:
 	uint64_t m_wall_base_ns = 0;    // host wall clock at start, for CLOCK_REALTIME
 	uint64_t m_syscalls = 0;
 	uint32_t m_syncs = 0;           // sync() calls: the game ends an NVRAM commit with one
+	uint64_t m_restart_ns = 0;      // the program has exited: when game_monitor starts it again
+	uint32_t m_restarts = 0;
 
 	std::vector<std::unique_ptr<thread>> m_threads;
 	thread *m_current = nullptr;
-	uint32_t m_next_tid = 101;
+	uint32_t m_next_tid = 101;      // a new process's main thread is 100
 	block_kind m_block = block_kind::none;
 	bool m_sigreturned = false;     // the system call was a sigreturn: the registers are restored, not a result
 
@@ -148,6 +152,11 @@ private:
 	sigaction_entry m_sigactions[65];
 
 	void stop(const std::string &reason);
+	// A new process running the game program, as the kernel starts one: new memory with the
+	// program's image, stack and helper page, standard input and outputs, one thread
+	bool start_process(std::string &error);
+	void end_process(const std::string &how);
+	bool restart_process();
 	void log(const std::string &line) const;
 	void on_swi(uint32_t comment);
 	int32_t syscall(uint32_t nr, const uint32_t a[7], bool &handled, std::string &note);

@@ -43,7 +43,12 @@ system-call level, the way the program sees it.
   board's EEPROMs - as one block for the host's NVRAM file; the next start takes it back in its
   config. Threads are scheduled round robin on the one CPU, in quanta; when every thread is
   blocked, time skips ahead to the next wake-up without running instructions. Time is emulated
-  time - CPU cycles at the configured clock.
+  time - CPU cycles at the configured clock. When the program exits, the board's `game_monitor`
+  (`/etc/init.d/game_monitor`: run the game, print `RESTARTING GAME`, sleep 1, run it again)
+  starts it a second later as a new process: new memory, threads and open files, and the program
+  loaded again. The files it wrote, the CPU board's devices, the node boards, the EEPROMs and the
+  clock carry on. A slam tilt ends the program on purpose (`slam_tilt_debounce_proc()` calls
+  `exit(0)`) and comes back this way. A fault or an unimplemented system call stops the machine.
 - `spike1_pinmame.cpp`, `spike1_public.h` - the plain C contract with PinMAME's half,
   `src/wpc/spike1.c`; the subsystem includes no PinMAME header.
 - `spike1_boot.cpp` - the standalone harness.
