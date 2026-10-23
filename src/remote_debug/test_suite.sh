@@ -187,6 +187,14 @@ PRIMEB=$(curl -s "$BASE/api/debugger/memory?addr=8000&size=4&bank=10" | tr -d ' 
 DATA_A=$(echo "$PRIME" | grep -oE '"data":\[[0-9,]*\]')
 DATA_B=$(echo "$PRIMEB" | grep -oE '"data":\[[0-9,]*\]')
 [ "$DATA_A" == "$DATA_B" ] && echo "  [PASS] Prime area (0x8000) ignores bank" || fail "prime area differs with bank ($DATA_A vs $DATA_B)"
+# Games write the full bank number (0x20-0x3D with a 512K ROM like taf_l7);
+# the hardware decodes only the bits the ROM size needs. Every WPC ROM bank
+# starts with its own bank number, so reading/finding through that number
+# must see the bank's page, not run past the ROM region.
+BID=$(curl -s "$BASE/api/debugger/memory?addr=4000&size=1&bank=30" | tr -d ' ')
+assert_contains "$BID" '"data":[48]' "Banked read selects the ROM page of bank 0x30"
+BFIND=$(curl -s "$BASE/api/debugger/memory/find?pattern=30&addr=4000&size=1&bank=30" | tr -d ' ')
+assert_contains "$BFIND" '"found":16384' "Banked find selects the ROM page of bank 0x30"
 WPB=$(curl -s "$BASE/api/debugger/watchpoints?cmd=add&addr=5120&len=2&mode=1&bank=20"; curl -s "$BASE/api/debugger/points" | tr -d ' ')
 assert_contains "$WPB" '"addr":20768,"len":2,"mode":1,"bank":32' "Banked watchpoint stored"
 curl -s "$BASE/api/debugger/watchpoints?cmd=clear" > /dev/null
@@ -311,6 +319,14 @@ EXEC=$(echo "$COV" | sed -n 's/.*"executed": *\([0-9]*\).*/\1/p')
 [ "$EXEC" -gt 0 ] && echo "  [PASS] Coverage recorded $EXEC addresses" || fail "coverage executed 0"
 COVR=$(curl -s "$BASE/api/debugger/coverage?addr=8000&size=8" | tr -d ' ')
 assert_contains "$COVR" '"executed":[' "Coverage region query"
+# banked code is recorded per bank (indexed by the bank's ROM page)
+PAGED=0
+for b in $(seq 32 61); do
+    N=$(curl -s "$BASE/api/debugger/coverage?addr=4000&size=16384&bank=$(printf '%x' "$b")" |
+        python3 -c "import json,sys;print(sum(json.load(sys.stdin)['executed']))")
+    PAGED=$((PAGED + N))
+done
+[ "$PAGED" -gt 0 ] && echo "  [PASS] Banked code coverage recorded ($PAGED addresses)" || fail "no coverage in the banked ROM window"
 
 echo "20d. Tracepoints (log & continue)..."
 # resume, find a hot address from the trace, trace it, confirm it logs without halting

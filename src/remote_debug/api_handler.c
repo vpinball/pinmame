@@ -830,7 +830,7 @@ static void handle_api_debugger_dasm(const http_request_t *req, http_response_t 
 		cpuintrf_push_context(cpu_idx);
 		if (bank != -1 && Machine->drv->cpu[cpu_idx].cpu_type == CPU_M6809) {
 			old_bank = wpc_get_bank();
-			cpu_setbank(1, memory_region(WPC_ROMREGION) + bank * 0x4000);
+			cpu_setbank(1, memory_region(WPC_ROMREGION) + remote_debug_wpc_rom_page(bank) * 0x4000);
 		}
 		start = addr;
 		total = lines;
@@ -852,7 +852,7 @@ static void handle_api_debugger_dasm(const http_request_t *req, http_response_t 
 			start += size;
 		}
 		if (old_bank != -1)
-			cpu_setbank(1, memory_region(WPC_ROMREGION) + old_bank * 0x4000);
+			cpu_setbank(1, memory_region(WPC_ROMREGION) + remote_debug_wpc_rom_page(old_bank) * 0x4000);
 		cpuintrf_pop_context();
 	}
 	remote_debug_unlock();
