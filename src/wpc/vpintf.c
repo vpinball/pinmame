@@ -60,8 +60,8 @@ int vp_getGI(int giNo)
 {
   /*-- Physical output mode: return a physically meaningful value depending on the output type --*/
   if (coreGlobals.nGI && (options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_GI))
-    return (int)saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_GI0 + giNo].value);
-  return coreGlobals.gi[giNo];
+    return (giNo >= 0 && giNo < CORE_MODOUT_GI_MAX) ? (int)saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_GI0 + giNo].value) : 0;
+  return (giNo >= 0 && giNo < CORE_MAXGI) ? coreGlobals.gi[giNo] : 0;
 }
 
 /*-------------------------------------------

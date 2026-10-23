@@ -107,8 +107,8 @@ extern PINMAME_VIDEO_UPDATE(seminidmd_update);
 #define SE_BOARDID_520_5130_06 0x0004 	 // Apollo 13 extra 7 segment display + modulated magnet driver
 #define SE_BOARDID_520_5143_00 0x0008 	 // GoldenEye & Twister double magnets processor
 #define SE_BOARDID_520_5152_00 0x0010 	 // Independence Day servo controller board
-#define SE_BOARDID_520_5192_00_J2 0x0020 // Auxiliary driver board (unlatched), wired to the U201/J2 latch (Sharkey's Shootout, Striker Xtreme, Playboy)
-#define SE_BOARDID_520_5192_00_J3 0x0040 // Auxiliary driver board (unlatched), wired to the U206/J3 latch
+#define SE_BOARDID_520_5192_00_J2 0x0020 // Auxiliary driver board (no latch on the board), wired to the U201/J2 latch (Sharkey's Shootout, Striker Xtreme, Playboy)
+#define SE_BOARDID_520_5192_00_J3 0x0040 // UK only Solenoid Expander (no latch on the board), wired to the U206 strobe outputs on J3 (High Roller Casino, Austin Powers, RollerCoaster Tycoon)
 #define SE_BOARDID_520_5197_00 0x0080 	 // High Roller Casino & Monopoly Mini DMD
 #define SE_BOARDID_520_5219_00 0x0100 	 // The Simpson's Pinball Party Mini DMD
 #define SE_BOARDID_520_5221_00 0x0200 	 // RollerCoaster Tycoon Mini DMD
