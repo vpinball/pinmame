@@ -632,6 +632,11 @@ void m68k_set_cycle_fix(int enable)
 /* Set the CPU type. */
 void m68k_set_cpu_type(unsigned int cpu_type)
 {
+#if M68K_CYCLE_FIX
+	/* The cycle table is reset below: keep CYC_FIX consistent with it (applied again for the 68000 types, off for the others) */
+	const uint cyc_fix = CYC_FIX;
+	CYC_FIX = 0;
+#endif
 	CPU_ADDRESS_MASK = 0xffffffff;
 	switch(cpu_type)
 	{
@@ -653,6 +658,10 @@ void m68k_set_cpu_type(unsigned int cpu_type)
 			CYC_MOVEM_L      = 3;
 			CYC_SHIFT        = 1;
 			CYC_RESET        = 132;
+#if M68K_CYCLE_FIX
+			if(cyc_fix)
+				m68k_set_cycle_fix(1);
+#endif
 			return;
 		case M68K_CPU_TYPE_68010:
 			CPU_TYPE         = CPU_TYPE_010;

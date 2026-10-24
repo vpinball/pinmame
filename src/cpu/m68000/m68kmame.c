@@ -262,6 +262,15 @@ void m68000_reset(void* param)
 #endif
 }
 
+int m68000_dbcc_loop_cycles(void)
+{
+#if M68K_CYCLE_FIX
+	return 10;
+#else
+	return 14;
+#endif
+}
+
 void m68000_exit(void)
 {
 	/* nothing to do */
