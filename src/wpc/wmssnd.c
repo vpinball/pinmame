@@ -1238,6 +1238,10 @@ static void wpcs_init(struct sndbrdData *brdData) {
 
   if (hcgain != 0)
 	hc55516_set_mixing_level(0, hcgain / 100.0);
+  // Builds from early 2024 to January 2025 read the WPC_CFTBL flag (then in gameSpecific2)
+  // as a speech gain of 1%, and that level got saved to the CFTBL cfg files. Reset it once.
+  if ((core_gameData->hw.gameSpecific1 & WPC_CFTBL) && hc55516_get_mixing_level(0) == 1)
+	hc55516_set_mixing_level(0, 1.0);
   if (ymvol != 0)
 	YM2151_set_mixing_levels(0, ymvol, ymvol);
   if (dacvol != 0)
