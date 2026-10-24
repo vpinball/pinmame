@@ -181,6 +181,9 @@ MACHINE_DRIVER_START(alvg_s1)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
 MACHINE_DRIVER_END
 
+// TODO VIA6522_ACCURATE: not adapted, keeps the old core. The VIA IRQ and the periodic alvgs_firq both drive the 6809 FIRQ
+// (assert/clear vs PULSE_LINE): the accurate core only reports IRQ changes, so a pulse could drop a pending VIA FIRQ.
+// OR both sources (like gts3/alvg do for their two VIAs) before setting accurate here
 static struct via6522_interface via_2_interface =
 {
 	/*inputs : A/B           */ xvia_2_a_r, xvia_2_b_r,

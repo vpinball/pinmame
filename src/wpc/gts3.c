@@ -407,7 +407,9 @@ static struct via6522_interface via_0_interface =
 	/*inputs : CA1/B1,CA2/B2 */ 0, xvia_0_cb1_r, xvia_0_ca2_r, xvia_0_cb2_r,
 	/*outputs: A/B,CA2/B2   */ xvia_0_a_w, xvia_0_b_w, xvia_0_ca2_w, xvia_0_cb2_w,
 #if VIA6522_ACCURATE
-	/*irq                  */ GTS3_u4_irq
+	/*irq                  */ GTS3_u4_irq,
+	/*Vectrex & Mac kludges*/ 0, 0, 0, 0,
+	/*accurate             */ 1 /* the IRQ/NMI wiring above follows MAME's gts3 driver */
 #else
 	/*irq                  */ 0 /* GTS3_irq */
 #endif
@@ -418,7 +420,9 @@ static struct via6522_interface via_1_interface =
 	/*inputs : CA1/B1,CA2/B2 */ xvia_1_ca1_r, xvia_1_cb1_r, xvia_1_ca2_r, xvia_1_cb2_r,
 	/*outputs: A/B,CA2/B2   */ xvia_1_a_w, xvia_1_b_w, xvia_1_ca2_w, xvia_1_cb2_w,
 #if VIA6522_ACCURATE
-	/*irq                  */ GTS3_u5_irq
+	/*irq                  */ GTS3_u5_irq,
+	/*Vectrex & Mac kludges*/ 0, 0, 0, 0,
+	/*accurate             */ 1 /* the IRQ/NMI wiring above follows MAME's gts3 driver */
 #else
 	/*irq                  */ 0 /* GTS3_irq */
 #endif
@@ -575,8 +579,9 @@ static void GTS3_alpha_common_init(void) {
 	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 0 * 8 + 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // SPECIAL
   }
   else if (strncasecmp(gn, "silvslug", 8) == 0) { // Silver Slugger
+	  coreGlobals.nAlphaSegs = 20 * 16 * 2 + 8 * 16;
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 8, 15, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
-	  for (int i = 0; i < 12; i++)
+	  for (int i = 0; i < 8; i++)
 		  core_set_pwm_output_led_vfd(CORE_MODOUT_SEG0 + 20 * 16 * 2 + i * 16, 7, 0, 8.f / 1.f); // Additional LED display (1ms strobe over 8ms period)
   }
   else if (strncasecmp(gn, "surfnsa", 7) == 0) { // Surf 'n Safari
@@ -586,8 +591,11 @@ static void GTS3_alpha_common_init(void) {
 	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 6 * 8 + 7, 1, CORE_MODOUT_LED_STROBE_1_10MS); // Monster Nostrils
   }
   else if (strncasecmp(gn, "tfight", 6) == 0) { // Title Fight
+	  coreGlobals.nAlphaSegs = 20 * 16 * 2 + 8 * 16;
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 6, 10, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 18, 6, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield & Backbox flashers
+	  for (int i = 0; i < 8; i++)
+		  core_set_pwm_output_led_vfd(CORE_MODOUT_SEG0 + 20 * 16 * 2 + i * 16, 7, 0, 8.f / 1.f); // Additional LED display (1ms strobe over 8ms period)
   }
   else if (strncasecmp(gn, "vegas", 5) == 0) { // Vegas
 	  coreGlobals.nAlphaSegs = 20 * 16 * 2 + 3 * 16;
@@ -659,9 +667,9 @@ static void gts3dmd_init(void) {
   coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
   core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps, CORE_MODOUT_BULB_44_20V_DC_GTS3);
   core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
-  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25, 15, CORE_MODOUT_BULB_44_6_3V_AC); // 'A' relay: lightbox insert (backbox), note that schematics read 6V AC, not 6.3
-  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 30, 15, CORE_MODOUT_BULB_44_6_3V_AC); // 'T' relay: GI, note that schematics read 6V AC, not 6.3
-  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31, 15, CORE_MODOUT_PULSE);           // 'Q' relay: GameOn
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25, 1, CORE_MODOUT_BULB_44_6_3V_AC); // 'A' relay: lightbox insert (backbox), note that schematics read 6V AC, not 6.3
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 30, 1, CORE_MODOUT_BULB_44_6_3V_AC); // 'T' relay: GI, note that schematics read 6V AC, not 6.3
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 31, 1, CORE_MODOUT_PULSE);           // 'Q' relay: GameOn
   // Game specific hardware
   const struct GameDriver* rootDrv = Machine->gamedrv;
   while (rootDrv->clone_of && (rootDrv->clone_of->flags & NOT_A_DRIVER) == 0)
@@ -730,10 +738,10 @@ static void gts3dmd_init(void) {
 	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 12 * 8, 8, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Flashers from aux board
   }
   else if (strncasecmp(gn, "sfight2", 7) == 0) { // Street Fighter 2
-	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23, 15, CORE_MODOUT_PULSE);           // 'S' relay: Lower playfield GameOn
-	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14, 9, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield flashers
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 23, 1, CORE_MODOUT_PULSE);                     // 'S' relay: Lower playfield GameOn
+	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 14, 9, CORE_MODOUT_BULB_89_20V_DC_GTS3);       // Playfield flashers
 	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 6 * 8 + 1, 7, CORE_MODOUT_LED_STROBE_1_10MS); // 'FIGHTER' LEDs
-	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 12 * 8, 8, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Backbox flasher (from aux board)
+	  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 12 * 8, 8, CORE_MODOUT_BULB_89_20V_DC_GTS3);  // Backbox flasher (from aux board)
   }
   else if (strncasecmp(gn, "teedoff", 7) == 0) { // Tee'd Off
 	  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 10, 13, CORE_MODOUT_BULB_89_20V_DC_GTS3); // Playfield flashers

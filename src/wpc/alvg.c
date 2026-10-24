@@ -488,7 +488,9 @@ static struct via6522_interface via_0_interface =
 	/*inputs : CA1/B1,CA2/B2 */ xvia_0_ca1_r, xvia_0_cb1_r, xvia_0_ca2_r, xvia_0_cb2_r,
 	/*outputs: A/B,CA2/B2    */ xvia_0_a_w, xvia_0_b_w, xvia_0_ca2_w, xvia_0_cb2_w,
 #if VIA6522_ACCURATE
-	/*irq                    */ via_0_irq
+	/*irq                    */ via_0_irq,
+	/*Vectrex & Mac kludges  */ 0, 0, 0, 0,
+	/*accurate               */ 1 /* the IRQ/NMI wiring above follows MAME's alvg driver */
 #else
 	/*irq                    */ via_irq
 #endif
@@ -499,7 +501,9 @@ static struct via6522_interface via_1_interface =
 	/*inputs : CA1/B1,CA2/B2 */ xvia_1_ca1_r, xvia_1_cb1_r, xvia_1_ca2_r, xvia_1_cb2_r,
 	/*outputs: A/B,CA2/B2    */ xvia_1_a_w, xvia_1_b_w, xvia_1_ca2_w, xvia_1_cb2_w,
 #if VIA6522_ACCURATE
-	/*irq                    */ via_1_irq
+	/*irq                    */ via_1_irq,
+	/*Vectrex & Mac kludges  */ 0, 0, 0, 0,
+	/*accurate               */ 1 /* the IRQ/NMI wiring above follows MAME's alvg driver */
 #else
 	/*irq                    */ via_irq
 #endif

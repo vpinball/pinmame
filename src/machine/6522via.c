@@ -2,21 +2,21 @@
 // copyright-holders:Peter Trauner, Mathis Rosenhauer
 /**********************************************************************
 
-    Rockwell 6522 VIA interface and emulation
+	Rockwell 6522 VIA interface and emulation
 
 	This function emulates the functionality of up to 8 6522
 	versatile interface adapters.
 
-    This is based on the M6821 emulation in MAME.
+	This is based on the M6821 emulation in MAME.
 
-    To do:
+	To do:
 
 	T2 pulse counting mode
-    Pulse mode handshake output
+	Pulse mode handshake output
 	Shift register
 
-	The optional timing accurate core (VIA6522_ACCURATE in 6522via.h)
-	follows MAME's current 6522via.cpp instead:
+	The timing accurate core (VIA6522_ACCURATE in 6522via.h, used by the
+	chips whose interface sets accurate) follows MAME's current 6522via.cpp instead:
 	timers reload after N+2 cycles, exact counter reads in all modes, T1
 	PB7 output, T2 pulse counting and 8 bit mode, shift register, input
 	latching, CA2 pulse output and the IRQ line only driven on changes.
@@ -184,7 +184,8 @@ struct via6522
 static struct via6522 via[MAX_VIA];
 
 #if VIA6522_ACCURATE
-/* timing accurate core, see the end of this file */
+/* timing accurate core, see the end of this file: used per chip, by the interfaces that set accurate */
+#define VIA_IS_ACCURATE(which) (via[which].intf && via[which].intf->accurate)
 static void acc_reset(int which);
 static int acc_read(int which, int offset);
 static void acc_write(int which, int offset, int data);
@@ -320,7 +321,7 @@ void via_reset(void)
 	memset(&v, 0, sizeof(v));
 
 	for (i = 0; i < MAX_VIA; i++)
-    {
+	{
 		v.intf = via[i].intf;
 		v.t1ll = via[i].t1ll;
 		v.t1lh = via[i].t1lh;
@@ -332,9 +333,11 @@ void via_reset(void)
 		v.cycles_to_sec = via[i].cycles_to_sec;
 
 #if VIA6522_ACCURATE
-		via[i] = v;
-		acc_reset(i);
-		continue;
+		if (v.intf && v.intf->accurate) {
+			via[i] = v;
+			acc_reset(i);
+			continue;
+		}
 #endif
 
 		v.t1 = timer_alloc(via_t1_timeout);
@@ -343,7 +346,7 @@ void via_reset(void)
 		v.t2_active = 0;
 
 		via[i] = v;
-    }
+	}
 }
 
 /******************* CPU interface for VIA read *******************/
@@ -354,7 +357,8 @@ int via_read(int which, int offset)
 	int val = 0;
 
 #if VIA6522_ACCURATE
-	return acc_read(which, offset);
+	if (VIA_IS_ACCURATE(which))
+		return acc_read(which, offset);
 #endif
 
 	offset &= 0xf;
@@ -553,8 +557,10 @@ void via_write(int which, int offset, int data)
 	struct via6522 *v = via + which;
 
 #if VIA6522_ACCURATE
-	acc_write(which, offset, data);
-	return;
+	if (VIA_IS_ACCURATE(which)) {
+		acc_write(which, offset, data);
+		return;
+	}
 #endif
 
 	offset &=0x0f;
@@ -895,8 +901,10 @@ void via_set_input_ca1(int which, int data)
 	struct via6522 *v = via + which;
 
 #if VIA6522_ACCURATE
-	acc_set_input_ca1(which, data);
-	return;
+	if (VIA_IS_ACCURATE(which)) {
+		acc_set_input_ca1(which, data);
+		return;
+	}
 #endif
 
 	/* limit the data to 0 or 1 */
@@ -949,8 +957,10 @@ void via_set_input_ca2(int which, int data)
 	struct via6522 *v = via + which;
 
 #if VIA6522_ACCURATE
-	acc_set_input_ca2(which, data);
-	return;
+	if (VIA_IS_ACCURATE(which)) {
+		acc_set_input_ca2(which, data);
+		return;
+	}
 #endif
 
 	/* limit the data to 0 or 1 */
@@ -985,8 +995,10 @@ void via_set_input_b(int which, int data)
 	struct via6522 *v = via + which;
 
 #if VIA6522_ACCURATE
-	acc_set_input_b(which, data);
-	return;
+	if (VIA_IS_ACCURATE(which)) {
+		acc_set_input_b(which, data);
+		return;
+	}
 #endif
 
 	/* set the input, what could be easier? */
@@ -1002,8 +1014,10 @@ void via_set_input_cb1(int which, int data)
 	struct via6522 *v = via + which;
 
 #if VIA6522_ACCURATE
-	acc_set_input_cb1(which, data);
-	return;
+	if (VIA_IS_ACCURATE(which)) {
+		acc_set_input_cb1(which, data);
+		return;
+	}
 #endif
 
 	/* limit the data to 0 or 1 */
@@ -1052,8 +1066,10 @@ void via_set_input_cb2(int which, int data)
 	struct via6522 *v = via + which;
 
 #if VIA6522_ACCURATE
-	acc_set_input_cb2(which, data);
-	return;
+	if (VIA_IS_ACCURATE(which)) {
+		acc_set_input_cb2(which, data);
+		return;
+	}
 #endif
 
 	/* limit the data to 0 or 1 */

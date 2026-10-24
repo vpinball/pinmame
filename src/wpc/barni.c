@@ -227,6 +227,8 @@ static const struct pia6821_interface pia[] = {{
   /*irq: A/B           */ 0, 0
 }};
 
+// TODO VIA6522_ACCURATE: not adapted, keeps the old core. Check the VIA use (timers, CA2/CB2, IRQ wiring) against the
+// accurate core's semantics (N+2 timer reload, IRQ only reported on changes) before setting accurate here
 static struct via6522_interface via = {
   /*i: A/B,CA1/B1,CA2/B2 */ 0, 0, 0, 0, 0, 0,
   /*o: A/B,CA2/B2        */ via0a_w, via0b_w, via0ca2_w, via0cb2_w, 

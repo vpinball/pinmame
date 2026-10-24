@@ -15,10 +15,11 @@
 
 #define MAX_VIA 8
 
-// 1 = timing accurate core after MAME (timers, shift register, T1 PB7 output),
-// Gottlieb System 3 and Alvin G. then take their main CPU IRQ/NMI from the VIAs
+// 1 = timing accurate core after MAME (timers, shift register, T1 PB7 output), used by the chips whose interface
+// sets accurate (Gottlieb System 3 and Alvin G. main board, which then take their main CPU IRQ/NMI from the VIAs).
+// The others (Alvin G. sound board, Barni, JVH) keep the old core, see the TODOs in their drivers
 #ifndef VIA6522_ACCURATE
-#define VIA6522_ACCURATE 0
+#define VIA6522_ACCURATE 1
 #endif
 
 #define	VIA_PB	    0
@@ -52,12 +53,13 @@ struct via6522_interface
 	mem_write_handler out_cb2_func;
 	void (*irq_func)(int state);
 
-    /* kludges for the Vectrex */
+	/* kludges for the Vectrex */
 	void (*out_shift_func)(int val);
 	void (*t2_callback)(double tme);
-    /* kludges for the Mac Plus (and 128k, 512k, 512ke) keyboard interface */
+	/* kludges for the Mac Plus (and 128k, 512k, 512ke) keyboard interface */
 	void (*out_shift_func2)(int val);	/* called when some data is shifted out in EXT sync mode */
 	void (*si_ready_func)(void);		/* called when the shift-in is enabled (EXT sync mode) */
+	int accurate;						/* 1: use the timing accurate core (VIA6522_ACCURATE builds only), driver adapted to it */
 };
 
 #ifdef __cplusplus
