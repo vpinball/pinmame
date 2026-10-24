@@ -1058,8 +1058,7 @@ DRIVERNV(formula1)      //Formula 1 (??/1988)
 DRIVERNV(leking)        //Le King (??/1983)
 DRIVERNV(olympic)       //Olympic Games (??/1984)
 DRIVERNV(jpapillon)     //Papillon (12/1984)
-DRIVERNV(apocalypse_now) //Apocalypse Now (??/1985)
-                        //Apocalypse Now (??/1985)
+DRIVERNV(apocalypse_now)//Apocalypse Now (??/1985)
                         //Apocalypse Now (??/1986)
 
 // ----------------

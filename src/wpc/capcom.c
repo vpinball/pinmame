@@ -384,8 +384,8 @@ static WRITE16_HANDLER(cc_portb_w) {
 //                                 B use frequency defined by writing at 40C00404
 //                                 A use frequency defined by writing at 40C00402
 //                             . ??? are unknown. Breakshot, Flipper Football & KingPin always set them to 011, except if an auxiliary board is present, then it is set to 111
-//   $40C00402  u16IRQ4line1f  is IRQ4 line 1 frequency (0x1000 - (data & 0x0FFF)) * 88.6489 CPU cycles
-//   $40C00404  u16IRQ4line2f  is IRQ4 line 2 frequency (0x1000 - (data & 0x0FFF)) * 88.6489 CPU cycles
+//   $40C00402  u16IRQ4line1f  is IRQ4 line 1 frequency (0x1000 - (data & 0x0FFF)) * 6.334 DBF loop passes (88.675 cycles with 14 cycle passes)
+//   $40C00404  u16IRQ4line2f  is IRQ4 line 2 frequency (0x1000 - (data & 0x0FFF)) * 6.334 DBF loop passes (88.675 cycles with 14 cycle passes)
 //
 // No other access were witnessed, so others are likely unused.
 //
@@ -404,6 +404,17 @@ static WRITE16_HANDLER(cc_portb_w) {
 #else
 #define LOG_U16(x)
 #endif
+
+// The U16 periods are known from the ROM startup tests, which count passes of a DBF D0,* loop until the interrupt (IRQ1 and IRQ4
+// tests at $1009202C and $10092160 in Pinball Magic): they are kept in passes and converted with the 68306 core's cost of a pass,
+// so that they keep matching with the old cycle counts (14 cycles) as with the data sheet ones (10 cycles, M68K_CYCLE_FIX)
+#define U16_PASSES(passes)       TIME_IN_SEC((passes) * m68000_dbcc_loop_cycles() / (double)CPU_CLOCK)
+#define U16_IRQ4_PASSES_PER_UNIT (88.675 / 14.) // IRQ4 lines 1 & 2: passes per unit of (0x1000 - frequency register)
+
+// TODO with the data sheet cycle counts (M68K_CYCLE_FIX), express the U16 timings in CPU clocks instead: the DMD row clock measured on
+// hardware is CPU_CLOCK / 1024 and a U16 unit is 1/16 row, i.e. exactly 64 clocks (6.334 passes of 10 cycles = 63.3 clocks today, and
+// IRQ4 line 3, the DMD VBlank, then matches the measured 4 frame group within 1%). Not possible with the old cycle counts, whose
+// 14 cycle passes would fail the startup tests. The IRQ1 periods would need the same review (and its 120/165 and zero cross hacks)
 
 static void cc_u16irq1(int data) {
   //if (!locals.irq1State) printf(">> Raise IRQ1\n");
@@ -511,9 +522,10 @@ static WRITE16_HANDLER(u16_w) {
 
     case 0x200: { // IRQ1 Frequency, IRQ4 line 1/2/3 enable
       LOG_U16(("PC %08x - U16w IRQ1 f=%x IRQ4=%x [data@%03x=%04x] (%04x)\n", activecpu_get_pc(), (data >> 6) & 3, (data & 0x7) ^ 4, offset, data, mem_mask));
-      //static const int irq1NCycles[] = { 22662, 11308, 5631, 2789 }; // Number of CPU cycles taken from startup check disassembly (value without IRQ1 adjusting on ACK)
-      static const int irq1NCycles[] = { 22602, 11248, 5571, 2729 }; // Number of CPU cycles taken from startup check disassembly (value with IRQ1 adjusting on ACK)
-      locals.u16IRQ1Period = TIME_IN_SEC(irq1NCycles[(data >> 6) & 3] / (double)CPU_CLOCK);
+      // Number of DBF loop passes taken from startup check disassembly, given as CPU cycles of 14 cycle passes
+      //static const double irq1Passes[] = { 22662 / 14., 11308 / 14., 5631 / 14., 2789 / 14. }; // (value without IRQ1 adjusting on ACK)
+      static const double irq1Passes[] = { 22602 / 14., 11248 / 14., 5571 / 14., 2729 / 14. }; // (value with IRQ1 adjusting on ACK)
+      locals.u16IRQ1Period = U16_PASSES(irq1Passes[(data >> 6) & 3]);
       timer_adjust(locals.u16IRQ1timer, locals.u16IRQ1Adjust ? (locals.u16IRQ1Period * 120.0 / 165.0) : locals.u16IRQ1Period, 0, locals.u16IRQ1Adjust ? (locals.u16IRQ1Period * 120.0 / 165.0) : locals.u16IRQ1Period);
       timer_adjust(locals.u16IRQ4Line1timer, locals.u16IRQ4Line1Period, 0, locals.u16IRQ4Line1Period);
       timer_adjust(locals.u16IRQ4Line2timer, locals.u16IRQ4Line2Period, 0, locals.u16IRQ4Line2Period);
@@ -525,12 +537,12 @@ static WRITE16_HANDLER(u16_w) {
     }
     case 0x201: { // IRQ4 Line 1 frequency
       LOG_U16(("PC %08x - U16w IRQ4 f1=%03x     [data@%03x=%04x] (%04x)\n", activecpu_get_pc(), data, offset, data, mem_mask));
-      locals.u16IRQ4Line1Period = TIME_IN_SEC(((0x1000 - (data & 0x0FFF)) * 88.675) / (double)CPU_CLOCK);
+      locals.u16IRQ4Line1Period = U16_PASSES((0x1000 - (data & 0x0FFF)) * U16_IRQ4_PASSES_PER_UNIT);
       break;
     }
     case 0x202: { // IRQ4 Line 2 frequency
       LOG_U16(("PC %08x - U16w IRQ4 f2=%03x     [data@%03x=%04x] (%04x)\n", activecpu_get_pc(), data, offset, data, mem_mask));
-      locals.u16IRQ4Line2Period = TIME_IN_SEC(((0x1000 - (data & 0x0FFF)) * 88.675) / (double)CPU_CLOCK);
+      locals.u16IRQ4Line2Period = U16_PASSES((0x1000 - (data & 0x0FFF)) * U16_IRQ4_PASSES_PER_UNIT);
       break;
     }
     default:
@@ -777,9 +789,9 @@ static MACHINE_INIT(cc) {
   //Copy 1st 0x100 bytes of rom into RAM for vector table
   memcpy(ramptr, memory_region(REGION_USER1), 0x100);
 
-  core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_FILTER_WPC, CORE_DMD_PWM_COMBINER_SUM_1_2_1, 1);
   const int dmdHeight = core_gameData->lcdLayout->start;
-  timer_pulse(dmdHeight / (16279.409 / 3.0), 0, cc_dmd_rasterizer_sync); // 16.279kHz is the row clock, leading to 508.73Hz for 128x32 / 254.36Hz for 256x64, rasterizer produces 3 frames
+  core_dmd_pwm_init(core_gameData->lcdLayout, dmdHeight > 32 ? CORE_DMD_PWM_FILTER_CAPCOM_256x64 : CORE_DMD_PWM_FILTER_CAPCOM_128x32, CORE_DMD_PWM_COMBINER_SUM_1_2_1, 1);
+  timer_pulse(dmdHeight / (16279.409 / 4.0), 0, cc_dmd_rasterizer_sync); // 16.279kHz is the row clock, leading to 508.73Hz for 128x32 / 254.36Hz for 256x64, rasterizer produces 4 frames
 
   // Initialize outputs
   coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8; // Lamp Matrix A & B, +1 col for PWM diag LED
@@ -872,8 +884,10 @@ static MACHINE_INIT(cc) {
         if (coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].type != CORE_MODOUT_SOL_2_STATE
               && coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].type != CORE_MODOUT_BULB_89_20V_DC_WPC)
            core_set_pwm_output_type(CORE_MODOUT_SOL0 + i, 1, CORE_MODOUT_LEGACY_SOL_2_STATE);
+  // All matrix lamps, up to the diagnostic LED column: 64 with matrix B only (Breakshot, Pool Player, lampCol 1), 128 with
+  // both matrices (lampCol 9; 120 for Flipper Football 1.03, lampCol 8). The diagnostic LEDs keep their LED integration
   if ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS) == 0)
-     core_set_pwm_output_type(CORE_MODOUT_LAMP0, 80 /*coreGlobals.nLamps*/, CORE_MODOUT_LEGACY_SOL_2_STATE);
+     core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps - 8, CORE_MODOUT_LEGACY_SOL_2_STATE);
   if ((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_GI) == 0)
      core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_LEGACY_SOL_2_STATE);
 
@@ -885,12 +899,12 @@ static MACHINE_INIT(cc) {
   locals.u16IRQ4Line2timer = timer_alloc(cc_u16irq4line2);
   locals.u16IRQ4Line3timer = timer_alloc(cc_u16irq4line3);
   // defaults IRQ periods
-  locals.u16IRQ1Period = TIME_IN_SEC(22668 / (double)CPU_CLOCK);
-  locals.u16IRQ4Line1Period = TIME_IN_SEC(((0x1000 - (0x0800 & 0x0FFF)) * 88.675) / (double)CPU_CLOCK);
-  locals.u16IRQ4Line2Period = TIME_IN_SEC(((0x1000 - (0x0800 & 0x0FFF)) * 88.675) / (double)CPU_CLOCK);
+  locals.u16IRQ1Period = U16_PASSES(22668 / 14.);
+  locals.u16IRQ4Line1Period = U16_PASSES((0x1000 - (0x0800 & 0x0FFF)) * U16_IRQ4_PASSES_PER_UNIT);
+  locals.u16IRQ4Line2Period = U16_PASSES((0x1000 - (0x0800 & 0x0FFF)) * U16_IRQ4_PASSES_PER_UNIT);
   // Flipper Football frequency for IRQ4 Line 3 is half of other games => likely DMD vblank since DMD has twice more lines (so 45.9Hz for FF, 91.8Hz for others)
   int defaultLine3 = (core_gameData->hw.gameSpecific1 == 9 || core_gameData->hw.gameSpecific1 == 12) ? 0x0000 : 0x0800;
-  locals.u16IRQ4Line3Period = TIME_IN_SEC(((0x1000 - (defaultLine3 & 0x0FFF)) * 88.675) / (double)CPU_CLOCK);
+  locals.u16IRQ4Line3Period = U16_PASSES((0x1000 - (defaultLine3 & 0x0FFF)) * U16_IRQ4_PASSES_PER_UNIT);
 
 #if TEST_MPGAUDIO
   //Freeze cpu so it won't slow down the emulation
@@ -1072,11 +1086,14 @@ MACHINE_DRIVER_END
 // Readings and reverse engineering shows that the chip read data from RAM and rasterizes it, creating 4 PWM frames.
 // Each line is made of 256 dots, each dot being 2 bits. On 128x32 displays, the first 128 dots are ignored by the display.
 // The rasterizer converts the 2 bit values into 4 PWM frames (leading to 4 shades) but the CPU may also quickly
-// change pages, leading to longer PWM patterns (multiple groups of 3 frames) leading to more shades.
+// change pages, leading to longer PWM patterns (multiple groups of 4 frames) leading to more shades.
 // The (measured) timings are the followings:
 // - 128x32: 1.965ms per frame, 61.417µs per line, dots are 250/250/250/208ns (per group of 4)
 // - 256x64: 3.931ms per frame, 61.417µs per line, dots are 250/250/250/208ns (per group of 4)
 // Therefore we setup a timer with the right timing which decodes the 2 bit data into frames and submit them for PWM integration
+// TODO RAM is read once per group of 4 frames (7.9ms for 128x32, 15.7ms for 256x64), while the U16 reads it for each frame, so the
+// quick page toggles of the CPU (2ms) are only partly seen. Running the timer once per frame and rasterizing the next frame of the
+// 0,1,2,1 sequence from RAM each time would match the hardware (to be validated on an animation using such page toggles)
 static void cc_dmd_rasterizer_sync(int param) {
    const int dmdWidth = core_gameData->lcdLayout->length / 8;
    const int dmdHeight = core_gameData->lcdLayout->start;
@@ -1116,6 +1133,8 @@ static void cc_dmd_rasterizer_sync(int param) {
    // 1 => 1 / 0 / 0 / 0
    // 2 => 0 / 1 / 0 / 1
    // 3 => 1 / 1 / 1 / 1
+   // TODO the code does not match the table above: 1 gives 1 / 0 / 0 / 0 (25%) but 2 gives 1 / 1 / 0 / 1 (75%, PWM0 being lum0 | lum1), not 50%.
+   // Either the bitplanes or the table/docs (docs/dmd.md) are wrong, this needs hardware recordings to be decided
    core_dmd_submit_frame(core_gameData->lcdLayout, &locals.pwmDmdFrames[0 * 256 * 8], 1); // PWM0
    core_dmd_submit_frame(core_gameData->lcdLayout, &locals.pwmDmdFrames[1 * 256 * 8], 1); // PWM1
    core_dmd_submit_frame(core_gameData->lcdLayout, &locals.pwmDmdFrames[2 * 256 * 8], 1); // PWM2
@@ -1148,9 +1167,9 @@ static MACHINE_INIT(romstar) {
   //IRQ4 clock - might be unused, still pulse it because we don't know what that U8 chip does...
   /* FIXME timer_pulse(TIME_IN_HZ(100), 0, cc_u16irq4); */
   
-  core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_FILTER_WPC, CORE_DMD_PWM_COMBINER_SUM_1_2_1, 1);
   const int dmdHeight = core_gameData->lcdLayout->start;
-  timer_pulse(dmdHeight / (16279.409 / 3.0), 0, cc_dmd_rasterizer_sync); // 16.279kHz is the row clock, leading to 508.73Hz for 128x32 / 254.36Hz for 256x64, rasterizer produces 3 frames
+  core_dmd_pwm_init(core_gameData->lcdLayout, dmdHeight > 32 ? CORE_DMD_PWM_FILTER_CAPCOM_256x64 : CORE_DMD_PWM_FILTER_CAPCOM_128x32, CORE_DMD_PWM_COMBINER_SUM_1_2_1, 1);
+  timer_pulse(dmdHeight / (16279.409 / 4.0), 0, cc_dmd_rasterizer_sync); // 16.279kHz is the row clock, leading to 508.73Hz for 128x32 / 254.36Hz for 256x64, rasterizer produces 4 frames
 
   // FIXME missing physics output definition
 }
@@ -1204,7 +1223,8 @@ static WRITE16_HANDLER(disp_w) {
 
 static WRITE16_HANDLER(sol_w) {
   locals.solenoids |= data << (offset * 8);
-  coreGlobals.solenoids = locals.solenoids;
+  // Switch on at once, off at the next VBlank: assigning the accumulator would drop the outputs not written yet since the last VBlank
+  coreGlobals.solenoids |= data << (offset * 8);
 }
 
 static WRITE16_HANDLER(lamp_w) {

@@ -370,6 +370,8 @@ static void pinheck_brd_vblank(void)
 	pinheck_board_tick(&brd, pic32cpu_soc()->cpu.cycles);
 	memcpy((void *)coreGlobals.lampMatrix, (void *)coreGlobals.tmpLampMatrix, 9);
 	memset((void *)coreGlobals.tmpLampMatrix, 0, 9);
+	/* Without physical solenoid outputs, the FORCE_ON sync in core_updateSw (called right after this) replaces these bits
+	   with the integrated outputs, e.g. keeps a coil on during its off latency */
 	coreGlobals.solenoids = brd_sols_seen | coreGlobals.pulsedSolState;
 	coreGlobals.solenoids2 = (coreGlobals.solenoids2 & ~0xFF00u) | brd_gi8_seen | (brd.gi & 0xFF00u);
 	/* the flipper bits from the flipper outputs, integrated like the coils' binary state (off 60 ms after the coil);
@@ -610,6 +612,8 @@ static void pinheck_in_service(uint8_t *mem, uint32_t version)
 
 static int64_t pinheck_local_now(void)
 {
+	/* -rtc or a record/playback session: the fixed emulated clock, already in local time (like wpc_systime) */
+	if (rtc_is_fixed()) return (int64_t)rtc_now();
 	time_t t = time(NULL);
 	struct tm u = *gmtime(&t);
 	u.tm_isdst = -1;

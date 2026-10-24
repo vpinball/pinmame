@@ -480,6 +480,11 @@ PINMAMEAPI PINMAME_STATUS PinmameSetPath(const PINMAME_FILE_TYPE fileType, const
 PINMAMEAPI const char* PinmameGetPath(const PINMAME_FILE_TYPE fileType);
 PINMAMEAPI int PinmameGetCheat();
 PINMAMEAPI void PinmameSetCheat(const int cheat);
+// MAME's -record/-playback, for the next PinmameRun(): <name>.inp in the "inp" folder holds the keys, <name>.sw the
+// switches set with PinmameSetSwitch(), <name>.nv the NVRAM the recording started from. The emulated real-time clock
+// starts at the time of the recording in both runs. A playback ignores PinmameSetSwitch(). NULL or "" turns it off
+PINMAMEAPI PINMAME_STATUS PinmameSetRecord(const char* const p_name);
+PINMAMEAPI PINMAME_STATUS PinmameSetPlayback(const char* const p_name);
 PINMAMEAPI int PinmameGetHandleKeyboard();
 PINMAMEAPI void PinmameSetHandleKeyboard(const int handleKeyboard);
 PINMAMEAPI int PinmameGetHandleMechanics();

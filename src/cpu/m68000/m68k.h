@@ -270,6 +270,14 @@ void m68k_set_cpu_type(unsigned int cpu_type);
  */
 void m68k_init(void);
 
+/* 68000 only: use the cycle counts of the data sheet (Bcc.b, ADDQ.W An,
+ * ADD/SUB/AND/OR/ADDA/SUBA with register or immediate sources, ANDI.L Dn,
+ * immediate shifts, MOVEM, DBRA, Scc Dn, BCHG/BCLR/BSET Dn and MULU/MULS)
+ * instead of the ones this core always used. Call it after m68k_set_cpu_type().
+ * Only built with M68K_CYCLE_FIX (m68kmame.h, or m68kconf.h outside of MAME).
+ */
+void m68k_set_cycle_fix(int enable);
+
 /* Pulse the RESET pin on the CPU.
  * You *MUST* reset the CPU at least once to initialize the emulation
  * Note: If you didn't call m68k_set_cpu_type() before resetting

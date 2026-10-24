@@ -604,6 +604,11 @@ extern void core_setSw(int swNo, int value);
 extern void (*core_swChangedHook)(int swMatrixNo);
 extern int core_getSw(int swNo);
 extern void core_updInvSw(int swNo, int inv);
+/*-- switch set by the host (VPinMAME, libpinmame), logged by -record and replayed by -playback --*/
+extern void core_setHostSw(int swNo, int value);
+extern struct _mame_file *core_swlog_fopen(const char *name, const char *ext, int write);
+extern int core_inputlog_open(int game, const char *record, const char *playback);
+extern void core_inputlog_close(void);
 
 /*-- get a switch column. (colEn=bits) --*/
 extern int core_getSwCol(int colEn);

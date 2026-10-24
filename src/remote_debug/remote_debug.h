@@ -336,6 +336,9 @@ int remote_debug_memory_find(int cpu, UINT32 addr, int size, const UINT8 *patter
  * Caller must hold the debugger lock. */
 UINT8 remote_debug_read_byte(int cpu, UINT32 addr, int bank);
 
+/* The WPC ROM page (index into the ROM region) a bank number selects. */
+UINT32 remote_debug_wpc_rom_page(int bank);
+
 /* Set a CPU register (reg is a cpu core register id). */
 void remote_debug_set_register(int cpu, int reg, UINT32 val);
 

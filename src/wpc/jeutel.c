@@ -238,15 +238,12 @@ static ppi8255_interface ppi8255_intf =
    display CPU strobes those bytes straight out to lampMatrix.
 
    The manual numbers the controlled lamps from 1, so manual lamp L is bit L-1:
-   column (L-1)/8, row (L-1)%8.  Papillon's lamp list agrees: its
-   gaps fall at 29-32, 37-40, 47 and 52, exactly on 8-lamp column boundaries,
-   and lamps stop at 56, which is why lampMatrix[7] is always zero.
+   column (L-1)/8, row (L-1)%8.  Papillon's lamp list agrees: its gaps 29-32 and
+   37-40 are the upper halves of columns 3 and 4, and it stops at 56, so
+   lampMatrix[7] stays zero.
 
-   Without this conversion the driver inherits core_swSeq2m from the base
-   PinMAME machine, which adds 7 -- that would put manual lamp 1 at
-   lampMatrix[1] bit 0 (i.e. report lamp 9) and leave lamps 1-7 unreachable. */
-static int jeutel_lamp2m(int no) { return no - 1; }
-static int jeutel_m2lamp(int col, int row) { return col * 8 + row + 1; }
+   The core's default conversion already gives these numbers (core_swSeq2m
+   adds 7, vp_getLamp() takes 8 off), so no lamp conversion is set. */
 
 static MACHINE_RESET(JEUTEL) {
   memset(&locals, 0x00, sizeof(locals));
@@ -464,7 +461,6 @@ MACHINE_DRIVER_START(jeutel)
   MDRV_CORE_INIT_RESET_STOP(NULL,JEUTEL,JEUTEL)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_SWITCH_UPDATE(JEUTEL)
-  MDRV_LAMP_CONV(jeutel_lamp2m,jeutel_m2lamp)
   MDRV_DIPS(32)
   MDRV_DIAGNOSTIC_LEDH(3)
 
@@ -581,9 +577,9 @@ MACHINE_DRIVER_END
    HEART ladder up the middle, the PAPILLON ladder down the left, the L-O-V-E
    lanes on the right) rather than exact playfield geometry.
 
-   Lamp numbers are the manual's, which this driver maps with jeutel_lamp2m
-   above: lamp L is lampMatrix[(L-1)/8] bit (L-1)%8.  Unused numbers (29-32,
-   37-40, 47, 52) are left as {0}.
+   Lamp numbers are the manual's (lamp L is lampMatrix[(L-1)/8] bit (L-1)%8,
+   see "Lamp numbering" above).  Numbers missing from the parts list (29-32,
+   37-40, 47, 52) are left as {0}, although the ROM drives 29-32, 37-40 and 47.
 
    Two lamps drive more than one bulb, which core_tLampData handles with its
    lamppos array: 45 is "START HEART (2)" and 48 is "ETOILES HEART (5)".
@@ -717,13 +713,15 @@ static sim_tInportData papillon_inportData[] = {
 
 static void papillon_drawStatic(BMTYPE **line) {
   core_textOutf(30, 10, BLACK, "Help on this Simulator:");
-  core_textOutf(30, 20, BLACK, "L/R Ctrl+- = L/R Slingshot");
-  core_textOutf(30, 30, BLACK, "Q = Drain Ball, W/E = Outlanes");
-  core_textOutf(30, 40, BLACK, "R = Lower Lanes, T/Y/U = Bumpers");
-  core_textOutf(30, 50, BLACK, "A/S/D/F = Upper Targets A-D");
-  core_textOutf(30, 60, BLACK, "Z/X/C/V = Drop Targets A-D");
-  core_textOutf(30, 70, BLACK, "G/H = Stars, J = Upper Hole");
-  core_textOutf(30, 80, BLACK, "K/L = Capture Lane / Hole");
+  core_textOutf(30, 20, BLACK, "Q = Drain Ball, W/E = Outlanes");
+  core_textOutf(30, 30, BLACK, "R = Lower Lanes, T/Y/U = Bumpers");
+  core_textOutf(30, 40, BLACK, "I = Slingshot, O = Rotating Gate");
+  core_textOutf(30, 50, BLACK, "P = Upper Left, B = Right Contact");
+  core_textOutf(30, 60, BLACK, "J = Upper Hole, N = Distribution");
+  core_textOutf(30, 70, BLACK, "A/S/D/F = Upper Targets A-D");
+  core_textOutf(30, 80, BLACK, "G/H = Right/Left Star");
+  core_textOutf(30, 90, BLACK, "Z/X/C/V = Drop Targets A-D");
+  core_textOutf(30,100, BLACK, "K/L = Capture Lane / Hole");
 }
 
 static sim_tSimData papillonSimData = {
@@ -904,9 +902,9 @@ static void init_##name(void) { core_gameData = &name##GameData; }
       COREPORT_DIPSET(0x0002, "25" ) \
       COREPORT_DIPSET(0x0200, "15" ) \
       COREPORT_DIPSET(0x0202, "8" ) \
-  /* Simulator playfield ports.  These must be inports 5 and 6, which is where \
-     sim_run looks given CORE_COREINPORT(2) + (MDRV_DIPS(32)+31)/16 = 5. */ \
-  PORT_START /* 2 */ \
+  /* Simulator playfield ports, inports 5 and 6 after the two CORE_PORTS: \
+     sim_run reads from CORE_COREINPORT + (MDRV_DIPS(32)+31)/16 = 2 + 3 = 5. */ \
+  PORT_START /* 3 */ \
     COREPORT_BIT(   0x0001, "Left Outlane",    KEYCODE_W) \
     COREPORT_BIT(   0x0002, "Right Outlane",   KEYCODE_E) \
     COREPORT_BIT(   0x0004, "Lower Lanes",     KEYCODE_R) \
@@ -923,7 +921,7 @@ static void init_##name(void) { core_gameData = &name##GameData; }
     COREPORT_BIT(   0x2000, "Upper Target D",  KEYCODE_F) \
     COREPORT_BIT(   0x4000, "Right Star",      KEYCODE_G) \
     COREPORT_BIT(   0x8000, "Left Star",       KEYCODE_H) \
-  PORT_START /* 3 */ \
+  PORT_START /* 4 */ \
     COREPORT_BIT(   0x0001, "Drop Target A",   KEYCODE_Z) \
     COREPORT_BIT(   0x0002, "Drop Target B",   KEYCODE_X) \
     COREPORT_BIT(   0x0004, "Drop Target C",   KEYCODE_C) \

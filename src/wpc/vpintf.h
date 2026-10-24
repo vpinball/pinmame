@@ -50,7 +50,7 @@ int vp_getLampIndex(int lampNo);
 /*------------------------------------
 /  set status of a switch (0=off, !0=on)
 /-------------------------------------*/
-INLINE void vp_putSwitch(int swNo, int newStat) { core_setSw(swNo, newStat); }
+INLINE void vp_putSwitch(int swNo, int newStat) { core_setHostSw(swNo, newStat); }
 
 /*------------------------------------
 /  get status of a switch (0=off, !0=on)

@@ -1149,7 +1149,7 @@ static WRITE32_HANDLER(sambank_w)
 
 				// Board 520-5332-00: AC/DC LE special aux board for flame lights (8 LEDs)
 				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_ACDC_FLAMES) && (samlocals.auxstrb & ~data & 0x08)) // BSTB
-					core_write_pwm_output(CORE_MODOUT_LAMP0 + 152 - 1, 8, samlocals.auxdata); // 151..158
+					core_write_pwm_output(CORE_MODOUT_LAMP0 + 151 - 1, 8, samlocals.auxdata); // 151..158
 
 				// Board 520-6801-00: Magnet processor (Metallica)
 				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_METALLICA_MAGNET) && (~data & 0x08)) // BSTB (not sure if it is triggered by edge or state since it uses a microcontroller)
@@ -1415,6 +1415,7 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // LED flasher
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 7, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 151 - 1, 8, CORE_MODOUT_LED); // Flame LEDs (aux board 520-5332-00), latched by BSTB
 		sam_init_nodeboard(SAM_NB_ACDC_METALLICA);
 	}
 	else if (strncasecmp(gn, "avs_", 4) == 0) { // Avengers

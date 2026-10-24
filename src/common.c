@@ -1945,8 +1945,13 @@ int rom_load(const struct RomModule *romp)
 		}
 
 		/* if sound is disabled and it's a sound-only region, skip it */
+#ifdef PINMAME
+		/* PinMAME loads it anyway, quietly if it fails: with the sound off, some sound boards
+		   still answer the game from their ROM (see soundOff in sndbrd.h) */
+#else
 		if (Machine->sample_rate == 0 && ROMREGION_ISSOUNDONLY(region))
 			continue;
+#endif
 
 		/* a mapped region has no memory: its files are opened and kept, not loaded */
 		if (ROMREGION_ISMAPPED(region))
@@ -1992,10 +1997,18 @@ int rom_load(const struct RomModule *romp)
 			// if loading of rom for this region fails, check if this is a SOUNDONLY region; 
 			// if so, disable sound
 			int lastErrorCount = romdata.errors;
+			const int lastWarningCount = romdata.warnings;
+			const size_t lastErrorLen = strlen(romdata.errorbuf);
 			if (!process_rom_entries(&romdata, region + 1))
 				return 1;
 
-			if ( lastErrorCount!=romdata.errors && ROMREGION_ISSOUNDONLY(region) ) {
+			if (Machine->sample_rate == 0 && ROMREGION_ISSOUNDONLY(region)) {
+				// sound is off already: whatever went wrong with this region does not matter
+				romdata.errors = lastErrorCount;
+				romdata.warnings = lastWarningCount;
+				romdata.errorbuf[lastErrorLen] = 0;
+			}
+			else if ( lastErrorCount!=romdata.errors && ROMREGION_ISSOUNDONLY(region) ) {
 				// make a warning out of the error(s) for this region
 				romdata.errors = lastErrorCount;
 

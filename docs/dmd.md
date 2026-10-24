@@ -43,7 +43,7 @@ The table below gives the main information (PWM FPS / Display FPS / PWM pattern)
 |Inder                                                        | **134.8** / ?          | ?           |Review in progress                                              |
 |Sleic                                                        | 244.1                  | ?           |Review in progress                                              |
 |Spinball                                                     | **132.9**              | ?           |Review in progress                                              |
-|[Capcom](#capcom)                                            | **508.7** / 127.2-42.4 | 3/6/9u frames |                                                              |
+|[Capcom](#capcom)                                            | **508.7** / 127.2-42.4 | 3/6/9u frames |TODO: 4/8/12u frames? (U16 makes groups of 4 frames, see below, and 127.2-42.4 is 508.7/4-508.7/12)|
 |[Stern SAM](#stern-sam)                                      | 751.2 / **62.6**       | 4u row      |Needs overall emulation timing fixes, interframe emulation, shade validation, back/front mix validation|
 |[Stern Spike 1](#stern-spike-1)                              | 952.4 / **63.5**       | 4u frames   |Pre-integrated: the driver sums the 4 bitplanes to 16 shades    |
 
@@ -131,6 +131,9 @@ reading 2 bits per dot and generating 4 frames from these. These 4 frames are ma
 - 1 -> 1000 -> 25% luminance
 - 2 -> 0101 -> 50% luminance
 - 3 -> 1111 -> 100% luminance
+
+TODO: the emulation does not match this table: it rasterizes 2 as 1101 (75% luminance), not 0101 (50%), see capcom.c (cc_dmd_rasterizer_sync).
+Either the emulation or this table is wrong, this needs hardware recordings to be decided.
 
 The emulation logs show that on some animations, the CPU may also dynamically toggle pages very quickly (2ms), leading to more complex
 PWM patterns and hence more perceived shades.

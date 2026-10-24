@@ -1542,7 +1542,6 @@ static INTERRUPT_GEN(SPINBdmd_update) {
       *line++ = (intens1)    & 0x03;
       RAM += 1; RAM2 += 1;
     }
-    *line = 0;
   }
   core_dmd_submit_frame(layout, SPINBlocals.rawDMD, 1);
 }
@@ -1579,7 +1578,6 @@ static INTERRUPT_GEN(SPINBdmd_update) {
         d1>>=1; d2>>=1; d3>>=1;
       }
     }
-    *line = 0;
   }
   core_dmd_submit_frame(core_gameData->lcdLayout->importedLayout ? core_gameData->lcdLayout->importedLayout : core_gameData->lcdLayout, SPINBlocals.rawDMD, 1);
 }
