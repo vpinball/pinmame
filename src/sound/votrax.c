@@ -30,9 +30,9 @@ the variable VotraxBaseFrequency, this is defaulted to 8000
 // the printer port 1. Connect the data lines P0-P5 to D1-D6, I0-I1 to D7-D6,
 // ACK to ACK and STROBE to STROBE.
 
-#define VOTRAX_CLOSURE_FIX 0
-// 1: closure timing and noise balance after MAME PR #16372 (Tamas Geczy, measured
-// on a real SC-01-A), P, T and K get their release burst back; 0: as before
+#define VOTRAX_CLOSURE_FIX 1
+// closure timing and noise balance after MAME PR #16372 (Tamas Geczy, measured
+// on a real SC-01-A), P, T and K get their release burst back
 
 /*
   tp3 stb i1 i2 tp2
@@ -1136,8 +1136,7 @@ static float analog_calc()
 
 	v = votraxsc01_locals.pitch >= (9 << 3) ? 0 : s_glottal_wave[votraxsc01_locals.pitch >> 3];
 
-	// 2. Multiply by the initial amplifier.  It's linear on the die,
-	// even if it's not in the patent.
+	// 2. Multiply by the initial amplifier.  It's linear on the die, even if it's not in the patent
 	v = v * votraxsc01_locals.filt_va * (1.0/15.0);
 	shift_hist(v, votraxsc01_locals.voice_1, 4);
 
@@ -1150,16 +1149,14 @@ static float analog_calc()
 	shift_hist(v, votraxsc01_locals.voice_3, 4);
 
 	// Noise-only path
-	// 5. Pick up the noise pitch.  Amplitude is linear.  Base
-	// intensity should be checked w.r.t the voice.
+	// 5. Pick up the noise pitch.  Amplitude is linear.  Base intensity should be checked w.r.t the voice
 #if VOTRAX_CLOSURE_FIX
-	// Checked against line-in SC-01-A recordings: with the second
-	// insertion below corrected, half the previous level.
-	n = 5e3 * ((votraxsc01_locals.pitch & 0x40 ? votraxsc01_locals.cur_noise : 0) ? 1 : -1);
+	// Checked against line-in SC-01-A recordings: with the second insertion below corrected, half the previous level
+	n = 5e3;
 #else
-	n = 1e4 * ((votraxsc01_locals.pitch & 0x40 ? votraxsc01_locals.cur_noise : 0) ? 1 : -1);
+	n = 1e4;
 #endif
-	n = n * votraxsc01_locals.filt_fa * (1.0/15.0);
+	n *= ((votraxsc01_locals.pitch & 0x40) && votraxsc01_locals.cur_noise ? 1./15. : -1./15.) * votraxsc01_locals.filt_fa;
 	shift_hist(n, votraxsc01_locals.noise_1, 3);
 
 	// 6. Apply the noise shaper
@@ -1223,7 +1220,7 @@ static float analog_calc()
 
 
 // int sample_rate[4] = {22050, 22550, 23050, 23550};
-int sample_rate[4] = {22050, 22050, 22050, 22050};
+static const int sample_rate[4] = {22050, 22050, 22050, 22050};
 
 INLINE int time_to_samples(int ms)
 {
