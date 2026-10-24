@@ -32,6 +32,8 @@ Fixed in libPinMAME: Handle aliases properly
 
 Simulator: add possibility to add a 'autoBall'
 
+Fixed a general problem with multi stream mixing that lead to clicks/pops sometimes
+
 Fixed sounds.dat for WPCS (especially Twilight Zone) (and some general cleanups in the file)
 Added sound commands of 725 games to sound.dat (unnamed for now)
 
