@@ -27,6 +27,37 @@ static bool stream_is_float[MIXER_MAX_CHANNELS];
 static void (*stream_callback[MIXER_MAX_CHANNELS])(int param,INT16 *buffer,int length);
 static void (*stream_callback_multi[MIXER_MAX_CHANNELS])(int param,INT16 **buffer,int length);
 
+/* last sample handed to the mixer on each channel, to pad a joined channel that needs more than was rendered */
+static float stream_last_f[MIXER_MAX_CHANNELS];
+static INT16 stream_last_16[MIXER_MAX_CHANNELS];
+
+static void stream_keep_last(int channel, int len)
+{
+	if (stream_is_float[channel])
+		stream_last_f[channel] = ((const float*)stream_buffer[channel])[len-1];
+	else
+		stream_last_16[channel] = ((const INT16*)stream_buffer[channel])[len-1];
+}
+
+static void stream_pad(int channel, int from, int to)
+{
+	int i;
+	if (stream_is_float[channel])
+	{
+		float * const buf = (float*)stream_buffer[channel];
+		const float v = from > 0 ? buf[from-1] : stream_last_f[channel];
+		for (i = from; i < to; i++)
+			buf[i] = v;
+	}
+	else
+	{
+		INT16 * const buf = (INT16*)stream_buffer[channel];
+		const INT16 v = from > 0 ? buf[from-1] : stream_last_16[channel];
+		for (i = from; i < to; i++)
+			buf[i] = v;
+	}
+}
+
 int streams_sh_start(void)
 {
 	int i;
@@ -34,6 +65,8 @@ int streams_sh_start(void)
 	{
 		stream_joined_channels[i] = 1;
 		stream_buffer[i] = 0;
+		stream_last_f[i] = 0.f;
+		stream_last_16[i] = 0;
 	}
 
 	return 0;
@@ -55,6 +88,9 @@ void streams_sh_stop(void)
 void streams_sh_update(void)
 {
 	int channel;
+	int frame_len[MIXER_MAX_CHANNELS];	/* samples rendered this frame, for each stream */
+	int stream_need[MIXER_MAX_CHANNELS];	/* samples each joined channel needs this frame */
+	int stream_resampled[MIXER_MAX_CHANNELS];	/* the mixer resamples this joined channel exactly */
 
 	if (Machine->sample_rate == 0) return;
 
@@ -63,8 +99,30 @@ void streams_sh_update(void)
 	{
 		if (stream_buffer[channel])
 		{
-			const int newpos = SAMPLES_THIS_FRAME(channel);
-			int buflen = newpos - stream_buffer_pos[channel];
+			int newpos = SAMPLES_THIS_FRAME(channel);
+			int buflen;
+
+			/* the joined channels of a stream are resampled separately by the mixer and can need a few
+			   more or less samples than the first one: a channel that is silent so far (or at zero volume)
+			   takes the mixer's stepping path, which has no latency and takes a slightly different number of
+			   samples over time than libsamplerate. So render what the most demanding resampled channel needs
+			   and give all of it to the resampled channels (they all take samples at the same rate, so what
+			   they get ahead stays bounded), while the others only take what they need of it (below) */
+			if (stream_joined_channels[channel] > 1)
+			{
+				int i, found = 0;
+				for (i = 0;i < stream_joined_channels[channel];i++)
+				{
+					stream_need[channel+i] = SAMPLES_THIS_FRAME(channel+i);
+					stream_resampled[channel+i] = mixer_channel_is_resampled(channel+i);
+					if (stream_resampled[channel+i] && (!found || stream_need[channel+i] > newpos))
+					{
+						newpos = stream_need[channel+i];
+						found = 1;
+					}
+				}
+			}
+			buflen = newpos - stream_buffer_pos[channel];
 
 			assert(buflen + stream_buffer_pos[channel] < BUFFER_LEN);
 
@@ -88,6 +146,7 @@ void streams_sh_update(void)
 					(*stream_callback_multi[channel])(stream_param[channel],(INT16**)buf,buflen);
 				}
 
+				frame_len[channel] = stream_buffer_pos[channel] + (buflen > 0 ? buflen : 0);
 				for (i = 0;i < stream_joined_channels[channel];i++)
 					stream_buffer_pos[channel+i] = 0;
 			}
@@ -110,9 +169,31 @@ void streams_sh_update(void)
 		if (stream_buffer[channel])
 		{
 			int i;
-			for (i = 0;i < stream_joined_channels[channel];i++)
-				mixer_play_streamed_sample_16(channel+i,
-						stream_buffer[channel+i],SAMPLES_THIS_FRAME(channel+i),
+			if (stream_joined_channels[channel] > 1)
+			{
+				for (i = 0;i < stream_joined_channels[channel];i++)
+				{
+					int len = frame_len[channel];
+					if (!stream_resampled[channel+i])
+					{
+						/* silent so far or muted: hand it what it needs, repeating its last sample if
+						   the frame is short, so it doesn't drift away from the others */
+						len = stream_need[channel+i];
+						if (len > BUFFER_LEN-1)
+							len = BUFFER_LEN-1;
+						if (len > frame_len[channel])
+							stream_pad(channel+i, frame_len[channel], len);
+					}
+					if (len > 0)
+						stream_keep_last(channel+i, len);
+					mixer_play_streamed_sample_16(channel+i,
+							stream_buffer[channel+i],len,
+							stream_sample_rate[channel]);
+				}
+			}
+			else
+				mixer_play_streamed_sample_16(channel,
+						stream_buffer[channel],SAMPLES_THIS_FRAME(channel),
 						stream_sample_rate[channel]);
 		}
 	}
