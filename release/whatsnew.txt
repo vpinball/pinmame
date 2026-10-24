@@ -6,6 +6,11 @@ What's new in PinMAME:
 Version 3.7 (XX XXth, 2026) - "Rise of the Machines"
 ------------------------------------------------------------------------------
 
+
+IMPORTANT NOTE: DUE TO THE VAST AMOUNT OF CHANGES, IF YOU EXPERIENCE ANY ISSUE RUNNING A MACHINE,
+                TRY DELETING THE .nv AND .cfg FILE FOR THAT GAME TO GO BACK TO ITS DEFAULTS!
+
+
 Users now can set the 'serial_device' setting (registry key) to a COM port,
 to attach to the WPC/WPC95 serial printer interface
 
