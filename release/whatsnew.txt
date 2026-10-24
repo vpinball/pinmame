@@ -13,9 +13,15 @@ Add a HTTP remote debugger (see 'src/remote_debug/README.md' for all details), m
 
 Workaround a crash / race-condition when reading PinMAME state, e.g. when exiting VPX
 
+-record/-playback now also keep the switches set by VPinMAME (Controller.Switch) and libPinMAME (PinmameSetSwitch) in <name>.sw next to the .inp,
+ and the NVRAM the recording started from in <name>.nv. Both runs get the real-time clock of the recording,
+ so a session replays exactly. VPinMAME takes the 'record'/'playback' settings (registry keys), libPinMAME PinmameSetRecord()/PinmameSetPlayback()
+
 Cleanup PinMAME32 UI a bit (historic/leftover MAME options like vector display, trackball or lightgun)
 
 Add -skip_gamewarnings option, for headless runs of not-yet-working/imperfect games
+
+Fixed 'F6' DMD frame recording into the 'DmdDump' folder in PinMAME(32) and xpinmame (only worked in VPinMAME before)
 
 Fixed debugger lockup when tabbing backwards
 
@@ -26,8 +32,10 @@ Fixed in libPinMAME: Handle aliases properly
 
 Simulator: add possibility to add a 'autoBall'
 
-Fixed sounds.dat for WPCS
+Fixed sounds.dat for WPCS (especially Twilight Zone) (and some general cleanups in the file)
 Added sound commands of 725 games to sound.dat (unnamed for now)
+
+Altsound: swap Info and Error log levels
 
 Fixed colorize DMD option
 
@@ -47,6 +55,7 @@ Fixed and extended Cirsa Sport 2000, including more i86 fixes and i8256 emulatio
 Fixed and extended Stargame Mephisto, dto.
 Fixed a potential small problem with Bally VideoPins sound emulation
 Added physical/PWM DMD support to Capcom games (potentially leading to more brightness levels being displayed if the CPU triggers it)
+ and improve DMD timing
 Added physical/PWM (dimmed) segment support to System 11 games
 Fixed physical/PWM GameOn & switched solenoid state being overwritten for System 11 games
 Fixed physical/PWM GameOn and J111 outputs for WPC games
@@ -56,11 +65,18 @@ Added physical/PWM lamps & solenoids support to Zaccaria games
 Added physical/PWM support to Alvin G. games
 Added physical/PWM lamps and/or solenoids support to some GTS80 games (Amazon Hunt II, Bad Girls, Big House, Bounty Hunter, Genesis, Rock)
 Added physical/PWM (dimmed) segment support to GTS80A games
+Additional GTS80 fixes/tweaks
+ Lamp 0 drives the Q (GameOver) relay and lamp 1 the T (Tilt) relay
+ Solenoid 11 is the Tilt relay and solenoid 10 the flipper enable. Both now also available on GTS80B and PWMed
+ Playfield GI follows the T relay
 Added physical/PWM support to Star Wars Trilogy and Titanic
 Added physical/PWM support to games employing mini-DMDs and the like
 Fixed Breakshots/Family Guys invalid PWM flasher definition
 Fixed Airbornes/Transformers/Trons PWM flasher count
 Fixed Stern SAM flasher PWM behavior
+Fixed ACDC flame LEDs (moved to 151–158 and typed as LED)
+Fixed LED digit loop, plus AlphaSegs (Silver Slugger, Title Fight)
+Handle Whitestar 33–36 (aux board outputs such as RCT's magnets)
 Fixed some potential general solenoid issues with physical/PWM
 Fixed PWM solenoid issues for WPC fliptronics and SE aux boards
 Improved physical/PWM bulb integration
@@ -70,6 +86,9 @@ Implemented varying power flippers for Capcom (all games/sets) via PWM: the flip
 Fixed Capcom flipper outputs: 45-48 now follow the lower flipper coils (before, other coils could also show up there),
  and 33-36 now report the upper flippers, only in the games that feature them (Breakshot, Pool Player, Big Bang Bar, Flipper Football)
 Fixed the 'force PWM on' state of SAM/Capcom/PinHeck games carrying over to the next game run in the same session (e.g. when playing several tables one after another in VPX)
+Fixed System 11 alpha segment loop
+Fixed Whirlwind sound overlay board output types fixed in slots 40 and 42–43
+Fixed Sega 192x64 board losing command interrupts (leading to sporadic wrong display content, e.g. Baywatch video mode)
 Improved BY6803 emulation, and add dimmed segments support, and bright physical/PWM lights
 Improved Alvin G. first generation DMD simulation
 In general, (almost) all DMD/mini-DMD outputs have been moved to the proper physical/PWM pipeline, allowing for more subtle effects
@@ -111,21 +130,28 @@ Improved the BSMT2000 sound emulation to follow the chip's own program more clos
  - proper reset on Data East/Sega/Stern sound boards: now restarts when the reset line is released, so the chip picks the mode the game sets (e.g. Batman, Star Trek 25th and Hook, in practice no audible change though)
  - proper reset on Alvin G. sound boards: reset line is wired now, so games set up the chip's mode themselves (in practice no audible change though)
 Also added an optional low level emulation of the BSMT2000 sound chip, running the chip's own program (needs bsmt2000.bin, in bsmt2000.zip in the roms folder): enable via the 'bsmt2000_lle' setting (registry key/command line), off by default as it costs more CPU
+Further improve M114 sound core (Mr. Game)
 Fixed VGM recording for machines using OKI6295 sound
 Added VGM recording for machines using BSMT2000 sound
 Added VGM recording for machines using MSM5205/MSM6585 sound
 (VGM should now be supported for all chips directly featured within libvgm, but that misses all voice synthesizers/decompressors, etc, that some PinMAME drivers also need to use)
 Fixed flipped left/right channel for Alvin G. BSMT2000 sound (must have regressed at some point when extending the BSMT2000 core)
 Fixed the Alvin G. BSMT2000 sound board's diagnostic LED (blinks now)
-Fixed noise filter/pass and injection filter/pass in the Votrax/SC01 emulation (some GTS80(A)s and Taitos)
-Added optional closure timing and noise balance fixes to the Votrax/SC01 emulation (from MAME, measured on a real SC-01-A by Tamas Geczy; P, T and K release bursts restored): enable via the VOTRAX_CLOSURE_FIX define in src/sound/votrax.c, off by default
+Fixed noise filter/pass and injection filter/pass in the Votrax/SC01 emulation, plus some minor improvements (some GTS80(A)s and Taitos)
+ also added optional closure timing and noise balance fixes to it (measured on a real SC-01-A by Tamas Geczy; P, T and K release bursts restored)
 Used YMFM's OPL cores (OPL/YM3526, OPL2/YM3812, OPL3/YMF262) for a more accurate emulation (Tabart; AlvinG, JVH, Mephisto, Sleic; Lancelot)
 Credits saved, and more lamps found on Stargame games Space Ship and White Force
+Added timing accurate emulation of the 6522 VIA (Gottlieb System 3, Alvin G., JVH, Barni). On Gottlieb System 3 and Alvin G. the main CPU IRQ/NMI now come from the VIAs like on the real boards, instead of the guessed fixed rates (e.g. alpha GTS3 NMI ~1984Hz instead of 1000Hz, no more fake NMI on DMD GTS3, much less IRQ time wasted, e.g. Pistol Poker lamps no longer flicker)
+ !! Note that Alvin G. sound board, Barni and JVH for now stayed on the old VIA core
+Added data sheet exact cycle counts for the 68000 CPU (Capcom, Data East 192x64 DMD, Mr. Game, Technoplay)
+ Note that Capcom games will run noticeably "faster" now
 Fixed some corner cases in the arm7/AT91 emulation
 Replaced existing arm7/AT91 JIT compiler with a new asmjit-library based one, which enables JIT speedups on all x86 and x64 compiles/platforms (incl. Linux and macOS), and some arm 64bit compiles/platforms (incl. Android, Windows, macOS and 64bit raspberries)
  in addition, it is a bit more faithful than the old JIT, and also a bit faster on the average
 Slightly improve Splin (Belgium) bingo sets (via i86 fixes)
 Caveman should now work consistently (also via i86 fixes)
+Fixed missing score digits for Inder
+Fixed F-14 solenoid 10 declared as a GI relay
 Fixed the RollerCoaster Tycoon 7.02, Spanish set not working
 
 *** ROM SUPPORT *** Thanks to Tom Collins/Scorbit, Paul Swan, Dieter Werner, Victor Fernandez, Jordi Beltran, ipdb.org, Billc479, Scott Charles, inkochnito, frisbez, Chad Hendrickson, idealjoker, ingo333, RedBall, Quench, slochar, Jesus Carballo, Rockman i uri666arcade de l'associació ARCADE (Recreativas.org), myPinballs, hemtoni

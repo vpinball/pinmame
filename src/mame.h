@@ -209,6 +209,8 @@ struct GameOptions
 	const char *at91jitexcl;/* PinMAME: AT91 JIT exclusion list (debug), hex "lo-hi,lo-hi,..."; those regions are interpreted. For enumerating all crashing regions */
 	int		usemodsol;		/* PinMAME: enable & setup physic model tied to binary outputs */
 	volatile double	time_fence; /* PinMAME: enable & setup cpu time limit when using external synchronization */
+	const char *record_name;	/* PinMAME: name given to -record, the switch log and NVRAM are saved next to it */
+	const char *playback_name;	/* PinMAME: name given to -playback */
 };
 
 

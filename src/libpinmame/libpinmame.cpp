@@ -58,6 +58,8 @@ char g_szGameName[256] = {}; // String containing requested game name (may be di
 // machine stop). The API only touches the emulation in state 1, under a shared lock of _stateMutex: the game thread
 // takes it exclusively to change the state, so it can't leave state 1 (and tear down) while an API call is in flight
 static std::atomic<int> _isRunning = 0;
+static char _recordName[256] = {};   // PinmameSetRecord()
+static char _playbackName[256] = {}; // PinmameSetPlayback()
 static std::shared_mutex _stateMutex;
 static inline bool IsEmulationRunning() { return _isRunning == 1; }
 static int _timeToQuit = 0;
@@ -1052,7 +1054,12 @@ static int StartGame(const int gameNum)
 
 	_gameThreadId = std::this_thread::get_id();
 
+	if (core_inputlog_open(gameNum, _recordName, _playbackName))
+		libpinmame_log_error("StartGame(): cannot open %s.inp", _playbackName[0] ? _playbackName : _recordName);
+
 	const int err = run_game(gameNum);
+
+	core_inputlog_close();
 
 	OnStateChange(0);
 
@@ -1218,6 +1225,32 @@ PINMAMEAPI void PinmameSetCheat(const int cheat)
 }
 
 /******************************************************
+ * PinmameSetRecord
+ ******************************************************/
+
+PINMAMEAPI PINMAME_STATUS PinmameSetRecord(const char* const p_name)
+{
+	if (_isRunning)
+		return PINMAME_STATUS_GAME_ALREADY_RUNNING;
+
+	snprintf(_recordName, sizeof(_recordName), "%s", p_name ? p_name : "");
+	return PINMAME_STATUS_OK;
+}
+
+/******************************************************
+ * PinmameSetPlayback
+ ******************************************************/
+
+PINMAMEAPI PINMAME_STATUS PinmameSetPlayback(const char* const p_name)
+{
+	if (_isRunning)
+		return PINMAME_STATUS_GAME_ALREADY_RUNNING;
+
+	snprintf(_playbackName, sizeof(_playbackName), "%s", p_name ? p_name : "");
+	return PINMAME_STATUS_OK;
+}
+
+/******************************************************
  * PinmameGetHandleKeyboard
  ******************************************************/
 
@@ -1291,11 +1324,12 @@ PINMAMEAPI PINMAME_STATUS PinmameRun(const char* const p_name)
 	strncpy(g_szGameName, p_name, sizeof(g_szGameName) - 1);
 	g_szGameName[sizeof(g_szGameName) - 1] = '\0';
 
-   msgLocals.gameId = std::format("pinmame::{}", p_name);
+	msgLocals.gameId = std::format("pinmame::{}", p_name);
 
-   OnStateChange(2); // Starting state (in between stopped and started)
+	OnStateChange(2); // Starting state (in between stopped and started)
 
 	vp_init();
+	_nvramInit = 0; // like VPM on a game change: the first PinmameGetChangedNVRAM only takes the new baseline
 
 	_p_gameThread = new std::thread(StartGame, gameNum);
 
@@ -1503,13 +1537,8 @@ PINMAMEAPI int PinmameGetSolenoid(const int solNo)
 	if (!IsEmulationRunning() || solNo < 1 || solNo > CORE_MODOUT_SOL_MAX)
 		return 0;
 
-	if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) {
-		// core_getSol reads 29-48 from other outputs than solNo - 1
-		if (solNo >= 29 && solNo <= 48)
-			core_update_pwm_solenoids();
-		else
-			core_update_pwm_outputs(CORE_MODOUT_SOL0 + solNo - 1, 1);
-	}
+	// Like VPM: core_getSol may read other outputs than solNo - 1 (29-48, driver getSol like Tommy's blinder motor)
+	core_update_pwm_solenoids();
 
 	return vp_getSolenoid(solNo);
 }
@@ -1549,12 +1578,10 @@ PINMAMEAPI int PinmameGetMaxLamps()
 PINMAMEAPI int PinmameGetLamp(const int lampNo)
 {
 	const std::shared_lock lock(_stateMutex);
-	const int index = IsEmulationRunning() ? vp_getLampIndex(lampNo) : -1;
-	if (index < 0)
+	if (!IsEmulationRunning())
 		return 0;
 
-	if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_LAMPS))
-		core_update_pwm_outputs(CORE_MODOUT_LAMP0 + index, 1);
+	core_update_pwm_lamps();
 
 	return vp_getLamp(lampNo);
 }
@@ -1597,8 +1624,7 @@ PINMAMEAPI int PinmameGetGI(const int giNo)
 	if (!IsEmulationRunning())
 		return 0;
 
-	if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_GI))
-		core_update_pwm_outputs(CORE_MODOUT_GI0 + giNo - 1, 1);
+	core_update_pwm_gis();
 
 	return vp_getGI(giNo);
 }
@@ -1798,6 +1824,8 @@ PINMAMEAPI int PinmameGetNVRAM(PinmameNVRAMState* const p_nvramStates)
 		p_nvramStates[i].currStat = nvram_file->data[i];
 		p_nvramStates[i].oldStat = 0;
 	}
+
+	mame_fclose(nvram_file);
 
 	return size;
 }
@@ -2240,7 +2268,8 @@ static void SetSwitchState(void* callContext, const void* pResult)
 {
    assert(_isRunning == 1);
    const int srcId = static_cast<StateMapping*>(callContext)->srcId;
-   core_setSw(static_cast<int16_t>(srcId), *static_cast<const uint8_t*>(pResult) != 0);
+   // Like PinmameSetSwitch / VPinMAME: through the switch log, so it is recorded (and played back) like the other host switches
+   core_setHostSw(static_cast<int16_t>(srcId), *static_cast<const uint8_t*>(pResult) != 0);
 }
 static void GetDIPSwitchState(void* callContext, void* pResult)
 {
@@ -2382,8 +2411,8 @@ static void SetupMsgApiGameStates()
                addPhysSol(fmtString("GPIO #3 (WPC J111.3) overlayed with FastFlip Fake GameOn"), nullptr, nullptr, 31, GetSolenoid2State, GetSolenoid2VPMState, 0x0400, 30);
          }
          // 29..32, solenoid outputs from driver board
-         // Note: core_getSol only implement for S11 while core_getAllSol implements for all system (but is it used by other systems ?)
-         else // if (core_gameData->gen & GEN_ALLS11)
+         // Used by many systems (S11, GTS3 relays, SAM, Capcom, ...), core_getSol and core_getAllSol report them for all systems but WPC
+         else
          {
             for (uint16_t i = 29; i <= 32; i++)
                addPhysSol((core_gameData->gen & GEN_PINHECK) ? fmtString("pinHeck GI #%d", i - 25) : fmtString("Output #%02d", i),
@@ -2397,7 +2426,6 @@ static void SetupMsgApiGameStates()
          if (core_gameData->gen & GEN_SAM)
             addPhysSol(fmtString("SAM Fake GameOn"), nullptr, nullptr, 33, GetSolenoid2State, GetSolenoid2VPMState, 0x00000010, 32);
          // 33..36: Whitestar various extension boards (stored in 0x00F0 of solenoids2, which is upper flipper for other hardwares)
-         // Note: core_getSol does not implement this while core_getAllSol does
          else if (core_gameData->gen & GEN_ALLWS)
          {
             for (uint16_t i = 33; i <= 36; i++)
@@ -2466,7 +2494,7 @@ static void SetupMsgApiGameStates()
          {
             for (uint16_t i = 0; i < 8; i++)
                addPhysSol(fmtString("Output #%02d (WPC95 J110 LPDC)", 37 + (i & 3)),
-                  nullptr, nullptr, 37 + i, GetSolenoid1State, GetSolenoid1VPMState, 1 << (36 + (i & 3)), 36 + (i & 3));
+                  nullptr, nullptr, 37 + i, GetSolenoid1State, GetSolenoid1VPMState, 1u << (28 + (i & 3)), 36 + (i & 3));
          }
          // 37..44, S11, SAM, SPA: extension board with 8 outputs; pinHeck: GI 8..15 (stored in 0xFF00 of solenoids2)
          else if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA | GEN_PINHECK))

@@ -80,6 +80,7 @@ int timer_enabled(mame_timer *which);
    Without -rtc every one of these behaves exactly as the host clock did. */
 int rtc_set_start(const char *spec);
 int rtc_is_fixed(void);
+void rtc_release(void);
 time_t rtc_now(void);
 void rtc_now_tm(struct tm *out);
 #endif

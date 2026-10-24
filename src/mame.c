@@ -133,6 +133,9 @@
 #ifdef LIBPINMAME
 extern void libpinmame_log_error(const char* format, ...);
 #endif
+#ifdef PINMAME
+extern mame_file *core_swlog_fopen(const char *name, const char *ext, int write);
+#endif
 
 /***************************************************************************
 
@@ -568,6 +571,8 @@ static int run_machine(void)
 
 void run_machine_core(void)
 {
+	int keep_nvram = 0;
+
 	/* disable artwork for the start */
 	artwork_enable(0);
 
@@ -598,10 +603,30 @@ void run_machine_core(void)
 				/* load the NVRAM now */
 				if (Machine->drv->nvram_handler)
 				{
-					mame_file *nvram_file = mame_fopen(Machine->gamedrv->name, 0, FILETYPE_NVRAM, 0);
+					mame_file *nvram_file;
+#ifdef PINMAME
+					/* a playback with a switch log starts from the NVRAM saved with it, and leaves the game's own alone */
+					mame_file *swlog_file = options.playback_name ? core_swlog_fopen(options.playback_name, "sw", 0) : NULL;
+					if (swlog_file)
+					{
+						mame_fclose(swlog_file);
+						keep_nvram = 1;
+						nvram_file = core_swlog_fopen(options.playback_name, "nv", 0);
+					}
+					else
+#endif
+					nvram_file = mame_fopen(Machine->gamedrv->name, 0, FILETYPE_NVRAM, 0);
 					(*Machine->drv->nvram_handler)(nvram_file, 0);
 					if (nvram_file)
 						mame_fclose(nvram_file);
+#ifdef PINMAME
+					/* a recording keeps the NVRAM it starts from */
+					if (options.record_name && !options.playback_name && (nvram_file = core_swlog_fopen(options.record_name, "nv", 1)) != NULL)
+					{
+						(*Machine->drv->nvram_handler)(nvram_file, 1);
+						mame_fclose(nvram_file);
+					}
+#endif
 				}
 
 				/* run the emulation! */
@@ -612,7 +637,7 @@ void run_machine_core(void)
 #endif
 
 				/* save the NVRAM */
-				if (Machine->drv->nvram_handler)
+				if (Machine->drv->nvram_handler && !keep_nvram)
 				{
 					mame_file *nvram_file = mame_fopen(Machine->gamedrv->name, 0, FILETYPE_NVRAM, 1);
 					if (nvram_file != NULL)

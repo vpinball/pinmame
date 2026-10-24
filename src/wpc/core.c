@@ -3,6 +3,7 @@
 /***********************************************/
 #include <stdarg.h>
 #include <math.h>
+#include <ctype.h>
 #include "driver.h"
 #include "sim.h"
 #include "snd_cmd.h"
@@ -91,6 +92,7 @@ void vp_setDIP(int bank, int value) { }
 #else
   int g_fHandleKeyboard = 1;
   int g_fHandleMechanics = 0xff;
+  int g_fDumpFrames = 0; /* toggled with F6, see usrintrf.c */
   #define OnSolenoid(nSolenoid, IsActive)
   #define OnStateChange(nChange)
   #define vp_getSolMask64() ((UINT64)(-1))
@@ -1179,7 +1181,8 @@ void core_dmd_send_dmddevice(const int width, const int height, const float* con
 
 // Save main DMD bitplane and raw frames to a capture file
 // DMD frame capture can be enabled either by:
-// - setting g_fDumpFrames (not supported as it is only available through keyboard input which VPinMame doesn't have)
+// - the -dmd_dump_dir option (PinMAME, libpinmame)
+// - setting g_fDumpFrames with F6 (PinMAME, writes to DmdDump/ in the current directory; not supported in VPinMame as it doesn't get the keyboard input)
 // - setting g_fShowPinDMD (enable dmddevice.dll) and g_fShowWinDMD (enable VPinMAME rendering) simultaneously
 // TODO this is not yet implemented for Strikes N' Spares which has 2 DMDs
 #if defined(VPINMAME) || defined(PINMAME) || defined(LIBPINMAME)
@@ -1236,6 +1239,11 @@ static void core_dmd_capture_frame(const int width, const int height, const UINT
     ptr = strrchr(DumpFilename, '\\');
     strcpy_s(ptr + 1, 11, "DmdDump\\");
     strcat_s(DumpFilename, MAX_PATH, Machine->gamedrv->name);
+  }
+#elif defined(PINMAME) && !defined(LIBPINMAME)
+  else if (g_fDumpFrames) {
+    /* F6: like VPinMAME, into an existing DmdDump/ folder, appending */
+    snprintf(DumpFilename, sizeof(DumpFilename), "DmdDump/%s", Machine->gamedrv->name);
   }
 #endif
   else
@@ -1364,7 +1372,7 @@ static void core_dmd_video_update(struct mame_bitmap *bitmap, const struct recta
     unsigned int colRawFrameId;
     const UINT8* colRawFrame = (pmoptions.dmd_colorize && layout->length >= 128 && !core_dmd_has_16_shades()) ? core_dmd_update_identify(layout, &colRawFrameId) : NULL;
     core_dmd_render_internal(bitmap, layout->left, layout->top, layout->length, layout->start, lumFrame, colRawFrame);
-    if (pmoptions.dmd_dump_dir && pmoptions.dmd_dump_dir[0] && layout->length >= 128) {
+    if (((pmoptions.dmd_dump_dir && pmoptions.dmd_dump_dir[0]) || g_fDumpFrames) && layout->length >= 128) {
       unsigned int rawFrameId;
       const UINT8* rawFrame = core_dmd_update_identify(layout, &rawFrameId);
       (void)rawFrameId; /* only rawFrame is needed here */
@@ -1880,6 +1888,10 @@ void core_updateSw(int flipEn) {
      ((options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_FORCE_ON)) || ((core_gameData->gen & (GEN_ALLWPC | GEN_SAM)) && (options.usemodsol & CORE_MODOUT_ENABLE_MODSOL)) ))
   {
     float state[CORE_MODOUT_SOL_MAX];
+    #if defined(VPINMAME) || defined(LIBPINMAME)
+    // These builds only integrate on client request (see VIDEO_UPDATE): integrate here, or a client only listening to OnSolenoid would see no change
+    core_update_pwm_solenoids();
+    #endif
     core_getAllPhysicSols(state);
     for (ii = 1; ii <= coreGlobals.nSolenoids; ii++) {
       UINT8 v = saturatedByte(state[ii - 1]);
@@ -2252,23 +2264,206 @@ void core_updInvSw(int swNo, int inv) {
   }
 }
 
+/*--------------------------------------------------------------------
+/  Switch log, kept along with the .inp file of -record/-playback
+/
+/  The host (VPinMAME Controller.Switch, libpinmame PinmameSetSwitch)
+/  writes the switch matrix directly, so its switches never reach the
+/  input ports the .inp file holds. While recording, host changes are
+/  queued and applied by a 1 kHz emulated timer, which logs them with
+/  its tick count to <name>.sw. On playback the same timer applies the
+/  logged changes at the same ticks and live host changes are dropped.
+/  Both runs start from the NVRAM saved as <name>.nv (see mame.c) and
+/  with the real-time clock fixed at the time the recording started.
+/  A reset ends the recording or the playback.
+/---------------------------------------------------------------------*/
+#define SWLOG_HZ       1000
+#define SWLOG_QUEUE    4096 /* power of 2 */
+#define SWLOG_RECORD   1
+#define SWLOG_PLAYBACK 2
+
+static struct {
+  volatile int mode;
+  int rtcSet;                      /* the clock was fixed here, release it at the end */
+  mame_file *file;
+  UINT32 tick;
+  volatile int head;               /* next queue slot, taken by the host threads */
+  int tail;                        /* next queue slot to apply */
+  volatile int queue[SWLOG_QUEUE]; /* 0 = free, else swNo*4 + value*2 + 1 */
+  int held;                        /* change put off to the next tick */
+  UINT32 nextTick;                 /* playback: next logged change, 0 = none */
+  int nextSw, nextVal;
+} swlog;
+
+void core_setHostSw(int swNo, int value) {
+  if (swlog.mode == SWLOG_RECORD) {
+    const int slot = (atomic_increment(&swlog.head) - 1) & (SWLOG_QUEUE-1);
+    atomic_exchange_int(&swlog.queue[slot], swNo*4 + (value ? 2 : 0) + 1);
+  }
+  else if (swlog.mode == 0)
+    core_setSw(swNo, value);
+  /* playback: the log drives the switches */
+}
+
+/* <name>.<ext> in the input log directory, a trailing .inp left out */
+mame_file *core_swlog_fopen(const char *name, const char *ext, int write) {
+  char fn[256];
+  int len = (int)strlen(name);
+  if (len > 4 && strcmp(name + len - 4, ".inp") == 0) len -= 4;
+  snprintf(fn, sizeof(fn), "%.*s.%s", len, name, ext);
+  return mame_fopen(fn, 0, FILETYPE_INPUTLOG, write);
+}
+
+static int swlog_readEvent(const char *line) {
+  unsigned int tick;
+  int sw, value;
+  if (sscanf(line, "%u %d %d", &tick, &sw, &value) != 3)
+    return 0;
+  swlog.nextTick = tick; swlog.nextSw = sw; swlog.nextVal = value;
+  return 1;
+}
+
+static void swlog_readNext(void) {
+  char line[128];
+  swlog.nextTick = 0;
+  while (mame_fgets(line, sizeof(line), swlog.file))
+    if (swlog_readEvent(line))
+      break;
+}
+
+static void swlog_tick(int param) {
+  int done[16], nDone = 0;
+
+  swlog.tick++;
+  if (swlog.mode == SWLOG_PLAYBACK) {
+    while (swlog.nextTick == swlog.tick) {
+      core_setSw(swlog.nextSw, swlog.nextVal);
+      swlog_readNext();
+    }
+    return;
+  }
+  for (;;) {
+    int ev, sw, value, ii;
+    if (swlog.held) { ev = swlog.held; swlog.held = 0; }
+    else if ((ev = atomic_exchange_int(&swlog.queue[swlog.tail & (SWLOG_QUEUE-1)], 0)) != 0) swlog.tail++;
+    else break;
+    sw = ev >> 2; value = (ev >> 1) & 1;
+    if (!core_getSw(sw) == !value)
+      continue;
+    /* one change per switch and tick, so that short pulses still get through */
+    for (ii = 0; ii < nDone && done[ii] != sw; ii++) ;
+    if (ii < nDone || nDone == 16) { swlog.held = ev; break; }
+    done[nDone++] = sw;
+    core_setSw(sw, value);
+    mame_fprintf(swlog.file, "%u %d %d\n", swlog.tick, sw, value);
+  }
+}
+
+static void swlog_start(void) {
+  const char *name = options.playback_name ? options.playback_name : options.record_name;
+  char line[128], rtc[32] = "";
+  struct tm t;
+
+  memset(&swlog, 0, sizeof(swlog));
+  if (!name || !*name)
+    return;
+  swlog.file = core_swlog_fopen(name, "sw", options.playback_name == NULL);
+  if (!swlog.file) {
+    logerror("switch log: cannot open %s.sw\n", name);
+    return;
+  }
+  if (options.playback_name) {
+    char game[32] = "";
+    while (mame_fgets(line, sizeof(line), swlog.file) && !swlog_readEvent(line)) {
+      if (strncmp(line, "game ", 5) == 0) sscanf(line + 5, "%31s", game);
+      else if (strncmp(line, "rtc ", 4) == 0) sscanf(line + 4, "%31[^\r\n]", rtc);
+    }
+    if (strcmp(game, Machine->gamedrv->name)) {
+      logerror("switch log: %s.sw was recorded with %s, not %s\n", name, game, Machine->gamedrv->name);
+      mame_fclose(swlog.file); swlog.file = NULL;
+      return;
+    }
+    if (rtc[0] && !rtc_is_fixed())
+      swlog.rtcSet = (rtc_set_start(rtc) == 0);
+    swlog.mode = SWLOG_PLAYBACK;
+  }
+  else {
+    rtc_now_tm(&t);
+    strftime(rtc, sizeof(rtc), "%Y-%m-%d %H:%M:%S", &t);
+    if (!rtc_is_fixed())
+      swlog.rtcSet = (rtc_set_start(rtc) == 0);
+    mame_fprintf(swlog.file, "# PinMAME switch log: <tick (%d Hz)> <switch> <0/1>\ngame %s\nrtc %s\n",
+                 SWLOG_HZ, Machine->gamedrv->name, rtc);
+    swlog.mode = SWLOG_RECORD;
+  }
+  timer_pulse(TIME_IN_HZ(SWLOG_HZ), 0, swlog_tick);
+}
+
+static void swlog_stop(void) {
+  if (!swlog.file)
+    return;
+  swlog.mode = 0;
+  mame_fclose(swlog.file);
+  swlog.file = NULL;
+  if (swlog.rtcSet)
+    rtc_release();
+  /* after a reset the game runs live */
+  options.record_name = options.playback_name = NULL;
+}
+
+/* For the front-ends without a command line (VPinMAME, libpinmame): open the .inp file
+   their record/playback setting names, the switch log goes along with it */
+int core_inputlog_open(int game, const char *record, const char *playback) {
+  INP_HEADER inp_header;
+
+  if (playback && *playback) {
+    if (!(options.playback = mame_fopen(playback, 0, FILETYPE_INPUTLOG, 0)))
+      return -1;
+    /* skip the header */
+    mame_fread(options.playback, &inp_header, sizeof(INP_HEADER));
+    if (!isalnum((UINT8)inp_header.name[0]))
+      mame_fseek(options.playback, 0, SEEK_SET);
+    options.playback_name = playback;
+  }
+  else if (record && *record) {
+    if (!(options.record = mame_fopen(record, 0, FILETYPE_INPUTLOG, 1)))
+      return -1;
+    memset(&inp_header, 0, sizeof(INP_HEADER));
+    strncpy(inp_header.name, drivers[game]->name, sizeof(inp_header.name)-1);
+    mame_fwrite(options.record, &inp_header, sizeof(INP_HEADER));
+    options.record_name = record;
+  }
+  return 0;
+}
+
+void core_inputlog_close(void) {
+  if (options.playback) { mame_fclose(options.playback); options.playback = NULL; }
+  if (options.record)   { mame_fclose(options.record);   options.record = NULL; }
+  options.record_name = options.playback_name = NULL;
+}
+
 /*-------------------------------------
 /  Read the status of a solenoid
 /  For the standard solenoids this is
 /  the "smoothed" value
 /--------------------------------------*/
 int core_getSol(int solNo) {
-  if (solNo <= 28)
-    return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value) : coreGlobals.solenoids & CORE_SOLBIT(solNo);
-  else if (solNo <= 32) { // 29-32
-    if (core_gameData->gen & (GEN_ALLS11 | GEN_PINHECK))
-      return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value) : coreGlobals.solenoids & CORE_SOLBIT(solNo);
-    else if (core_gameData->gen & GEN_ALLWPC) // Remap WPC GameOn/J111 GPIO (hacky)
-      return coreGlobals.solenoids2 & (1<<(solNo-29+8));
-  }
+  // No solenoid 0, but VPM's Solenoids/SolenoidsState arrays start at index 0
+  if (solNo < 1)
+    return 0;
+  // Binary states are returned as 0/1, like the changed solenoid list. The integrated value is only returned with physical solenoid outputs
+  // or modulated solenoids: with CORE_MODOUT_FORCE_ON alone (SAM, Capcom, pinHeck), a blinking flasher would read on for the whole sequence
+  // 1-32: driver board outputs, like core_getAllSol / core_getAllPhysicSols
+  if (solNo <= 28 || (solNo <= 32 && !(core_gameData->gen & GEN_ALLWPC)))
+    return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value) : ((coreGlobals.solenoids & CORE_SOLBIT(solNo)) != 0);
+  else if (solNo <= 32) // 29-32 WPC: remap GameOn/J111 GPIO (hacky)
+    // Binary state even with physical outputs, while core_getAllPhysicSols reports slots 28-30 (CORE_MODOUT_PULSE, same states) as 0/255
+    return (coreGlobals.solenoids2 & (1<<(solNo-29+8))) != 0;
   else if (solNo <= 36) { // 33-36 driver specific sols
-    if (coreGlobals.hasModulatedFlippers && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
+    if (coreGlobals.hasModulatedFlippers && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)))
       return saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value); // Fliptronics are implemented through PWM (needed as these are used to drive flashers on some games)
+    if (coreGlobals.hasModulatedFlippers && (options.usemodsol & CORE_MODOUT_FORCE_ON)) // Binary state of the flipper outputs, like core_getFlipSolBits
+      return coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value > 0.f;
     if (core_gameData->gen & GEN_ALLWPC) { // WPC only: Upper flipper (note that other systems also have upper flippers, they just don't implement the legacy PinMAME flipper output mapping)
       int mask;
       /*-- flipper coils --*/
@@ -2278,31 +2473,35 @@ int core_getSol(int solNo) {
         mask = CORE_ULFLIPSOLBITS;
       else
         mask = 1<<(solNo - 33 + 4);
-      return coreGlobals.solenoids2 & mask;
+      return (coreGlobals.solenoids2 & mask) != 0;
     }
     else if (core_gameData->gen & GEN_SAM) // SAM only: fake GameOn solenoid for fast flips
-       return coreGlobals.solenoids2 & 0x10;
+       return (coreGlobals.solenoids2 & 0x10) != 0;
+    else if (core_gameData->gen & GEN_ALLWS) // Whitestar: aux board outputs (magnets, ...), like core_getAllSol
+       return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value) : ((coreGlobals.solenoids2 & (1<<(solNo - 33 + 4))) != 0);
   }
   else if (solNo <= 44) { // 37-44 WPC95 & S11 extra
     if (core_gameData->gen & (GEN_WPC95|GEN_WPC95DCS)) { // Duplicated in 37..40 / 41..44, so always read from 41..44 (hence the |4 in the index/mask) for solenoids, and 37..40 for PWM outputs
-      if (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
+      if (coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)))
         return saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + (solNo <= 40 ? solNo : (solNo - 4))-1].value);
       else
-        return coreGlobals.solenoids & (1<<((solNo - 13)|4));
+        return (coreGlobals.solenoids & (1<<((solNo - 13)|4))) != 0;
     }
     if (core_gameData->gen & (GEN_ALLS11 | GEN_PINHECK)) // S11 outputs in slots 40-47; pinHeck's GI 8-15 in 36-43, its lower flippers using 44-47
-      return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + ((core_gameData->gen & GEN_PINHECK) ? solNo - 1 : 32 + solNo - 37 + 8)].value) : coreGlobals.solenoids2 & (1<<(solNo - 37 + 8));
+      return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + ((core_gameData->gen & GEN_PINHECK) ? solNo - 1 : 32 + solNo - 37 + 8)].value) : ((coreGlobals.solenoids2 & (1<<(solNo - 37 + 8))) != 0);
   }
   else if (solNo <= 48) { // 45-48 Lower flippers
-    if (coreGlobals.hasModulatedFlippers && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_FORCE_ON)))
+    if (coreGlobals.hasModulatedFlippers && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)))
       return saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value); // Fliptronics are implemented through PWM
+    if (coreGlobals.hasModulatedFlippers && (options.usemodsol & CORE_MODOUT_FORCE_ON)) // Binary state of the flipper outputs, like core_getFlipSolBits
+      return coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value > 0.f;
     int mask = 1<<(solNo - 45);
     /*-- Game must have lower flippers but for symmetry we check anyway --*/
     if      /*(*/(solNo == sLRFlip) //&& (core_gameData->hw.flippers & FLIP_SOL(FLIP_LR)))
       mask = CORE_LRFLIPSOLBITS;
     else if /*(*/(solNo == sLLFlip) //&& (core_gameData->hw.flippers & FLIP_SOL(FLIP_LL)))
       mask = CORE_LLFLIPSOLBITS;
-    return coreGlobals.solenoids2 & mask;
+    return (coreGlobals.solenoids2 & mask) != 0;
   }
   else if (solNo <= 50) // 49-50 simulated
     return sim_getSol(solNo);
@@ -2567,6 +2766,7 @@ static MACHINE_INIT(core) {
         }
       }
     }
+    swlog_start();
     /*-- init switch matrix --*/
     memcpy((void*)coreGlobals.invSw, (void*)core_gameData->wpc.invSw, sizeof(core_gameData->wpc.invSw));
     memcpy((void*)coreGlobals.swMatrix, (void*)coreGlobals.invSw, sizeof(coreGlobals.invSw));
@@ -2774,6 +2974,7 @@ static MACHINE_STOP(core) {
   g_raw_dmd_frame_count = 0;
 #endif
 
+  swlog_stop();
   mech_emuExit();
   if (coreData->stop) coreData->stop();
   snd_cmd_exit();
@@ -2791,6 +2992,8 @@ static MACHINE_STOP(core) {
   for (int i = 0; i < 16; i++) {
     if (locals.dmdStates[i]) {
       free(locals.dmdStates[i]->rawFrames);
+      free(locals.dmdStates[i]->tempRawFrame);
+      free(locals.dmdStates[i]->tempFIRBuffer);
       free(locals.dmdStates[i]->dmdFIRBuffer);
       free(locals.dmdStates[i]->bitplaneFrame);
       free(locals.dmdStates[i]->luminanceFrame);
@@ -3275,6 +3478,10 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
       break;
+    // TODO Bally 6803 lamps are likely modelled far too hot: the ROMs (eballchp, dungdrag) fire a lit lamp's SCR 0.7..1.8ms after each zero
+    // cross, so it conducts nearly the whole half wave: at 20.5V AC a #44 gets about 13V RMS, twice its rating, and lit inserts sit at the
+    // BULB_T_MAX clamp (about 4.5x the rated brightness). The rating (2710K) would be reached at about 8..9V AC: check the lamp supply
+    // (tap, serial resistance, bulb type) against the schematics
     case CORE_MODOUT_BULB_44_20V_AC_POS_BY: // Strobed bulb, 20.5V AC switched through a SCR and a diode limiting to positive half of the AC sine (Bally 6803)
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
       coreGlobals.physicOutputState[i].state.bulb.U = 20.5f - 0.7f - 0.7f;
@@ -3523,6 +3730,8 @@ void core_update_pwm_outputs(const int startIndex, const int count)
             coreGlobals.lampMatrix[i] = col;
          }
       }
+      // Skipped with physical solenoid outputs or modulated solenoids: solenoids then only follows the 2 state outputs (fastOn), not the
+      // other types (e.g. Capcom/SAM flashers), which is fine as all readers then use physicOutputState
       if (((options.usemodsol & (CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS)) == 0) && (startIndex < CORE_MODOUT_SOL0 + CORE_MODOUT_SOL_MAX) && (startIndex + count >= CORE_MODOUT_SOL0))
       {
          UINT32 sols = 0;
@@ -3626,7 +3835,7 @@ void core_write_pwm_output_lamp_matrix(int startIndex, UINT8 columns, UINT8 rows
   common hardware: WPC is 122/3 = 40.7Hz, GTS3 is 376/10 = 37.6Hz, WPC Phantom Haus limits pattern length to 2 to stay above 30Hz,
   so an overall plasma inertia & flicker fusion period of around 30ms (33Hz).
 
-  Filters are computed using the following script in GNU Octave:
+  Filters are computed using the following script in GNU Octave (n is the number of taps of the table in core_dmd_pwm_init, mostly floor(fs/fc) + 1):
 
 pkg load signal
 
@@ -3634,36 +3843,45 @@ fc = 15; % Cut-off frequency (Hz), PWM patterns/frequency suggests something aro
 int_factor = 65535*65530; % Integer arithmetic fixed point scaling
 
 
-% WPC Phantom Haus
-%n = 10
+% WPC Phantom Haus: not computed, the table is a 2 frame average { 255, 255 }
 %fs = 61.05; % Sampling rate (Hz) = DMD VBlank
 %data=[repmat([0;1],100,1)];
 
 % WPC
-%n = 8
+%n = 9
 %fs = 122.1; % Sampling rate (Hz) = DMD VBlank
 %data=[repmat([0;0;1],100,1),repmat([0;1;1],100,1)];
 
 % Data East DMD 128x16
-%n = 8
+%n = 12
 %fs = 177.5; % Sampling rate (Hz) = DMD VBlank
 %data=[repmat([0;0;1],100,1), repmat([1;1;0],100,1), repmat([1;1;1],100,1)];
 
 % Data East DMD 128x32 & Sega/Stern Whitestar & Sega 192x64
-%n = 8
+%n = 15
 %fs = 230.; % Sampling rate (Hz) = DMD VBlank
 %data=[repmat([0;0;1],100,1), repmat([1;1;0],100,1), repmat([1;1;1],100,1)];
 
 % GTS3
-%n = 24
+%n = 26
 %fs = 376.; % Sampling rate (Hz) = DMD VBlank
 %data=[repmat([0;0;0;0;0;0;0;1],30,1), repmat([0;0;0;0;0;1;1;1],30,1)];
 
 % Alvin G
-%n = 10
+%n = 20
 %fs = 298.6; % Sampling rate (Hz) = DMD VBlank
 %fs = 1194.4; % Sampling rate (Hz) = DMD VBlank
 %data=[repmat([0;0;0;1],100,1),repmat([0;1;0;1],100,1),repmat([0;0;1;1],100,1),repmat([0;1;1;1],100,1)];
+
+% Capcom 128x32 (n = 34 would be floor(fs/fc) + 1, see core_dmd_pwm_init)
+%n = 24
+%fs = 508.733; % Sampling rate (Hz) = DMD VBlank
+%data=[repmat([1;0;0;0],100,1),repmat([1;1;0;1],100,1)];
+
+% Capcom 256x64
+%n = 17
+%fs = 254.364; % Sampling rate (Hz) = DMD VBlank
+%data=[repmat([1;0;0;0],100,1),repmat([1;1;0;1],100,1)];
 
 %fs = 230.;
 %n = floor(fs/fc) + 1
@@ -3753,7 +3971,7 @@ void core_dmd_pwm_init(const core_tLCDLayout* layout, const int filter, const in
       dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_376_15) / sizeof(UINT32);
     }
     break;
-  case CORE_DMD_PWM_FILTER_CAPCOM_128x32: // Capcom 128x32: 508.733Hz refresh rate / 15Hz low pass filter / 3 frame PWM pattern but also uses longer patterns (multiple of 3)
+  case CORE_DMD_PWM_FILTER_CAPCOM_128x32: // Capcom 128x32: 508.733Hz refresh rate / 15Hz low pass filter / 4 frame PWM pattern but also uses longer patterns (multiple of 4)
     {
       // n=34 is better but seems somewhat heavy for our usecase
       // static const UINT32 fir_508_15[] = { 1049808, 2911857, 6143559, 11789924, 20825356, 34023014, 51836988, 74311480, 101028694, 131103153, 163225280, 195751606, 226833801, 254574206, 277192388, 293185732, 301467429, 301467429, 293185732, 277192388, 254574206, 226833801, 195751606, 163225280, 131103153, 101028694, 74311480, 51836988, 34023014, 20825356, 11789924, 6143559, 2911857, 1049808 };
@@ -3762,7 +3980,7 @@ void core_dmd_pwm_init(const core_tLCDLayout* layout, const int filter, const in
       dmd_state->fir_size = dmd_state->nFrames = sizeof(fir_508_15) / sizeof(UINT32);
     }
     break;
-  case CORE_DMD_PWM_FILTER_CAPCOM_256x64: // Capcom 256x64: 254.364Hz refresh rate / 15Hz low pass filter / 3 frame PWM pattern but also uses longer patterns (multiple of 3)
+  case CORE_DMD_PWM_FILTER_CAPCOM_256x64: // Capcom 256x64: 254.364Hz refresh rate / 15Hz low pass filter / 4 frame PWM pattern but also uses longer patterns (multiple of 4)
     {
       static const UINT32 fir_254_15[] = { 3297601, 14786304, 48300768, 117825529, 225575583, 357894749, 487689237, 582921132, 617926745, 582921132, 487689237, 357894749, 225575583, 117825529, 48300768, 14786304, 3297601 };
       dmd_state->fir_weights = fir_254_15;
@@ -3779,15 +3997,20 @@ void core_dmd_pwm_init(const core_tLCDLayout* layout, const int filter, const in
   default:
     assert(0); // Unsupported filter
   }
+  // Summed as an integer, so that a dot lit in every frame (same integer total) gives exactly 1.0 (a float sum gave 0.99999994 or 1.0000001).
+  // The per dot accumulator of core_dmd_update_pwm reaches this total, so it must fit in UINT32
+  UINT64 fir_total = 0;
   for (int i = 0; i < dmd_state->fir_size; i++)
-    dmd_state->fir_sum += (float)dmd_state->fir_weights[i];
+    fir_total += dmd_state->fir_weights[i];
+  assert(fir_total <= 0xFFFFFFFFu);
+  dmd_state->fir_sum = (float)(UINT32)fir_total;
   dmd_state->rawFrames = malloc(dmd_state->nFrames * dmd_state->rawFrameSize);
   dmd_state->tempRawFrame = malloc(dmd_state->frameSize * sizeof(UINT8));
   dmd_state->bitplaneFrame = malloc(dmd_state->frameSize * sizeof(UINT8));
   dmd_state->tempFIRBuffer = malloc(dmd_state->frameSize * sizeof(UINT32));
   dmd_state->dmdFIRBuffer = malloc(dmd_state->frameSize * sizeof(UINT32));
   dmd_state->luminanceFrame = malloc(dmd_state->frameSize * sizeof(float));
-  assert(dmd_state->rawFrames != NULL && dmd_state->dmdFIRBuffer != NULL && dmd_state->bitplaneFrame != NULL && dmd_state->luminanceFrame != NULL);
+  assert(dmd_state->rawFrames != NULL && dmd_state->tempRawFrame != NULL && dmd_state->bitplaneFrame != NULL && dmd_state->tempFIRBuffer != NULL && dmd_state->dmdFIRBuffer != NULL && dmd_state->luminanceFrame != NULL);
   memset(dmd_state->rawFrames, 0, dmd_state->nFrames * dmd_state->rawFrameSize);
   memset(dmd_state->dmdFIRBuffer, 0, dmd_state->frameSize * sizeof(UINT32));
   memset(dmd_state->bitplaneFrame, 0, dmd_state->frameSize * sizeof(UINT8));
@@ -3949,23 +4172,15 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
      {
         UINT8* rawData = dmd_state->tempRawFrame;
         const UINT8* frameData = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+        // Same bit order as the luminance filter: first dot in bit 0 for reversed bytes, in bit 7 otherwise
         const int width_remaining = dmd_state->width & 7;
-        if (width_remaining == 0) {
-           for (int jj = 0; jj < dmd_state->rawFrameSize; jj++) {
-              UINT8 data = *frameData++;
-              for (int kk = 0; kk < 8; kk++, data <<= 1, rawData++)
-                 (*rawData) = data & 0x01;
-           }
-        }
-        else {
-           const int width_bytes = (dmd_state->width + 7) / 8;
-           for (int kk = 0; kk < dmd_state->height; kk++) {
-              for (int jj = 0; jj < width_bytes; jj++) {
-                 UINT8 data = *frameData++;
-                 const int n = (jj == width_bytes - 1) ? width_remaining : 8;
-                 for (int ll = 0; ll < n; ll++, data <<= 1, rawData++)
-                    (*rawData) = data & 0x01;
-              }
+        const int width_bytes = (dmd_state->width + 7) / 8;
+        for (int kk = 0; kk < dmd_state->height; kk++) {
+           for (int jj = 0; jj < width_bytes; jj++) {
+              const UINT8 data = *frameData++;
+              const int n = (width_remaining != 0 && jj == width_bytes - 1) ? width_remaining : 8;
+              for (int ll = 0; ll < n; ll++, rawData++)
+                 (*rawData) = (data >> (dmd_state->revByte ? ll : 7 - ll)) & 0x01;
            }
         }
      }

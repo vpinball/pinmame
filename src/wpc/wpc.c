@@ -137,6 +137,7 @@ static struct {
 } wpclocals;
 
 // Have to put this here, instead of wpclocals, since wpclocals is cleared/initialized AFTER game specific init.   Grrr.
+// MACHINE_STOP(wpc) clears them when the game stops
 static int wpc_modsol_aux_board = 0;
 static int wpc_fastflip_addr = 0;
 
@@ -1562,9 +1563,16 @@ static MACHINE_INIT(wpc) {
 }
 
 static MACHINE_STOP(wpc) {
+  extern int time_to_reset;
   sndbrd_0_exit();
   if (wpc_printfile)
     { mame_fclose(wpc_printfile); wpc_printfile = NULL; }
+  // Set once per run by the game's init (init_tz, ...), which a reset (F3, watchdog) doesn't call again: clear them only
+  // when the game stops, so the next game in the same process (VPinMAME, libpinmame) doesn't inherit them
+  if (!time_to_reset) {
+    wpc_modsol_aux_board = 0;
+    wpc_fastflip_addr = 0;
+  }
 }
 
 /*-----------------------------------------------
