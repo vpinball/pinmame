@@ -2465,6 +2465,25 @@ DRIVER(smanve,100c)     // pinball browser colorized using extend memory
 DRIVER(smanve,101c)     // pinball browser colorized using extend memory
 #endif
 #endif
+// SPIKE 1 System
+#if HAS_SPIKE1
+                        //SPIKE 1: ??/12 Transformers The Pin
+                        //SPIKE 1: ??/13 Avengers The Pin
+                        //SPIKE 1: ??/15 Wrestlemania
+DRIVER(wwe,135h)        //         ??/15 Legends of Wrestlemania - 1.35.0 Limited Edition
+DRIVER(wnbjm,155)       //SPIKE 1: ??/15 Whoa Nellie! Big Juicy Melons - 1.55.0
+                        //SPIKE 1: ??/15 KISS
+DRIVER(kiss15,141h)     //         ??/15 KISS - 1.41.0 Limited Edition
+DRIVER(got,137)         //SPIKE 1: ??/15 Game of Thrones - 1.37.0
+DRIVER(got,137h)        //         ??/15 Game of Thrones - 1.37.0 Limited Edition
+                        //SPIKE 1: ??/16 Ghostbusters
+DRIVER(gbust,117h)      //         ??/16 Ghostbusters - 1.17.0 Limited Edition
+DRIVER(pabst,101)       //SPIKE 1: ??/16 Pabst Can Crusher, The - 1.01.0
+DRIVER(smancp,101)      //SPIKE 1: ??/16 Marvel Spider-Man - 1.01 Home Edition
+DRIVER(supreme,101)     //SPIKE 1: ??/18 Supreme - 1.01.0
+DRIVER(primus,103)      //SPIKE 1: ??/18 Primus - 1.03.0
+DRIVER(heavym20,102)    //SPIKE 1: ??/20 Heavy Metal - 1.02.0
+#endif
 
 // ---------------
 // TABART GAMES
@@ -3518,20 +3537,6 @@ DRIVER(swep1,040)       //          06/99   Pinball 2000: Star Wars Episode I (0
 // 0.3  (05/99, XINA 1.02) - the other masking: "the version where image roms 2 and 3 were masked"; these might match the 0.4 mask though, who knows
 // 0.2  (??/99, XINA 1.02) - Denver show
 // 0.1  (03/99, XINA 1.02) - a cleaned up version of what was demo'd for Lucas
-#endif
-
-#if HAS_SPIKE1
-DRIVER(gbust,117h)      //Spike 1:  2016    Ghostbusters (Limited Edition 1.17.0)
-DRIVER(wnbjm,155)       //Spike 1:  2015    Whoa Nellie! Big Juicy Melons (1.55.0)
-DRIVER(pabst,101)       //Spike 1:  2016    Pabst Can Crusher (1.01.0)
-DRIVER(primus,103)      //Spike 1:  2018    Primus (1.03.0)
-DRIVER(got,137h)        //Spike 1:  2015    Game of Thrones (Limited Edition 1.37.0)
-DRIVER(got,137)         //Spike 1:  2015    Game of Thrones (Pro 1.37.0)
-DRIVER(kiss15,141h)     //Spike 1:  2015    KISS (Limited Edition 1.41.0)
-DRIVER(wwe,135h)        //Spike 1:  2015    WWE WrestleMania (Limited Edition 1.35.0)
-DRIVER(heavym20,102)    //Spike 1:  2020    Heavy Metal (1.02.0)
-DRIVER(supreme,101)     //Spike 1:  2018    Supreme (1.01.0)
-DRIVER(smancp,101)      //Spike 1:  2016    Spider-Man CP (1.01)
 #endif
 
 #ifdef PIN2K_SOUND_TEST

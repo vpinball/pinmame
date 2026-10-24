@@ -1,7 +1,7 @@
 // license:BSD-3-Clause
 
 /************************************************************************************************
-  Stern Spike 1 (2015-2018: Game of Thrones, KISS, WrestleMania, Ghostbusters, ...)
+  Stern Spike 1 (2012-2020: Game of Thrones, KISS, Wrestlemania, Ghostbusters, ...)
 
   The game is a statically linked ARMv5TE Linux program on an ARM926-class CPU board. It drives a
   128x32 DMD with 16 shades and talks to the node boards - switches, coils, LEDs, motors, a game's
@@ -898,175 +898,20 @@ MACHINE_DRIVER_END
   GAMEX(year, name##_##ver, parent, machine, data, data, ROT0, "Stern", longname, 0)
 
 /*-------------------------------------------------------------------
-/ Ghostbusters (Stern, 2016) - Limited Edition
+/ Transformers The Pin
 /-------------------------------------------------------------------*/
-/* Slimer: node 8 motor 0. The game's own Slimer calibration drives him to -25 and to 125 and passes
-   only when he stopped at -6 (+/-4) and 102 (+/-5) counts further on, so his end stops are at -6
-   and 96. His speed is not in the game or the firmware, which sets a PWM duty: 50 counts a second
-   at full drive is an estimate from the manual's 10 RPM gearhead (041-5132-01), not a measurement */
-SPIKE1_INIT_ENCODER(gbust, "ghostbusters_le", spike1_dmd_insert, 165, SPIKE1_SWITCHES(9, 10, 11, 12, 81, 82, 83, 84, 86, 89),
-                    SPIKE1_ENCODER_MOTOR(8, 0, -6, 96, 50))
-ROM_START(gbust_117h)
-  ROM_REGION(0x47c44000, SPIKE1_REGION, ROMREGION_MAPPED)
-    ROM_LOAD("game", 0x00000000, 0x006c311a, CRC(0b6958ba) SHA1(6f94dbcdaa85e95073534032d74a2dab390b7a4a))
-    ROM_LOAD("image.bin", 0x006c4000, 0x462dcb94, CRC(26796bf5) SHA1(fe9ddeb83ff128f2af13ef5db48c0d12dcc93d35))
-    ROM_LOAD("accbridgenode-LPC1313-0_52_0.hex", 0x469a1000, 0x0000527e, CRC(c4a99441) SHA1(a87fb68db17a757c4cbd7edfc401a7dbdb7f0722))
-    ROM_LOAD("coil4node-LPC1112_101-0_52_0.hex", 0x469a7000, 0x00008543, CRC(98264c96) SHA1(13a1401393ba2eee5c5d22f64cdc9657f658ceba))
-    ROM_LOAD("coil4node-LPC1112_201-0_52_0.hex", 0x469b0000, 0x00008543, CRC(41a33f10) SHA1(2c9388aef25694a16dfe4688b81bb191de80322f))
-    ROM_LOAD("coil4node-LPC1313-0_52_0.hex", 0x469b9000, 0x0000df1e, CRC(42b641b3) SHA1(d6d18652993b0fcb8def0fbc8504de8cdc3735da))
-    ROM_LOAD("lcdinsert.bin", 0x469c7000, 0x0122a020, CRC(e77842db) SHA1(28bdfdceaa27f55a56ba0577d3c1d46634a1c13f))
-    ROM_LOAD("lcdnode-LPC1113_302-0_52_0.hex", 0x47bf2000, 0x0000b6fa, CRC(118be40f) SHA1(4f9f2b32229e386517c439dba27527f48632d3dc))
-    ROM_LOAD("netbridge-LPC1313-0_52_0.hex", 0x47bfe000, 0x0000f53c, CRC(29323686) SHA1(6c7efc3cacfd4247402969c65dc6d489ae9c8cb3))
-    ROM_LOAD("node4-LPC1124_303-0_52_0.hex", 0x47c0e000, 0x000065d4, CRC(13217fb3) SHA1(1eb461cedc2059e46e8c35cfb90599440642dcd6))
-    ROM_LOAD("nodebusanalyzer-LPC1313-0_52_0.hex", 0x47c15000, 0x0000546d, CRC(69c0666c) SHA1(12557754046833b136199d24cada86df96fbb8a5))
-    ROM_LOAD("pinnode-LPC1112_101-0_52_0.hex", 0x47c1b000, 0x00007fc8, CRC(9f0f6f3f) SHA1(bc95697e1da01e2b6345385ca7ee1118feb50c22))
-    ROM_LOAD("pinnode-LPC1112_201-0_52_0.hex", 0x47c23000, 0x00008005, CRC(a2bc8685) SHA1(da95f7350eca021d7accf3ee8f1b2dabe1a800e4))
-    ROM_LOAD("pinnode-LPC1313-0_52_0.hex", 0x47c2c000, 0x0000ea4e, CRC(ac00f191) SHA1(3072a56c8d3f8b69da5b76c93ea9706716f9265c))
-    ROM_LOAD("ws2812node-LPC1313-0_52_0.hex", 0x47c3b000, 0x00008676, CRC(d0008f92) SHA1(ea5d965703e4244399d3f6012ddfc7b358654d80))
-ROM_END
-CORE_GAMEDEF(gbust, 117h, "Ghostbusters (Limited Edition 1.17.0)", 2016, "Stern", spike1, 0)
 
 /*-------------------------------------------------------------------
-/ Whoa Nellie! Big Juicy Melons (Stern, 2015)
-/ The DMD output drives the small LCD in the apron. The score and credit reels in the backbox are
-/ steppers the node board runs: mech 0-4 are the 1000s, 100s, 10s and 1s reels and the credit reel,
-/ each as its step (0-199, 20 steps a digit; the credit reel 10 a step). The bells and the knocker
-/ are coils
+/ Avengers The Pin
 /-------------------------------------------------------------------*/
-SPIKE1_INIT(wnbjm, "WN", spike1_dmd, 76, SPIKE1_SWITCHES(3, 4, 1, 2, 53, 54, 55, 56, 58, 60))
-ROM_START(wnbjm_155)
-  ROM_REGION(0x10bb7000, SPIKE1_REGION, ROMREGION_MAPPED)
-    ROM_LOAD("game", 0x00000000, 0x004115ac, CRC(67df0775) SHA1(fe018c240e4834abd07b3efed1d47d67017910c5))
-    ROM_LOAD("image.bin", 0x00412000, 0x10756444, CRC(9c10415b) SHA1(74fc69297540ae4a49e90663293c9c867150eea3))
-    ROM_LOAD("coil4node-LPC1112_101-0_28_0.hex", 0x10b69000, 0x00008487, CRC(29d48577) SHA1(2cef71c04de9d2ff8c4664fafaeab077532f6178))
-    ROM_LOAD("coil4node-LPC1112_201-0_28_0.hex", 0x10b72000, 0x00008487, CRC(19aac926) SHA1(c53e6f2fe65d68a841b23a79ad35dc3422da3e6b))
-    ROM_LOAD("coil4node-LPC1313-0_28_0.hex", 0x10b7b000, 0x0000c23a, CRC(e019995b) SHA1(7d09cd36e12e79c9545e8f32e94f738951e45468))
-    ROM_LOAD("lcdnode-LPC1113_302-0_28_0.hex", 0x10b88000, 0x0000b484, CRC(d139cac7) SHA1(e4a57e712a599041f7ba7dfcf08f07a724ccbd9f))
-    ROM_LOAD("pinnode-LPC1112_101-0_28_0.hex", 0x10b94000, 0x00007f1c, CRC(83ca12dc) SHA1(2ac8f8c9384e8c5e0bbc1ca2d9f2ddd8bb831d3d))
-    ROM_LOAD("pinnode-LPC1112_201-0_28_0.hex", 0x10b9c000, 0x00007f66, CRC(cee92fdc) SHA1(048abb5d42962204595d7c311dd351c9cb25fd6c))
-    ROM_LOAD("pinnode-LPC1313-0_28_0.hex", 0x10ba4000, 0x0000c859, CRC(18c17d1d) SHA1(6b2f232c0b6c2389c59f998d0487081491e9d177))
-    ROM_LOAD("ws2812node-LPC1313-0_28_0.hex", 0x10bb1000, 0x00005590, CRC(921dc0f7) SHA1(2c49842bb5163b75a19ebac37f0379ef72c64d4a))
-ROM_END
-CORE_GAMEDEF(wnbjm, 155, "Whoa Nellie! Big Juicy Melons (1.55.0)", 2015, "Stern", spike1, 0)
 
 /*-------------------------------------------------------------------
-/ Primus (Stern, 2018) and Pabst Can Crusher (Stern, 2016): Whoa Nellie's hardware - the apron LCD,
-/ the score and credit reels as mechs 0-4, the bells - and its switch numbers
+/ (Legends of) Wrestlemania
 /-------------------------------------------------------------------*/
-SPIKE1_INIT(primus, "primus", spike1_dmd, 76, SPIKE1_SWITCHES(3, 4, 1, 2, 53, 54, 55, 56, 58, 60))
-ROM_START(primus_103)
-  ROM_REGION(0x2a4d2000, SPIKE1_REGION, ROMREGION_MAPPED)
-    ROM_LOAD("game", 0x00000000, 0x0041372a, CRC(017178e5) SHA1(eae72f6251af2f4c7381c93c3ee1d48388c37967))
-    ROM_LOAD("image.bin", 0x00414000, 0x2a06f114, CRC(cb499566) SHA1(d0a4b05a93ea9b73d6796393ce128df407766787))
-    ROM_LOAD("coil4node-LPC1112_101-0_28_0.hex", 0x2a484000, 0x00008487, CRC(29d48577) SHA1(2cef71c04de9d2ff8c4664fafaeab077532f6178))
-    ROM_LOAD("coil4node-LPC1112_201-0_28_0.hex", 0x2a48d000, 0x00008487, CRC(19aac926) SHA1(c53e6f2fe65d68a841b23a79ad35dc3422da3e6b))
-    ROM_LOAD("coil4node-LPC1313-0_28_0.hex", 0x2a496000, 0x0000c23a, CRC(e019995b) SHA1(7d09cd36e12e79c9545e8f32e94f738951e45468))
-    ROM_LOAD("lcdnode-LPC1113_302-0_28_0.hex", 0x2a4a3000, 0x0000b484, CRC(d139cac7) SHA1(e4a57e712a599041f7ba7dfcf08f07a724ccbd9f))
-    ROM_LOAD("pinnode-LPC1112_101-0_28_0.hex", 0x2a4af000, 0x00007f1c, CRC(83ca12dc) SHA1(2ac8f8c9384e8c5e0bbc1ca2d9f2ddd8bb831d3d))
-    ROM_LOAD("pinnode-LPC1112_201-0_28_0.hex", 0x2a4b7000, 0x00007f66, CRC(cee92fdc) SHA1(048abb5d42962204595d7c311dd351c9cb25fd6c))
-    ROM_LOAD("pinnode-LPC1313-0_28_0.hex", 0x2a4bf000, 0x0000c859, CRC(18c17d1d) SHA1(6b2f232c0b6c2389c59f998d0487081491e9d177))
-    ROM_LOAD("ws2812node-LPC1313-0_28_0.hex", 0x2a4cc000, 0x00005590, CRC(921dc0f7) SHA1(2c49842bb5163b75a19ebac37f0379ef72c64d4a))
-ROM_END
-CORE_GAMEDEF(primus, 103, "Primus (1.03.0)", 2018, "Stern", spike1, 0)
-
-SPIKE1_INIT(pabst, "can_crusher", spike1_dmd, 76, SPIKE1_SWITCHES(3, 4, 1, 2, 53, 54, 55, 56, 58, 60))
-ROM_START(pabst_101)
-  ROM_REGION(0x39d5f000, SPIKE1_REGION, ROMREGION_MAPPED)
-    ROM_LOAD("game", 0x00000000, 0x004122e1, CRC(0a114c42) SHA1(f1179042ab49190e506d93d66028bd5404ba19f8))
-    ROM_LOAD("image.bin", 0x00413000, 0x398fd2c4, CRC(424bb457) SHA1(4289990fc4991803fa72cb76508caa3e1f6402f4))
-    ROM_LOAD("coil4node-LPC1112_101-0_28_0.hex", 0x39d11000, 0x00008487, CRC(29d48577) SHA1(2cef71c04de9d2ff8c4664fafaeab077532f6178))
-    ROM_LOAD("coil4node-LPC1112_201-0_28_0.hex", 0x39d1a000, 0x00008487, CRC(19aac926) SHA1(c53e6f2fe65d68a841b23a79ad35dc3422da3e6b))
-    ROM_LOAD("coil4node-LPC1313-0_28_0.hex", 0x39d23000, 0x0000c23a, CRC(e019995b) SHA1(7d09cd36e12e79c9545e8f32e94f738951e45468))
-    ROM_LOAD("lcdnode-LPC1113_302-0_28_0.hex", 0x39d30000, 0x0000b484, CRC(d139cac7) SHA1(e4a57e712a599041f7ba7dfcf08f07a724ccbd9f))
-    ROM_LOAD("pinnode-LPC1112_101-0_28_0.hex", 0x39d3c000, 0x00007f1c, CRC(83ca12dc) SHA1(2ac8f8c9384e8c5e0bbc1ca2d9f2ddd8bb831d3d))
-    ROM_LOAD("pinnode-LPC1112_201-0_28_0.hex", 0x39d44000, 0x00007f66, CRC(cee92fdc) SHA1(048abb5d42962204595d7c311dd351c9cb25fd6c))
-    ROM_LOAD("pinnode-LPC1313-0_28_0.hex", 0x39d4c000, 0x0000c859, CRC(18c17d1d) SHA1(6b2f232c0b6c2389c59f998d0487081491e9d177))
-    ROM_LOAD("ws2812node-LPC1313-0_28_0.hex", 0x39d59000, 0x00005590, CRC(921dc0f7) SHA1(2c49842bb5163b75a19ebac37f0379ef72c64d4a))
-ROM_END
-CORE_GAMEDEF(pabst, 101, "Pabst Can Crusher (1.01.0)", 2016, "Stern", spike1, 0)
-
-/*-------------------------------------------------------------------
-/ Game of Thrones (Stern, 2015) - Limited Edition
-/ The upper flippers have their own leaf on each flipper button (switches 12 and 13), which the
-/ flipper keys close with the lower ones; their coils are solenoids 16 and 18. The dragon's wings
-/ and the optional topper dragon's are steppers turning on through their home switch (88, and the
-/ topper's 121): mech 0 and 1, each as its step (0-199)
-/-------------------------------------------------------------------*/
-SPIKE1_INIT_EX(got, "GOT_LE", spike1_dmd, 265, FLIP_L | FLIP_U, SPIKE1_SWITCHES_UPPER(10, 11, 16, 5, 12, 13, 66, 67, 68, 69, 71, 75), SPIKE1_HOMES(10, 0, 88, 12, 0, 121), SPIKE1_NOLIMIT)
-ROM_START(got_137h)
-  ROM_REGION(0x2f27d000, SPIKE1_REGION, ROMREGION_MAPPED)
-    ROM_LOAD("game", 0x00000000, 0x005fa263, CRC(bd9d74e9) SHA1(41b028146e53e546dc6e88b31642ae45f6e266b7))
-    ROM_LOAD("image.bin", 0x005fb000, 0x2ec129dc, CRC(8dbe0aa4) SHA1(ca03000c6a53cf9980774e2739c0277ab12b74b0))
-    ROM_LOAD("accbridgenode-LPC1313-0_49_0.hex", 0x2f20e000, 0x0000529b, CRC(5f3ae3d6) SHA1(24a00f23fa0fbee9cf38ddf50e4cede0c96b4137))
-    ROM_LOAD("coil4node-LPC1112_101-0_49_0.hex", 0x2f214000, 0x00008595, CRC(6f4a25ae) SHA1(a7f49114a399e96879d5e58e3137c89243385287))
-    ROM_LOAD("coil4node-LPC1112_201-0_49_0.hex", 0x2f21d000, 0x00008595, CRC(43f9bc24) SHA1(b921dc5082b87828fdb376ec183caa08f41816bf))
-    ROM_LOAD("coil4node-LPC1313-0_49_0.hex", 0x2f226000, 0x0000d28b, CRC(551c8bb3) SHA1(7baef81e9d8157fbea84bbfcebd835731dbbd021))
-    ROM_LOAD("lcdnode-LPC1113_302-0_49_0.hex", 0x2f234000, 0x0000b70a, CRC(762a4010) SHA1(d76aa881edf11f9820590ee2eccabe171c45f566))
-    ROM_LOAD("netbridge-LPC1313-0_49_0.hex", 0x2f240000, 0x0000e89c, CRC(0179e13b) SHA1(e1f0768ae71b8e723d3cf567a0aa29a6230d3ce6))
-    ROM_LOAD("nodebusanalyzer-LPC1313-0_49_0.hex", 0x2f24f000, 0x0000548a, CRC(7925a13c) SHA1(9a6171b0dc26e49496366b8043a420f16c6e3b70))
-    ROM_LOAD("pinnode-LPC1112_101-0_49_0.hex", 0x2f255000, 0x0000801a, CRC(66b91e74) SHA1(0f0025758753b046b6e0a117a9668dab51d66180))
-    ROM_LOAD("pinnode-LPC1112_201-0_49_0.hex", 0x2f25e000, 0x00008057, CRC(42ca3b82) SHA1(32c08bf5e2aee47ab875e91abc3ee9a1fedeb4ec))
-    ROM_LOAD("pinnode-LPC1313-0_49_0.hex", 0x2f267000, 0x0000ddae, CRC(a31b7afa) SHA1(23670fe8e7f3d469a84fa74750c35b15deed7b7b))
-    ROM_LOAD("ws2812node-LPC1313-0_49_0.hex", 0x2f275000, 0x0000777d, CRC(00f38c82) SHA1(77dcfd9bc27a86458ce275ec79ccac69c4ba72ff))
-ROM_END
-CORE_GAMEDEF(got, 137h, "Game of Thrones (Limited Edition 1.37.0)", 2015, "Stern", spike1, 0)
-
-/*-------------------------------------------------------------------
-/ Game of Thrones (Stern, 2015) - Pro
-/ The same asset image and node firmware as the Limited Edition, its own game program (folder
-/ GOT). No upper playfield: no upper flippers, the right flipper's EOS is 17, and the dragon is a
-/ coil (solenoid 18) instead of a stepper. The optional topper dragon is the only stepper: mech 0,
-/ homing through switch 121
-/-------------------------------------------------------------------*/
-SPIKE1_INIT_EX(gotp, "GOT", spike1_dmd, 265, FLIP_L, SPIKE1_SWITCHES(10, 11, 16, 17, 66, 67, 68, 69, 71, 75), SPIKE1_HOMES(12, 0, 121, 0, 0, 0), SPIKE1_NOLIMIT)
-ROM_START(got_137)
-  ROM_REGION(0x2f269000, SPIKE1_REGION, ROMREGION_MAPPED)
-    ROM_LOAD("game", 0x00000000, 0x005e6954, CRC(8e5d0f49) SHA1(3b9f9d429b0406fb6488a5bcc3e47092c340768a))
-    ROM_LOAD("image.bin", 0x005e7000, 0x2ec129dc, CRC(8dbe0aa4) SHA1(ca03000c6a53cf9980774e2739c0277ab12b74b0))
-    ROM_LOAD("accbridgenode-LPC1313-0_49_0.hex", 0x2f1fa000, 0x0000529b, CRC(5f3ae3d6) SHA1(24a00f23fa0fbee9cf38ddf50e4cede0c96b4137))
-    ROM_LOAD("coil4node-LPC1112_101-0_49_0.hex", 0x2f200000, 0x00008595, CRC(6f4a25ae) SHA1(a7f49114a399e96879d5e58e3137c89243385287))
-    ROM_LOAD("coil4node-LPC1112_201-0_49_0.hex", 0x2f209000, 0x00008595, CRC(43f9bc24) SHA1(b921dc5082b87828fdb376ec183caa08f41816bf))
-    ROM_LOAD("coil4node-LPC1313-0_49_0.hex", 0x2f212000, 0x0000d28b, CRC(551c8bb3) SHA1(7baef81e9d8157fbea84bbfcebd835731dbbd021))
-    ROM_LOAD("lcdnode-LPC1113_302-0_49_0.hex", 0x2f220000, 0x0000b70a, CRC(762a4010) SHA1(d76aa881edf11f9820590ee2eccabe171c45f566))
-    ROM_LOAD("netbridge-LPC1313-0_49_0.hex", 0x2f22c000, 0x0000e89c, CRC(0179e13b) SHA1(e1f0768ae71b8e723d3cf567a0aa29a6230d3ce6))
-    ROM_LOAD("nodebusanalyzer-LPC1313-0_49_0.hex", 0x2f23b000, 0x0000548a, CRC(7925a13c) SHA1(9a6171b0dc26e49496366b8043a420f16c6e3b70))
-    ROM_LOAD("pinnode-LPC1112_101-0_49_0.hex", 0x2f241000, 0x0000801a, CRC(66b91e74) SHA1(0f0025758753b046b6e0a117a9668dab51d66180))
-    ROM_LOAD("pinnode-LPC1112_201-0_49_0.hex", 0x2f24a000, 0x00008057, CRC(42ca3b82) SHA1(32c08bf5e2aee47ab875e91abc3ee9a1fedeb4ec))
-    ROM_LOAD("pinnode-LPC1313-0_49_0.hex", 0x2f253000, 0x0000ddae, CRC(a31b7afa) SHA1(23670fe8e7f3d469a84fa74750c35b15deed7b7b))
-    ROM_LOAD("ws2812node-LPC1313-0_49_0.hex", 0x2f261000, 0x0000777d, CRC(00f38c82) SHA1(77dcfd9bc27a86458ce275ec79ccac69c4ba72ff))
-ROM_END
-SPIKE1_CLONEDEF(got, 137, got_137h, gotp, "Game of Thrones (Pro 1.37.0)", 2015, spike1)
-
-/*-------------------------------------------------------------------
-/ KISS (Stern, 2015) - Limited Edition (kiss15: PinMAME's kiss is Bally's of 1979)
-/ The Starchild goes between its MOTOR HOME and MOTOR AWAY switches (53, 54) on the two channels
-/ of an LED driver, MOTOR - BALL LEFT toward away and MOTOR - BALL RIGHT toward home (lamps 169
-/ and 170): mech 0, from 0 at home to 100 away. Its travel time is not measured: 1 s, well inside
-/ the game's own limit of about 5 s. The spinning disc runs on lamp 172
-/-------------------------------------------------------------------*/
-SPIKE1_INIT_EX(kiss15, "KISS_LE", spike1_dmd, 172, FLIP_L, SPIKE1_SWITCHES(10, 11, 65, 66, 67, 68, 69, 70, 72, 77), SPIKE1_NOHOMES, SPIKE1_LIMIT_MOTOR(169, 170, 53, 54, 1000))
-ROM_START(kiss15_141h)
-  ROM_REGION(0x3ee2e000, SPIKE1_REGION, ROMREGION_MAPPED)
-    ROM_LOAD("game", 0x00000000, 0x004ee9ca, CRC(1c55a059) SHA1(9467d0dd243b61707223e1723882652cd46cb926))
-    ROM_LOAD("image.bin", 0x004ef000, 0x3e8f02ec, CRC(d96ccf4c) SHA1(ac04430ffc184e2bdfe268f0f6ba91fa3fcc899e))
-    ROM_LOAD("coil4node-LPC1112_101-0_28_0.hex", 0x3ede0000, 0x00008487, CRC(29d48577) SHA1(2cef71c04de9d2ff8c4664fafaeab077532f6178))
-    ROM_LOAD("coil4node-LPC1112_201-0_28_0.hex", 0x3ede9000, 0x00008487, CRC(19aac926) SHA1(c53e6f2fe65d68a841b23a79ad35dc3422da3e6b))
-    ROM_LOAD("coil4node-LPC1313-0_28_0.hex", 0x3edf2000, 0x0000c23a, CRC(e019995b) SHA1(7d09cd36e12e79c9545e8f32e94f738951e45468))
-    ROM_LOAD("lcdnode-LPC1113_302-0_28_0.hex", 0x3edff000, 0x0000b484, CRC(d139cac7) SHA1(e4a57e712a599041f7ba7dfcf08f07a724ccbd9f))
-    ROM_LOAD("pinnode-LPC1112_101-0_28_0.hex", 0x3ee0b000, 0x00007f1c, CRC(83ca12dc) SHA1(2ac8f8c9384e8c5e0bbc1ca2d9f2ddd8bb831d3d))
-    ROM_LOAD("pinnode-LPC1112_201-0_28_0.hex", 0x3ee13000, 0x00007f66, CRC(cee92fdc) SHA1(048abb5d42962204595d7c311dd351c9cb25fd6c))
-    ROM_LOAD("pinnode-LPC1313-0_28_0.hex", 0x3ee1b000, 0x0000c859, CRC(18c17d1d) SHA1(6b2f232c0b6c2389c59f998d0487081491e9d177))
-    ROM_LOAD("ws2812node-LPC1313-0_28_0.hex", 0x3ee28000, 0x00005590, CRC(921dc0f7) SHA1(2c49842bb5163b75a19ebac37f0379ef72c64d4a))
-ROM_END
-CORE_GAMEDEF(kiss15, 141h, "KISS (Limited Edition 1.41.0)", 2015, "Stern", spike1, 0)
-
-/*-------------------------------------------------------------------
-/ WWE WrestleMania (Stern, 2015) - Limited Edition
-/ The oldest Spike 1 SDK. Its playfield LCD is the CPU board's own 320x240 screen, the second
-/ display; the clips it plays are the folder's video files (.spv, RC4-encrypted), which the set
-/ holds beside the others and the subsystem puts in video/. Each flipper button has a second leaf
-/ (74, 75) for the upper flipper (solenoid 22)
-/-------------------------------------------------------------------*/
+/* The oldest Spike 1 SDK. Its playfield LCD is the CPU board's own 320x240 screen, the second
+   display; the clips it plays are the folder's video files (.spv, RC4-encrypted), which the set
+   holds beside the others and the subsystem puts in video/. Each flipper button has a second leaf
+   (74, 75) for the upper flipper (solenoid 22) */
 SPIKE1_INIT_EX(wwe, "WWE_LE", spike1_dmd_lcd, 102, FLIP_L | FLIP_U, SPIKE1_SWITCHES_UPPER(10, 11, 65, 66, 74, 75, 67, 68, 69, 70, 72, 77), SPIKE1_NOHOMES, SPIKE1_NOLIMIT)
 ROM_START(wwe_135h)
   ROM_REGION(0xaae47000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -1113,17 +958,222 @@ ROM_START(wwe_135h)
     ROM_LOAD("WWE_SHATTERLOGO_FPS20.spv", 0xa8f5d000, 0x015f94cc, CRC(8be9e928) SHA1(eaa6fda36d57396639cc4a25deabd39c25292cc2))
     ROM_LOAD("WWELOGO_FPS20.spv", 0xaa557000, 0x008efa04, CRC(0b72c2aa) SHA1(031082beaae636e21e5adb69fa642b9a7ec27bcf))
 ROM_END
-CORE_GAMEDEF(wwe, 135h, "WWE WrestleMania (Limited Edition 1.35.0)", 2015, "Stern", spike1_lcd, 0)
+CORE_GAMEDEF(wwe, 135h, "Legends of Wrestlemania Limited Edition (1.35.0)", 2015, "Stern", spike1_lcd, 0)
 
 /*-------------------------------------------------------------------
-/ Heavy Metal (Stern, 2020)
-/ The newest Spike 1 SDK (node firmware 0.67.0, its images encrypted; the game decrypts them).
-/ Stern ships it only as an update package (heavy_metal-1_02_0.spk), whose game group the ROM set
-/ builder reads, and its game program without a symbol table: the addresses below were found by
-/ matching its code and data against Ghostbusters 1.17.0's (the same compiler and libraries) and
-/ checked in a running machine. The PinMAME name heavymtl is taken (Heavy Metal, 198?), and
-/ hvymetal is Bally's Heavy Metal Meltdown
+/ Whoa Nellie! Big Juicy Melons
 /-------------------------------------------------------------------*/
+/* The DMD output drives the small LCD in the apron. The score and credit reels in the backbox are
+   steppers the node board runs: mech 0-4 are the 1000s, 100s, 10s and 1s reels and the credit reel,
+   each as its step (0-199, 20 steps a digit; the credit reel 10 a step). The bells and the knocker are coils */
+SPIKE1_INIT(wnbjm, "WN", spike1_dmd, 76, SPIKE1_SWITCHES(3, 4, 1, 2, 53, 54, 55, 56, 58, 60))
+ROM_START(wnbjm_155)
+  ROM_REGION(0x10bb7000, SPIKE1_REGION, ROMREGION_MAPPED)
+    ROM_LOAD("game", 0x00000000, 0x004115ac, CRC(67df0775) SHA1(fe018c240e4834abd07b3efed1d47d67017910c5))
+    ROM_LOAD("image.bin", 0x00412000, 0x10756444, CRC(9c10415b) SHA1(74fc69297540ae4a49e90663293c9c867150eea3))
+    ROM_LOAD("coil4node-LPC1112_101-0_28_0.hex", 0x10b69000, 0x00008487, CRC(29d48577) SHA1(2cef71c04de9d2ff8c4664fafaeab077532f6178))
+    ROM_LOAD("coil4node-LPC1112_201-0_28_0.hex", 0x10b72000, 0x00008487, CRC(19aac926) SHA1(c53e6f2fe65d68a841b23a79ad35dc3422da3e6b))
+    ROM_LOAD("coil4node-LPC1313-0_28_0.hex", 0x10b7b000, 0x0000c23a, CRC(e019995b) SHA1(7d09cd36e12e79c9545e8f32e94f738951e45468))
+    ROM_LOAD("lcdnode-LPC1113_302-0_28_0.hex", 0x10b88000, 0x0000b484, CRC(d139cac7) SHA1(e4a57e712a599041f7ba7dfcf08f07a724ccbd9f))
+    ROM_LOAD("pinnode-LPC1112_101-0_28_0.hex", 0x10b94000, 0x00007f1c, CRC(83ca12dc) SHA1(2ac8f8c9384e8c5e0bbc1ca2d9f2ddd8bb831d3d))
+    ROM_LOAD("pinnode-LPC1112_201-0_28_0.hex", 0x10b9c000, 0x00007f66, CRC(cee92fdc) SHA1(048abb5d42962204595d7c311dd351c9cb25fd6c))
+    ROM_LOAD("pinnode-LPC1313-0_28_0.hex", 0x10ba4000, 0x0000c859, CRC(18c17d1d) SHA1(6b2f232c0b6c2389c59f998d0487081491e9d177))
+    ROM_LOAD("ws2812node-LPC1313-0_28_0.hex", 0x10bb1000, 0x00005590, CRC(921dc0f7) SHA1(2c49842bb5163b75a19ebac37f0379ef72c64d4a))
+ROM_END
+CORE_GAMEDEF(wnbjm, 155, "Whoa Nellie! Big Juicy Melons (1.55.0)", 2015, "Stern", spike1, 0)
+
+/*-------------------------------------------------------------------
+/ Pabst Can Crusher, The
+/-------------------------------------------------------------------*/
+/* Same as Whoa Nellie's hardware - the apron LCD, the score and credit reels as mechs 0-4, the bells - and its switch numbers */
+SPIKE1_INIT(pabst, "can_crusher", spike1_dmd, 76, SPIKE1_SWITCHES(3, 4, 1, 2, 53, 54, 55, 56, 58, 60))
+ROM_START(pabst_101)
+  ROM_REGION(0x39d5f000, SPIKE1_REGION, ROMREGION_MAPPED)
+    ROM_LOAD("game", 0x00000000, 0x004122e1, CRC(0a114c42) SHA1(f1179042ab49190e506d93d66028bd5404ba19f8))
+    ROM_LOAD("image.bin", 0x00413000, 0x398fd2c4, CRC(424bb457) SHA1(4289990fc4991803fa72cb76508caa3e1f6402f4))
+    ROM_LOAD("coil4node-LPC1112_101-0_28_0.hex", 0x39d11000, 0x00008487, CRC(29d48577) SHA1(2cef71c04de9d2ff8c4664fafaeab077532f6178))
+    ROM_LOAD("coil4node-LPC1112_201-0_28_0.hex", 0x39d1a000, 0x00008487, CRC(19aac926) SHA1(c53e6f2fe65d68a841b23a79ad35dc3422da3e6b))
+    ROM_LOAD("coil4node-LPC1313-0_28_0.hex", 0x39d23000, 0x0000c23a, CRC(e019995b) SHA1(7d09cd36e12e79c9545e8f32e94f738951e45468))
+    ROM_LOAD("lcdnode-LPC1113_302-0_28_0.hex", 0x39d30000, 0x0000b484, CRC(d139cac7) SHA1(e4a57e712a599041f7ba7dfcf08f07a724ccbd9f))
+    ROM_LOAD("pinnode-LPC1112_101-0_28_0.hex", 0x39d3c000, 0x00007f1c, CRC(83ca12dc) SHA1(2ac8f8c9384e8c5e0bbc1ca2d9f2ddd8bb831d3d))
+    ROM_LOAD("pinnode-LPC1112_201-0_28_0.hex", 0x39d44000, 0x00007f66, CRC(cee92fdc) SHA1(048abb5d42962204595d7c311dd351c9cb25fd6c))
+    ROM_LOAD("pinnode-LPC1313-0_28_0.hex", 0x39d4c000, 0x0000c859, CRC(18c17d1d) SHA1(6b2f232c0b6c2389c59f998d0487081491e9d177))
+    ROM_LOAD("ws2812node-LPC1313-0_28_0.hex", 0x39d59000, 0x00005590, CRC(921dc0f7) SHA1(2c49842bb5163b75a19ebac37f0379ef72c64d4a))
+ROM_END
+CORE_GAMEDEF(pabst, 101, "Pabst Can Crusher, The (1.01.0)", 2016, "Stern", spike1, 0)
+
+/*-------------------------------------------------------------------
+/ Primus
+/-------------------------------------------------------------------*/
+/* Same as Whoa Nellie's hardware - the apron LCD, the score and credit reels as mechs 0-4, the bells - and its switch numbers */
+SPIKE1_INIT(primus, "primus", spike1_dmd, 76, SPIKE1_SWITCHES(3, 4, 1, 2, 53, 54, 55, 56, 58, 60))
+ROM_START(primus_103)
+  ROM_REGION(0x2a4d2000, SPIKE1_REGION, ROMREGION_MAPPED)
+    ROM_LOAD("game", 0x00000000, 0x0041372a, CRC(017178e5) SHA1(eae72f6251af2f4c7381c93c3ee1d48388c37967))
+    ROM_LOAD("image.bin", 0x00414000, 0x2a06f114, CRC(cb499566) SHA1(d0a4b05a93ea9b73d6796393ce128df407766787))
+    ROM_LOAD("coil4node-LPC1112_101-0_28_0.hex", 0x2a484000, 0x00008487, CRC(29d48577) SHA1(2cef71c04de9d2ff8c4664fafaeab077532f6178))
+    ROM_LOAD("coil4node-LPC1112_201-0_28_0.hex", 0x2a48d000, 0x00008487, CRC(19aac926) SHA1(c53e6f2fe65d68a841b23a79ad35dc3422da3e6b))
+    ROM_LOAD("coil4node-LPC1313-0_28_0.hex", 0x2a496000, 0x0000c23a, CRC(e019995b) SHA1(7d09cd36e12e79c9545e8f32e94f738951e45468))
+    ROM_LOAD("lcdnode-LPC1113_302-0_28_0.hex", 0x2a4a3000, 0x0000b484, CRC(d139cac7) SHA1(e4a57e712a599041f7ba7dfcf08f07a724ccbd9f))
+    ROM_LOAD("pinnode-LPC1112_101-0_28_0.hex", 0x2a4af000, 0x00007f1c, CRC(83ca12dc) SHA1(2ac8f8c9384e8c5e0bbc1ca2d9f2ddd8bb831d3d))
+    ROM_LOAD("pinnode-LPC1112_201-0_28_0.hex", 0x2a4b7000, 0x00007f66, CRC(cee92fdc) SHA1(048abb5d42962204595d7c311dd351c9cb25fd6c))
+    ROM_LOAD("pinnode-LPC1313-0_28_0.hex", 0x2a4bf000, 0x0000c859, CRC(18c17d1d) SHA1(6b2f232c0b6c2389c59f998d0487081491e9d177))
+    ROM_LOAD("ws2812node-LPC1313-0_28_0.hex", 0x2a4cc000, 0x00005590, CRC(921dc0f7) SHA1(2c49842bb5163b75a19ebac37f0379ef72c64d4a))
+ROM_END
+CORE_GAMEDEF(primus, 103, "Primus (1.03.0)", 2018, "Stern", spike1, 0)
+
+/*-------------------------------------------------------------------
+/ KISS
+/-------------------------------------------------------------------*/
+/* The Starchild goes between its MOTOR HOME and MOTOR AWAY switches (53, 54) on the two channels
+   of an LED driver, MOTOR - BALL LEFT toward away and MOTOR - BALL RIGHT toward home (lamps 169
+   and 170): mech 0, from 0 at home to 100 away. Its travel time is not measured: 1 s, well inside
+   the game's own limit of about 5 s. The spinning disc runs on lamp 172 */
+SPIKE1_INIT_EX(kiss15, "KISS_LE", spike1_dmd, 172, FLIP_L, SPIKE1_SWITCHES(10, 11, 65, 66, 67, 68, 69, 70, 72, 77), SPIKE1_NOHOMES, SPIKE1_LIMIT_MOTOR(169, 170, 53, 54, 1000))
+ROM_START(kiss15_141h)
+  ROM_REGION(0x3ee2e000, SPIKE1_REGION, ROMREGION_MAPPED)
+    ROM_LOAD("game", 0x00000000, 0x004ee9ca, CRC(1c55a059) SHA1(9467d0dd243b61707223e1723882652cd46cb926))
+    ROM_LOAD("image.bin", 0x004ef000, 0x3e8f02ec, CRC(d96ccf4c) SHA1(ac04430ffc184e2bdfe268f0f6ba91fa3fcc899e))
+    ROM_LOAD("coil4node-LPC1112_101-0_28_0.hex", 0x3ede0000, 0x00008487, CRC(29d48577) SHA1(2cef71c04de9d2ff8c4664fafaeab077532f6178))
+    ROM_LOAD("coil4node-LPC1112_201-0_28_0.hex", 0x3ede9000, 0x00008487, CRC(19aac926) SHA1(c53e6f2fe65d68a841b23a79ad35dc3422da3e6b))
+    ROM_LOAD("coil4node-LPC1313-0_28_0.hex", 0x3edf2000, 0x0000c23a, CRC(e019995b) SHA1(7d09cd36e12e79c9545e8f32e94f738951e45468))
+    ROM_LOAD("lcdnode-LPC1113_302-0_28_0.hex", 0x3edff000, 0x0000b484, CRC(d139cac7) SHA1(e4a57e712a599041f7ba7dfcf08f07a724ccbd9f))
+    ROM_LOAD("pinnode-LPC1112_101-0_28_0.hex", 0x3ee0b000, 0x00007f1c, CRC(83ca12dc) SHA1(2ac8f8c9384e8c5e0bbc1ca2d9f2ddd8bb831d3d))
+    ROM_LOAD("pinnode-LPC1112_201-0_28_0.hex", 0x3ee13000, 0x00007f66, CRC(cee92fdc) SHA1(048abb5d42962204595d7c311dd351c9cb25fd6c))
+    ROM_LOAD("pinnode-LPC1313-0_28_0.hex", 0x3ee1b000, 0x0000c859, CRC(18c17d1d) SHA1(6b2f232c0b6c2389c59f998d0487081491e9d177))
+    ROM_LOAD("ws2812node-LPC1313-0_28_0.hex", 0x3ee28000, 0x00005590, CRC(921dc0f7) SHA1(2c49842bb5163b75a19ebac37f0379ef72c64d4a))
+ROM_END
+CORE_GAMEDEF(kiss15, 141h, "KISS Limited Edition (1.41.0)", 2015, "Stern", spike1, 0)
+
+/*-------------------------------------------------------------------
+/ Game of Thrones
+/-------------------------------------------------------------------*/
+/* The upper flippers have their own leaf on each flipper button (switches 12 and 13), which the
+   flipper keys close with the lower ones; their coils are solenoids 16 and 18. The dragon's wings
+   and the optional topper dragon's are steppers turning on through their home switch (88, and the
+   topper's 121): mech 0 and 1, each as its step (0-199) */
+SPIKE1_INIT_EX(got, "GOT_LE", spike1_dmd, 265, FLIP_L | FLIP_U, SPIKE1_SWITCHES_UPPER(10, 11, 16, 5, 12, 13, 66, 67, 68, 69, 71, 75), SPIKE1_HOMES(10, 0, 88, 12, 0, 121), SPIKE1_NOLIMIT)
+ROM_START(got_137h)
+  ROM_REGION(0x2f27d000, SPIKE1_REGION, ROMREGION_MAPPED)
+    ROM_LOAD("game", 0x00000000, 0x005fa263, CRC(bd9d74e9) SHA1(41b028146e53e546dc6e88b31642ae45f6e266b7))
+    ROM_LOAD("image.bin", 0x005fb000, 0x2ec129dc, CRC(8dbe0aa4) SHA1(ca03000c6a53cf9980774e2739c0277ab12b74b0))
+    ROM_LOAD("accbridgenode-LPC1313-0_49_0.hex", 0x2f20e000, 0x0000529b, CRC(5f3ae3d6) SHA1(24a00f23fa0fbee9cf38ddf50e4cede0c96b4137))
+    ROM_LOAD("coil4node-LPC1112_101-0_49_0.hex", 0x2f214000, 0x00008595, CRC(6f4a25ae) SHA1(a7f49114a399e96879d5e58e3137c89243385287))
+    ROM_LOAD("coil4node-LPC1112_201-0_49_0.hex", 0x2f21d000, 0x00008595, CRC(43f9bc24) SHA1(b921dc5082b87828fdb376ec183caa08f41816bf))
+    ROM_LOAD("coil4node-LPC1313-0_49_0.hex", 0x2f226000, 0x0000d28b, CRC(551c8bb3) SHA1(7baef81e9d8157fbea84bbfcebd835731dbbd021))
+    ROM_LOAD("lcdnode-LPC1113_302-0_49_0.hex", 0x2f234000, 0x0000b70a, CRC(762a4010) SHA1(d76aa881edf11f9820590ee2eccabe171c45f566))
+    ROM_LOAD("netbridge-LPC1313-0_49_0.hex", 0x2f240000, 0x0000e89c, CRC(0179e13b) SHA1(e1f0768ae71b8e723d3cf567a0aa29a6230d3ce6))
+    ROM_LOAD("nodebusanalyzer-LPC1313-0_49_0.hex", 0x2f24f000, 0x0000548a, CRC(7925a13c) SHA1(9a6171b0dc26e49496366b8043a420f16c6e3b70))
+    ROM_LOAD("pinnode-LPC1112_101-0_49_0.hex", 0x2f255000, 0x0000801a, CRC(66b91e74) SHA1(0f0025758753b046b6e0a117a9668dab51d66180))
+    ROM_LOAD("pinnode-LPC1112_201-0_49_0.hex", 0x2f25e000, 0x00008057, CRC(42ca3b82) SHA1(32c08bf5e2aee47ab875e91abc3ee9a1fedeb4ec))
+    ROM_LOAD("pinnode-LPC1313-0_49_0.hex", 0x2f267000, 0x0000ddae, CRC(a31b7afa) SHA1(23670fe8e7f3d469a84fa74750c35b15deed7b7b))
+    ROM_LOAD("ws2812node-LPC1313-0_49_0.hex", 0x2f275000, 0x0000777d, CRC(00f38c82) SHA1(77dcfd9bc27a86458ce275ec79ccac69c4ba72ff))
+ROM_END
+CORE_GAMEDEF(got, 137h, "Game of Thrones Limited Edition (1.37.0)", 2015, "Stern", spike1, 0)
+
+/* The same asset image and node firmware as the Limited Edition, its own game program (folder GOT).
+   No upper playfield: no upper flippers, the right flipper's EOS is 17, and the dragon is a
+   coil (solenoid 18) instead of a stepper. The optional topper dragon is the only stepper: mech 0, homing through switch 121 */
+SPIKE1_INIT_EX(gotp, "GOT", spike1_dmd, 265, FLIP_L, SPIKE1_SWITCHES(10, 11, 16, 17, 66, 67, 68, 69, 71, 75), SPIKE1_HOMES(12, 0, 121, 0, 0, 0), SPIKE1_NOLIMIT)
+ROM_START(got_137)
+  ROM_REGION(0x2f269000, SPIKE1_REGION, ROMREGION_MAPPED)
+    ROM_LOAD("game", 0x00000000, 0x005e6954, CRC(8e5d0f49) SHA1(3b9f9d429b0406fb6488a5bcc3e47092c340768a))
+    ROM_LOAD("image.bin", 0x005e7000, 0x2ec129dc, CRC(8dbe0aa4) SHA1(ca03000c6a53cf9980774e2739c0277ab12b74b0))
+    ROM_LOAD("accbridgenode-LPC1313-0_49_0.hex", 0x2f1fa000, 0x0000529b, CRC(5f3ae3d6) SHA1(24a00f23fa0fbee9cf38ddf50e4cede0c96b4137))
+    ROM_LOAD("coil4node-LPC1112_101-0_49_0.hex", 0x2f200000, 0x00008595, CRC(6f4a25ae) SHA1(a7f49114a399e96879d5e58e3137c89243385287))
+    ROM_LOAD("coil4node-LPC1112_201-0_49_0.hex", 0x2f209000, 0x00008595, CRC(43f9bc24) SHA1(b921dc5082b87828fdb376ec183caa08f41816bf))
+    ROM_LOAD("coil4node-LPC1313-0_49_0.hex", 0x2f212000, 0x0000d28b, CRC(551c8bb3) SHA1(7baef81e9d8157fbea84bbfcebd835731dbbd021))
+    ROM_LOAD("lcdnode-LPC1113_302-0_49_0.hex", 0x2f220000, 0x0000b70a, CRC(762a4010) SHA1(d76aa881edf11f9820590ee2eccabe171c45f566))
+    ROM_LOAD("netbridge-LPC1313-0_49_0.hex", 0x2f22c000, 0x0000e89c, CRC(0179e13b) SHA1(e1f0768ae71b8e723d3cf567a0aa29a6230d3ce6))
+    ROM_LOAD("nodebusanalyzer-LPC1313-0_49_0.hex", 0x2f23b000, 0x0000548a, CRC(7925a13c) SHA1(9a6171b0dc26e49496366b8043a420f16c6e3b70))
+    ROM_LOAD("pinnode-LPC1112_101-0_49_0.hex", 0x2f241000, 0x0000801a, CRC(66b91e74) SHA1(0f0025758753b046b6e0a117a9668dab51d66180))
+    ROM_LOAD("pinnode-LPC1112_201-0_49_0.hex", 0x2f24a000, 0x00008057, CRC(42ca3b82) SHA1(32c08bf5e2aee47ab875e91abc3ee9a1fedeb4ec))
+    ROM_LOAD("pinnode-LPC1313-0_49_0.hex", 0x2f253000, 0x0000ddae, CRC(a31b7afa) SHA1(23670fe8e7f3d469a84fa74750c35b15deed7b7b))
+    ROM_LOAD("ws2812node-LPC1313-0_49_0.hex", 0x2f261000, 0x0000777d, CRC(00f38c82) SHA1(77dcfd9bc27a86458ce275ec79ccac69c4ba72ff))
+ROM_END
+SPIKE1_CLONEDEF(got, 137, got_137h, gotp, "Game of Thrones (1.37.0)", 2015, spike1)
+
+/*-------------------------------------------------------------------
+/ Ghostbusters
+/-------------------------------------------------------------------*/
+/* Slimer: node 8 motor 0. The game's own Slimer calibration drives him to -25 and to 125 and passes
+   only when he stopped at -6 (+/-4) and 102 (+/-5) counts further on, so his end stops are at -6
+   and 96. His speed is not in the game or the firmware, which sets a PWM duty: 50 counts a second
+   at full drive is an estimate from the manual's 10 RPM gearhead (041-5132-01), not a measurement */
+SPIKE1_INIT_ENCODER(gbust, "ghostbusters_le", spike1_dmd_insert, 165, SPIKE1_SWITCHES(9, 10, 11, 12, 81, 82, 83, 84, 86, 89),
+                    SPIKE1_ENCODER_MOTOR(8, 0, -6, 96, 50))
+ROM_START(gbust_117h)
+  ROM_REGION(0x47c44000, SPIKE1_REGION, ROMREGION_MAPPED)
+    ROM_LOAD("game", 0x00000000, 0x006c311a, CRC(0b6958ba) SHA1(6f94dbcdaa85e95073534032d74a2dab390b7a4a))
+    ROM_LOAD("image.bin", 0x006c4000, 0x462dcb94, CRC(26796bf5) SHA1(fe9ddeb83ff128f2af13ef5db48c0d12dcc93d35))
+    ROM_LOAD("accbridgenode-LPC1313-0_52_0.hex", 0x469a1000, 0x0000527e, CRC(c4a99441) SHA1(a87fb68db17a757c4cbd7edfc401a7dbdb7f0722))
+    ROM_LOAD("coil4node-LPC1112_101-0_52_0.hex", 0x469a7000, 0x00008543, CRC(98264c96) SHA1(13a1401393ba2eee5c5d22f64cdc9657f658ceba))
+    ROM_LOAD("coil4node-LPC1112_201-0_52_0.hex", 0x469b0000, 0x00008543, CRC(41a33f10) SHA1(2c9388aef25694a16dfe4688b81bb191de80322f))
+    ROM_LOAD("coil4node-LPC1313-0_52_0.hex", 0x469b9000, 0x0000df1e, CRC(42b641b3) SHA1(d6d18652993b0fcb8def0fbc8504de8cdc3735da))
+    ROM_LOAD("lcdinsert.bin", 0x469c7000, 0x0122a020, CRC(e77842db) SHA1(28bdfdceaa27f55a56ba0577d3c1d46634a1c13f))
+    ROM_LOAD("lcdnode-LPC1113_302-0_52_0.hex", 0x47bf2000, 0x0000b6fa, CRC(118be40f) SHA1(4f9f2b32229e386517c439dba27527f48632d3dc))
+    ROM_LOAD("netbridge-LPC1313-0_52_0.hex", 0x47bfe000, 0x0000f53c, CRC(29323686) SHA1(6c7efc3cacfd4247402969c65dc6d489ae9c8cb3))
+    ROM_LOAD("node4-LPC1124_303-0_52_0.hex", 0x47c0e000, 0x000065d4, CRC(13217fb3) SHA1(1eb461cedc2059e46e8c35cfb90599440642dcd6))
+    ROM_LOAD("nodebusanalyzer-LPC1313-0_52_0.hex", 0x47c15000, 0x0000546d, CRC(69c0666c) SHA1(12557754046833b136199d24cada86df96fbb8a5))
+    ROM_LOAD("pinnode-LPC1112_101-0_52_0.hex", 0x47c1b000, 0x00007fc8, CRC(9f0f6f3f) SHA1(bc95697e1da01e2b6345385ca7ee1118feb50c22))
+    ROM_LOAD("pinnode-LPC1112_201-0_52_0.hex", 0x47c23000, 0x00008005, CRC(a2bc8685) SHA1(da95f7350eca021d7accf3ee8f1b2dabe1a800e4))
+    ROM_LOAD("pinnode-LPC1313-0_52_0.hex", 0x47c2c000, 0x0000ea4e, CRC(ac00f191) SHA1(3072a56c8d3f8b69da5b76c93ea9706716f9265c))
+    ROM_LOAD("ws2812node-LPC1313-0_52_0.hex", 0x47c3b000, 0x00008676, CRC(d0008f92) SHA1(ea5d965703e4244399d3f6012ddfc7b358654d80))
+ROM_END
+CORE_GAMEDEF(gbust, 117h, "Ghostbusters Limited Edition (1.17.0)", 2016, "Stern", spike1, 0)
+
+/*-------------------------------------------------------------------
+/ Marvel Spider-Man Home Edition
+/-------------------------------------------------------------------*/
+/* Node firmware 0.19.1: two boards, four balls, free play (no coin or slam switches). Its display is
+   a 64x32 RGB LED matrix in the DMD's place, which the game picks by the machine's
+   /usr/local/spike/display.hex link (rgbdotmatrix-0_1_1.hex). The set comes from a card image (the
+   game folder "spiderman_cp"); the cabinet's numbers are Supreme's */
+SPIKE1_INIT_RGB(smancp, "spiderman_cp", 130, SPIKE1_SWITCHES(8, 10, 9, 11, 0, 0, 0, 0, 14, 0), "rgbdotmatrix-0_1_1.hex")
+ROM_START(smancp_101)
+  ROM_REGION(0x10b03000, SPIKE1_REGION, ROMREGION_MAPPED)
+    ROM_LOAD("game", 0x00000000, 0x00504aef, CRC(11a8c4e4) SHA1(015a8155da2179725bde3b91f131b74386654ee7))
+    ROM_LOAD("image.bin", 0x00505000, 0x105bafbc, CRC(10f7f532) SHA1(b22fb9d40dd0ab71aaae4dbb96d4f99e9e068dc9))
+    ROM_LOAD("coil4node-LPC1112_101-0_19_1.hex", 0x10ac0000, 0x00008705, CRC(4f7ee588) SHA1(8ae7da77e6725bed415b7209a0ab9559d7a6d0cb))
+    ROM_LOAD("coil4node-LPC1112_201-0_19_1.hex", 0x10ac9000, 0x00008705, CRC(5dd30f62) SHA1(0a488ab4cb90e118eb0842a7ab66ad018c7728c0))
+    ROM_LOAD("coil4node-LPC1313-0_19_1.hex", 0x10ad2000, 0x00009a09, CRC(0b2c7089) SHA1(c1999b6b0a82776239e50bdc57c745a6f2e27054))
+    ROM_LOAD("lcdnode-LPC1113_302-0_19_1.hex", 0x10adc000, 0x00009be8, CRC(8efe9b44) SHA1(790bfb0c8865d42c973ac47132ff74219c017343))
+    ROM_LOAD("pinnode-LPC1112_101-0_19_1.hex", 0x10ae6000, 0x00008057, CRC(221c95fd) SHA1(7bf6eb85483ecbd1bf95ee75f2f0d309e1d77c1a))
+    ROM_LOAD("pinnode-LPC1112_201-0_19_1.hex", 0x10aef000, 0x0000807c, CRC(2769520c) SHA1(380f4755b683b69e59af172000c9300350bfab41))
+    ROM_LOAD("pinnode-LPC1313-0_19_1.hex", 0x10af8000, 0x0000a188, CRC(feb117d1) SHA1(453a0de75a62aef43bfaa1edea1634eada328190))
+ROM_END
+CORE_GAMEDEF(smancp, 101, "Marvel Spider-Man Home Edition (1.01)", 2016, "Stern", spike1, 0)
+
+/*-------------------------------------------------------------------
+/ Supreme
+/-------------------------------------------------------------------*/
+/* Node firmware 0.22.0: two boards, four balls. The set comes from a card image (the game folder
+   "supreme"). Its start button is the switch the game names START BUTTON (13); the coin door has
+   another, COINDOOR START B. (73). The coils name the right flipper RT FLIPPER POWER */
+SPIKE1_INIT(supreme, "supreme", spike1_dmd, 130, SPIKE1_SWITCHES(8, 10, 9, 11, 76, 77, 78, 79, 14, 84))
+ROM_START(supreme_101)
+  ROM_REGION(0x07454000, SPIKE1_REGION, ROMREGION_MAPPED)
+    ROM_LOAD("game", 0x00000000, 0x00462e0b, CRC(681a3c00) SHA1(dc9cbf0a4204a3bbaecede3a5f5f9b1f9a2269c2))
+    ROM_LOAD("image.bin", 0x00463000, 0x06fa11ec, CRC(3eb2c19d) SHA1(23cf9140f30c15367c214503025962619a5937f6))
+    ROM_LOAD("coil4node-LPC1112_101-0_22_0.hex", 0x07405000, 0x000082cd, CRC(22c8518e) SHA1(3961762f04c7ac0d5dfa12eb8e5f2a5c75a05bef))
+    ROM_LOAD("coil4node-LPC1112_201-0_22_0.hex", 0x0740e000, 0x000082cd, CRC(01d69520) SHA1(f1b2f65b19ff88fd9fa3874b8373a1fc30fd8f88))
+    ROM_LOAD("coil4node-LPC1313-0_22_0.hex", 0x07417000, 0x0000bcec, CRC(290c5e17) SHA1(ace1e1a6e37f370f4f49aa61624a95215566843a))
+    ROM_LOAD("lcdnode-LPC1113_302-0_22_0.hex", 0x07423000, 0x0000b484, CRC(0e222d2c) SHA1(ae62c5331e7393b80e1ff0f946c41652f7d20a25))
+    ROM_LOAD("pinnode-LPC1112_101-0_22_0.hex", 0x0742f000, 0x000080fb, CRC(0be8403d) SHA1(ff3f421ad4fcd06cdbc22936f378e3df123977cc))
+    ROM_LOAD("pinnode-LPC1112_201-0_22_0.hex", 0x07438000, 0x00008138, CRC(b3646ae2) SHA1(1f5bda3ebbe5b8e2699f30bf946ea19e6a2ac6c0))
+    ROM_LOAD("pinnode-LPC1313-0_22_0.hex", 0x07441000, 0x0000c313, CRC(f6416a86) SHA1(17a26b7800fba83936314fde8cac2191de4042c7))
+    ROM_LOAD("ws2812node-LPC1313-0_22_0.hex", 0x0744e000, 0x00005590, CRC(9a090388) SHA1(2f92d8c86bb2c86026cda36ff256b2fcd813cf0e))
+ROM_END
+CORE_GAMEDEF(supreme, 101, "Supreme (1.01.0)", 2018, "Stern", spike1, 0)
+
+/*-------------------------------------------------------------------
+/ Heavy Metal
+/-------------------------------------------------------------------*/
+/* The last known Spike 1 SDK (node firmware 0.67.0, its images encrypted; the game decrypts them).
+   Stern ships it only as an update package (heavy_metal-1_02_0.spk), whose game group the ROM set
+   builder reads, and its game program without a symbol table: the addresses below were found by
+   matching its code and data against Ghostbusters 1.17.0's (the same compiler and libraries) and
+   checked in a running machine */
 static const spike1_symbol heavym20_102Symbols[] = {
   { "node_board_table",                                         0x00205d20, 12 },
   { "node_board_device_table",                                  0x00205d74, 12 },
@@ -1158,49 +1208,5 @@ ROM_START(heavym20_102)
     ROM_LOAD("ws2812node-LPC1313-0_67_0.hex", 0x71fd3000, 0x00007c40, CRC(514046cf) SHA1(a3a595cef1bf9058bba46d8d61eb5bc6b43e790f))
 ROM_END
 CORE_GAMEDEF(heavym20, 102, "Heavy Metal (1.02.0)", 2020, "Stern", spike1, 0)
-
-/*-------------------------------------------------------------------
-/ Supreme (Stern, 2018)
-/ Node firmware 0.22.0: two boards, four balls. The set comes from a card image (the game folder
-/ "supreme"). Its start button is the switch the game names START BUTTON (13); the coin door has
-/ another, COINDOOR START B. (73). The coils name the right flipper RT FLIPPER POWER
-/-------------------------------------------------------------------*/
-SPIKE1_INIT(supreme, "supreme", spike1_dmd, 130, SPIKE1_SWITCHES(8, 10, 9, 11, 76, 77, 78, 79, 14, 84))
-ROM_START(supreme_101)
-  ROM_REGION(0x07454000, SPIKE1_REGION, ROMREGION_MAPPED)
-    ROM_LOAD("game", 0x00000000, 0x00462e0b, CRC(681a3c00) SHA1(dc9cbf0a4204a3bbaecede3a5f5f9b1f9a2269c2))
-    ROM_LOAD("image.bin", 0x00463000, 0x06fa11ec, CRC(3eb2c19d) SHA1(23cf9140f30c15367c214503025962619a5937f6))
-    ROM_LOAD("coil4node-LPC1112_101-0_22_0.hex", 0x07405000, 0x000082cd, CRC(22c8518e) SHA1(3961762f04c7ac0d5dfa12eb8e5f2a5c75a05bef))
-    ROM_LOAD("coil4node-LPC1112_201-0_22_0.hex", 0x0740e000, 0x000082cd, CRC(01d69520) SHA1(f1b2f65b19ff88fd9fa3874b8373a1fc30fd8f88))
-    ROM_LOAD("coil4node-LPC1313-0_22_0.hex", 0x07417000, 0x0000bcec, CRC(290c5e17) SHA1(ace1e1a6e37f370f4f49aa61624a95215566843a))
-    ROM_LOAD("lcdnode-LPC1113_302-0_22_0.hex", 0x07423000, 0x0000b484, CRC(0e222d2c) SHA1(ae62c5331e7393b80e1ff0f946c41652f7d20a25))
-    ROM_LOAD("pinnode-LPC1112_101-0_22_0.hex", 0x0742f000, 0x000080fb, CRC(0be8403d) SHA1(ff3f421ad4fcd06cdbc22936f378e3df123977cc))
-    ROM_LOAD("pinnode-LPC1112_201-0_22_0.hex", 0x07438000, 0x00008138, CRC(b3646ae2) SHA1(1f5bda3ebbe5b8e2699f30bf946ea19e6a2ac6c0))
-    ROM_LOAD("pinnode-LPC1313-0_22_0.hex", 0x07441000, 0x0000c313, CRC(f6416a86) SHA1(17a26b7800fba83936314fde8cac2191de4042c7))
-    ROM_LOAD("ws2812node-LPC1313-0_22_0.hex", 0x0744e000, 0x00005590, CRC(9a090388) SHA1(2f92d8c86bb2c86026cda36ff256b2fcd813cf0e))
-ROM_END
-CORE_GAMEDEF(supreme, 101, "Supreme (1.01.0)", 2018, "Stern", spike1, 0)
-
-/*-------------------------------------------------------------------
-/ Spider-Man CP (Stern, 2016)
-/ Node firmware 0.19.1: two boards, four balls, free play (no coin or slam switches). Its display is
-/ a 64x32 RGB LED matrix in the DMD's place, which the game picks by the machine's
-/ /usr/local/spike/display.hex link (rgbdotmatrix-0_1_1.hex). The set comes from a card image (the
-/ game folder "spiderman_cp"); the cabinet's numbers are Supreme's
-/-------------------------------------------------------------------*/
-SPIKE1_INIT_RGB(smancp, "spiderman_cp", 130, SPIKE1_SWITCHES(8, 10, 9, 11, 0, 0, 0, 0, 14, 0), "rgbdotmatrix-0_1_1.hex")
-ROM_START(smancp_101)
-  ROM_REGION(0x10b03000, SPIKE1_REGION, ROMREGION_MAPPED)
-    ROM_LOAD("game", 0x00000000, 0x00504aef, CRC(11a8c4e4) SHA1(015a8155da2179725bde3b91f131b74386654ee7))
-    ROM_LOAD("image.bin", 0x00505000, 0x105bafbc, CRC(10f7f532) SHA1(b22fb9d40dd0ab71aaae4dbb96d4f99e9e068dc9))
-    ROM_LOAD("coil4node-LPC1112_101-0_19_1.hex", 0x10ac0000, 0x00008705, CRC(4f7ee588) SHA1(8ae7da77e6725bed415b7209a0ab9559d7a6d0cb))
-    ROM_LOAD("coil4node-LPC1112_201-0_19_1.hex", 0x10ac9000, 0x00008705, CRC(5dd30f62) SHA1(0a488ab4cb90e118eb0842a7ab66ad018c7728c0))
-    ROM_LOAD("coil4node-LPC1313-0_19_1.hex", 0x10ad2000, 0x00009a09, CRC(0b2c7089) SHA1(c1999b6b0a82776239e50bdc57c745a6f2e27054))
-    ROM_LOAD("lcdnode-LPC1113_302-0_19_1.hex", 0x10adc000, 0x00009be8, CRC(8efe9b44) SHA1(790bfb0c8865d42c973ac47132ff74219c017343))
-    ROM_LOAD("pinnode-LPC1112_101-0_19_1.hex", 0x10ae6000, 0x00008057, CRC(221c95fd) SHA1(7bf6eb85483ecbd1bf95ee75f2f0d309e1d77c1a))
-    ROM_LOAD("pinnode-LPC1112_201-0_19_1.hex", 0x10aef000, 0x0000807c, CRC(2769520c) SHA1(380f4755b683b69e59af172000c9300350bfab41))
-    ROM_LOAD("pinnode-LPC1313-0_19_1.hex", 0x10af8000, 0x0000a188, CRC(feb117d1) SHA1(453a0de75a62aef43bfaa1edea1634eada328190))
-ROM_END
-CORE_GAMEDEF(smancp, 101, "Spider-Man CP (1.01)", 2016, "Stern", spike1, 0)
 
 #endif /* HAS_SPIKE1 */
