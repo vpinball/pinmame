@@ -295,9 +295,10 @@ static void p2k_sync_io(void) {
                          | (solenoids2 & (UINT32)P2K_FLIPSOLMASK);
 
   /* Published whether or not the integrator is also running, which is what wpc.c and se.c do: with
-     CORE_MODOUT_SOL_2_STATE's fastOn set it writes these same words itself on every edge, so the
-     two overlap and the more recent writer wins. Standing aside instead was tried and is worse -
-     the accumulators then never reset, and drivers 37-48 go stale in a word p2k_getSol() reads */
+     CORE_MODOUT_SOL_2_STATE's fastOn set it also writes drivers 1-32 into solenoids on every edge, so
+     the two overlap and the more recent writer wins. solenoids2 is only written here (p2k_initPwm()
+     turns fastOn off for those slots). Standing aside instead was tried and is worse - the
+     accumulators then never reset, and drivers 37-48 go stale in a word p2k_getSol() reads */
   if ((p2klocals.tick % P2K_SOLSMOOTH) == 0) {
     coreGlobals.solenoids  = p2klocals.solAcc;
     coreGlobals.solenoids2 = (coreGlobals.solenoids2 & (UINT32)P2K_FLIPSOLMASK)
@@ -894,6 +895,7 @@ static SWITCH_UPDATE(p2k) {
 			((in   & 0x0002) ? 0x04              : 0) |
 			((in   & 0x0004) ? 0x80              : 0);
 
+		/* Assigns the whole byte, so bit 0x08 (no key, no known switch) is cleared as well, unlike WPC which only masks the bits it uses */
 		coreGlobals.swMatrix[11] =
 			((in   & 0x0800) ? P2K_CAB_SLAMTILT  : 0) |
 			((in   & 0x0100) ? P2K_CAB_COINDOOR  : 0) |
@@ -2272,6 +2274,10 @@ static void p2k_initPwm(void) {
   coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + P2K_CUSTSOL_COUNT;
   coreGlobals.hasModulatedFlippers = TRUE;
   core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_SOL_2_STATE);
+  /* Slots 33 and up (flippers at 45-48, custom solenoids 51-62): not fast on, which would write slot & 31 of solenoids2,
+     while this driver keeps its own layout there (bit 0 = driver 33, see p2k_getSol), so the flippers would land on
+     drivers 45-48. p2k_sync_io() publishes those bits itself */
+  core_set_pwm_output_type(CORE_MODOUT_SOL0 + 32, coreGlobals.nSolenoids - 32, CORE_MODOUT_LEGACY_SOL_2_STATE);
 
   for (i = 0; coils[i].name; i++) {
     if (coils[i].dev == P2K_DEV_BULB_89)
