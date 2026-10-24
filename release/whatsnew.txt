@@ -140,6 +140,7 @@ Added VGM recording for machines using MSM5205/MSM6585 sound
 Fixed flipped left/right channel for Alvin G. BSMT2000 sound (must have regressed at some point when extending the BSMT2000 core)
 Fixed the Alvin G. BSMT2000 sound board's diagnostic LED (blinks now)
 Fixed noise filter/pass and injection filter/pass in the Votrax/SC01 emulation, plus some minor improvements (some GTS80(A)s and Taitos)
+ also added optional closure timing and noise balance fixes to it (measured on a real SC-01-A by Tamas Geczy; P, T and K release bursts restored)
 Used YMFM's OPL cores (OPL/YM3526, OPL2/YM3812, OPL3/YMF262) for a more accurate emulation (Tabart; AlvinG, JVH, Mephisto, Sleic; Lancelot)
 Credits saved, and more lamps found on Stargame games Space Ship and White Force
 Added timing accurate emulation of the 6522 VIA (Gottlieb System 3, Alvin G., JVH, Barni). On Gottlieb System 3 and Alvin G. the main CPU IRQ/NMI now come from the VIAs like on the real boards, instead of the guessed fixed rates (e.g. alpha GTS3 NMI ~1984Hz instead of 1000Hz, no more fake NMI on DMD GTS3, much less IRQ time wasted, e.g. Pistol Poker lamps no longer flicker)
