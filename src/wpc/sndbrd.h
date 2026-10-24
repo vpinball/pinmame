@@ -54,6 +54,9 @@ struct sndbrdIntf {
   WRITE_HANDLER((*ctrl_w));
    READ_HANDLER((*ctrl_r));
   UINT32 flags;
+  /* Used instead when the sound is off (sample rate 0): the board's CPU does not run,
+     this answers what the main CPU waits for from it (boot reply, queries). Optional. */
+  const struct sndbrdIntf *soundOff;
 };
 
 #define SNDBRD_NODATASYNC 0x0001 // Don't use cpu sync'ed data writes

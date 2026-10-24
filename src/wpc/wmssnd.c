@@ -923,7 +923,13 @@ static WRITE_HANDLER(wpcs_data_w);
 static WRITE_HANDLER(wpcs_manCmd_w);
 static READ_HANDLER(wpcs_ctrl_r);
 static WRITE_HANDLER(wpcs_ctrl_w);
-const struct sndbrdIntf wpcsIntf = { "WPCS", wpcs_init, NULL, NULL, wpcs_manCmd_w, wpcs_data_w, wpcs_data_r, wpcs_ctrl_w, wpcs_ctrl_r, SNDBRD_DOUBLECMD };
+static void wpcsoff_init(struct sndbrdData *brdData);
+static READ_HANDLER(wpcsoff_data_r);
+static WRITE_HANDLER(wpcsoff_data_w);
+static READ_HANDLER(wpcsoff_ctrl_r);
+static WRITE_HANDLER(wpcsoff_ctrl_w);
+static const struct sndbrdIntf wpcsOffIntf = { "WPCS", wpcsoff_init, NULL, NULL, NULL, wpcsoff_data_w, wpcsoff_data_r, wpcsoff_ctrl_w, wpcsoff_ctrl_r, SNDBRD_NODATASYNC | SNDBRD_NOCTRLSYNC };
+const struct sndbrdIntf wpcsIntf = { "WPCS", wpcs_init, NULL, NULL, wpcs_manCmd_w, wpcs_data_w, wpcs_data_r, wpcs_ctrl_w, wpcs_ctrl_r, SNDBRD_DOUBLECMD, &wpcsOffIntf };
 
 /*-- other memory handlers --*/
 static WRITE_HANDLER(wpcs_rombank_w);
@@ -1181,6 +1187,42 @@ static READ_HANDLER(wpcs_ctrl_r) {
 
 static WRITE_HANDLER(wpcs_ctrl_w) { /*-- a write here resets the CPU --*/
   cpunum_set_reset_line(locals.brdData.cpuNo, PULSE_LINE);
+}
+
+/*-- Sound off (sample rate 0): no 6809, but the game waits for the board's boot reply (01)
+     after a reset and asks for its version (command 5F). The version is in the board's
+     code, not known here: 01 is sent. --*/
+static struct {
+  int replyAvail;
+  mame_timer *replyTimer;
+} wpcsoff;
+
+static void wpcsoff_reply(int data) {
+  soundlatch2_w(0, data); wpcsoff.replyAvail = TRUE;
+}
+
+static void wpcsoff_init(struct sndbrdData *brdData) {
+  memset(&wpcsoff, 0, sizeof(wpcsoff));
+  wpcsoff.replyTimer = timer_alloc(wpcsoff_reply);
+  timer_adjust(wpcsoff.replyTimer, TIME_IN_SEC(1), 0x01, 0);
+}
+
+static READ_HANDLER(wpcsoff_data_r) {
+  wpcsoff.replyAvail = FALSE; return soundlatch2_r(0);
+}
+
+static WRITE_HANDLER(wpcsoff_data_w) {
+  if (data == 0x5f)
+    timer_adjust(wpcsoff.replyTimer, TIME_IN_MSEC(10), 0x01, 0);
+}
+
+static READ_HANDLER(wpcsoff_ctrl_r) {
+  return wpcsoff.replyAvail;
+}
+
+static WRITE_HANDLER(wpcsoff_ctrl_w) { /* a reset: the board boots again */
+  wpcsoff.replyAvail = FALSE;
+  timer_adjust(wpcsoff.replyTimer, TIME_IN_SEC(1), 0x01, 0);
 }
 
 static void wpcs_init(struct sndbrdData *brdData) {
@@ -1509,10 +1551,154 @@ MACHINE_DRIVER_START(wmssnd_dcs3)
 #endif
 MACHINE_DRIVER_END
 
+/*----------------------------------------------------------------
+/ Sound off (sample rate 0): the ADSP does not run, but the game
+/ still talks to the board and gives up on it (sound board error,
+/ slower boot, board resets) if it gets no answer. Fake the replies:
+/ the boot reply after a reset, and what the sound ROM's tracks send
+/ back right away (opcode 04), like the 03E7 version query.
+/ The track catalog layout is the one documented by mjrgh's DCSExplorer.
+/-----------------------------------------------------------------*/
+#define DCSOFF_QUEUE 16
+static struct {
+  UINT8  *rom;
+  UINT32  romLen;
+  UINT32  index;         /* track index, 0 if no catalog was found */
+  UINT16  tracks;
+  int     enabled;       /* not on Pinball 2000, its host side talks to the board directly */
+  int     dcs95;
+  int     cmd;           /* first byte of a command, -1 if none */
+  int     replyAvail, sending;
+  UINT8   queue[DCSOFF_QUEUE];
+  int     qIn, qOut;
+  mame_timer *bootTimer, *sendTimer;
+} dcsoff;
+
+static UINT32 dcsoff_rd(UINT32 o, int n) {
+  UINT32 v = 0;
+  for (; n > 0; n--, o++)
+    v = (v << 8) | (o < dcsoff.romLen ? dcsoff.rom[o] : 0xff);
+  return v;
+}
+
+/* the replies go out one at a time, a little after each other, like the board does */
+static void dcsoff_send(int param) {
+  if (!dcsoff.replyAvail && dcsoff.qOut != dcsoff.qIn) {
+    soundlatch2_w(0, dcsoff.queue[dcsoff.qOut]);
+    dcsoff.qOut = (dcsoff.qOut + 1) % DCSOFF_QUEUE;
+    dcsoff.replyAvail = TRUE;
+  }
+  dcsoff.sending = (dcsoff.qOut != dcsoff.qIn);
+  timer_adjust(dcsoff.sendTimer, dcsoff.sending ? TIME_IN_MSEC(8) : TIME_NEVER, 0, 0);
+}
+
+static void dcsoff_queue(UINT8 data) {
+  if ((dcsoff.qIn + 1) % DCSOFF_QUEUE == dcsoff.qOut) return;
+  dcsoff.queue[dcsoff.qIn] = data;
+  dcsoff.qIn = (dcsoff.qIn + 1) % DCSOFF_QUEUE;
+  if (!dcsoff.sending) {
+    dcsoff.sending = TRUE;
+    timer_adjust(dcsoff.sendTimer, TIME_IN_MSEC(8), 0, 0);
+  }
+}
+
+/* the board is done booting */
+static void dcsoff_boot(int param) {
+  dcsoff_queue(0x79); dcsoff_queue(0x01);
+}
+
+/* a board reset: drop everything, boot again */
+static void dcsoff_reset(void) {
+  dcsoff.cmd = -1;
+  dcsoff.replyAvail = dcsoff.sending = FALSE;
+  dcsoff.qIn = dcsoff.qOut = 0;
+  timer_adjust(dcsoff.sendTimer, TIME_NEVER, 0, 0);
+  timer_adjust(dcsoff.bootTimer, TIME_IN_SEC(1), 0, 0);
+}
+
+/* A command starts the track of that number. Send what its program writes to the data
+   port in its first few frames (a query answers right away, or a frame later); later
+   replies, like the music synced ones of some games, are not faked. */
+#define DCSOFF_MAXWAIT 32 /* frames of 7.68 ms */
+static void dcsoff_track(UINT16 cmd) {
+  UINT32 a, p, frames, wait;
+  int n;
+
+  if (!dcsoff.index || cmd >= dcsoff.tracks) return;
+  a = dcsoff_rd(dcsoff.index + 3 * cmd, 3);
+  if ((a & 0xff0000) == 0xff0000) return; /* empty slot */
+  /* a ROM address as the board banks it: linear on DCS, chip select in bits 21-23 on DCS95 */
+  p = dcsoff.dcs95 ? ((a >> 21) & 7) * 0x100000 + (a & 0xfffff) : (a & 0x7fffff);
+  if (dcsoff_rd(p, 1) != 1) return; /* not a program */
+  for (p += 2, n = 0, wait = 0; n < 64; n++) {
+    frames = dcsoff_rd(p, 2); /* to wait before the next instruction, ffff: forever */
+    if ((frames == 0xffff) || ((wait += frames) > DCSOFF_MAXWAIT)) return;
+    switch (dcsoff_rd(p + 2, 1)) {
+      case 0x04: dcsoff_queue((UINT8)dcsoff_rd(p + 3, 1)); p += 4; break;
+      case 0x01: p += 8; break;
+      case 0x03: case 0x06: p += 5; break;
+      case 0x05: case 0x0e: p += 4; break;
+      case 0x07: case 0x08: case 0x09: p += 5; break;
+      case 0x0a: case 0x0b: case 0x0c: p += 7; break;
+      case 0x0d: p += 3; break;
+      default: return; /* end, stop, loop, or unknown */
+    }
+  }
+}
+
+static void dcsoff_init(struct sndbrdData *brdData) {
+  static const UINT32 catalogs[] = { 0x3000, 0x4000, 0x6000 };
+  int ii;
+
+  memset(&dcsoff, 0, sizeof(dcsoff));
+  dcsoff.enabled = (brdData->subType != DCS_SUBTYPE_P2K);
+  if (!dcsoff.enabled) return;
+  dcsoff.dcs95 = (brdData->subType == (SNDBRD_DCS95 & 0xff));
+  dcsoff.rom = brdData->romRegion;
+  dcsoff.romLen = (UINT32)memory_region_length(DCS_ROMREGION);
+  for (ii = 0; ii < (int)(sizeof(catalogs) / sizeof(catalogs[0])); ii++) {
+    const UINT32 o = catalogs[ii], size = dcsoff_rd(o, 2) * 0x1000;
+    if ((dcsoff_rd(o + 2, 1) == 0) && (dcsoff_rd(o + 4, 2) == 0) && (size >= 0x80000) && (size <= 0x100000) && (size <= dcsoff.romLen)) {
+      dcsoff.index = dcsoff_rd(o + 0x40, 3);
+      dcsoff.tracks = (UINT16)dcsoff_rd(o + 0x46, 2);
+      break;
+    }
+  }
+  dcsoff.bootTimer = timer_alloc(dcsoff_boot);
+  dcsoff.sendTimer = timer_alloc(dcsoff_send);
+  dcsoff_reset();
+}
+
+static WRITE_HANDLER(dcsoff_data_w) {
+  if (!dcsoff.enabled) return;
+  if (dcsoff.cmd < 0)
+    dcsoff.cmd = data;
+  else {
+    dcsoff_track((UINT16)((dcsoff.cmd << 8) | data));
+    dcsoff.cmd = -1;
+  }
+}
+
+static READ_HANDLER(dcsoff_data_r) {
+  dcsoff.replyAvail = FALSE;
+  return soundlatch2_r(0);
+}
+
+static WRITE_HANDLER(dcsoff_ctrl_w) {
+  if (dcsoff.enabled)
+    dcsoff_reset();
+}
+
+static READ_HANDLER(dcsoff_ctrl_r) {
+  return dcsoff.replyAvail ? 0x80 : 0x00;
+}
+
+static const struct sndbrdIntf dcsOffIntf = { "DCS", dcsoff_init, NULL, NULL, NULL, dcsoff_data_w, dcsoff_data_r, dcsoff_ctrl_w, dcsoff_ctrl_r, SNDBRD_NODATASYNC | SNDBRD_NOCTRLSYNC };
+
 /*----------------
 / Sound interface
 /-----------------*/
-const struct sndbrdIntf dcsIntf = { "DCS", dcs_init, NULL, NULL, dcs_data_w, dcs_data_w, dcs_data_r, dcs_ctrl_w, dcs_ctrl_r };
+const struct sndbrdIntf dcsIntf = { "DCS", dcs_init, NULL, NULL, dcs_data_w, dcs_data_w, dcs_data_r, dcs_ctrl_w, dcs_ctrl_r, 0, &dcsOffIntf };
 
 /*---------------
 /  Bank handlers
