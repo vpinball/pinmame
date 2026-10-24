@@ -744,6 +744,10 @@ set(PINMAME_SOURCES
    ext/ymfm/ymfm_opm.h
    ext/ymfm/ymfm_opl.cpp
    ext/ymfm/ymfm_opl.h
+   ext/ymfm/ymfm_opn.cpp
+   ext/ymfm/ymfm_opn.h
+   ext/ymfm/ymfm_ssg.cpp
+   ext/ymfm/ymfm_ssg.h
    ext/ymfm/ymfm_adpcm.cpp
    ext/ymfm/ymfm_adpcm.h
    ext/ymfm/ymfm_pcm.cpp

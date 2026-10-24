@@ -139,6 +139,7 @@ Fixed flipped left/right channel for Alvin G. BSMT2000 sound (must have regresse
 Fixed the Alvin G. BSMT2000 sound board's diagnostic LED (blinks now)
 Fixed noise filter/pass and injection filter/pass in the Votrax/SC01 emulation, plus some minor improvements (some GTS80(A)s and Taitos)
 Used YMFM's OPL cores (OPL/YM3526, OPL2/YM3812, OPL3/YMF262) for a more accurate emulation (Tabart; AlvinG, JVH, Mephisto, Sleic; Lancelot)
+Added optional YMFM cores for the YM2203 (incl. its SSG) and Y8950 (Tabart Hexagone, JVH Formula 1, Joctronic Punky Willy, Tecnoplay X Force and Space Team): enable via the YM2203_YMFM define in src/sound/2203intf.c and the Y8950_YMFM define in src/sound/3812intf.c, off by default
 Credits saved, and more lamps found on Stargame games Space Ship and White Force
 Added timing accurate emulation of the 6522 VIA (Gottlieb System 3, Alvin G., JVH, Barni). On Gottlieb System 3 and Alvin G. the main CPU IRQ/NMI now come from the VIAs like on the real boards, instead of the guessed fixed rates (e.g. alpha GTS3 NMI ~1984Hz instead of 1000Hz, no more fake NMI on DMD GTS3, much less IRQ time wasted, e.g. Pistol Poker lamps no longer flicker)
  !! Note that Alvin G. sound board, Barni and JVH for now stayed on the old VIA core
