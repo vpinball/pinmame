@@ -599,6 +599,9 @@ void core_setLampBlank(volatile UINT8 *lampMatrix, int col, int row);
 
 /*-- switch handling --*/
 extern void core_setSw(int swNo, int value);
+/* Called with the matrix entry each time core_setSw changes a switch, from the caller's thread: a
+   driver that samples the matrix (Spike 1) learns of a closure that opened again before it looked */
+extern void (*core_swChangedHook)(int swMatrixNo);
 extern int core_getSw(int swNo);
 extern void core_updInvSw(int swNo, int inv);
 /*-- switch set by the host (VPinMAME, libpinmame), logged by -record and replayed by -playback --*/
@@ -662,6 +665,7 @@ INLINE void core_zero_cross(void) { coreGlobals.lastACPositiveZeroCrossTimeStamp
 
 #define CORE_DMD_PWM_PREINTEGRATED_LINEAR_4  0x100
 #define CORE_DMD_PWM_PREINTEGRATED_SAM       0x101
+#define CORE_DMD_PWM_PREINTEGRATED_LINEAR_16 0x102
 
 extern void core_dmd_pwm_init(const core_tLCDLayout* layout, const int filter, const int raw_combiner, const int isReversedByte);
 extern void core_dmd_submit_frame(const core_tLCDLayout* layout, const UINT8* frame, const int ntimes);

@@ -445,6 +445,9 @@ static bool UpdatePinmameDisplayBitmap(PinmameDisplay* pDisplay, struct mame_bit
 	const int height = pDisplay->layout.height; // layout->start
 	const int width = pDisplay->layout.width; // layout->length
 	const int rotation = (pDisplay->layout.type & PINMAME_DISPLAY_TYPE_VIDEO_ROT90) ? 1 : 0;
+	/* where the layout puts the display on the screen: a video display need not be the only one
+	   (Stern Spike 1 draws its LCD insert below the DMD) */
+	const int top = pDisplay->layout.top, left = pDisplay->layout.left;
 	const int incr = (rotation == 0) ? 3 : ((rotation == 1) ? height*3 : -height*3);
 	/* A VIDEO_RGB_DIRECT screen holds packed colour, not palette indices - reading it through
 	   palette_get_color() gives nonsense, and for a 15 bpp bitmap the index runs up to 0x7fff,
@@ -461,7 +464,7 @@ static bool UpdatePinmameDisplayBitmap(PinmameDisplay* pDisplay, struct mame_bit
 		assert(direct && (depth == 15) && (rotation == 0));
 		unsigned int changed = 0; /* Accumulated bitwise so that the comparison stays branch free */
 		for (int y = 0; y < height; y++) {
-			const UINT16* __restrict const src = (const UINT16*)p_bitmap->line[y];
+			const UINT16* __restrict const src = (const UINT16*)p_bitmap->line[top + y] + left;
 			UINT16* __restrict const row = (UINT16*)dst + (size_t)y * width;
 			int x = 0;
 #if defined(SSE_DISPLAY_OPT)
@@ -493,13 +496,13 @@ static bool UpdatePinmameDisplayBitmap(PinmameDisplay* pDisplay, struct mame_bit
 		for (int x = 0; x < width; x++,pos+=incr) {
 			UINT8 r,g,b;
 			if (direct) {
-				const UINT32 c = p_bitmap->read(p_bitmap, x, y);
+				const UINT32 c = p_bitmap->read(p_bitmap, left + x, top + y);
 				if (depth == 32) { r = (c >> 16) & 0xff; g = (c >> 8) & 0xff; b = c & 0xff; } //!! b & r positions correct?
 				else if (depth == 16) { r = ExpandChannel5To8((c >> 11) & 0x1f); g = ExpandChannel6To8((c >> 5) & 0x3f); b = ExpandChannel5To8(c & 0x1f); } // RGB565
 				else                  { r = ExpandChannel5To8((c >> 10) & 0x1f); g = ExpandChannel5To8((c >> 5) & 0x1f); b = ExpandChannel5To8(c & 0x1f); } // RGB555
 			}
 			else
-				palette_get_color(p_bitmap->read(p_bitmap, /*cliprect->min_x +*/ x, /*cliprect->min_y +*/ y), &r, &g, &b);
+				palette_get_color(p_bitmap->read(p_bitmap, left + x, top + y), &r, &g, &b);
 			diff |= (dst[pos] != r || dst[pos + 1] != g || dst[pos + 2] != b);
 			dst[pos    ] = r;
 			dst[pos + 1] = g;
@@ -918,7 +921,7 @@ extern "C" void OnStateChange(const int state)
 			else if ((layout->type & CORE_SEGMASK) == CORE_DMD) {
 				pDisplay->layout.width = layout->length;
 				pDisplay->layout.height = layout->start;
-				const int shade_16_enabled = (core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG | GEN_ALVG_DMD2 | GEN_GTS3 | GEN_PINHECK)) != 0; // pinHeck: the raw DMD's 16 levels
+				const int shade_16_enabled = (core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG | GEN_ALVG_DMD2 | GEN_GTS3 | GEN_PINHECK | GEN_SPIKE1)) != 0; // pinHeck: the raw DMD's 16 levels
 				pDisplay->layout.depth = shade_16_enabled ? 4 : 2;
 				pDisplay->size = pDisplay->layout.width * pDisplay->layout.height;
 			}
@@ -2421,10 +2424,10 @@ static void SetupMsgApiGameStates()
       }
       // 33..36
       {
-         // 33, SAM: fake GameOn solenoid for fast flip
+         // 33, SAM, Spike 1: fake GameOn solenoid for fast flip (Spike 1: the flippers' reflexes armed on the node boards)
          // Note: core_getSol returns it replicated 4 times for 33..36 while core_getAllSol only returns it as 33 (34..36 are unused)
-         if (core_gameData->gen & GEN_SAM)
-            addPhysSol(fmtString("SAM Fake GameOn"), nullptr, nullptr, 33, GetSolenoid2State, GetSolenoid2VPMState, 0x00000010, 32);
+         if (core_gameData->gen & (GEN_SAM | GEN_SPIKE1))
+            addPhysSol(fmtString("%s Fake GameOn", (core_gameData->gen & GEN_SAM) ? "SAM" : "Spike 1"), nullptr, nullptr, 33, GetSolenoid2State, GetSolenoid2VPMState, 0x00000010, 32);
          // 33..36: Whitestar various extension boards (stored in 0x00F0 of solenoids2, which is upper flipper for other hardwares)
          else if (core_gameData->gen & GEN_ALLWS)
          {
@@ -2973,7 +2976,7 @@ static void SetupMsgApiVideoDisplays()
             //   Then, starting with Tranformers, the 520-5052-15 orange/red led matrix is used
             // - All US Stern games before AC/DC use a 128 x 32 neon plasma (520-5052-00), then LED (520-5052-15)
             def.srcId.hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN;
-         else if (core_gameData->gen == GEN_SPA)
+         else if (core_gameData->gen == GEN_SPA || core_gameData->gen == GEN_SPIKE1) // Spike 1: an LED panel, its type not established
             def.srcId.hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN;
          else
             def.srcId.hardware = CTLPI_DISPLAY_HARDWARE_NEON_PLASMA;
@@ -2985,7 +2988,7 @@ static void SetupMsgApiVideoDisplays()
          def.srcId.GetRenderFrame = &GetDisplayFrame;
          if ((layout->type & CORE_SEGMASK) != CORE_VIDEO)
          {
-            def.srcId.identifyFormat = ((core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2 | GEN_PINHECK)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0)) ? CTLPI_DISPLAY_ID_FORMAT_BITPLANE4 : CTLPI_DISPLAY_ID_FORMAT_BITPLANE2; // pinHeck: the raw DMD's 16 levels
+            def.srcId.identifyFormat = ((core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2 | GEN_PINHECK | GEN_SPIKE1)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0)) ? CTLPI_DISPLAY_ID_FORMAT_BITPLANE4 : CTLPI_DISPLAY_ID_FORMAT_BITPLANE2; // pinHeck: the raw DMD's 16 levels
             def.srcId.GetIdentifyFrame = &GetDisplayIdFrame;
          }
          msgLocals.nDisplays++;

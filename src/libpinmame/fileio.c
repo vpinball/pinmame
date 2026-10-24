@@ -36,6 +36,7 @@
 #if !defined(_WIN32) && !defined(_WIN64)
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
 #include <errno.h>
 #include <ctype.h>
@@ -849,6 +850,136 @@ void osd_fclose(osd_file *file)
 #endif
 	file->handle = 0;
 }
+
+
+
+#if defined(_WIN32) || defined(_WIN64)
+//============================================================
+//	osd_fmap
+//============================================================
+
+struct osd_mapping
+{
+	HANDLE		mapping;
+	void *		view;
+};
+
+void *osd_fmap(int pathtype, int pathindex, const char *filename, UINT64 offset, UINT64 length, const UINT8 **data)
+{
+	struct osd_mapping *map;
+	TCHAR fullpath[1024];
+	SYSTEM_INFO info;
+	UINT64 start;
+	HANDLE file;
+
+	// a view starts on the allocation granularity at or below the offset
+	GetSystemInfo(&info);
+	start = offset - offset % info.dwAllocationGranularity;
+	if (!length || offset - start + length > (SIZE_T)-1)
+		return NULL;
+
+	map = (struct osd_mapping *)malloc(sizeof(*map));
+	if (!map)
+		return NULL;
+
+	// compose the full path and map the file; the mapping keeps it open
+	compose_path(fullpath, pathtype, pathindex, filename);
+	file = CreateFile(fullpath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	if (file == INVALID_HANDLE_VALUE)
+	{
+		free(map);
+		return NULL;
+	}
+	map->mapping = CreateFileMapping(file, NULL, PAGE_READONLY, 0, 0, NULL);
+	CloseHandle(file);
+	map->view = map->mapping ? MapViewOfFile(map->mapping, FILE_MAP_READ, (DWORD)(start >> 32), (DWORD)start, (SIZE_T)(offset - start + length)) : NULL;
+	if (!map->view)
+	{
+		if (map->mapping)
+			CloseHandle(map->mapping);
+		free(map);
+		return NULL;
+	}
+	*data = (const UINT8 *)map->view + (offset - start);
+	return map;
+}
+
+
+
+//============================================================
+//	osd_funmap
+//============================================================
+
+void osd_funmap(void *mapping)
+{
+	struct osd_mapping *map = (struct osd_mapping *)mapping;
+	UnmapViewOfFile(map->view);
+	CloseHandle(map->mapping);
+	free(map);
+}
+
+#else
+
+//============================================================
+//	osd_fmap
+//============================================================
+
+struct osd_mapping
+{
+	void *		view;
+	size_t		size;
+};
+
+void *osd_fmap(int pathtype, int pathindex, const char *filename, UINT64 offset, UINT64 length, const UINT8 **data)
+{
+	struct osd_mapping *map;
+	TCHAR fullpath[1024];
+	UINT64 start;
+	int fd;
+
+	// a view starts on a page at or below the offset
+	start = offset - offset % (UINT64)sysconf(_SC_PAGESIZE);
+	if (!length || offset - start + length > (size_t)-1 || (UINT64)(off_t)start != start)
+		return NULL;
+
+	map = (struct osd_mapping *)malloc(sizeof(*map));
+	if (!map)
+		return NULL;
+
+	// compose the full path and map the file; the mapping keeps it open
+	compose_path(fullpath, pathtype, pathindex, filename);
+	fd = open(fullpath, O_RDONLY);
+	if (fd < 0)
+	{
+		free(map);
+		return NULL;
+	}
+	map->size = (size_t)(offset - start + length);
+	map->view = mmap(NULL, map->size, PROT_READ, MAP_PRIVATE, fd, (off_t)start);
+	close(fd);
+	if (map->view == MAP_FAILED)
+	{
+		free(map);
+		return NULL;
+	}
+	*data = (const UINT8 *)map->view + (offset - start);
+	return map;
+}
+
+
+
+//============================================================
+//	osd_funmap
+//============================================================
+
+void osd_funmap(void *mapping)
+{
+	struct osd_mapping *map = (struct osd_mapping *)mapping;
+	munmap(map->view, map->size);
+	free(map);
+}
+
+#endif
 
 
 

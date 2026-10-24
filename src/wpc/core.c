@@ -986,7 +986,7 @@ static PALETTE_INIT(core) {
 #if defined(PINMAME) || defined(VPINMAME)
 // Games rendered with 16 shades (raw DMD levels) are never colorized, the others map their 4 identified shades to the 4 user colors
 static int core_dmd_has_16_shades(void) {
-  return (core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2 | GEN_PINHECK)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0);
+  return (core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2 | GEN_PINHECK | GEN_SPIKE1)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0);
 }
 
 // Render to internal display, using provided luminance, if there is a visible display (PinMAME always, and VPinMAME when its window is shown)
@@ -2232,9 +2232,13 @@ int core_getSwCol(int colEn) {
 /*----------------------
 /  Set/reset a switch
 /-----------------------*/
+void (*core_swChangedHook)(int swMatrixNo) = NULL;
+
 void core_setSw(int swNo, int value) {
+  UINT8 was;
   if (coreData->sw2m) swNo = coreData->sw2m(swNo); else swNo = (swNo/10)*8+(swNo%10-1);
   //fprintf(stderr,"\nPinMAME switch %d",swNo);
+  was = coreGlobals.swMatrix[swNo/8];
   coreGlobals.swMatrix[swNo/8] &= ~(1<<(swNo%8)); /* clear the bit first */
 #ifdef PROC_SUPPORT
    if (coreGlobals.p_rocEn) {
@@ -2246,6 +2250,7 @@ void core_setSw(int swNo, int value) {
 #ifdef PROC_SUPPORT
    }
 #endif
+  if (core_swChangedHook && ((was ^ coreGlobals.swMatrix[swNo/8]) & (1<<(swNo%8)))) core_swChangedHook(swNo);
 }
 
 /*-------------------------
@@ -2475,7 +2480,7 @@ int core_getSol(int solNo) {
         mask = 1<<(solNo - 33 + 4);
       return (coreGlobals.solenoids2 & mask) != 0;
     }
-    else if (core_gameData->gen & GEN_SAM) // SAM only: fake GameOn solenoid for fast flips
+    else if (core_gameData->gen & (GEN_SAM | GEN_SPIKE1)) // SAM, Spike 1: fake GameOn solenoid for fast flips
        return (coreGlobals.solenoids2 & 0x10) != 0;
     else if (core_gameData->gen & GEN_ALLWS) // Whitestar: aux board outputs (magnets, ...), like core_getAllSol
        return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value) : ((coreGlobals.solenoids2 & (1<<(solNo - 33 + 4))) != 0);
@@ -2556,7 +2561,7 @@ UINT64 core_getAllSol(void) {
       uFlip |= (uFlip & 0x40)<<1;
     sol |= (((UINT64)uFlip)<<28);
   }
-  else if (core_gameData->gen & GEN_SAM) // 33 SAM fake GameOn sol for fast flips
+  else if (core_gameData->gen & (GEN_SAM | GEN_SPIKE1)) // 33 SAM, Spike 1 fake GameOn sol for fast flips
      sol |= (((UINT64)(coreGlobals.solenoids2 & 0x10)) << 28);
   else if (core_gameData->gen & GEN_ALLWS) // 33..36 various aux board outputs
      sol |= ((UINT64)(coreGlobals.solenoids2 & 0x00f0)) << 28;
@@ -2611,8 +2616,8 @@ void core_getAllPhysicSols(float* const state)
     state[34] = uFlip & 0x40 ? 1.0f : 0.0f;
     state[35] = uFlip & 0x80 ? 1.0f : 0.0f;
   }
-  /*-- 33 [SAM only] fake GameOn solenoid for fast flips --*/
-  if (core_gameData->gen & GEN_SAM)
+  /*-- 33 [SAM, Spike 1] fake GameOn solenoid for fast flips --*/
+  if (core_gameData->gen & (GEN_SAM | GEN_SPIKE1))
     state[32] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 33 - 1].value;
   /*-- 33..36 Whitestar various aux board outputs --*/
   else if (core_gameData->gen & GEN_ALLWS)
@@ -3922,6 +3927,7 @@ void core_dmd_pwm_init(const core_tLCDLayout* layout, const int filter, const in
   {
   case CORE_DMD_PWM_PREINTEGRATED_LINEAR_4: // Pre-integrated PWM frames
   case CORE_DMD_PWM_PREINTEGRATED_SAM:
+  case CORE_DMD_PWM_PREINTEGRATED_LINEAR_16:
      dmd_state->rawFrameSize = dmd_state->frameSize; // Raw frame is already preintegrated, one byte per pixel
      dmd_state->fir_weights = NULL;
      dmd_state->fir_size = 0;
@@ -4061,6 +4067,18 @@ float* core_dmd_update_pwm(const core_tLCDLayout* layout, unsigned int * lumFram
       break;
    }
 
+   case CORE_DMD_PWM_PREINTEGRATED_LINEAR_16: // Stern Spike 1: 16 regularly spread shades (bitplanes shown 1/2/4/8 periods)
+   {
+      const UINT8* frameData = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      if (memcmp(dmd_state->dmdFIRBuffer, frameData, dmd_state->frameSize * sizeof(UINT8)) != 0) {
+         memcpy(dmd_state->dmdFIRBuffer, frameData, dmd_state->frameSize * sizeof(UINT8));
+         dmd_state->lumFrameId++;
+         for (int jj = 0; jj < dmd_state->frameSize; jj++)
+            dmd_state->luminanceFrame[jj] = (float)(frameData[jj] & 15) * (float)(1. / 15.);
+      }
+      break;
+   }
+
    case CORE_DMD_PWM_PREINTEGRATED_SAM:
    {
       const UINT8* frameData = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
@@ -4165,6 +4183,7 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
   switch (dmd_state->raw_combiner) {
   case CORE_DMD_PWM_PREINTEGRATED_LINEAR_4: // Pre-integrated PWM frames, nothing to do beside a copy (could be optimized to avoid the copy but kept for simplicity)
   case CORE_DMD_PWM_PREINTEGRATED_SAM:
+  case CORE_DMD_PWM_PREINTEGRATED_LINEAR_16:
      assert(dmd_state->rawFrameSize == dmd_state->frameSize);
      memcpy(dmd_state->tempRawFrame, dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize, dmd_state->rawFrameSize);
      break;
