@@ -62,6 +62,9 @@ static char _recordName[256] = {};   // PinmameSetRecord()
 static char _playbackName[256] = {}; // PinmameSetPlayback()
 static std::shared_mutex _stateMutex;
 static inline bool IsEmulationRunning() { return _isRunning == 1; }
+// Switch changes made while starting (state 2), when the machine can't take them yet: applied once it is running
+static std::mutex _pendingSwitchesMutex;
+static std::vector<PinmameSwitchState> _pendingSwitches;
 static int _timeToQuit = 0;
 static PinmameConfig* _p_Config = nullptr;
 static std::thread* _p_gameThread = nullptr;
@@ -839,6 +842,12 @@ extern "C" void OnStateChange(const int state)
       // Not held for the callbacks below: they may call the API, or wait for the main thread
       const std::unique_lock lock(_stateMutex);
       _isRunning = state;
+
+      const std::lock_guard pendingLock(_pendingSwitchesMutex);
+      if (state == 1)
+         for (const PinmameSwitchState& sw : _pendingSwitches)
+            vp_putSwitch(sw.swNo, sw.state);
+      _pendingSwitches.clear();
    }
 
    if (msgLocals.msgApi != NULL)
@@ -1453,6 +1462,11 @@ PINMAMEAPI int PinmameGetSwitch(const int swNo)
 PINMAMEAPI void PinmameSetSwitch(const int swNo, const int state)
 {
 	const std::shared_lock lock(_stateMutex);
+	if (_isRunning == 2) {
+		const std::lock_guard pendingLock(_pendingSwitchesMutex);
+		_pendingSwitches.push_back({ swNo, state ? 1 : 0 });
+		return;
+	}
 	if (!IsEmulationRunning())
 		return;
 
@@ -1466,6 +1480,12 @@ PINMAMEAPI void PinmameSetSwitch(const int swNo, const int state)
 PINMAMEAPI void PinmameSetSwitches(const PinmameSwitchState* const p_states, const int numSwitches)
 {
 	const std::shared_lock lock(_stateMutex);
+	if (_isRunning == 2) {
+		const std::lock_guard pendingLock(_pendingSwitchesMutex);
+		for (int i = 0; i < numSwitches; ++i)
+			_pendingSwitches.push_back({ p_states[i].swNo, p_states[i].state ? 1 : 0 });
+		return;
+	}
 	if (!IsEmulationRunning())
 		return;
 
