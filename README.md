@@ -6,7 +6,7 @@
 
 PinMAME emulates the hardware found in almost every solid state pinball machine created from
 the earliest days of CPU-controlled machines (mid 1970's) through 2014 / 2017 / 2020 (Stern SAM / PinHeck / Stern SPIKE 1),
-with around 770 emulated unique Pinball machines and many more clones/revisions (overall more than 2700 sets).
+with around 820 emulated unique Pinball machines and many more clones/revisions (overall almost 3000 sets).
 In addition to official revisions, PinMAME also allows for homebrew modifications, similar in spirit to HBMAME
 (these are all marked as 'MOD' in the naming).
 It is available in various forms:
@@ -101,7 +101,7 @@ See [SUPPORTED_MACHINES.md](SUPPORTED_MACHINES.md) for a more complete, machine-
 - *Sega 256x64 DMD* - Flipper Football (1996)
 - *Sega/Stern Whitestar* - All games from Apollo 13 (1995) to Nascar (2005)
 - *Stern S.A.M.* - All games from World Poker Tour (2006) to Walking Dead (2014)
-- *Stern SPIKE 1* - All games from Wrestlemania (2015) to Heavy Metal (2020)
+- *Stern SPIKE 1* - All games from Transformers The Pin (2012) to Heavy Metal (2020)
 - *Stern MPU-100* - All games from Stingray (1977) to Magic (1979)
 - *Stern MPU-200* - All games from Meteor (1979) to Lazer Lord (1984)
 - *Bally MPU-17* - All games from Freedom (1977) to Black Jack (1978)
