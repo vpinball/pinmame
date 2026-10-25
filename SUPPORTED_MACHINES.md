@@ -29,10 +29,10 @@ onwards** is listed separately below as not expected rather than as missing.
 
 | Status                           | Machines | Share |
 | -------------------------------- | -------: | ----: |
-| Fully working                    |      580 | 69.7% |
+| Fully working                    |      581 | 69.8% |
 | Partially working                |       31 |  3.7% |
 | Emulated but not working         |        1 |  0.1% |
-| Not emulated                     |       93 | 11.2% |
+| Not emulated                     |       92 | 11.1% |
 | Not emulated — released recently |      127 | 15.3% |
 | **Total**                        |  **832** |       |
 
@@ -44,10 +44,10 @@ onwards** is listed separately below as not expected rather than as missing.
 | 1980s  |   328 |           280 |      23 |           1 |           24 |
 | 1990s  |   148 |           142 |       3 |           0 |            3 |
 | 2000s  |    25 |            24 |       0 |           0 |            1 |
-| 2010s  |    73 |            22 |       0 |           0 |           51 |
+| 2010s  |    73 |            23 |       0 |           0 |           50 |
 | 2020s  |    88 |             1 |       0 |           0 |           87 |
 
-## Fully working (580)
+## Fully working (581)
 
 Every known ROM set runs, and the driver flags nothing wrong with any of them.
 
@@ -618,8 +618,9 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | Transformers                                   | 2011 | Stern                  | DMD          | `tf_088h`, `tf_100h`, `tf_120` + 10 more             |             |       |
 | AC/DC                                          | 2012 | Stern                  | DMD          | `acd_121`, `acd_125`, `acd_130` + 21 more            |             |       |
 | The Avengers                                   | 2012 | Stern                  | DMD          | `avs_110`, `avs_120h`, `avs_140` + 3 more            |             |       |
+| Transformers The Pin                           | 2012 | Stern                  | Alphanumeric | `tfcp_1018`                                          |             |       |
 | X-Men                                          | 2012 | Stern                  | DMD          | `xmn_100`, `xmn_102`, `xmn_104` + 14 more            |             |       |
-| Avengers the Pin                               | 2013 | Stern                  | DMD          | `avs_170`, `avs_170c`                                |             |       |
+| Avengers the Pin                               | 2013 | Stern                  | DMD          | `avscp_103`, `avs_170`, `avs_170c`                   |             |       |
 | Metallica                                      | 2013 | Stern                  | DMD          | `mtl_052`, `mtl_103`, `mtl_105` + 31 more            |             |       |
 | Star Trek                                      | 2013 | Stern                  | DMD          | `st_120`, `st_130`, `st_140` + 15 more               |             |       |
 | America's Most Haunted                         | 2014 | Spooky Pinball         | DMD          | `amh_022`, `amh_023`                                 | yes         |       |
@@ -684,7 +685,7 @@ does not boot or does not play.
 | ------- | ---: | ------------ | ------------ | ---------------- | --------- | ------------ |
 | 4X4     | 1983 | Atari        | Alphanumeric | `fourx4`         |           | does not run |
 
-## Not emulated (93)
+## Not emulated (92)
 
 No driver. These machines are old enough to be in scope, so they are the candidates for
 future work.
@@ -775,7 +776,6 @@ future work.
 | Vacation America                            | 2003 | Chicago Coin              | Alphanumeric |
 | King of Diamonds                            | 2010 | Retro Pinball             | Reels        |
 | New Canasta                                 | 2010 | Marsa Play                | LCD          |
-| Transformers The Pin                        | 2012 | Stern                     | Alphanumeric |
 | Predator                                    | 2013 | Skit-B Pinball            | DMD          |
 | The Wizard of Oz                            | 2013 | Jersey Jack Pinball       | LCD          |
 | Captain Nemo                                | 2015 | Quetzal Pinball           | LCD          |
