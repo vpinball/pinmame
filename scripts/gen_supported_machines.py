@@ -82,8 +82,9 @@ YEAR_SLACK = 3                           # how far PinMAME and OPDB may disagree
 # on a wrapper macro missing from this table.
 ARITY = {"CORE_GAMEDEF": 7, "CORE_GAMEDEFNV": 6, "CORE_GAMEDEFNVR90": 6,
          "CORE_CLONEDEF": 8, "CORE_CLONEDEFNV": 7,
-                  # Clone of the `pinheck` BIOS, so no parent among these sets.
-         "PINHECK_GAMEDEF": 7}
+         # Clone of the `pinheck` BIOS, so no parent among these sets.
+         "PINHECK_GAMEDEF": 7,
+         "SPIKE1_CLONEDEF": 7}
 
 # Driver flags, from src/driver.h and src/wpc/vpintf.h.  resolve_flags() raises
 # on a flag not listed here.
