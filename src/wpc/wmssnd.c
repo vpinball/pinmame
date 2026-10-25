@@ -1669,6 +1669,9 @@ static void dcsoff_init(struct sndbrdData *brdData) {
   dcsoff_reset();
 }
 
+// TODO every byte pair is taken as a track number, also the 4 byte volume command (55 AA vol ~vol): its second half then starts
+// track (vol << 8) | ~vol, which is within the track index for small volumes (e.g. 00FF, 01FE) and could queue a reply the game
+// never asked for (if that track's program starts with opcode 04). Skip the 2 bytes following 55AA (and any other multi byte commands)
 static WRITE_HANDLER(dcsoff_data_w) {
   if (!dcsoff.enabled) return;
   if (dcsoff.cmd < 0)

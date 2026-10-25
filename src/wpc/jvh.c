@@ -330,7 +330,7 @@ static WRITE_HANDLER(vol2_w) {
 }
 
 // TODO VIA6522_ACCURATE: not adapted, keeps the old core. Check the IRQ/FIRQ wiring and timer use against the accurate core's
-// semantics before setting accurate here; via_config must then also come before via_reset in jvh_init
+// semantics before setting accurate here
 static const struct via6522_interface jvh_via[] = {{
   /*i: A/B,CA/B1,CA/B2 */ jvh_via_a_r, 0, 0, 0, 0, 0,
   /*o: A/B,CA/B2       */ jvh_via_a_w, jvh_via_b_w, 0, 0,
@@ -342,8 +342,10 @@ static const struct via6522_interface jvh_via[] = {{
 }};
 
 static void jvh_init(struct sndbrdData *brdData) {
-  via_reset();
+  // Config first, like the other drivers: via_reset picks the core and the timers from the configured interface,
+  // and before via_config it would still see the previous game's one (e.g. GTS3's accurate VIA in VPinMAME/libpinmame)
   via_config(0, &jvh_via[brdData->subType ? 1 : 0]);
+  via_reset();
   memset(&sndlocals, 0, sizeof(sndlocals));
   sndlocals.brdData = *brdData;
 }
