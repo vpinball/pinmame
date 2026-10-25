@@ -308,7 +308,7 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | Touchdown                                      | 1984 | Gottlieb               | Alphanumeric | `touchdn`                                            |             |       |
 | UFO-X                                          | 1984 | Playmatic              | Alphanumeric | `ufo_x`                                              |             |       |
 | Andromeda                                      | 1985 | Game Plan              | Alphanumeric | `andromea`, `andromed`                               |             |       |
-| Apocalypse Now                                 | 1985 | Jeutel                 | Alphanumeric | `apocalypse_now`                                     |             |       |
+| Apocalypse Now                                 | 1985 | Jeutel                 | Alphanumeric | `apclpsnw`                                           |             |       |
 | Ator                                           | 1985 | Videodens              | Alphanumeric | `ator`, `ator2`                                      |             |       |
 | Beat the Clock                                 | 1985 | Bally                  | Alphanumeric | `beatclc2`, `beatclck`                               |             |       |
 | Bounty Hunter                                  | 1985 | Gottlieb               | Alphanumeric | `bountgfp`, `bounthfp`, `bountyh` + 1 more           |             |       |
