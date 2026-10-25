@@ -1,6 +1,6 @@
 // license:BSD-3-Clause
 
-// PinMAME Spike 1 subsystem - Linux, emulated at the system-call level. See spike1_linux.h
+// PinMAME SPIKE 1 subsystem - Linux, emulated at the system-call level. See spike1_linux.h
 
 #include "spike1_linux.h"
 #include "spike1_cpu.h"
@@ -347,7 +347,7 @@ bool spike1_linux::start(const config &cfg, std::string &error)
 	};
 	dev.read_game_file = [this, game_dir](const std::string &name, std::vector<uint8_t> &out) { return read_whole(game_dir + "/" + name, out); };
 	m_devices.start(dev);
-	if (!m_cfg.nvram.empty() && !set_nvram(m_cfg.nvram)) log("nvram: the saved block is not a Spike 1 NVRAM block; starting with a new machine");
+	if (!m_cfg.nvram.empty() && !set_nvram(m_cfg.nvram)) log("nvram: the saved block is not a SPIKE 1 NVRAM block; starting with a new machine");
 	m_wall_base_ns = host_wall_ns();
 	m_cycles = m_idle_cycles = 0;
 	m_cpu.set_swi([this](uint32_t comment) { on_swi(comment); });
@@ -995,7 +995,7 @@ int32_t spike1_linux::syscall(uint32_t nr, const uint32_t a[7], bool &handled, s
 std::string spike1_linux::guest_absolute(const std::string &path) const
 {
 	std::vector<std::string> parts;
-	const std::string full = (!path.empty() && path[0] == '/') ? path : m_cwd + "/" + path;
+	const std::string full = (!path.empty() && path[0] == '/') ? path : m_cwd + '/' + path;
 	size_t i = 0;
 	while (i < full.size()) {
 		const size_t j = full.find('/', i);
@@ -1376,7 +1376,7 @@ int32_t spike1_linux::sys_mmap(uint32_t addr, uint32_t len, uint32_t prot, uint3
 			if (offset < size) std::memcpy(m_mem.host(where, len), src + offset, size_t(std::min<uint64_t>(len, size - offset)));
 			SPIKE1_DEBUG_ONLY(if (flags & 1) note = "shared mapping of " + f->guest + " is a private copy";)
 		} else if (f->type == file::kind::host && f->fp) {
-			// a private copy: the game's Spike 1 files are read-only data
+			// a private copy: the game's SPIKE 1 files are read-only data
 			const int64_t saved = host_tell(f->fp);
 			host_seek(f->fp, int64_t(offset), SEEK_SET);
 			std::fread(m_mem.host(where, len), 1, len, f->fp);

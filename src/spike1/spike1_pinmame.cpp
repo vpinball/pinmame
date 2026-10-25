@@ -1,10 +1,10 @@
 // license:BSD-3-Clause
 
-// PinMAME Spike 1 subsystem - the PinMAME-facing side of the machine
+// PinMAME SPIKE 1 subsystem - the PinMAME-facing side of the machine
 //
 // src/wpc/spike1.c is compiled as part of PinMAME and knows nothing about the subsystem's C++
 // types; the functions below (spike1_public.h) are the whole contract between them. The title's
-// files arrive as PinMAME ROM regions, which spike1.c passes in: the subsystem opens no files.
+// files arrive as PinMAME ROM regions, which spike1.c passes in: the subsystem opens no files
 
 #include "spike1_public.h"
 #include "spike1_cpu.h"
@@ -23,8 +23,7 @@ extern machine_config *p2k_active_config;
 
 namespace {
 
-// The shim's device world for one machine: its config, the CPU's address space over the guest
-// memory, and Linux on top
+// The shim's device world for one machine: its config, the CPU's address space over the guest memory, and Linux on top
 struct machine
 {
 	running_machine running;
@@ -90,7 +89,7 @@ int spike1_pinmame_start(const char *game, const spike1_file *files, unsigned co
 	// A set's files sit side by side; on the card a title's LCD clips (.spv) are in its video folder
 	for (unsigned i = 0; i < count; i++)
 		if (files[i].name && files[i].data) {
-			const std::string name = files[i].name;
+			const std::string& name = files[i].name;
 			const bool clip = name.size() > 4 && name.compare(name.size() - 4, 4, ".spv") == 0;
 			cfg.files.push_back({ dir + (clip ? "/video/" : "/") + name, files[i].data, files[i].size });
 		}

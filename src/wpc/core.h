@@ -600,7 +600,7 @@ void core_setLampBlank(volatile UINT8 *lampMatrix, int col, int row);
 /*-- switch handling --*/
 extern void core_setSw(int swNo, int value);
 /* Called with the matrix entry each time core_setSw changes a switch, from the caller's thread: a
-   driver that samples the matrix (Spike 1) learns of a closure that opened again before it looked */
+   driver that samples the matrix (SPIKE 1) learns of a closure that opened again before it looked */
 extern void (*core_swChangedHook)(int swMatrixNo);
 extern int core_getSw(int swNo);
 extern void core_updInvSw(int swNo, int inv);

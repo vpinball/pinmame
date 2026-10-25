@@ -2481,7 +2481,7 @@ int core_getSol(int solNo) {
         mask = 1<<(solNo - 33 + 4);
       return (coreGlobals.solenoids2 & mask) != 0;
     }
-    else if (core_gameData->gen & (GEN_SAM | GEN_SPIKE1)) // SAM, Spike 1: fake GameOn solenoid for fast flips
+    else if (core_gameData->gen & (GEN_SAM | GEN_SPIKE1)) // SAM, SPIKE 1: fake GameOn solenoid for fast flips
        return (coreGlobals.solenoids2 & 0x10) != 0;
     else if (core_gameData->gen & GEN_ALLWS) // Whitestar: aux board outputs (magnets, ...), like core_getAllSol
        return coreGlobals.nSolenoids && (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) ? saturatedByte(coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + solNo - 1].value) : ((coreGlobals.solenoids2 & (1<<(solNo - 33 + 4))) != 0);
@@ -2562,7 +2562,7 @@ UINT64 core_getAllSol(void) {
       uFlip |= (uFlip & 0x40)<<1;
     sol |= (((UINT64)uFlip)<<28);
   }
-  else if (core_gameData->gen & (GEN_SAM | GEN_SPIKE1)) // 33 SAM, Spike 1 fake GameOn sol for fast flips
+  else if (core_gameData->gen & (GEN_SAM | GEN_SPIKE1)) // 33 SAM, SPIKE 1 fake GameOn sol for fast flips
      sol |= (((UINT64)(coreGlobals.solenoids2 & 0x10)) << 28);
   else if (core_gameData->gen & GEN_ALLWS) // 33..36 various aux board outputs
      sol |= ((UINT64)(coreGlobals.solenoids2 & 0x00f0)) << 28;
@@ -2617,7 +2617,7 @@ void core_getAllPhysicSols(float* const state)
     state[34] = uFlip & 0x40 ? 1.0f : 0.0f;
     state[35] = uFlip & 0x80 ? 1.0f : 0.0f;
   }
-  /*-- 33 [SAM, Spike 1] fake GameOn solenoid for fast flips --*/
+  /*-- 33 [SAM, SPIKE 1] fake GameOn solenoid for fast flips --*/
   if (core_gameData->gen & (GEN_SAM | GEN_SPIKE1))
     state[32] = coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + 33 - 1].value;
   /*-- 33..36 Whitestar various aux board outputs --*/
@@ -4093,7 +4093,7 @@ float* core_dmd_update_pwm(const core_tLCDLayout* layout, unsigned int * lumFram
       break;
    }
 
-   case CORE_DMD_PWM_PREINTEGRATED_LINEAR_16: // Stern Spike 1: 16 regularly spread shades (bitplanes shown 1/2/4/8 periods)
+   case CORE_DMD_PWM_PREINTEGRATED_LINEAR_16: // Stern SPIKE 1: 16 regularly spread shades (bitplanes shown 1/2/4/8 periods)
    {
       const UINT8* frameData = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       if (memcmp(dmd_state->dmdFIRBuffer, frameData, dmd_state->frameSize * sizeof(UINT8)) != 0) {

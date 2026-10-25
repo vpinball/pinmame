@@ -1,6 +1,6 @@
 // license:BSD-3-Clause
 
-// PinMAME Spike 1 subsystem - the filesystem the game sees. See spike1_vfs.h
+// PinMAME SPIKE 1 subsystem - the filesystem the game sees. See spike1_vfs.h
 
 #include "spike1_vfs.h"
 
@@ -76,7 +76,7 @@ spike1_vfs::type spike1_vfs::lookup(const std::string &path, uint64_t *size) con
 std::vector<spike1_vfs::entry> spike1_vfs::list(const std::string &dir) const
 {
 	std::map<std::string, bool> names; // name -> directory
-	const std::string prefix = dir == "/" ? "/" : dir + "/";
+	const std::string prefix = dir == "/" ? "/" : dir + '/';
 	auto child = [&](const std::string &path, bool directory) {
 		if (path.compare(0, prefix.size(), prefix) != 0 || path.size() == prefix.size()) return;
 		const size_t slash = path.find('/', prefix.size());

@@ -1,11 +1,11 @@
 // license:BSD-3-Clause
 
-// PinMAME Spike 1 subsystem - the game CPU. See spike1_cpu.h
+// PinMAME SPIKE 1 subsystem - the game CPU. See spike1_cpu.h
 
 #include "spike1_cpu.h"
 #include "arm7core.h"
 
-DEFINE_DEVICE_TYPE(SPIKE1_CPU, spike1_cpu_device, "spike1_cpu", "Spike 1 ARM926 (user mode)")
+DEFINE_DEVICE_TYPE(SPIKE1_CPU, spike1_cpu_device, "spike1_cpu", "SPIKE 1 ARM926 (user mode)")
 
 spike1_cpu_device::spike1_cpu_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
 	: arm9_cpu_device(mconfig, SPIKE1_CPU, tag, owner, clock, 5, ARCHFLAG_T | ARCHFLAG_E, ENDIANNESS_LITTLE)

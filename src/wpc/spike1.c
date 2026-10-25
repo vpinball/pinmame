@@ -52,22 +52,22 @@
 
 #if HAS_SPIKE1
 
-#define SPIKE1_REGION     REGION_USER1   /* the game folder's files, mapped from the set on disk (ROMREGION_MAPPED) */
-#define SPIKE1_AUDIO_RATE 44100          /* the stream's rate until the game sets /dev/i2s to its own */
+#define SPIKE1_REGION     REGION_USER1 /* the game folder's files, mapped from the set on disk (ROMREGION_MAPPED) */
+#define SPIKE1_AUDIO_RATE 44100        /* the stream's rate until the game sets /dev/i2s to its own */
 #define SPIKE1_PEN0       (COL_COUNT + 48 + 48 + 48) /* the core's palette, then 32768 pens of RGB555 */
 #define SPIKE1_MAXCOILS   64
 #define SPIKE1_MAXLEDS    256
-#define SPIKE1_MAXMECHS   8              /* Whoa Nellie's five reels are the most a title has */
+#define SPIKE1_MAXMECHS   8            /* Whoa Nellie's five reels are the most a title has */
 #define SPIKE1_FIRSTCUSTSOL CORE_FIRSTCUSTSOL /* solenoid 51 */
 #define SPIKE1_NCUSTSOLS  (CORE_MODOUT_SOL_MAX - SPIKE1_FIRSTCUSTSOL + 1)
-#define SPIKE1_GAMEONSOL  33             /* GAME ON, as SAM's: the flippers enabled - their reflexes armed */
-#define SPIKE1_GAMEONBIT  0x10           /* its bit in solenoids2, where the core takes SAM's */
-#define SPIKE1_IOFREQ     1000           /* the I/O exchange: the node boards scan their switches far faster than a frame */
+#define SPIKE1_GAMEONSOL  33           /* GAME ON, as SAM's: the flippers enabled - their reflexes armed */
+#define SPIKE1_GAMEONBIT  0x10         /* its bit in solenoids2, where the core takes SAM's */
+#define SPIKE1_IOFREQ     1000         /* the I/O exchange: the node boards scan their switches far faster than a frame */
 
 /* The numbers a title's manual gives the switches PinMAME's keys reach; they differ between titles */
 typedef struct {
-  int flip[8];   /* left button, right button, left EOS, right EOS, then the same for the upper flippers (0: none) */
-  int coin[4];   /* left, right, center, fourth */
+  int flip[8]; /* left button, right button, left EOS, right EOS, then the same for the upper flippers (0: none) */
+  int coin[4]; /* left, right, center, fourth */
   int tilt, slam;
 } spike1_tSwitches;
 #define SPIKE1_SWITCHES(lbutton, rbutton, leos, reos, coin1, coin2, coin3, coin4, tilt, slam) \
@@ -123,21 +123,21 @@ static struct { int on; unsigned frames, asked, got, switches, calls, peak, late
 
 static struct {
   int running, warned;
-  int sw[256];            /* the title's switch numbers, and how many */
+  int sw[256];         /* the title's switch numbers, and how many */
   int nsw;
-  UINT8 swState[256];     /* each switch as last handed to the machine */
-  int swM[256];           /* its matrix entry */
-  UINT32 swSeen[256];     /* the count of changes to it as of the last look */
-  UINT8 swAgain[256];     /* the last look found a change half made: the next one takes what it finds */
+  UINT8 swState[256];  /* each switch as last handed to the machine */
+  int swM[256];        /* its matrix entry */
+  UINT32 swSeen[256];  /* the count of changes to it as of the last look */
+  UINT8 swAgain[256];  /* the last look found a change half made: the next one takes what it finds */
   int coilSol[SPIKE1_MAXCOILS]; /* the PinMAME solenoid of coil k, 0 if the game has no coil k */
   int coilOf[CORE_MODOUT_SOL_MAX + 1]; /* and back: the coil of solenoid s, -1 for none */
   UINT8 coilLevel[SPIKE1_MAXCOILS]; /* coil k's output as last passed on (spike1_pinmame_coil_output) */
   double coilOnAt[SPIKE1_MAXCOILS]; /* when coil k's output last came on */
-  int flipCoil[2][2];     /* left, right: the flipper's coil and its separate hold coil (Whoa Nellie), -1 for none */
+  int flipCoil[2][2];  /* left, right: the flipper's coil and its separate hold coil (Whoa Nellie), -1 for none */
   int startSw;
   unsigned dmdFrames;
   unsigned nLeds;
-  unsigned audioRate;     /* the sound stream's rate: the game's, once it has set one */
+  unsigned audioRate;  /* the sound stream's rate: the game's, once it has set one */
   int ledLamp[SPIKE1_MAXLEDS]; /* the lamp number of LED channel k, 0 for none */
   volatile int mech[SPIKE1_MAXMECHS]; /* each mech's position as of the last I/O exchange, for GetMech */
 } locals;
@@ -150,7 +150,7 @@ static UINT8 *nvBlock;
 static unsigned nvSize;
 
 /*-------------------------------------------------
-/  the CPU: the game program, run for PinMAME's cycles
+/  the CPU: game program, run for PinMAME's cycles
 /-------------------------------------------------*/
 int spike1cpu_ICount;
 
@@ -210,8 +210,7 @@ MEMORY_END
 /    0-95     matrix entries 0-95, except that the title's flipper switches and the numbers 88-95
 /             trade places: the flipper switches go to column 11, PinMAME's flipper column
 /             (88 right EOS, 89 right button, 90 left EOS, 91 left button, 92-95 the same for the
-/             upper flippers, as the core's CORE_SW*FLIP* bits lay them out), 88-95 to the
-/             entries they leave free
+/             upper flippers, as the core's CORE_SW*FLIP* bits lay them out), 88-95 to the entries they leave free
 /    101-132  columns 12-15: the CPU board's C1-C16 as 101-116, an optional topper's switches
 /             as 121 on; 132 also takes any number the game does not have
 /-------------------------------------------------*/
@@ -256,18 +255,18 @@ static int spike1_m2lamp(int col, int row) { return (col - 1) * 8 + row + 1; }
 /-------------------------------------------------*/
 #define SPIKE1_COMPORTS \
   PORT_START /* 2: CORE_COREINPORT */ \
-    COREPORT_BITDEF(  0x0001, IPT_COIN1,        IP_KEY_DEFAULT) \
-    COREPORT_BITDEF(  0x0002, IPT_COIN2,        IP_KEY_DEFAULT) \
-    COREPORT_BITDEF(  0x0004, IPT_COIN3,        KEYCODE_3) \
-    COREPORT_BITDEF(  0x0008, IPT_COIN4,        KEYCODE_4) \
-    COREPORT_BIT(     0x0010, "Back",           KEYCODE_7) \
-    COREPORT_BIT(     0x0020, "Minus",          KEYCODE_8) \
-    COREPORT_BIT(     0x0040, "Plus",           KEYCODE_9) \
-    COREPORT_BIT(     0x0080, "Select",         KEYCODE_0) \
-    COREPORT_BITTOG(  0x0100, "Coin Door",      KEYCODE_END) \
-    COREPORT_BITDEF(  0x0200, IPT_START1,       IP_KEY_DEFAULT) \
-    COREPORT_BIT(     0x0400, "Tilt",           KEYCODE_INSERT) \
-    COREPORT_BIT(     0x0800, "Slam Tilt",      KEYCODE_HOME) \
+    COREPORT_BITDEF(  0x0001, IPT_COIN1,   IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0002, IPT_COIN2,   IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0004, IPT_COIN3,   KEYCODE_3) \
+    COREPORT_BITDEF(  0x0008, IPT_COIN4,   KEYCODE_4) \
+    COREPORT_BIT(     0x0010, "Back",      KEYCODE_7) \
+    COREPORT_BIT(     0x0020, "Minus",     KEYCODE_8) \
+    COREPORT_BIT(     0x0040, "Plus",      KEYCODE_9) \
+    COREPORT_BIT(     0x0080, "Select",    KEYCODE_0) \
+    COREPORT_BITTOG(  0x0100, "Coin Door", KEYCODE_END) \
+    COREPORT_BITDEF(  0x0200, IPT_START1,  IP_KEY_DEFAULT) \
+    COREPORT_BIT(     0x0400, "Tilt",      KEYCODE_INSERT) \
+    COREPORT_BIT(     0x0800, "Slam Tilt", KEYCODE_HOME) \
   PORT_START /* 3: the CPU board's DIP switches (switches 101-108), read through core_getDip(0) */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "DIP 1") COREPORT_DIPSET(0x0000, DEF_STR(Off)) COREPORT_DIPSET(0x0001, DEF_STR(On)) \
     COREPORT_DIPNAME( 0x0002, 0x0000, "DIP 2") COREPORT_DIPSET(0x0000, DEF_STR(Off)) COREPORT_DIPSET(0x0002, DEF_STR(On)) \
@@ -619,7 +618,7 @@ static void spike1_snd_update(int num, INT16 **buffer, int length)
     const int n = (int)spike1_pinmame_audio(tmp, want);
     for (i = 0; i < n; i++) {
       const int at = (fifo.head + fifo.count + i) % SPIKE1_FIFO;
-      fifo.s[2 * at] = tmp[2 * i];
+      fifo.s[2 * at    ] = tmp[2 * i];
       fifo.s[2 * at + 1] = tmp[2 * i + 1];
     }
     SPIKE1_DEBUG_ONLY(for (i = 0; i < 2 * n; i++) { const unsigned a = (unsigned)(tmp[i] < 0 ? -tmp[i] : tmp[i]); if (a > diag.peak) diag.peak = a; })
@@ -747,8 +746,8 @@ static MACHINE_INIT(spike1)
     core_dmd_pwm_init(core_gameData->lcdLayout, CORE_DMD_PWM_PREINTEGRATED_LINEAR_16, CORE_DMD_PWM_PREINTEGRATED_LINEAR_16, 0);
 
   /* the title's files, which the ROM loader keeps mapped from the set on disk for the machine's
-     life: a stored zip entry or a file in the set's folder. One it holds in memory instead (a
-     compressed entry) costs its size in RAM */
+     life: a stored zip entry or a file in the set's folder. One it holds in memory instead
+     (a compressed entry) costs its size in RAM */
   for (region = rom_first_region(Machine->gamedrv); region; region = rom_next_region(region)) {
     if (ROMREGION_GETTYPE(region) != SPIKE1_REGION) continue;
     for (rom = rom_first_file(region); rom && count < sizeof(files) / sizeof(files[0]); rom = rom_next_file(rom)) {
@@ -917,7 +916,7 @@ MACHINE_DRIVER_END
 /*-------------------------------------------------------------------
 / (Legends of) Wrestlemania
 /-------------------------------------------------------------------*/
-/* The oldest Spike 1 SDK. Its playfield LCD is the CPU board's own 320x240 screen, the second
+/* The oldest SPIKE 1 SDK. Its playfield LCD is the CPU board's own 320x240 screen, the second
    display; the clips it plays are the folder's video files (.spv, RC4-encrypted), which the set
    holds beside the others and the subsystem puts in video/. Each flipper button has a second leaf
    (74, 75) for the upper flipper (solenoid 22) */
@@ -1178,7 +1177,7 @@ CORE_GAMEDEF(supreme, 101, "Supreme (1.01.0)", 2018, "Stern", spike1, 0)
 /*-------------------------------------------------------------------
 / Heavy Metal
 /-------------------------------------------------------------------*/
-/* The last known Spike 1 SDK (node firmware 0.67.0, its images encrypted; the game decrypts them).
+/* The last known SPIKE 1 SDK (node firmware 0.67.0, its images encrypted; the game decrypts them).
    Stern ships it only as an update package (heavy_metal-1_02_0.spk), whose game group the ROM set
    builder reads, and its game program without a symbol table: the addresses below were found by
    matching its code and data against Ghostbusters 1.17.0's (the same compiler and libraries) and

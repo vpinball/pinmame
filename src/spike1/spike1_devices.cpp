@@ -1,6 +1,6 @@
 // license:BSD-3-Clause
 
-// PinMAME Spike 1 subsystem - the CPU board's devices. See spike1_devices.h
+// PinMAME SPIKE 1 subsystem - the CPU board's devices. See spike1_devices.h
 
 #include "spike1_devices.h"
 
@@ -34,10 +34,10 @@ constexpr uint32_t ADC_RATE = 3600;
 constexpr uint32_t ADC_CYCLE = 60, ADC_LOW_SAMPLES = 52;
 constexpr uint16_t ADC_THRESHOLD = 999, ADC_VALLEY = 849, ADC_HIGH = 2000;
 
-uint16_t adc_sample(uint32_t phase)
+static uint16_t adc_sample(uint32_t phase)
 {
 	if (phase >= ADC_LOW_SAMPLES) return ADC_HIGH;
-	const double pi = 3.14159265358979323846;
+	const double pi = 3.1415926535897932384626433832795;
 	return uint16_t(ADC_THRESHOLD - std::lround(ADC_VALLEY * std::sin(pi * (phase + 0.5) / ADC_LOW_SAMPLES)));
 }
 
@@ -71,7 +71,7 @@ constexpr uint32_t AUDIO_BUFFER_FRAMES = 2940 / 4;
 constexpr uint16_t AUDIO_VOLUME_POT = 0x28, POT_FULL_SCALE = 0x80;
 
 // The panel takes a four-bitplane frame per PWM pattern: 1+2+4+8 x 1.05 ms = 15.75 ms
-// (PinMAME's docs/dmd.md, Stern Spike 1)
+// (PinMAME's docs/dmd.md, Stern SPIKE 1)
 constexpr uint64_t DMD_FRAME_NS = 15750000;
 
 // The node bus port's termios c_cflag (asm-generic/termbits.h, which ARM uses): the rate's code in
@@ -84,9 +84,9 @@ constexpr uint32_t TERM_RATES[16] = { 0, 50, 75, 110, 134, 150, 200, 300, 600, 1
 constexpr uint32_t TERM_RATES_EX[16] = { 0, 57600, 115200, 230400, 460800, 500000, 576000, 921600, 1000000, 1152000,
 	1500000, 2000000, 2500000, 3000000, 3500000, 4000000 };
 
-std::string hex(uint32_t v) { char b[16]; std::snprintf(b, sizeof(b), "0x%x", v); return b; }
+static std::string hex(uint32_t v) { char b[16]; std::snprintf(b, sizeof(b), "0x%x", v); return b; }
 
-std::string bytes_hex(const uint8_t *p, uint32_t n, uint32_t limit = 16)
+static std::string bytes_hex(const uint8_t *p, uint32_t n, uint32_t limit = 16)
 {
 	std::string s;
 	char b[4];
@@ -210,7 +210,7 @@ void spike1_devices::start(const config &cfg)
 		digipot pot;
 		pot.slave = slave;
 		pot.reg[0] = pot.reg[1] = POT_FULL_SCALE / 2; // wipers at mid scale after power-up
-		pot.reg[4] = 0x1ff;             // TCON: all terminals connected
+		pot.reg[4] = 0x1ff;                           // TCON: all terminals connected
 		m_digipots.push_back(pot);
 	}
 }
@@ -573,6 +573,7 @@ const std::vector<uint8_t> &spike1_devices::node_bus_nodes()
 void spike1_devices::node_bus_reply(const uint8_t *data, uint32_t len, uint8_t status)
 {
 	uint8_t sum = 0;
+	//m_nb_reply.reserve(m_nb_reply.size() + len + 2);
 	for (uint32_t i = 0; i < len; i++) { m_nb_reply.push_back(data[i]); sum += data[i]; }
 	m_nb_reply.push_back(uint8_t(0 - sum));
 	m_nb_reply.push_back(status);
@@ -656,8 +657,7 @@ void spike1_devices::node_bus_settings(uint32_t cflag, std::string &note)
 // between SDK versions, so read them from the function itself. Newer SDKs load the stride
 // (mov r3, #imm); older ones (Whoa Nellie, WWE) compute the address with shifts and step the scan
 // loop by it (add r3, r3, #imm). The board type the game settles on for a block sits at the
-// offset node_update_runtime_hex_image_id checks first (ldr r3, [r4, #imm]): +88 on most SDKs,
-// +32 on WWE's
+// offset node_update_runtime_hex_image_id checks first (ldr r3, [r4, #imm]): +88 on most SDKs, +32 on WWE's
 spike1_devices::node_image spike1_devices::node_image_for(uint8_t node)
 {
 	node_image img;
@@ -947,8 +947,7 @@ void spike1_devices::node_bus_bridge(const uint8_t *msg, uint32_t len, std::stri
 //                             4 = LED channel, 7 = switch
 //   switch_table              entry per switch number: +0x10 flags (bit 2: active high,
 //   switch_dedicated_table    bit 7: closed at rest), the dedicated ones numbered from 129
-// The numbers there are the game's own; apply_manual_numbers() gives switches, coils and LED channels
-// the manual's
+// The numbers there are the game's own; apply_manual_numbers() gives switches, coils and LED channels the manual's
 void spike1_devices::load_device_table()
 {
 	m_switches.clear();
@@ -1029,8 +1028,8 @@ void spike1_devices::load_device_table()
 			auto input = std::find_if(read_at->second.begin(), read_at->second.end(),
 				[&](const std::pair<uint8_t, uint8_t> &i) { return i.first == s.node; });
 			if (input == read_at->second.end()) input = read_at->second.begin();
-			moved += " " + name + " " + std::to_string(input->first) + "-" + std::to_string(input->second) +
-				" (" + std::to_string(s.node) + "-" + std::to_string(s.position) + "),";
+			moved += ' ' + name + ' ' + std::to_string(input->first) + '-' + std::to_string(input->second) +
+				" (" + std::to_string(s.node) + '-' + std::to_string(s.position) + "),";
 			s.node = input->first;
 			s.position = input->second;
 		}
@@ -1044,8 +1043,7 @@ void spike1_devices::load_device_table()
 	}
 
 	// What is closed while the machine stands idle with its coin door shut: a trough opto for every
-	// installed ball, the firmware's own closed-at-rest marks on other switches, and the door's
-	// power sense (DC present)
+	// installed ball, the firmware's own closed-at-rest marks on other switches, and the door's power sense (DC present)
 	auto upper_name = [](std::string n) { for (auto &c : n) c = char(std::toupper(uint8_t(c))); return n; };
 	uint8_t installed = 1;
 	if (const uint32_t a = m_cfg.symbol("hook_balls_installed_in_game")) guest_read(a, &installed, 1);
@@ -1832,7 +1830,7 @@ bool spike1_devices::insert_command(const uint8_t *data, uint32_t len, uint64_t 
 		c.shown = c.running = true;
 		c.frame = u32(2);
 		c.last = u32(6);
-		c.period_ns = uint64_t(u16(10)) * 1000000000 / 1280;
+		c.period_ns = uint64_t(u16(10)) * 1000000000ull / 1280;
 		c.start_ns = now_ns;
 		if (len == 22) {
 			c.loop = true;
@@ -1933,10 +1931,10 @@ int32_t spike1_devices::fb_ioctl(handle &h, uint32_t req, uint32_t arg, uint64_t
 	switch (req) {
 	case FBIOGET_VSCREENINFO: { // struct fb_var_screeninfo, 160 bytes
 		uint32_t var[40] = {};
-		var[0] = LCD_WIDTH; var[1] = LCD_HEIGHT;                   // xres, yres
-		var[2] = LCD_WIDTH; var[3] = LCD_HEIGHT * FB_BUFFERS;      // xres_virtual, yres_virtual
+		var[0] = LCD_WIDTH; var[1] = LCD_HEIGHT;              // xres, yres
+		var[2] = LCD_WIDTH; var[3] = LCD_HEIGHT * FB_BUFFERS; // xres_virtual, yres_virtual
 		var[5] = m_fb_yoffset;
-		var[6] = 16;                                               // bits per pixel: RGB565
+		var[6] = 16;                                          // bits per pixel: RGB565
 		var[8] = 11; var[9] = 5; var[11] = 5; var[12] = 6; var[14] = 0; var[15] = 5; // red, green, blue: offset, length
 		return guest_write(arg, var, sizeof(var)) ? 0 : -E_FAULT;
 	}
@@ -2024,7 +2022,7 @@ bool spike1_devices::provide_video_key(const uint8_t key[16])
 
 int32_t spike1_devices::audio_write(uint32_t buf, uint32_t len, uint64_t now_ns, uint64_t &wait_ns)
 {
-	const uint64_t buffer_ns = uint64_t(AUDIO_BUFFER_FRAMES) * 1000000000 / m_audio_rate;
+	const uint64_t buffer_ns = uint64_t(AUDIO_BUFFER_FRAMES) * 1000000000ull / m_audio_rate;
 	if (m_audio_until_ns > now_ns + buffer_ns) {
 		wait_ns = m_audio_until_ns - buffer_ns;
 		return WAIT;
@@ -2036,11 +2034,12 @@ int32_t spike1_devices::audio_write(uint32_t buf, uint32_t len, uint64_t now_ns,
 	for (const auto &pot : m_digipots)
 		if (pot.slave == AUDIO_VOLUME_POT)
 			for (int c = 0; c < 2; c++) wiper[c] = std::min<int32_t>(pot.reg[c], POT_FULL_SCALE);
+	//m_audio.reserve(m_audio.size() + frames*2);
 	for (uint32_t i = 0; i < frames * 2; i++)
 		m_audio.push_back(int16_t(int32_t(int16_t(p[2 * i] | (p[2 * i + 1] << 8))) * wiper[i & 1] / POT_FULL_SCALE));
 	const size_t limit = size_t(m_audio_rate) * 2;
 	if (m_audio.size() > limit) m_audio.erase(m_audio.begin(), m_audio.begin() + (m_audio.size() - limit));
-	m_audio_until_ns = std::max(m_audio_until_ns, now_ns) + uint64_t(frames) * 1000000000 / m_audio_rate;
+	m_audio_until_ns = std::max(m_audio_until_ns, now_ns) + uint64_t(frames) * 1000000000ull / m_audio_rate;
 	return int32_t(len);
 }
 
