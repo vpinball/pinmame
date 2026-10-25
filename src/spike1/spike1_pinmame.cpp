@@ -64,7 +64,7 @@ uint64_t now_ns() { return g_machine && g_machine->os ? g_machine->os->now_ns() 
 
 extern "C" {
 
-int spike1_pinmame_start(const char *game, const spike1_file *files, unsigned count, const spike1_symbol *symbols,
+int spike1_pinmame_start(const char *game, const char *program, const spike1_file *files, unsigned count, const spike1_symbol *symbols,
                          const unsigned char *nvram, unsigned nvram_size, char *error, unsigned error_size)
 {
 	g_machine.reset();
@@ -86,14 +86,16 @@ int spike1_pinmame_start(const char *game, const spike1_file *files, unsigned co
 
 	spike1_linux::config cfg;
 	const std::string dir = std::string("/games/") + (game ? game : "");
-	// A set's files sit side by side; on the card a title's LCD clips (.spv) are in its video folder
+	// A set's files sit side by side; on the card a title's LCD clips (.spv) are in its video folder,
+	// and the ELG titles' sounds (.wav) in its sounds folder
+	auto ends_with = [](const std::string &name, const char *ext) { return name.size() > 4 && name.compare(name.size() - 4, 4, ext) == 0; };
 	for (unsigned i = 0; i < count; i++)
 		if (files[i].name && files[i].data) {
 			const std::string& name = files[i].name;
-			const bool clip = name.size() > 4 && name.compare(name.size() - 4, 4, ".spv") == 0;
-			cfg.files.push_back({ dir + (clip ? "/video/" : "/") + name, files[i].data, files[i].size });
+			const char *sub = ends_with(name, ".spv") ? "/video/" : ends_with(name, ".wav") ? "/sounds/" : "/";
+			cfg.files.push_back({ dir + sub + name, files[i].data, files[i].size });
 		}
-	cfg.executable = dir + "/game";
+	cfg.executable = dir + "/" + (program ? program : "game");
 	for (const spike1_symbol *s = symbols; s && s->name; s++) cfg.symbols.push_back({ s->name, s->address, s->size });
 	cfg.environment = { "HOME=/root", "PATH=/bin:/usr/bin:/usr/local/bin", "LANG=C", "LC_ALL=C", "GAMES_PATH=/games" };
 	cfg.clock_hz = SPIKE1_CPU_HZ;
@@ -297,6 +299,14 @@ unsigned spike1_pinmame_rgb(unsigned short *rgb565)
 	return unsigned(d->rgb_frame_count());
 }
 
+unsigned spike1_pinmame_alnum(unsigned char *levels)
+{
+	const spike1_devices *d = devices();
+	if (!d) return 0;
+	if (levels) std::memcpy(levels, d->alnum_frame(), SPIKE1_ALNUM_CHARS * SPIKE1_ALNUM_SEGMENTS);
+	return unsigned(d->alnum_frame_count());
+}
+
 int spike1_pinmame_display_link(const char *target)
 {
 	if (!g_machine || !g_machine->os || !target) return 0;
@@ -334,3 +344,4 @@ static_assert(SPIKE1_LED_MOTOR == spike1_devices::LED_KIND_MOTOR, "the LED class
 static_assert(SPIKE1_DMD_WIDTH == spike1_devices::DMD_WIDTH && SPIKE1_DMD_HEIGHT == spike1_devices::DMD_HEIGHT, "the DMD sizes differ");
 static_assert(SPIKE1_INSERT_WIDTH == spike1_devices::INSERT_WIDTH && SPIKE1_INSERT_HEIGHT == spike1_devices::INSERT_HEIGHT, "the insert sizes differ");
 static_assert(SPIKE1_RGB_WIDTH == spike1_devices::RGB_WIDTH && SPIKE1_RGB_HEIGHT == spike1_devices::RGB_HEIGHT, "the RGB matrix sizes differ");
+static_assert(SPIKE1_ALNUM_CHARS == spike1_devices::ALNUM_CHARS && SPIKE1_ALNUM_SEGMENTS == spike1_devices::ALNUM_SEGMENTS, "the alphanumeric display sizes differ");

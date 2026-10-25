@@ -15,6 +15,7 @@
 #include "spike1_linux.h"
 #include "spike1_memory.h"
 
+#include <algorithm>
 #include <chrono>
 #include <cstdio>
 #include <cctype>
@@ -30,9 +31,27 @@ extern machine_config *p2k_active_config;
 
 static spike1_linux *s_linux;
 
+// The ELG titles' alphanumeric display as the text it shows, its two halves of 16 characters, and
+// the brightest segment level in each character (0-f)
+static void print_alnum(const spike1_linux &os)
+{
+	const auto &dev = os.devices();
+	const std::string text = dev.alnum_text();
+	std::string levels;
+	for (uint32_t c = 0; c < spike1_devices::ALNUM_CHARS; c++) {
+		uint8_t top = 0;
+		for (uint32_t k = 0; k < spike1_devices::ALNUM_SEGMENTS; k++) top = std::max(top, dev.alnum_frame()[c * spike1_devices::ALNUM_SEGMENTS + k]);
+		levels += "0123456789abcdef"[top & 15];
+	}
+	std::printf("alphanumeric at %.3f s, frame %llu: |%s|%s| levels %s %s\n", double(os.now_ns()) / 1e9, (unsigned long long)dev.alnum_frame_count(),
+		text.substr(0, 16).c_str(), text.substr(16).c_str(), levels.substr(0, 16).c_str(), levels.substr(16).c_str());
+	std::fflush(stdout);
+}
+
 // The DMD as text: one character per dot, darkest to brightest
 static void print_dmd(const spike1_linux &os)
 {
+	if (os.devices().alnum_frame_count() && !os.devices().dmd_frame_count()) { print_alnum(os); return; }
 	static const char shades[] = " .,:;-=+*%#&$@@@";
 	const uint8_t *dots = os.devices().dmd_frame();
 	std::printf("DMD at %.3f s, frame %llu\n", double(os.now_ns()) / 1e9, (unsigned long long)os.devices().dmd_frame_count());

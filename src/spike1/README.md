@@ -3,7 +3,9 @@
 Stern's first SPIKE platform (2012 to 2020: Game of Thrones, KISS, Wrestlemania, Ghostbusters, ...). The
 game runs as a statically linked ARMv5TE Linux program on an ARM926-class CPU board and talks to
 the playfield's node boards over a serial bus; the display is a 128x32 DMD with 16 shades
-(on Spider-Man The Pin: a 64x32 RGB LED matrix in its place).
+(on Spider-Man The Pin: a 64x32 RGB LED matrix in its place). The two earliest titles,
+Transformers The Pin and Avengers The Pin, run Stern's earlier ELG framework instead (below): one
+node board, an older node bus and a 16-character alphanumeric display.
 
 ## How it works
 
@@ -36,7 +38,13 @@ system-call level instead.
   board's EEPROMs - as one block for the host's NVRAM file; the next start takes it back in its
   config. Threads are scheduled round robin on the one CPU, in quanta; when every thread is
   blocked, time skips ahead to the next wake-up without running instructions. Time is emulated
-  time - CPU cycles at the configured clock. When the program exits, the board's `game_monitor`
+  time - CPU cycles at the configured clock. The monotonic clocks (`CLOCK_MONOTONIC`, `sysinfo`'s
+  uptime, `times`) count from the board's boot, which comes 10 s (`BOOT_NS`, not measured) before
+  the program's first start, as the board boots Linux and runs its start-up scripts first; the
+  ELG titles' `sys_time_init()` asserts that the clock is above 0. They count all their time from
+  its value then (`sys_time_get_usec()` and `sys_time_get_msec()` subtract it, and no other code
+  calls `clock_gettime`; their date comes from `gettimeofday`), so any value from 1 ms on runs them
+  alike; the cards hold no log of the real one. When the program exits, the board's `game_monitor`
   (`/etc/init.d/game_monitor`: run the game, print `RESTARTING GAME`, sleep 1, run it again)
   starts it a second later as a new process: new memory, threads and open files, and the program
   loaded again. The files it wrote, the CPU board's devices, the node boards, the EEPROMs and the
@@ -85,7 +93,12 @@ build/spike1boot/spike1boot --root <extracted root> --game /games/<name>/game --
 build/spike1boot/spike1boot --files <the game's folder> --game /games/<name>/game --state <dir> --seconds 30
 ```
 
-Harness options: `--dmd <s>` prints the DMD every s seconds, `--list-switches` the switch, coil and LED maps,
+The ELG titles' program is in `/usr/local/games/<name>` on their root filesystem (`--root <root>
+--game /usr/local/games/tf-elg/gamer`), or `--files <the folder> --game /games/tf-elg/gamer`; the
+folder's `sounds` directory comes along.
+
+Harness options: `--dmd <s>` prints the DMD every s seconds (on the ELG titles the alphanumeric
+display's text, as the game's own font draws it, and each character's brightest level), `--list-switches` the switch, coil and LED maps,
 `--switch <s>:<name>[:<ms>]` toggles a switch by name for a while (e.g. `--switch "20:LEFT COIN:120"`;
 the time is emulated, in steps of `--slice`, and 0 ms toggles it and back at once, before the game
 can read it), `--led <name>` prints that LED channel's level as it changes, `--reads <file>` writes
@@ -288,7 +301,8 @@ code (its symbols are in the program) rather than from any other emulator:
   board must report hangs off its block. The board type the game settles on for a block sits where
   `node_update_runtime_hex_image_id` first looks (+88 on most SDKs, +32 on WWE's).
 - **Sound** (`/dev/i2s`): the game's DAC handler writes 200 stereo frames of 16-bit samples at a
-  time, at the rate it sets with a code from its own table (44.1 kHz). A write waits while the DAC
+  time, at the rate it sets with a code from its own table (44.1 kHz; ioctl 0x3e01 answers the code
+  in force, which the ELG titles check after each change). A write waits while the DAC
   still has more than the driver's buffer (2940 bytes) to play, so the sound thread runs at the
   DAC's pace instead of spinning; `audio_take()` hands the samples to a host. The volume is the
   amplifier's: the MCP4631 at 0x28 divides the left and right outputs by its two wipers, which the
@@ -318,6 +332,53 @@ code (its symbols are in the program) rather than from any other emulator:
   `video_effect_update_background_flag` once the start-up is over - what the game does itself
   when a video ends - and the attract clips play.
 
+## The ELG titles (Transformers The Pin, Avengers The Pin)
+
+Stern's earlier framework - the programs' build path is `system-elg`, their game folders `tf-elg`
+and `avengers-elg` - is a code base of its own: its own node bus, tables, display and EEPROM. The
+model takes it for a program with `node_query_t()` and `nodemap_init()` (`elg_*` in
+`spike1_devices.cpp`):
+
+- **Node bus** (`/dev/ttyS4`, 115200 baud, 8 data bits, 2 stop bits; node firmware 0.5.16 and
+  0.6.0): `[0x80|node][n][cmd][n - 1 bytes]`, with no checksum and no reply length. A poll (00)
+  gets the address of a board whose inputs changed since its last query, or 0; a query (0x11) the
+  board's eight input bytes; status (0xff) six bytes, all 0; quadrature (0x60) one byte, 0. Coils
+  (0x40|c: a power and a time, twice), reflexes (0x48|c: a pop or a sling on one input, with a
+  hold-off; a flipper on its button and its EOS input, held at its second power while the button
+  stays closed) and LED runs (0x80|first: a level each, set at once) have no answer. The game
+  disarms a reflex by sending it with power 0. The times are taken as ms - the coil table has the
+  flippers' pulse at 64 and the slings' at 20, and the game refreshes a coil it holds on, sent for
+  255, every 250; the node firmware (not in the set) would settle it.
+- **Tables**: the one switch map the program fills in (`g_smap3`: 64 inputs, each with its
+  switch's byte and bit, an inverted flag and a name), which `nodemap_init()` registers for the
+  one board the coil table (`__coil_table`: 8 coils, their type, powers, times, reflex inputs and
+  names) and the lamp table (`__lamp_table`: 64 lamps) name, node 8. The game numbers a switch
+  byte x 8 + bit, and counts its switches, coils and lamps from 0, as its test menu shows them;
+  here they are one more, as PinMAME's numbers start at 1: START 1, the flipper buttons 2 and 3,
+  their EOS switches 4 and 5. The names lose their `SWITCH_` prefix and underscores. At rest the
+  trough holds a ball at each of its numbered optos (TROUGH 1-3). The CPU board's own switch map
+  (`g_smap_gpio`) is empty in both titles.
+- **The bridge's EEPROM**: the game keeps its settings and high scores in the bridge's 64-byte
+  EEPROM (the bridge is an AVR, `netbridge-0_0_5.hex`), which it reaches over the node bus in the
+  bridge's command mode (`sys_command_mode()` raises a GPIO line around each exchange):
+  `[0x55][cmd][n][n bytes][sum]`, a read (cmd 0, a big-endian address) or a write (cmd 1, the
+  address and the byte), answered `[0xaa][n][n bytes][sum]`, each sum making the bytes after the
+  first add up to 0. Blank (0xff) on a new board, so the first start reports a checksum error and
+  writes the defaults; it is kept in the NVRAM block beside the I2C EEPROMs.
+- **Display**: the alphanumeric display's frames come on `/dev/spi0` (`dmd_update_t()`, 256
+  bytes: four bitplanes of 32 positions of 16 segments, a 4-bit level each; `/dev/dmd`'s 0x3d01
+  and 0x3d02 bracket them), and the game keeps its text to the first 16 positions
+  (`ALPHANUMERIC_ConstrainString()`): the display's 16 characters, "two displays, eight characters
+  each" in the start-up script. The segments are in the game's own order (its `segmentX` and
+  `segmentY` tables, whose y runs upward): its segment k is PinMAME's `CORE_SEG16S` bit 15 - k,
+  checked on the game's font (`_ZL4font`), whose 'A', '7', 'J' and 'L' come out as PinMAME's own. `/dev/ttyS3` is the display's text port: the
+  game scrolls " STARTING GAME " there for its first 14 s (`proc_splash_display_t()`, `[0x02][16
+  characters][0x03]` every 5 ms) while the frames already show attract mode. Which of the two the
+  display shows is its own firmware's (`alphanumeric-1_0_4.hex`, not in the set), so the model
+  shows the frames and takes the text without showing it.
+- **Sound**: the game mixes its WAV files (`sounds/`) itself and writes the DAC as the later
+  titles do, at 24 kHz.
+
 ## In PinMAME (`src/wpc/spike1.c`)
 
 - **The set** is the title's game folder from Stern's update image - the program, `image.bin`,
@@ -327,7 +388,14 @@ code (its symbols are in the program) rather than from any other emulator:
   read-only from the set on disk - an entry the set's zip stores uncompressed, or a file in a set
   folder (`roms/<set>/`) - and keeps it until the machine shuts down, so the host pages the 0.1 to
   2.9 GB in as the game reads it (WWE: about 175 MB of working set instead of 2.9 GB, and it
-  starts about 10 s sooner). The loader checks each file's length, and for a zip entry the CRC its
+  starts about 10 s sooner). An ELG title's set is the program the machine runs (its
+  `/usr/local/games/game` link's target: Transformers' `gamer`, which `SPIKE1_INIT_ALNUM` names)
+  and the WAV files of the folder's `sounds` directory, which the subsystem puts back there; the
+  folder's other program (Transformers' older `game`, Avengers' copy `game0`) is not in the set.
+  Avengers' 366 files are the most a set has: the loader keeps up to 512 mapped files
+  (`MAX_MAPPED_ROMS`, `src/common.c`) and the audit checks up to 512 ROMs a set (`AUD_MAX_ROMS`,
+  `src/audit.h`; both were lower).
+  The loader checks each file's length, and for a zip entry the CRC its
   directory records; `-verifyroms` checks them in full. A file it cannot map - a zip that a ROM
   manager recompressed, or a host that does not map files - it loads into memory as before, and
   the driver says so. The files are over 1 GB, so the games need a 64-bit build. `MACHINE_INIT`
@@ -345,6 +413,13 @@ code (its symbols are in the program) rather than from any other emulator:
   `.spk` update package too (Heavy Metal comes only as one): `SPKS`, then groups (`SPK0`), each an
   index (`SIDX`: the group's name, a path table `STRS` and a `FINF` record per file) and the files'
   bytes (`SDAT`), stored; the game folder is the group holding `<name>/game` and `<name>/image.bin`.
+  An ELG title's game folder is `/usr/local/games/<name>-elg` on the root file system, with no
+  `image.bin` and its sounds in a `sounds` directory, whose WAV files the set holds under their own
+  names: Transformers' from Stern's `transformers_pin-1.0.18.iso`, Avengers' from the raw dump of
+  its card, `avengers.bin`, or the `.7z` it comes in, which the builder reads through 7-Zip's
+  `7z.exe` (found where its installer records it, in Program Files or on the PATH; without it, it
+  says so). Avengers' root file system lies in the dump's first 172 MB, so each pass unpacks no
+  more than that: about 10 s for the set.
 - **Editions**: Stern's Pro is a lesser-featured edition of a title. Its set is a clone of the
   Limited Edition's, named as PinMAME names Stern's SAM sets (`got_137` beside `got_137h`), with
   its own game data (`SPIKE1_CLONEDEF`: its folder, switch numbers and steppers). The files it
@@ -369,7 +444,8 @@ code (its symbols are in the program) rather than from any other emulator:
   the game). `core_setSw()` sets the level, clearing the bit first, before it counts, so a look
   that finds a level the count's parity does not account for leaves that switch to the next look;
   a change made without `core_setSw()` (the core's own flipper keys) is taken there too.
-- **Numbers** are the factory manual's: switches by their Switch Reference numbers (the flipper
+- **Numbers** are the factory manual's (the ELG titles have no manual: theirs are the game's own
+  plus one, above; the driver finds their START by that name): switches by their Switch Reference numbers (the flipper
   buttons and EOS switches in PinMAME's flipper column - each title's numbers, with its coin, tilt
   and slam switches, are in its `SPIKE1_SWITCHES`, or `SPIKE1_SWITCHES_UPPER` with the upper
   flippers' buttons, which the flipper keys close with the lower ones; the CPU board's C1-C16 as
@@ -406,7 +482,9 @@ code (its symbols are in the program) rather than from any other emulator:
   (`spike1_pinmame_needs_video_key()`) and hands to the subsystem (`spike1_pinmame_video_key()`).
   Without it, a message names the file and the clips show as noise. Spider-Man's RGB matrix is its
   only display (layout `spike1_rgb`, `SPIKE1_INIT_RGB`): a 64x32 video display, display 0, in full
-  colour; the set's `displayLink` goes to `spike1_pinmame_display_link()`.
+  colour; the set's `displayLink` goes to `spike1_pinmame_display_link()`. The ELG titles'
+  alphanumeric display is their only one: a line of 16 `CORE_SEG16S` characters (layout
+  `spike1_alnum`, `SPIKE1_INIT_ALNUM`), each segment's level (0-15) its modulated output.
 - **Sound**: a stereo stream from the device model's samples, at the rate the game sets on
   `/dev/i2s` (Ghostbusters 44.1 kHz, Whoa Nellie 24 kHz); the mixer resamples it. The machine makes
   samples in time slices, and in about half of the stream's updates it had fewer ready than the
@@ -433,7 +511,7 @@ code (its symbols are in the program) rather than from any other emulator:
   `Controller.GetMech(0)` is the motor's position (leave `HandleMechanics` at its default). The
   table needs the `PinMAMETimer` and `PulseTimer` timers core.vbs drives, and switch pulses go
   through `vpmTimer.PulseSw`: the plugin's controller has no `PulseSwitch`. The system script is
-  `scripts/spike1/spike1.vbs` (it goes in VPX's Scripts folder, beside `sam.vbs`): a table defines
+  `spike1.vbs`, which is not in this repository (it goes in VPX's Scripts folder, beside `sam.vbs`): a table defines
   `cGameName` and calls `LoadVPM "", "spike1.vbs", 3.61`, and the script sets the title's cabinet
   switches (`swCoin1`-`swCoin4`, `swStartButton`, `swTournament`, `swLaunch`, `swTilt`,
   `swSlamTilt`, the flipper buttons' leaves) from the set name, as each title numbers them its own
@@ -517,6 +595,18 @@ pops from their switches (the 23-byte reflex form, as WWE's). Its switch table k
 index and number 24 bytes before the end, a third layout for `apply_manual_numbers()`; the numbers
 are the game's own, which its switch test shows, and its cabinet's are Supreme's. Its sound comes at 24 kHz.
 
+Transformers The Pin 1.0.18 (the ELG framework, node firmware 0.5.16, one board, 46 switches, 8
+coils, 64 lamps, a trough of three optos, free play; set `tfcp_1018`, from Stern's update image
+`transformers_pin-1.0.18.iso`, game folder `tf-elg`, program `gamer`) and Avengers The Pin 1.0.3
+(node firmware 0.6.0, 49 switches; set `avscp_103`, from a raw dump of its card, `avengers.bin`,
+game folder `avengers-elg`) boot to attract mode on their alphanumeric display ("TRANSFORMERS"
+or "THE AVENGERS" scrolling, "STERN PINBALL", "PRESS START", the high scores), start a game from
+START ("PLAYER 1", the trough eject), and fire their flippers, slings and pops from their
+switches, in the harness and through libpinmame; their sounds play from the game start (attract
+mode is silent). They needed the model above, the clock's boot time, the rate read-back and a set
+that names its program (`SPIKE1_INIT_ALNUM`). No manual exists for either; the set names follow
+Spider-Man The Pin's (`smancp`: SAM's `sman` and `cp`), from PinMAME's SAM sets `tf_*` and `avs_*`.
+
 ## Open items
 
 1. Ball physics are the table's job (PinMAME/VPX); the harness has none, so a game stops at ball 1.
@@ -560,3 +650,9 @@ are the game's own, which its switch test shows, and its cabinet's are Supreme's
    duty 0x50 takes under about 1 s; linear in the duty it takes about 1.3 s at any full speed (the
    way out, at duty 0x80, grows with it), and only a motor near full speed from duty 0x50 on comes
    back in time. How the real motor's speed follows the duty is not known.
+11. The ELG titles: the node firmware (0.5.16, 0.6.0), the bridge's and the display's are not in
+   the sets and were not disassembled, so the node bus times are taken as ms, the flipper reflex's
+   last three bytes and a pop or sling reflex's second phase (0 in both titles' tables) have no
+   model, and the display's text port is not shown (its splash, above). `/dev/gpio` (the amplifier's
+   and the boards' power lines, the bridge's command mode line) and `/dev/backlight` (0x4001) are
+   taken without a model.

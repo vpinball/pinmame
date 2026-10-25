@@ -156,6 +156,7 @@ void spike1_devices::start(const config &cfg)
 		SPIKE1_DEBUG_ONLY(chip_list += ' ' + chip;)
 	}
 	SPIKE1_LOG("node bus: node chips" + chip_list);
+	m_elg = m_cfg.symbol && m_cfg.symbol("_Z12node_query_ti") && m_cfg.symbol("_Z12nodemap_initv");
 	load_device_table();
 	m_motors.clear();
 	for (auto &node : m_coil) for (auto &c : node) c = coil();
@@ -175,6 +176,8 @@ void spike1_devices::start(const config &cfg)
 	m_fb_pans = 0;
 	m_fb_startup_seen = m_fb_background_asked = false;
 	m_video_key.clear();
+	m_alnum_frames = 0;
+	std::memset(m_alnum, 0, sizeof(m_alnum));
 	m_nb_reply.clear();
 	m_nb_arriving.clear();
 	m_nb_line_free_ns = m_nb_sent_ns = m_nb_busy_ns = 0;
@@ -203,6 +206,12 @@ void spike1_devices::start(const config &cfg)
 		eeprom e;
 		e.slave = slave;
 		e.data.assign(0x10000, 0xff);
+		m_eeproms.push_back(std::move(e));
+	}
+	if (m_elg) { // the bridge's own EEPROM, which the ELG titles keep their settings in: blank, as an AVR's erased EEPROM
+		eeprom e;
+		e.slave = ELG_BRIDGE_EEPROM;
+		e.data.assign(ELG_BRIDGE_EEPROM_BYTES, 0xff);
 		m_eeproms.push_back(std::move(e));
 	}
 	m_digipots.clear();
@@ -277,6 +286,8 @@ int32_t spike1_devices::read(handle &h, uint32_t buf, uint32_t len, uint64_t now
 	}
 	if (h.type == kind::adc)
 		return adc_read(buf, len, now_ns, wait_ns);
+	if (elg_display_port(h))
+		return 0;
 	if (h.type == kind::node_bus) {
 		const int32_t r = node_bus_read(buf, len, now_ns, wait_ns);
 		if (r == 0 && tracing()) note = "node bus: no reply waiting";
@@ -289,7 +300,7 @@ int32_t spike1_devices::read(handle &h, uint32_t buf, uint32_t len, uint64_t now
 uint64_t spike1_devices::readable_at(const handle &h, uint64_t now_ns) const
 {
 	if (h.type == kind::adc) return m_adc_next_ns ? m_adc_next_ns : NEVER; // the buffer being sampled
-	if (h.type == kind::node_bus) {
+	if (h.type == kind::node_bus && !elg_display_port(h)) {
 		if (m_nb_reply.size() > node_bus_in_flight(now_ns)) return now_ns;
 		for (const nb_arrival &a : m_nb_arriving) if (a.at_ns > now_ns) return a.at_ns;
 	}
@@ -302,6 +313,14 @@ int32_t spike1_devices::write(handle &h, uint32_t buf, uint32_t len, uint64_t no
 		return dmd_write(buf, len, now_ns, wait_ns);
 	if (h.type == kind::dmd_spi && len == RGB_FRAME_BYTES)
 		return rgb_write(buf, len, now_ns, wait_ns);
+	if (h.type == kind::dmd_spi && len == ALNUM_FRAME_BYTES && m_elg)
+		return alnum_write(buf, len);
+	if (elg_display_port(h)) {
+		const uint8_t *p = m_mem.host(buf, len, false);
+		if (len && !p) return -E_FAULT;
+		SPIKE1_DEBUG_ONLY(if (first_time("elg display port")) note = "display: text port " + h.path + " " + bytes_hex(p, len, 32) + " (not shown: the segment frames are)";)
+		return int32_t(len);
+	}
 	if (h.type == kind::node_bus)
 		return node_bus_write(buf, len, now_ns, note);
 	if (h.type == kind::i2s)
@@ -343,14 +362,18 @@ int32_t spike1_devices::ioctl(handle &h, uint32_t req, uint32_t arg, uint64_t no
 		SPIKE1_DEBUG_ONLY(note = "i2s: " + std::to_string(m_audio_rate) + " Hz";)
 		return 0;
 	}
-	if (h.type == kind::i2s && req == 0x3e01)
-		return 0; // follows every rate change with -1; nothing to model
+	if (h.type == kind::i2s && req == 0x3e01) { // the rate in force: [code, u32]. The ELG titles check it after each change; the later titles ask and ignore it
+		const uint32_t code = uint32_t(std::find(std::begin(AUDIO_RATES), std::end(AUDIO_RATES), m_audio_rate) - std::begin(AUDIO_RATES));
+		return guest_write(arg, &code, 4) ? 0 : -E_FAULT;
+	}
 	if (h.type == kind::amp && req == 0x3f00)
 		return 0; // the amplifier's register set-up; the volume comes through the digipots
 	if (h.type == kind::cpu_spi && (req & 0xc000ffff) == 0x40006b00) // SPI_IOC_MESSAGE(n)
 		return cpu_spi_message(req, arg, note);
 	if (h.type == kind::cpu_spi && (req == 0x40046b04 || req == 0x40016b01 || req == 0x40016b03)) // speed, mode, bits per word
 		return 0;
+	if (elg_display_port(h))
+		return 0; // its line settings, 115200 8N1, and its flushes
 	if (h.type == kind::node_bus) {
 		switch (req) {
 		case 0x540b: // TCFLSH: the game drops stale input before every transfer; a reply still on the wire comes in after it
@@ -606,7 +629,9 @@ int32_t spike1_devices::node_bus_write(uint32_t buf, uint32_t len, uint64_t now_
 	const uint8_t *p = m_mem.host(buf, len, false);
 	if (len && !p) return -E_FAULT;
 	const size_t queued = m_nb_reply.size();
-	if (len == 1 && p[0] == 0) { // poll
+	if (m_elg)
+		elg_node_bus(p, len, now_ns, note);
+	else if (len == 1 && p[0] == 0) { // poll
 		const auto &nodes = node_bus_nodes();
 		const uint8_t next = m_nb_poll < nodes.size() ? nodes[m_nb_poll++] : 0;
 		if (!next) m_nb_poll = 0;
@@ -938,6 +963,250 @@ void spike1_devices::node_bus_bridge(const uint8_t *msg, uint32_t len, std::stri
 	if (tracing()) note = "node bus: bridge command " + hex(cmd);
 }
 
+// ---------------------------------------------------------------- the ELG framework
+//
+// Transformers The Pin and Avengers The Pin run Stern's earlier framework (its build path:
+// system-elg; their game folders tf-elg and avengers-elg). Its node_pdi.cpp talks to node firmware
+// 0.5 and 0.6 at 115200 baud, 8 data bits, 2 stop bits, with no checksum and no reply length:
+//   poll    the byte 00; one byte back, the address of a board whose inputs changed since its last
+//           query, 0 when none did (node_serial_update_t() queries that board, then polls again)
+//   frame   [0x80|node][n][cmd][n - 1 data bytes]; only the query, status and quadrature answer
+//   0x11    query: the board's eight input bytes (input p = byte p/8, bit p%8)
+//   0xff    status: six bytes, error bits in the last two (node_status_t())
+//   0x60    quadrature [a][b]: one byte, the encoder's movement since the last ask
+//   0xf2    traffic flag
+//   0x40|c  coil c: [power 1][ms][power 2][ms] (node_coilmsg())
+//   0x48|c  coil c's reflex: a pop or a sling [power 1][ms][power 2][ms][input][hold-off ms]; a
+//           flipper [power 1][ms][hold power][EOS input][0x40|button input][3 bytes], held while
+//           the button stays closed. The game disarms a reflex by sending it with power 1 at 0
+//           (COILSTATE_Update())
+//   0x50    motor [3 bytes] (node_motormsg(); neither title has a motor)
+//   0x80|f  LED outputs f on: a level (0-255) each, set at once (node_ledmsg())
+// The times are taken as ms: the coil table's flipper pulse is 64, its sling pulse 20, and the game
+// refreshes a coil it holds on, sent for 255, every 250. The game keeps its settings in the
+// bridge's EEPROM, which it reaches in the bridge's command mode (elg_bridge_command())
+void spike1_devices::elg_node_bus(const uint8_t *p, uint32_t len, uint64_t now_ns, std::string &note)
+{
+	if (len >= 3 && p[0] == 0x55) { elg_bridge_command(p, len, note); return; }
+	if (len == 1 && p[0] == 0) {
+		uint8_t answer = 0;
+		for (uint8_t node : m_elg_nodes) if (elg_inputs_changed(node)) { answer = node; break; }
+		m_nb_reply.push_back(answer);
+		if (tracing()) note = "node bus poll -> " + std::to_string(answer);
+		return;
+	}
+	if (len < 3 || !(p[0] & 0x80) || uint32_t(p[1]) + 2 != len) { SPIKE1_DEBUG_ONLY(note = "node bus: unframed write " + bytes_hex(p, len);) return; }
+	const uint8_t node = p[0] & 0x7f, cmd = p[2];
+	const uint8_t *data = p + 3;
+	const uint32_t n = len - 3;
+	m_nb_received[node]++;
+	m_nb_counts[(uint32_t(cmd) << 8) | node]++;
+	if (m_frame_observer) m_frame_observer(now_ns, p, len);
+	if (cmd >= 0x80 && cmd <= 0xbf) {
+		for (uint32_t i = 0; i < n && (cmd & 0x3fu) + i < LED_CHANNELS; i++) led_set(node, uint8_t((cmd & 0x3f) + i), data[i], 0, now_ns);
+		return;
+	}
+	if ((cmd & 0xf8) == 0x40 && n == 4) {
+		coil_pulse(node, cmd & 7, data[0], data[1], data[2], data[3], now_ns);
+		if (tracing()) note = "node bus: node " + std::to_string(node) + " coil " + std::to_string(cmd & 7) + " " + bytes_hex(data, n);
+		return;
+	}
+	if ((cmd & 0xf8) == 0x48 && (n == 6 || n == 8)) {
+		elg_coil_reflex(node, cmd & 7, data, n, note);
+		return;
+	}
+	switch (cmd) {
+	case 0x11: {
+		uint8_t r[8];
+		wire_bytes(node, r, sizeof(r));
+		m_nb_reply.insert(m_nb_reply.end(), r, r + sizeof(r));
+		return;
+	}
+	case 0xff: // nothing to report
+		m_nb_reply.insert(m_nb_reply.end(), 6, 0);
+		return;
+	case 0x60: // the titles have no encoder
+		m_nb_reply.push_back(0);
+		return;
+	case 0xf2:
+		return;
+	}
+	SPIKE1_DEBUG_ONLY(if (m_nb_logged.insert((uint32_t(node) << 8) | cmd).second)
+		note = "node bus: node " + std::to_string(node) + " command " + hex(cmd) + " not modelled: " + bytes_hex(p, len, 32);)
+}
+
+// The bridge in command mode (sys_command_mode(): the game raises a GPIO line around each
+// exchange): [0x55][cmd][n][n bytes][sum], the sum making the bytes after 0x55 add up to 0, and the
+// answer [0xaa][n][n bytes][sum] the same way. LL_sys_eep_read(): cmd 0 [address, u16 big endian]
+// -> the byte; LL_sys_eep_write(): cmd 1 [address][byte] -> nothing. The game sends a read with a
+// stray byte after it, which the length leaves out
+void spike1_devices::elg_bridge_command(const uint8_t *p, uint32_t len, std::string &note)
+{
+	const uint32_t n = p[2];
+	uint8_t sum = 0;
+	for (uint32_t i = 1; i < 4 + n && i < len; i++) sum += p[i];
+	eeprom *e = find_eeprom(ELG_BRIDGE_EEPROM);
+	if (len < 4 + n || sum || !e) { SPIKE1_DEBUG_ONLY(note = "node bus: bridge command not understood: " + bytes_hex(p, len);) return; }
+	const uint32_t address = n >= 2 ? (uint32_t(p[3]) << 8 | p[4]) : ~0u;
+	auto answer = [&](const uint8_t *data, uint8_t count) {
+		uint8_t s = count;
+		m_nb_reply.push_back(0xaa);
+		m_nb_reply.push_back(count);
+		for (uint8_t i = 0; i < count; i++) { m_nb_reply.push_back(data[i]); s += data[i]; }
+		m_nb_reply.push_back(uint8_t(0 - s));
+	};
+	if (p[1] == 0 && n == 2 && address < e->data.size()) {
+		answer(&e->data[address], 1);
+		if (tracing()) note = "bridge EEPROM read " + hex(address) + " -> " + hex(e->data[address]);
+	} else if (p[1] == 1 && n == 3 && address < e->data.size()) {
+		e->data[address] = p[5];
+		answer(nullptr, 0);
+		if (tracing()) note = "bridge EEPROM write " + hex(address) + " = " + hex(p[5]);
+	} else
+		SPIKE1_DEBUG_ONLY(if (m_nb_logged.insert(0xfe00 | p[1]).second) note = "node bus: bridge command " + hex(p[1]) + " not modelled: " + bytes_hex(p, len);)
+}
+
+void spike1_devices::elg_coil_reflex(uint8_t node, uint8_t index, const uint8_t *data, uint32_t len, std::string &note)
+{
+	coil &c = m_coil[node][index];
+	const bool flipper = len == 8;
+	c.reflex = data[0] != 0;
+	c.reflex_power1 = data[0];
+	c.reflex_pulse_ms = data[1];
+	c.reflex_power2 = flipper ? data[2] : 0;
+	c.reflex_holdoff_ms = flipper ? 0 : data[5];
+	c.trigger[0] = uint8_t(REFLEX_USED | (data[4] & REFLEX_POSITION)); // the input, or the flipper's button
+	c.trigger[1] = c.trigger[2] = 0;
+	c.eos = flipper ? uint8_t(REFLEX_USED | (data[3] & REFLEX_POSITION)) : 0;
+	c.trigger_was_active = c.reflex && reflex_triggered(node, c);
+	if (!c.reflex) c.holding = false;
+	SPIKE1_DEBUG_ONLY(if (!flipper && data[2] && data[3] && first_time("elg reflex second phase"))
+		note = "node bus: node " + std::to_string(node) + " coil reflex with a second phase (not modelled): " + bytes_hex(data, len);
+	else if (tracing())
+		note = "node bus: node " + std::to_string(node) + " coil " + std::to_string(index) + (c.reflex ? " reflex on switch " + std::to_string(c.trigger[0] & REFLEX_POSITION) : " reflex off");)
+}
+
+// Like wire_bytes(): the next query shows a change
+bool spike1_devices::elg_inputs_changed(uint8_t node) const
+{
+	const uint8_t n = node & 127;
+	for (uint32_t i = 0; i < 8; i++) if ((m_sw_closed[n][i] ^ m_sw_read[n][i]) | m_sw_changed[n][i]) return true;
+	return false;
+}
+
+// The ELG titles' tables:
+//   g_smap<n>     a board's switch map: 64 inputs of 56 bytes - [switch byte, u32][bit mask]
+//                 [inverted][name, SWITCH_...] - then 0x4c bytes of the map's own state. The game
+//                 numbers a switch byte * 8 + bit; an inverted input reads 0 while it is closed
+//   __coil_table  60 bytes a coil: [node][output][type: 0 pulse, 1 reflex, 2 flipper][power 1][ms]
+//                 [power 2][ms][hold-off ms][input][EOS input][2 bytes][name, "0 - SLINGSHOTS"]
+//   __lamp_table  [node][output] a lamp
+// The game counts its switches, coils and lamps from 0, as its test menu shows them; here they are
+// one more, as PinMAME's numbers start at 1. nodemap_init() registers one map, for the one board
+// the coil and lamp tables name (node 8 in both titles); the maps it leaves empty are not in the
+// program's data. The board's names lose their SWITCH_ prefix and underscores, as the other titles
+// write them. The CPU board's own switches (g_smap_gpio) are empty in both
+void spike1_devices::elg_load_tables()
+{
+	constexpr uint32_t COIL_ENTRY = 60, COIL_NAME_AT = 12, MAP_INPUTS = 64, MAP_ENTRY = 56, MAP_STATE_BYTES = 0x4c;
+	auto table = [&](const char *name, std::vector<uint8_t> &out) {
+		const uint32_t a = m_cfg.symbol(name), size = m_cfg.symbol_size ? m_cfg.symbol_size(name) : 0;
+		out.assign(size, 0);
+		return a && size && guest_read(a, out.data(), size);
+	};
+	m_elg_nodes.clear();
+	auto add_node = [&](uint8_t node) { if (node && node < 128 && std::find(m_elg_nodes.begin(), m_elg_nodes.end(), node) == m_elg_nodes.end()) m_elg_nodes.push_back(node); };
+	std::vector<uint8_t> t;
+	if (table("__coil_table", t))
+		for (uint32_t i = 0; (i + 1) * COIL_ENTRY <= t.size(); i++) {
+			const uint8_t *e = &t[i * COIL_ENTRY];
+			std::string name(reinterpret_cast<const char *>(e + COIL_NAME_AT), strnlen(reinterpret_cast<const char *>(e + COIL_NAME_AT), COIL_ENTRY - COIL_NAME_AT));
+			const size_t dash = name.find(" - ");
+			if (dash != std::string::npos) name = name.substr(dash + 3);
+			if (name.empty() || !e[0] || e[1] >= COILS_PER_NODE) continue; // the table's unused entries, "8 - "
+			m_coils.push_back({ uint16_t(i + 1), e[0], e[1], name });
+			add_node(e[0]);
+		}
+	if (table("__lamp_table", t))
+		for (uint32_t i = 0; 2 * i + 1 < t.size(); i++) {
+			if (!t[2 * i] || t[2 * i + 1] >= LED_CHANNELS) continue; // node 0: unused
+			m_leds.push_back({ uint16_t(i + 1), t[2 * i], t[2 * i + 1], "LAMP " + std::to_string(i), 1 }); // as the lamp test names it
+			add_node(t[2 * i]);
+		}
+	uint32_t maps = 0;
+	for (const auto &map : m_cfg.symbols_with_prefix ? m_cfg.symbols_with_prefix("g_smap") : std::vector<std::string>()) {
+		if (!table(map.c_str(), t) || t.size() != MAP_INPUTS * MAP_ENTRY + MAP_STATE_BYTES) continue;
+		std::vector<switch_info> found;
+		for (uint32_t position = 0; position < MAP_INPUTS; position++) {
+			const uint8_t *e = &t[position * MAP_ENTRY];
+			const uint32_t byte = uint32_t(e[0] | (e[1] << 8) | (e[2] << 16) | (uint32_t(e[3]) << 24)), mask = e[4];
+			if (!mask || (mask & (mask - 1)) || byte > 7) continue;
+			unsigned bit = 0;
+			while (!((mask >> bit) & 1)) bit++;
+			std::string name(reinterpret_cast<const char *>(e + 6), strnlen(reinterpret_cast<const char *>(e + 6), MAP_ENTRY - 6));
+			if (name.rfind("SWITCH_", 0) == 0) name = name.substr(7);
+			std::replace(name.begin(), name.end(), '_', ' ');
+			switch_info s;
+			s.number = uint16_t(byte * 8 + bit + 1);
+			s.position = uint8_t(position);
+			s.active_high = !e[5];
+			s.name = name;
+			found.push_back(s);
+		}
+		if (found.empty()) continue;
+		maps++;
+		if (maps > 1 || m_elg_nodes.size() != 1) { SPIKE1_LOG("devices: ELG switch map " + map + ": its board is not known (more than one map or board)"); continue; }
+		for (auto &s : found) {
+			s.node = m_elg_nodes[0];
+			if (s.active_high) m_sw_active_high[s.node][s.position >> 3] |= uint8_t(1 << (s.position & 7));
+			m_switches.push_back(s);
+		}
+	}
+	// The trough holds a ball at each of its numbered optos (TROUGH 1-3); the jam optos stay open
+	for (const auto &s : m_switches)
+		if (s.name.rfind("TROUGH ", 0) == 0 && s.name.size() > 7 && std::isdigit(uint8_t(s.name[7]))) set_switch(s.node, s.position, true, 0);
+	SPIKE1_DEBUG_ONLY(std::string closed; for (const auto &s : m_switches) if (switch_closed(s.node, s.position)) closed += ' ' + s.name + ',';)
+	SPIKE1_LOG("devices: ELG framework: " + std::to_string(m_coils.size()) + " coils, " + std::to_string(m_leds.size()) + " lamps, " +
+		std::to_string(m_switches.size()) + " switches from the game's tables; closed at rest:" + (closed.empty() ? " none" : closed.substr(0, closed.size() - 1)));
+}
+
+// The alphanumeric display's frame (the game's dmd_update_t()): four 64-byte bitplanes, plane n
+// holding bit n of every segment's 4-bit level, segment k of character c at bit 16c + k, most
+// significant bit of a byte first. The game paces its frames itself
+int32_t spike1_devices::alnum_write(uint32_t buf, uint32_t len)
+{
+	const uint8_t *p = m_mem.host(buf, len, false);
+	if (!p) return -E_FAULT;
+	constexpr uint32_t plane = ALNUM_FRAME_BYTES / 4;
+	for (uint32_t i = 0; i < ALNUM_CHARS * ALNUM_SEGMENTS; i++) {
+		uint8_t level = 0;
+		for (uint32_t n = 0; n < 4; n++) level |= ((p[n * plane + i / 8] >> (7 - i % 8)) & 1) << n;
+		m_alnum[i] = level;
+	}
+	m_alnum_frames++;
+	return int32_t(len);
+}
+
+// The game's font: 16 bytes a character, a segment lit where its byte is not 0
+std::string spike1_devices::alnum_text() const
+{
+	constexpr uint32_t GLYPHS = 128;
+	const uint32_t font = m_cfg.symbol ? m_cfg.symbol("_ZL4font") : 0;
+	uint8_t glyph[GLYPHS * ALNUM_SEGMENTS] = {};
+	const bool have_font = font && m_mem.read(font, glyph, sizeof(glyph));
+	std::string text;
+	for (uint32_t c = 0; c < ALNUM_CHARS; c++) {
+		char shown = '?';
+		for (uint32_t g = ' '; have_font && g < GLYPHS; g++) {
+			uint32_t k = 0;
+			while (k < ALNUM_SEGMENTS && (glyph[g * ALNUM_SEGMENTS + k] != 0) == (m_alnum[c * ALNUM_SEGMENTS + k] != 0)) k++;
+			if (k == ALNUM_SEGMENTS) { shown = char(g); break; }
+		}
+		text += shown;
+	}
+	return text;
+}
+
 // ---------------------------------------------------------------- switches
 //
 // The title's tables, all {entries, count, entry size} descriptors:
@@ -958,6 +1227,7 @@ void spike1_devices::load_device_table()
 	std::memset(m_sw_changed, 0, sizeof(m_sw_changed));
 	std::memset(m_sw_active_high, 0, sizeof(m_sw_active_high));
 	if (!m_cfg.symbol) return;
+	if (m_elg) { elg_load_tables(); return; }
 	auto desc = [&](const char *name, uint32_t out[3]) {
 		out[0] = out[1] = out[2] = 0;
 		const uint32_t a = m_cfg.symbol(name);
@@ -1536,18 +1806,22 @@ void spike1_devices::limit_motors_run(uint64_t now_ns)
 
 static uint32_t ticks_ms(const uint8_t *p) { return uint32_t(p[0] | (p[1] << 8)) * 1000u / NODE_TICK_HZ; }
 
-void spike1_devices::coil_fire(uint8_t node, const uint8_t *data, uint32_t len, uint64_t now_ns, std::string &note)
+void spike1_devices::coil_pulse(uint8_t node, uint8_t index, uint8_t power1, uint32_t ms1, uint8_t power2, uint32_t ms2, uint64_t now_ns)
 {
-	if (len < 9 || data[0] >= COILS_PER_NODE) { SPIKE1_DEBUG_ONLY(note = "node bus: node " + std::to_string(node) + " coil fire not understood: " + bytes_hex(data, len);) return; }
-	coil &c = m_coil[node][data[0]];
-	const uint32_t ms1 = ticks_ms(data + 2), ms2 = ticks_ms(data + 5);
-	c.power1 = data[1];
-	c.power2 = data[4];
+	coil &c = m_coil[node][index];
+	c.power1 = power1;
+	c.power2 = power2;
 	c.phase1_end_ns = now_ns + uint64_t(ms1) * 1000000;
 	c.phase2_end_ns = c.phase1_end_ns + uint64_t(ms2) * 1000000;
 	c.holding = false;
 	c.check = (c.power1 ? ms1 : 0) + (c.power2 ? ms2 : 0) < COIL_SHOWN_MIN_MS;
-	if (!c.check && !((m_coil_mask[node] >> data[0]) & 1)) c.shown = std::max({ c.shown, c.power1, c.power2 });
+	if (!c.check && !((m_coil_mask[node] >> index) & 1)) c.shown = std::max({ c.shown, c.power1, c.power2 });
+}
+
+void spike1_devices::coil_fire(uint8_t node, const uint8_t *data, uint32_t len, uint64_t now_ns, std::string &note)
+{
+	if (len < 9 || data[0] >= COILS_PER_NODE) { SPIKE1_DEBUG_ONLY(note = "node bus: node " + std::to_string(node) + " coil fire not understood: " + bytes_hex(data, len);) return; }
+	coil_pulse(node, data[0], data[1], ticks_ms(data + 2), data[4], ticks_ms(data + 5), now_ns);
 	SPIKE1_DEBUG_ONLY(if (len > 9 && std::any_of(data + 9, data + len, [](uint8_t b) { return b != 0; }) && first_time("coil fire extras"))
 		note = "node bus: node " + std::to_string(node) + " coil fire with a time and switch condition (not modelled): " + bytes_hex(data, len);
 	else if (tracing())
