@@ -1890,6 +1890,7 @@ void core_updateSw(int flipEn) {
     float state[CORE_MODOUT_SOL_MAX];
     #if defined(VPINMAME) || defined(LIBPINMAME)
     // These builds only integrate on client request (see VIDEO_UPDATE): integrate here, or a client only listening to OnSolenoid would see no change
+    // (serialized with the client's integrations by the lock in core_update_pwm_outputs)
     core_update_pwm_solenoids();
     #endif
     core_getAllPhysicSols(state);
@@ -3683,12 +3684,37 @@ static void core_replace_lost_pwm_flips(core_tPhysicOutput* const output, const 
    output->lastIntegrationFlipPos = first - 1;
 }
 
+// Integration runs on several threads at once: the client's (VPinMAME, libpinmame getters, possibly several of them) and the emulation
+// thread (core_updateSw, Capcom flipper power, pinHeck). The integrator state (lastIntegrationFlipPos, bulb state, ...) is not thread safe,
+// so integrations are serialized with this lock. It is held for a short, non blocking computation only, and never taken recursively
+#if defined(_MSC_VER)
+#include <intrin.h>
+static volatile long pwm_integration_lock = 0;
+#define PWM_INTEGRATION_LOCK()   while (_InterlockedCompareExchange(&pwm_integration_lock, 1, 0) != 0) {}
+#define PWM_INTEGRATION_UNLOCK() _InterlockedExchange(&pwm_integration_lock, 0)
+#elif defined(__GNUC__) || defined(__clang__)
+static volatile int pwm_integration_lock = 0;
+#define PWM_INTEGRATION_LOCK()   while (__sync_lock_test_and_set(&pwm_integration_lock, 1)) {}
+#define PWM_INTEGRATION_UNLOCK() __sync_lock_release(&pwm_integration_lock)
+#else
+#error "core_update_pwm_outputs needs an atomic exchange for this compiler"
+#endif
+
+static void core_update_pwm_outputs_locked(const int startIndex, const int count);
+
 // Perform emulation of the requested physical outputs from the stored PWM digital output states
 // Initial implementation was performing this task upon digital output writes causing DMD animation stutters and sound buffer underflow.
 // This is now performed on physic output reads, moving the CPU load to the caller thread. The client is responsible and has the ability
 // to manage this load according to its use. It also allows to limit the update to the requested outputs (physics should be updated 
 // according to physic engine constants while visual should be updated according to output display characteristics).
 void core_update_pwm_outputs(const int startIndex, const int count)
+{
+   PWM_INTEGRATION_LOCK();
+   core_update_pwm_outputs_locked(startIndex, count);
+   PWM_INTEGRATION_UNLOCK();
+}
+
+static void core_update_pwm_outputs_locked(const int startIndex, const int count)
 {
    // HACK timer_get_time is not thread safe and can only be called from emulation thread. Therefore we use a fake timer with timer_starttime which is thread safe as a workaround.
    // const double now = timer_get_time();
