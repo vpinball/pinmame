@@ -19,6 +19,7 @@
 #pragma once
 
 #include "spike1_cpu.h"
+#include "spike1_debug.h"
 #include "spike1_devices.h"
 #include "spike1_memory.h"
 #include "spike1_vfs.h"
@@ -48,8 +49,8 @@ public:
 		std::vector<std::string> environment;
 		std::vector<named_address> symbols; // added to the program's symbol table, over its entries
 		uint32_t clock_hz = 400000000;
-		bool trace = false;      // log every system call, not only the noteworthy ones
-		std::function<void (const std::string &)> log;
+		bool trace = false;      // log every system call, not only the noteworthy ones (SPIKE1_DEBUG builds only)
+		std::function<void (const std::string &)> log; // without SPIKE1_DEBUG it only gets the stop: and nvram: lines
 	};
 
 	enum class status { running, stopped };
@@ -158,6 +159,8 @@ private:
 	void end_process(const std::string &how);
 	bool restart_process();
 	void log(const std::string &line) const;
+	// cfg.trace, only in SPIKE1_DEBUG builds: without it the trace notes are compiled out (spike1_debug.h)
+	bool tracing() const { return SPIKE1_DEBUG && m_cfg.trace; }
 	void on_swi(uint32_t comment);
 	int32_t syscall(uint32_t nr, const uint32_t a[7], bool &handled, std::string &note);
 

@@ -46,8 +46,14 @@
 <!--                                                                                -->
 <!-- Kept in step with src/p2k/p2k.mak and cmake/p2k.cmake: a source added to one   -->
 <!-- belongs in all three.                                                          -->
+<!--                                                                                -->
+<!-- PinMAME_P2K tells spike1.props that the MAME compatibility layer (shim/emu.cpp -->
+<!-- and mame/emu/attotime.cpp) is already compiled here.                           -->
 <!-- ============================================================================== -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PinMAME_P2K>true</PinMAME_P2K>
+  </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/p2k_machine.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>

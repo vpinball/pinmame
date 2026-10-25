@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include "spike1_debug.h"
 #include "spike1_memory.h"
 
 #include <cstdint>
@@ -39,8 +40,8 @@ public:
 
 	struct config
 	{
-		bool trace = false;   // log every transfer, not only new kinds of traffic
-		std::function<void (const std::string &)> log;
+		bool trace = false;   // log every transfer, not only new kinds of traffic (SPIKE1_DEBUG builds only)
+		std::function<void (const std::string &)> log; // only used in SPIKE1_DEBUG builds
 		// address of a symbol in the game program, 0 if it has none: the node bus reads the
 		// game's own board tables, so nothing about a title is hard-coded here
 		std::function<uint32_t (const std::string &)> symbol;
@@ -431,9 +432,11 @@ private:
 	int32_t rgb_write(uint32_t buf, uint32_t len, uint64_t now_ns, uint64_t &wait_ns);
 
 	void log(const std::string &line) const { if (m_cfg.log) m_cfg.log(line); }
+	// cfg.trace, only in SPIKE1_DEBUG builds: without it the trace notes are compiled out (spike1_debug.h)
+	bool tracing() const { return SPIKE1_DEBUG && m_cfg.trace; }
 	// True the first time a kind of unmodelled traffic is seen (always when tracing), so the log
-	// names each once instead of flooding
-	bool first_time(const std::string &what) { return m_cfg.trace || m_unmodelled.insert(what).second; }
+	// names each once instead of flooding. Only for the log: called within SPIKE1_DEBUG_ONLY()
+	bool first_time(const std::string &what) { return tracing() || m_unmodelled.insert(what).second; }
 	std::set<std::string> m_unmodelled;
 	eeprom *find_eeprom(uint16_t slave);
 	int32_t i2c_rdwr(handle &h, uint32_t arg, std::string &note);

@@ -1,8 +1,8 @@
 # ---------------------------------------------------------------------------
-#  Optional Stern Spike 1 subsystem (src/spike1)
+#  Optional Stern SPIKE 1 subsystem (src/spike1)
 #
 #  ON by default; disable with -DPINMAME_SPIKE1=OFF, which leaves neither
-#  src/wpc/spike1.c's games nor the Spike 1 CPU registered. The games need a
+#  src/wpc/spike1.c's games nor the SPIKE 1 CPU registered. The games need a
 #  64-bit build: a title's asset image is over 1 GB, and it is a ROM.
 #
 #  Like the Pinball 2000 subsystem (cmake/p2k.cmake, which explains why in
@@ -18,6 +18,11 @@
 # ---------------------------------------------------------------------------
 
 option(PINMAME_SPIKE1 "Build the Stern Spike 1 subsystem (src/spike1)" ON)
+
+# The bring-up logging - system calls, node bus and I2C traffic, the device tables, the driver's
+# statistics - and the SPIKE1_LOG environment variable that passes it on. Off, and not compiled at
+# all: see src/spike1/spike1_debug.h.
+option(PINMAME_SPIKE1_DEBUG "Build the Stern SPIKE 1 logging (SPIKE1_LOG env var)" OFF)
 
 set(_PINMAME_SPIKE1_LIST_DIR ${CMAKE_CURRENT_LIST_DIR})
 
@@ -93,6 +98,10 @@ function(_pinmame_spike1_add_library reference_target)
    else()
       target_compile_options(spike1 PRIVATE ${_consumer_options} -frtti -fno-strict-aliasing -w)
    endif()
+
+   if(PINMAME_SPIKE1_DEBUG)
+      target_compile_definitions(spike1 PRIVATE SPIKE1_DEBUG=1)
+   endif()
 endfunction()
 
 # Attach the Spike 1 subsystem to a pinmame target. No-op unless PINMAME_SPIKE1 is ON.
@@ -111,4 +120,8 @@ function(pinmame_enable_spike1 target)
       $<TARGET_OBJECTS:spike1>
    )
    target_compile_definitions(${target} PRIVATE HAS_SPIKE1=1)
+   # src/wpc/spike1.c carries the driver's half of the logging, and it is compiled into the consumer
+   if(PINMAME_SPIKE1_DEBUG)
+      target_compile_definitions(${target} PRIVATE SPIKE1_DEBUG=1)
+   endif()
 endfunction()

@@ -77,9 +77,9 @@ NOT_SOLID_STATE = {
 EOL_YEARS = 10                           # "end of life" cut-off, in years
 YEAR_SLACK = 3                           # how far PinMAME and OPDB may disagree
 
-# Game definition macro -> argument count, from src/wpc/core.h and
-# src/wpc/pinheck.h.  parse_drivers() raises on a mismatch; self_test() fails
-# on a wrapper macro missing from this table.
+# Game definition macro -> argument count, from src/wpc/core.h,
+# src/wpc/pinheck.h and src/wpc/spike1.c.  parse_drivers() raises on a
+# mismatch; self_test() fails on a wrapper macro missing from this table.
 ARITY = {"CORE_GAMEDEF": 7, "CORE_GAMEDEFNV": 6, "CORE_GAMEDEFNVR90": 6,
          "CORE_CLONEDEF": 8, "CORE_CLONEDEFNV": 7,
          # Clone of the `pinheck` BIOS, so no parent among these sets.
@@ -267,6 +267,19 @@ DEFINE = re.compile(r"^[ \t]*#[ \t]*define[ \t]+([A-Za-z_]\w*)[ \t]+(\S.*?)[ \t]
 COND = re.compile(r"^[ \t]*#[ \t]*(ifdef|ifndef|if|else|elif|endif)\b[ \t]*(.*)$")
 
 
+def strip_directives(src):
+    """Blank out preprocessor lines (and their continuations), keeping newlines.
+
+    spike1.c defines SPIKE1_CLONEDEF itself: its #define is not a ROM set.
+    """
+    out, cont = [], False
+    for line in src.split("\n"):
+        directive = cont or line.lstrip().startswith("#")
+        cont = directive and line.rstrip().endswith("\\")
+        out.append("" if directive else line)
+    return "\n".join(out)
+
+
 def local_defines(src):
     """-> {macro: replacement} for the release build (MAME_DEBUG undefined).
 
@@ -398,6 +411,7 @@ def parse_drivers(wpc=WPC):
             sim = ("" if "/sims/" not in rel else
                    "full" if "/full/" in rel else
                    "preliminary" if "/prelim/" in rel else "yes")
+            src = strip_directives(src)
             for m in MACRO.finditer(src):
                 end = close_paren(src, m.end())
                 kind = m.group(1)
@@ -414,6 +428,12 @@ def parse_drivers(wpc=WPC):
                     parent, rest = "%s_%s" % (args[0], args[2]), args[3:]
                 elif kind == "CORE_CLONEDEFNV":
                     rom, parent, rest = args[0], args[1], args[2:]
+                elif kind == "SPIKE1_CLONEDEF":
+                    # (name, ver, parent, data, longname, year, machine): the
+                    # parent is a full set name, the manufacturer is always
+                    # Stern and the flags are always 0 (see src/wpc/spike1.c)
+                    rom, parent = "%s_%s" % (args[0], args[1]), args[2]
+                    rest = [args[4], args[5], '"Stern"', args[6], "0"]
                 else:
                     rom, parent, rest = args[0], None, args[1:]
                 title, year, manuf, _machine, flag = rest
@@ -987,6 +1007,15 @@ def self_test():
     # PinHeck is defined through a wrapper macro.
     assert {"amh_023", "dominos_006", "rzspook_026", "jetsons_004"} <= set(by_rom)
     assert by_rom["jetsons_004"]["title"] == "Jetsons, The"
+
+    # Spike 1 editions are defined through their own clone macro.
+    assert by_rom["got_137"]["parent"] == "got_137h"
+    assert by_rom["got_137"]["title"] == "Game of Thrones (1.37.0)"
+    assert by_rom["got_137"]["manufacturer"] == "Stern"
+    assert by_rom["got_137"]["year"] == 2015
+    # ... whose #define (in spike1.c) is not a ROM set
+    assert "name_ver" not in by_rom
+    assert strip_directives('#define A(x) \\\n  B(x)\nA(1)') == '\n\nA(1)'
 
     # No game definition macro may exist that ARITY does not know about.
     # WPC_GAMEDEF() is an undefined placeholder in sims/template, kept out by

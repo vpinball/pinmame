@@ -41,6 +41,7 @@ If "%selfWrapped%"=="" (
 set DEF_PRJ=ALL
 set DEF_SAM=YES
 set DEF_P2K=YES
+set DEF_SPIKE1=YES
 set DEF_PLA=WIN32
 set DEF_GEN=9
 set DEF_BLD=YES
@@ -50,6 +51,7 @@ set DEF_CFG=DEBUG
 set PROJECT=
 set SAMCOLOR=
 set P2K=
+set SPIKE1=
 set PLATFORM=
 set GENERATOR=
 set BUILD=
@@ -67,6 +69,7 @@ set SCRIPT_PLA=""
 @REM CMake variables
 set OPTIONS=
 set P2KOPT=
+set SPIKE1OPT=
 set TOOLS=-T v141_xp
 
 @REM Print help (terminates script)
@@ -121,7 +124,7 @@ if %GEN_LIBPINMAME% == YES (
    set OUTPATH=build/libpinmame/%PLATFORM%/
     
    copy /Y ..\cmake\libpinmame\CMakeLists_%SCRIPT_PLA%.txt CMakeLists.txt
-   cmake %P2KOPT% -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
+   cmake %P2KOPT% %SPIKE1OPT% -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
 
     if %BUILD% == YES (
         cmake --build !OUTPATH! --config %CONFIG%
@@ -136,7 +139,7 @@ if %GEN_PINMAME% == YES (
     set OUTPATH=build/pinmame/%PLATFORM%/
     
     copy /Y ..\cmake\pinmame\CMakeLists_%SCRIPT_PLA%.txt CMakeLists.txt
-    cmake %OPTIONS% %P2KOPT% -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
+    cmake %OPTIONS% %P2KOPT% %SPIKE1OPT% -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
 
     if %BUILD% == YES (
         cmake --build !OUTPATH! --config %CONFIG%
@@ -166,7 +169,7 @@ if %GEN_VPINMAME% == YES (
     set OUTPATH=build/vpinmame/%PLATFORM%/
 
     copy /Y ..\cmake\vpinmame\CMakeLists_%SCRIPT_PLA%.txt CMakeLists.txt
-    cmake %OPTIONS% %P2KOPT% %TOOLS% -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
+    cmake %OPTIONS% %P2KOPT% %SPIKE1OPT% %TOOLS% -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
     
     if %BUILD% == YES (
         cmake --build !OUTPATH! --config %CONFIG%
@@ -197,6 +200,9 @@ exit /b %errorlevel%
     if %errorlevel% neq 0 (exit /b 1)
 
     if not defined P2K call :parse_p2k %DEF_P2K%
+    if %errorlevel% neq 0 (exit /b 1)
+
+    if not defined SPIKE1 call :parse_spike1 %DEF_SPIKE1%
     if %errorlevel% neq 0 (exit /b 1)
 
     if not defined PLATFORM call :parse_platform %DEF_PLA%
@@ -237,6 +243,8 @@ exit /b %errorlevel%
         call :parse_samcolor %VAL%
     ) else if /I %ARG% == P2K (
         call :parse_p2k %VAL%
+    ) else if /I %ARG% == SPIKE1 (
+        call :parse_spike1 %VAL%
     ) else if /I %ARG% == PLA (
         call :parse_platform %VAL%
     ) else if /I %ARG% == GEN (
@@ -339,6 +347,31 @@ exit /b %errorlevel%
     exit /b
 
 
+:parse_spike1
+    set USING_SPIKE1=
+
+    @REM Simulate logical OR
+    if /I %1 == Y (set USING_SPIKE1=1)
+    if /I %1 == YES (set USING_SPIKE1=1)
+
+    if /I %1 == N (set USING_SPIKE1=0)
+    if /I %1 == NO (set USING_SPIKE1=0)
+
+    if not defined USING_SPIKE1 (
+        echo *** INVALID "SPIKE1" PARAMETER: "%1" ***
+        exit /b 1
+    )
+
+    if %USING_SPIKE1% == 1 (
+        set SPIKE1=YES
+        set SPIKE1OPT=
+    ) else (
+        set SPIKE1=NO
+        set SPIKE1OPT=-D PINMAME_SPIKE1=OFF
+    )
+    exit /b
+
+
 :parse_platform
     if /I %1 == Win32 (
         set PLATFORM=Win32
@@ -435,6 +468,7 @@ exit /b %errorlevel%
     echo PROJECT        : %PROJECT%
     echo SAMCOLOR       : %SAMCOLOR%
     echo P2K            : %P2K%
+    echo SPIKE1         : %SPIKE1%
     echo PLATFORM       : %PLATFORM%
     echo GENERATOR      : %GENERATOR%
     echo BUILD          : %BUILD%

@@ -134,7 +134,8 @@ switch back to back; a negative switch is one closed at rest, opened for the tim
 a lamp's level as it changes, `--mech` a mech's `GetMech()` value (Slimer is mech 0; the tool
 leaves `HandleMechanics` at its default, as a table does), `--frames` saves the DMD and the video
 displays as `display<n>_<second>.png`, each second's last frame, and the library's "Average FPS"
-line at the end gives the frame rate. `SPIKE1_LOG` passes the subsystem's log on.
+line at the end gives the frame rate. `SPIKE1_LOG` passes the subsystem's log on, from a libpinmame
+built with `SPIKE1_DEBUG` (see Diagnostics below).
 
 ## Devices (`spike1_devices.*`)
 
@@ -410,8 +411,8 @@ code (its symbols are in the program) rather than from any other emulator:
   `/dev/i2s` (Ghostbusters 44.1 kHz, Whoa Nellie 24 kHz); the mixer resamples it. The machine makes
   samples in time slices, and in about half of the stream's updates it had fewer ready than the
   stream asked for - each a gap of silence, heard as crackle - so the samples pass through a FIFO
-  that plays once 1/30 s is waiting (`SPIKE1_LOG` reports how often the machine was late and
-  whether the FIFO ran dry).
+  that plays once 1/30 s is waiting (`SPIKE1_LOG`, in a `SPIKE1_DEBUG` build, reports how often the
+  machine was late and whether the FIFO ran dry).
 - **NVRAM**: the subsystem's block (see `spike1_linux::nvram()`) as `nvram/<set>.nv`, taken in
   `MACHINE_STOP` because PinMAME saves after the machine is gone. A game keeps its settings, audits
   and high scores in memory and commits them to its NVRAM files only when it sees the power fail
@@ -419,9 +420,13 @@ code (its symbols are in the program) rather than from any other emulator:
   off the way the mains would (`spike1_pinmame_power_down()`): the line sense reads 0 V, the game's
   line-sense thread sends itself SIGPWR, its handler wakes the power-loss thread, which commits and
   syncs - about 170 ms of emulated time.
-- **Diagnostics**: with `SPIKE1_LOG` set in the environment, the subsystem's log goes to stderr,
-  and every 300 frames the driver reports the CPU slices, the time spent in the machine, what the
-  sound stream asked for and got (with the peak sample), and the switch changes it passed on.
+- **Diagnostics**: all of the logging is compiled in only with `SPIKE1_DEBUG` (`src/spike1/spike1_debug.h`;
+  `-DPINMAME_SPIKE1_DEBUG=ON` in CMake, `SPIKE1_DEBUG=1` in a Visual Studio project's preprocessor
+  definitions; `spike1boot` always has it), so the builds users play on spend nothing on it - they
+  only report a stop of the game program and what happened to the NVRAM. In a `SPIKE1_DEBUG` build,
+  with `SPIKE1_LOG` set in the environment, the subsystem's log goes to stderr, and every 300 frames
+  the driver reports the CPU slices, the time spent in the machine, what the sound stream asked for
+  and got (with the peak sample), and the switch changes it passed on.
 - **Tables** (VPX with its PinMAME plugin): `cGameName = "gbust_117h"`; `Controller.SolMask(2) = 2`
   for the lamps as levels (0-255) - the coils then come as levels too, any level above 0 on; the
   DMD is `ctrl://PinMAME/display?id=0`, the LCD insert or WWE's LCD `ctrl://PinMAME/display?id=1`;

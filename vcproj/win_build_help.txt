@@ -1,6 +1,6 @@
 WIN_BUILD HELP
 --------------
-USAGE: win_build [/?] [PRJ:<PROJECT>] [SAM:<Y|ES/N|O>] [P2K:<Y|ES/N|O>] [PLA:<PLATFORM>] [GEN:<GENERATOR #>] [BLD:<Y|ES|/N|O>] [CFG:<R|ELEASE/D|EBUG>]
+USAGE: win_build [/?] [PRJ:<PROJECT>] [SAM:<Y|ES/N|O>] [P2K:<Y|ES/N|O>] [SPIKE1:<Y|ES/N|O>] [PLA:<PLATFORM>] [GEN:<GENERATOR #>] [BLD:<Y|ES|/N|O>] [CFG:<R|ELEASE/D|EBUG>]
 
 NOTES
 -----
@@ -11,6 +11,7 @@ NOTES
     PRJ: ALL
     SAM: YES
     P2K: YES
+    SPIKE1: YES
     PLA: WIN32
     GEN: 9 ("Visual Studio 15 2017")
     BLD: YES
@@ -47,6 +48,13 @@ P2K: Sets preference for the Pinball 2000 subsystem (src/p2k), which adds the
      build. Applied to the LIBPINMAME, PINMAME, PINMAME32, VPINMAME projects
      Y|ES: Generate with Pinball 2000 support
      N|O : Do not generate with Pinball 2000 support (-D PINMAME_P2K=OFF)
+
+SPIKE1: Sets preference for the Stern Spike 1 subsystem (src/spike1), which adds
+     the SPIKE 1 drivers (2015-2021). On by default; it needs a C++17 compiler,
+     and its games a 64-bit build. Applied to the LIBPINMAME, PINMAME (x64) and
+     VPINMAME (x64) projects
+     Y|ES: Generate with SPIKE 1 support
+     N|O : Do not generate with SPIKE 1 support (-D PINMAME_SPIKE1=OFF)
 
 PLA: Sets build platform and architecture for building
      Win32: Generate with support for Windows x86 platform

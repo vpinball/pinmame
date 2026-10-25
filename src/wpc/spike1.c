@@ -45,6 +45,7 @@
 #include "usrintrf.h"
 #include "spike1.h"
 #include "../spike1/spike1_public.h"
+#include "../spike1/spike1_debug.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -114,9 +115,11 @@ typedef struct {
 
 static const spike1_tGameData *spike1_game(void) { return (const spike1_tGameData *)core_gameData; }
 
+#if SPIKE1_DEBUG
 /* SPIKE1_LOG set in the environment: once every five seconds, what the sound stream asked for and
-   got, and the switch changes passed to the machine */
+   got, and the switch changes passed to the machine. Only in SPIKE1_DEBUG builds (spike1_debug.h) */
 static struct { int on; unsigned frames, asked, got, switches, calls, peak, late, shortfalls; double cycles, run_s; cycles_t since; } diag;
+#endif
 
 static struct {
   int running, warned;
@@ -159,9 +162,13 @@ int spike1cpu_execute(int cycles)
 {
   spike1cpu_ICount = cycles;
   if (locals.running) {
+#if SPIKE1_DEBUG
     const cycles_t t0 = diag.on ? osd_cycles() : 0;
     spike1_pinmame_run(cycles);
     if (diag.on) { diag.calls++; diag.cycles += cycles; diag.run_s += (double)(osd_cycles() - t0) / (double)osd_cycles_per_second(); }
+#else
+    spike1_pinmame_run(cycles);
+#endif
   }
   spike1cpu_ICount = 0;
   return cycles;
@@ -332,13 +339,13 @@ static void spike1_sync_io(void)
     if (moved) {
       locals.swState[i] = closed;
       spike1_pinmame_set_switch(locals.sw[i], closed);
-      diag.switches++;
-      if (diag.on) fprintf(stderr, "[spike1 driver] switch %d %s\n", locals.sw[i], closed ? "closed" : "opened");
+      SPIKE1_DEBUG_ONLY(diag.switches++;
+      if (diag.on) fprintf(stderr, "[spike1 driver] switch %d %s\n", locals.sw[i], closed ? "closed" : "opened");)
     } else if (changes != locals.swSeen[i]) { /* changed and changed back since the last look */
       spike1_pinmame_set_switch(locals.sw[i], !closed);
       spike1_pinmame_set_switch(locals.sw[i], closed);
-      diag.switches += 2;
-      if (diag.on) fprintf(stderr, "[spike1 driver] switch %d %s and back\n", locals.sw[i], closed ? "opened" : "closed");
+      SPIKE1_DEBUG_ONLY(diag.switches += 2;
+      if (diag.on) fprintf(stderr, "[spike1 driver] switch %d %s and back\n", locals.sw[i], closed ? "opened" : "closed");)
     }
     locals.swSeen[i] = changes;
   }
@@ -407,6 +414,7 @@ static INTERRUPT_GEN(spike1_vblank)
       stream_set_sample_rate(spike1_stream + 1, rate);
       locals.audioRate = rate;
     }
+#if SPIKE1_DEBUG
     if (diag.on && ++diag.frames % 300 == 0) {
       const cycles_t now = osd_cycles();
       const double wall = diag.since ? (double)(now - diag.since) / (double)osd_cycles_per_second() : 0.;
@@ -418,6 +426,7 @@ static INTERRUPT_GEN(spike1_vblank)
       diag.cycles = diag.run_s = 0.;
       diag.since = now;
     }
+#endif
     if (!locals.warned && !spike1_pinmame_running(reason, sizeof(reason))) {
       locals.warned = 1;
       usrintf_showmessage_secs(30, "SPIKE 1: the game program stopped: %s", reason);
@@ -613,14 +622,14 @@ static void spike1_snd_update(int num, INT16 **buffer, int length)
       fifo.s[2 * at] = tmp[2 * i];
       fifo.s[2 * at + 1] = tmp[2 * i + 1];
     }
-    for (i = 0; i < 2 * n; i++) { const unsigned a = (unsigned)(tmp[i] < 0 ? -tmp[i] : tmp[i]); if (a > diag.peak) diag.peak = a; }
+    SPIKE1_DEBUG_ONLY(for (i = 0; i < 2 * n; i++) { const unsigned a = (unsigned)(tmp[i] < 0 ? -tmp[i] : tmp[i]); if (a > diag.peak) diag.peak = a; })
     fifo.count += n;
     got += n;
     if (n < want) break;
   }
-  diag.got += got;
+  SPIKE1_DEBUG_ONLY(diag.got += got;
   diag.asked += length;
-  if (got < length) diag.late++; /* the machine had less ready than the stream asked: without the FIFO, a gap */
+  if (got < length) diag.late++;) /* the machine had less ready than the stream asked: without the FIFO, a gap */
   if (!fifo.primed && fifo.count >= length + mark) fifo.primed = 1;
   for (i = 0; i < length; i++) {
     if (fifo.primed && fifo.count) {
@@ -630,7 +639,7 @@ static void spike1_snd_update(int num, INT16 **buffer, int length)
       fifo.count--;
     } else if (fifo.primed) { /* ran dry: hold, and wait for the mark again */
       fifo.primed = 0;
-      diag.shortfalls++;
+      SPIKE1_DEBUG_ONLY(diag.shortfalls++;)
     }
     buffer[0][i] = fifo.last[0];
     buffer[1][i] = fifo.last[1];
@@ -726,8 +735,10 @@ static MACHINE_INIT(spike1)
 
   memset(&locals, 0, sizeof(locals));
   memset(&fifo, 0, sizeof(fifo));
+#if SPIKE1_DEBUG
   memset(&diag, 0, sizeof(diag));
   diag.on = getenv("SPIKE1_LOG") != NULL;
+#endif
   locals.startSw = -1;
   /* the insert's colours: the pens after the core's palette are RGB555 */
   for (c = 0; c < 32768; c++)

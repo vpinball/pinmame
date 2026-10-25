@@ -394,7 +394,7 @@ bool spike1_linux::start_process(std::string &error)
 	m_block = block_kind::none;
 	m_sigreturned = false;
 	m_cpu.enter_user_mode(m_current->ctx);
-	log("start: " + m_cfg.executable + " entry " + hex(entry) + " sp " + hex(sp) + " brk " + hex(m_mem.brk(0)));
+	SPIKE1_LOG("start: " + m_cfg.executable + " entry " + hex(entry) + " sp " + hex(sp) + " brk " + hex(m_mem.brk(0)));
 	return true;
 }
 
@@ -409,7 +409,7 @@ void spike1_linux::end_process(const std::string &how)
 	m_devices.process_exited();
 	m_restart_ns = now_ns() + 1000000000ull;
 	m_cpu.end_slice();
-	log("exit: " + how + "; game_monitor starts the program again in 1 s");
+	SPIKE1_LOG("exit: " + how + "; game_monitor starts the program again in 1 s");
 }
 
 bool spike1_linux::restart_process()
@@ -536,7 +536,7 @@ void spike1_linux::deliver_signal()
 	m_cpu.load_context(h);
 	t.sigmask |= sa.mask | ((sa.flags & GUEST_SA_NODEFER) ? 0 : 1ull << (sig - 1));
 	if (sa.flags & GUEST_SA_RESETHAND) m_sigactions[sig].handler = 0;
-	log("signal " + std::to_string(sig) + " handled by thread " + std::to_string(t.tid) + " (" + t.name + ")");
+	SPIKE1_LOG("signal " + std::to_string(sig) + " handled by thread " + std::to_string(t.tid) + " (" + t.name + ')');
 }
 
 void spike1_linux::block(uint64_t wake_ns, bool retry, int32_t timeout_result)
@@ -606,7 +606,7 @@ int32_t spike1_linux::sys_clone(const uint32_t a[7], std::string &note)
 	if (flags & CHILD_SETTID) m_mem.write32(ctid, t->tid);
 	const uint32_t tid = t->tid;
 	m_threads.push_back(std::move(t));
-	note = "thread " + std::to_string(tid) + " created";
+	SPIKE1_DEBUG_ONLY(note = "thread " + std::to_string(tid) + " created";)
 	return int32_t(tid);
 }
 
@@ -618,7 +618,7 @@ void spike1_linux::exit_thread(int32_t code, std::string &note)
 		m_mem.write32(t.clear_tid, 0);
 		futex_wake(t.clear_tid, 1, 0xffffffffu);
 	}
-	note = "thread " + std::to_string(t.tid) + " (" + t.name + ") exited with " + std::to_string(code);
+	SPIKE1_DEBUG_ONLY(note = "thread " + std::to_string(t.tid) + " (" + t.name + ") exited with " + std::to_string(code);)
 	m_cpu.end_slice();
 	if (!thread_count()) end_process("the last thread exited");
 }
@@ -649,13 +649,15 @@ void spike1_linux::on_swi(uint32_t comment)
 	else if (m_block == block_kind::none && m_current->st != thread::state::done && !m_sigreturned)
 		m_cpu.set_reg(0, uint32_t(result));
 	if (m_block == block_kind::none) deliver_signal(); // a signal the call sent to its own thread, say
-	if (!note.empty() || (m_cfg.trace && m_block != block_kind::retry)) {
+#if SPIKE1_DEBUG
+	if (!note.empty() || (tracing() && m_block != block_kind::retry)) {
 		const char *n = name_of(nr);
 		char t[64];
 		std::snprintf(t, sizeof(t), "[%10.6f] %u ", double(now_ns()) / 1e9, m_current->tid);
 		log(std::string(t) + m_current->name + ": " + (n ? n : ("syscall " + std::to_string(nr)).c_str()) + "(" + hex(a[0]) + ", " + hex(a[1]) + ", " + hex(a[2]) +
 			")" + (m_block != block_kind::none ? " waits" : " = " + std::to_string(result)) + (note.empty() ? "" : "  " + note));
 	}
+#endif
 }
 
 int32_t spike1_linux::syscall(uint32_t nr, const uint32_t a[7], bool &handled, std::string &note)
@@ -667,7 +669,7 @@ int32_t spike1_linux::syscall(uint32_t nr, const uint32_t a[7], bool &handled, s
 		return 0;
 	case 248: // exit_group
 		end_process("exit status " + std::to_string(int32_t(a[0])));
-		note = "process exited";
+		SPIKE1_DEBUG_ONLY(note = "process exited";)
 		return 0;
 	case 20:  return 100;   // getpid
 	case 224: return int32_t(m_current->tid); // gettid
@@ -681,7 +683,7 @@ int32_t spike1_linux::syscall(uint32_t nr, const uint32_t a[7], bool &handled, s
 	case 0xf0005: m_current->tls = a[0]; m_mem.write32(0xffff0ff0, a[0]); return 0; // set_tls
 	case 0xf0002: return 0; // cacheflush: the interpreter reads code straight from memory
 	case 172: // prctl
-		if (a[0] == 15) { std::string name; m_mem.read_string(a[1], name, 16); note = "thread name \"" + name + "\""; m_current->name = name; }
+		if (a[0] == 15) { std::string name; m_mem.read_string(a[1], name, 16); SPIKE1_DEBUG_ONLY(note = "thread name \"" + name + "\"";) m_current->name = name; }
 		return 0;
 	case 122: { // uname
 		char u[6][65] = {};
@@ -702,16 +704,16 @@ int32_t spike1_linux::syscall(uint32_t nr, const uint32_t a[7], bool &handled, s
 	}
 	case 120: // clone
 		if ((a[0] & 0x10100) != 0x10100) { // without CLONE_VM | CLONE_THREAD it is a fork: one process only
-			note = "fork refused";
+			SPIKE1_DEBUG_ONLY(note = "fork refused";)
 			return -E_NOSYS;
 		}
 		return sys_clone(a, note);
-	case 190: note = "vfork refused"; return -E_NOSYS;
+	case 190: SPIKE1_DEBUG_ONLY(note = "vfork refused";) return -E_NOSYS;
 	case 37: case 238: case 268: { // kill, tkill, tgkill
 		const uint32_t sig = nr == 268 ? a[2] : a[1];
 		if (sig == 0) return 0;  // only asks whether the target exists
 		if (sig > 64) return -E_INVAL;
-		if (m_sigactions[sig].handler <= 1) { note = "signal " + std::to_string(sig) + " ignored"; return 0; }
+		if (m_sigactions[sig].handler <= 1) { SPIKE1_DEBUG_ONLY(note = "signal " + std::to_string(sig) + " ignored";) return 0; }
 		thread *target = m_current; // one process: a signal to it goes to the thread that sends it
 		if (nr != 37) {
 			const uint32_t tid = nr == 268 ? a[1] : a[0];
@@ -720,7 +722,7 @@ int32_t spike1_linux::syscall(uint32_t nr, const uint32_t a[7], bool &handled, s
 			if (!target) return -E_SRCH;
 		}
 		target->sig_pending |= 1ull << (sig - 1);
-		note = "signal " + std::to_string(sig) + " to thread " + std::to_string(target->tid);
+		SPIKE1_DEBUG_ONLY(note = "signal " + std::to_string(sig) + " to thread " + std::to_string(target->tid);)
 		return 0;
 	}
 	case 119: case 173: { // sigreturn, rt_sigreturn: back to what the handler interrupted
@@ -824,13 +826,13 @@ int32_t spike1_linux::syscall(uint32_t nr, const uint32_t a[7], bool &handled, s
 		std::string path;
 		if (!m_mem.read_string(path_arg, path)) return -E_FAULT;
 		const int32_t fd = sys_open(path, nr == 5 ? a[1] : a[2], nr == 5 ? a[2] : a[3], note);
-		if (note.empty() && m_cfg.trace) note = "\"" + path + "\"";
+		if (note.empty() && tracing()) note = '"' + path + '"';
 		return fd;
 	}
 	case 6: { // close
 		auto it = m_fds.find(int32_t(a[0]));
 		if (it == m_fds.end()) return -E_BADF;
-		if (it->second->type == file::kind::device) note = "close " + it->second->guest;
+		SPIKE1_DEBUG_ONLY(if (it->second->type == file::kind::device) note = "close " + it->second->guest;)
 		m_fds.erase(it);
 		return 0;
 	}
@@ -902,7 +904,7 @@ int32_t spike1_linux::syscall(uint32_t nr, const uint32_t a[7], bool &handled, s
 	case 85: { // readlink
 		std::string path;
 		if (!m_mem.read_string(a[0], path)) return -E_FAULT;
-		if (m_cfg.trace) note = "\"" + path + "\"";
+		if (tracing()) note = '"' + path + '"';
 		if (path == "/proc/self/exe") {
 			const uint32_t n = std::min<uint32_t>(a[2], uint32_t(m_cfg.executable.size()));
 			return m_mem.write(a[1], m_cfg.executable.data(), n) ? int32_t(n) : -E_FAULT;
@@ -922,7 +924,7 @@ int32_t spike1_linux::syscall(uint32_t nr, const uint32_t a[7], bool &handled, s
 		std::string path;
 		if (!m_mem.read_string(a[0], path)) return -E_FAULT;
 		const std::string g = guest_absolute(path);
-		if (m_cfg.trace) note = "\"" + g + "\"";
+		if (tracing()) note = '"' + g + '"';
 		const spike1_vfs::type t = m_vfs.lookup(g);
 		if (t == spike1_vfs::type::none) return -E_NOENT;
 		if (t != spike1_vfs::type::directory) return -E_NOTDIR;
@@ -934,7 +936,7 @@ int32_t spike1_linux::syscall(uint32_t nr, const uint32_t a[7], bool &handled, s
 		if (!m_mem.read_string(a[0], path)) return -E_FAULT;
 		const std::string g = guest_absolute(path);
 		if (m_vfs.lookup(g) != spike1_vfs::type::none) return -E_EXIST;
-		note = "mkdir " + g;
+		SPIKE1_DEBUG_ONLY(note = "mkdir " + g;)
 		return m_vfs.make_directory(g) ? 0 : -E_NOENT;
 	}
 	case 10: case 40: { // unlink, rmdir
@@ -979,7 +981,7 @@ int32_t spike1_linux::syscall(uint32_t nr, const uint32_t a[7], bool &handled, s
 		w->flags = O_WRONLY_ | r->flags;
 		const int32_t fds[2] = { alloc_fd(r, 3), alloc_fd(w, 3) };
 		if (!m_mem.write(a[0], fds, 8)) return -E_FAULT;
-		note = "pipe fds " + std::to_string(fds[0]) + ", " + std::to_string(fds[1]);
+		SPIKE1_DEBUG_ONLY(note = "pipe fds " + std::to_string(fds[0]) + ", " + std::to_string(fds[1]);)
 		return 0;
 	}
 	default:
@@ -1088,7 +1090,7 @@ int32_t spike1_linux::sys_open(const std::string &path, uint32_t flags, uint32_t
 		f->dev.type = spike1_devices::kind_for_path(g);
 		f->dev.path = g;
 		const int fd = alloc_fd(f);
-		note = "open device " + g + " flags " + hex(flags) + " -> fd " + std::to_string(fd);
+		SPIKE1_DEBUG_ONLY(note = "open device " + g + " flags " + hex(flags) + " -> fd " + std::to_string(fd);)
 		return fd;
 	}
 	else {
@@ -1111,11 +1113,11 @@ int32_t spike1_linux::sys_open(const std::string &path, uint32_t flags, uint32_t
 			f->written = m_vfs.open_write(g, (flags & O_TRUNC_) != 0);
 			if (!f->written) return -E_NOENT; // the directory it would go in is missing
 			f->type = file::kind::written;
-			note = "open for writing " + g;
+			SPIKE1_DEBUG_ONLY(note = "open for writing " + g;)
 		} else {
 			spike1_vfs::source src;
 			if (!m_vfs.open(g, src)) {
-				note = "not found: " + g;
+				SPIKE1_DEBUG_ONLY(note = "not found: " + g;)
 				return -E_NOENT;
 			}
 			if (src.written) { f->type = file::kind::written; f->written = src.written; }
@@ -1173,10 +1175,10 @@ int32_t spike1_linux::sys_read(int fd, uint32_t buf, uint32_t len, std::string &
 			block(wait_ns, true);
 			return 0;
 		}
-		if (r != 0) { m_current->read_wait_fd = -1; note = device_note; return r; }
+		if (r != 0) { m_current->read_wait_fd = -1; SPIKE1_DEBUG_ONLY(note = device_note;) return r; }
 		// no data yet: a blocking read waits for it, as the driver would
 		if (f->flags & O_NONBLOCK_) return -E_AGAIN;
-		if (m_current->read_wait_fd != fd) note = device_note.empty() ? "read " + std::to_string(len) + " from " + f->guest + " waits" : device_note;
+		SPIKE1_DEBUG_ONLY(if (m_current->read_wait_fd != fd) note = device_note.empty() ? "read " + std::to_string(len) + " from " + f->guest + " waits" : device_note;)
 		m_current->read_wait_fd = fd; // note the first attempt only
 		block(now_ns() + POLL_RECHECK_NS, true);
 		return 0;
@@ -1197,9 +1199,11 @@ int32_t spike1_linux::sys_write(int fd, uint32_t buf, uint32_t len, std::string 
 		f->pipe->insert(f->pipe->end(), p, p + len);
 		return int32_t(len);
 	case file::kind::console: {
+#if SPIKE1_DEBUG
 		std::string text(reinterpret_cast<const char *>(p), len);
 		while (!text.empty() && (text.back() == '\n' || text.back() == '\r')) text.pop_back();
 		log("[" + f->guest + "] " + text);
+#endif
 		return int32_t(len);
 	}
 	case file::kind::host: case file::kind::memory:
@@ -1344,8 +1348,8 @@ int32_t spike1_linux::sys_mmap(uint32_t addr, uint32_t len, uint32_t prot, uint3
 		const bool in_memory = f && f->type == file::kind::memory && offset + len <= f->size;
 		if (in_memory || (f && f->type == file::kind::host && f->fp && len >= (16u << 20))) {
 			const uint32_t view = in_memory ? m_mem.map_view(f->data + offset, len) : m_mem.map_file(f->host, offset, len);
-			if (view) { note = "mapped " + f->guest + " (" + std::to_string(len) + " bytes) read-only at " + hex(view); return int32_t(view); }
-			note = "no view for " + f->guest + " (" + std::to_string(len) + " bytes), a copy instead";
+			if (view) { SPIKE1_DEBUG_ONLY(note = "mapped " + f->guest + " (" + std::to_string(len) + " bytes) read-only at " + hex(view);) return int32_t(view); }
+			SPIKE1_DEBUG_ONLY(note = "no view for " + f->guest + " (" + std::to_string(len) + " bytes), a copy instead";)
 		}
 	}
 	if (fixed) {
@@ -1355,8 +1359,8 @@ int32_t spike1_linux::sys_mmap(uint32_t addr, uint32_t len, uint32_t prot, uint3
 	} else {
 		where = m_mem.map(len);
 		if (!where) {
-			if (!note.empty()) note += "; ";
-			note += "out of mmap space for " + std::to_string(len) + " bytes";
+			SPIKE1_DEBUG_ONLY(if (!note.empty()) note += "; ";
+			note += "out of mmap space for " + std::to_string(len) + " bytes";)
 			return -E_NOMEM;
 		}
 	}
@@ -1365,19 +1369,19 @@ int32_t spike1_linux::sys_mmap(uint32_t addr, uint32_t len, uint32_t prot, uint3
 		if (!f) { m_mem.unmap(where, len); return -E_BADF; }
 		if (f->type == file::kind::device) {
 			m_devices.mapped(f->dev, where, len);
-			note = "mmap of device " + f->guest + " (" + std::to_string(len) + " bytes at offset " + std::to_string(offset) + ") gives plain memory";
+			SPIKE1_DEBUG_ONLY(note = "mmap of device " + f->guest + " (" + std::to_string(len) + " bytes at offset " + std::to_string(offset) + ") gives plain memory";)
 		} else if (f->type == file::kind::memory || f->type == file::kind::written) {
 			const uint8_t *src = f->written ? f->written->data() : f->data;
 			const size_t size = f->written ? f->written->size() : f->size;
 			if (offset < size) std::memcpy(m_mem.host(where, len), src + offset, size_t(std::min<uint64_t>(len, size - offset)));
-			if (flags & 1) note = "shared mapping of " + f->guest + " is a private copy";
+			SPIKE1_DEBUG_ONLY(if (flags & 1) note = "shared mapping of " + f->guest + " is a private copy";)
 		} else if (f->type == file::kind::host && f->fp) {
 			// a private copy: the game's Spike 1 files are read-only data
 			const int64_t saved = host_tell(f->fp);
 			host_seek(f->fp, int64_t(offset), SEEK_SET);
 			std::fread(m_mem.host(where, len), 1, len, f->fp);
 			host_seek(f->fp, saved, SEEK_SET);
-			if (flags & 1) note = "shared mapping of " + f->guest + " is a private copy";
+			SPIKE1_DEBUG_ONLY(if (flags & 1) note = "shared mapping of " + f->guest + " is a private copy";)
 		} else {
 			m_mem.unmap(where, len);
 			return -E_INVAL;
@@ -1457,7 +1461,7 @@ int32_t spike1_linux::sys_futex(const uint32_t a[7], std::string &note)
 		return done;
 	}
 	default:
-		note = "futex op " + hex(op) + " is not implemented";
+		SPIKE1_DEBUG_ONLY(note = "futex op " + hex(op) + " is not implemented";)
 		return -E_NOSYS;
 	}
 }

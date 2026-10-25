@@ -45,12 +45,22 @@ static ATTR_FORCE_INLINE u8 count_leading_ones_32(u32 v) { return count_leading_
 
 // used by the Spike 1 arm7 import (src/spike1/mame/cpu/arm7)
 static ATTR_FORCE_INLINE s32 mul_32x32_shift(s32 a, s32 b, u8 shift) { return s32((s64(a) * s64(b)) >> shift); }
-static ATTR_FORCE_INLINE u32 rotr_32(u32 val, int shift) { shift &= 31; return shift ? (val >> shift) | (val << (32 - shift)) : val; }
-static ATTR_FORCE_INLINE unsigned population_count_32(u32 val)
+static ATTR_FORCE_INLINE u32 rotr_32(u32 val, int shift)
 {
 #if defined(_MSC_VER)
-	return __popcnt(val);
+	return _rotr(val, shift); // one ror: MSVC does not recognize the C rotate idioms
 #else
+	return (val >> (shift & 31)) | (val << (-shift & 31)); // gcc/clang: one ror
+#endif
+}
+static ATTR_FORCE_INLINE unsigned population_count_32(u32 val)
+{
+#if (defined(__GNUC__) || defined(__clang__)) && (defined(__POPCNT__) || defined(__aarch64__))
 	return unsigned(__builtin_popcount(val));
+#else // POPCNT is not in the SSE2 baseline these builds target (as popcount16 in src/cpu/arm7/arm7core.c)
+	val -= (val >> 1) & 0x55555555u;
+	val = (val & 0x33333333u) + ((val >> 2) & 0x33333333u);
+	val = (val + (val >> 4)) & 0x0f0f0f0fu;
+	return (val * 0x01010101u) >> 24;
 #endif
 }

@@ -1,8 +1,7 @@
 # ---------------------------------------------------------------------------
-#  spike1boot - the Spike 1 subsystem's standalone bring-up harness
+#  spike1boot - the SPIKE 1 subsystem's standalone bring-up harness
 #
-#  Builds src/spike1 alone, without PinMAME around it, the way "make p2kboot"
-#  does for the Pinball 2000 subsystem. Use it straight from this directory:
+#  Builds src/spike1 alone, without PinMAME around it. Use it straight from this directory:
 #
 #      cmake -S cmake/spike1boot -B build/spike1boot -DCMAKE_BUILD_TYPE=Release
 #      cmake --build build/spike1boot
@@ -45,6 +44,9 @@ set_target_properties(spike1boot PROPERTIES
    CXX_STANDARD 17
    CXX_STANDARD_REQUIRED ON
 )
+
+# The bring-up harness is all about the subsystem's log: always with it (src/spike1/spike1_debug.h)
+target_compile_definitions(spike1boot PRIVATE SPIKE1_DEBUG=1)
 
 if(MSVC)
    target_compile_options(spike1boot PRIVATE /GR /EHsc /w)

@@ -8,6 +8,7 @@
 
 #include "spike1_public.h"
 #include "spike1_cpu.h"
+#include "spike1_debug.h"
 #include "spike1_linux.h"
 #include "spike1_memory.h"
 
@@ -35,7 +36,11 @@ struct machine
 };
 
 std::unique_ptr<machine> g_machine;
+#if SPIKE1_DEBUG
 bool g_log_all = false;
+#else
+constexpr bool g_log_all = false; // without SPIKE1_DEBUG the subsystem only reports a stop and the NVRAM's fate
+#endif
 
 void copy_text(const std::string &s, char *dst, unsigned size)
 {
@@ -64,7 +69,9 @@ int spike1_pinmame_start(const char *game, const spike1_file *files, unsigned co
                          const unsigned char *nvram, unsigned nvram_size, char *error, unsigned error_size)
 {
 	g_machine.reset();
+#if SPIKE1_DEBUG
 	g_log_all = std::getenv("SPIKE1_LOG") != nullptr; // SPIKE1_LOG=1: the subsystem's whole log on stderr
+#endif
 	auto m = std::make_unique<machine>();
 	device_t::s_machine = &m->running;
 	p2k_active_config = &m->config;
