@@ -446,7 +446,7 @@ static bool UpdatePinmameDisplayBitmap(PinmameDisplay* pDisplay, struct mame_bit
 	const int width = pDisplay->layout.width; // layout->length
 	const int rotation = (pDisplay->layout.type & PINMAME_DISPLAY_TYPE_VIDEO_ROT90) ? 1 : 0;
 	/* where the layout puts the display on the screen: a video display need not be the only one
-	   (Stern Spike 1 draws its LCD insert below the DMD) */
+	   (Stern SPIKE 1 draws its LCD insert below the DMD) */
 	const int top = pDisplay->layout.top, left = pDisplay->layout.left;
 	const int incr = (rotation == 0) ? 3 : ((rotation == 1) ? height*3 : -height*3);
 	/* A VIDEO_RGB_DIRECT screen holds packed colour, not palette indices - reading it through
@@ -2424,10 +2424,10 @@ static void SetupMsgApiGameStates()
       }
       // 33..36
       {
-         // 33, SAM, Spike 1: fake GameOn solenoid for fast flip (Spike 1: the flippers' reflexes armed on the node boards)
+         // 33, SAM, SPIKE 1: fake GameOn solenoid for fast flip (SPIKE 1: the flippers' reflexes armed on the node boards)
          // Note: core_getSol returns it replicated 4 times for 33..36 while core_getAllSol only returns it as 33 (34..36 are unused)
          if (core_gameData->gen & (GEN_SAM | GEN_SPIKE1))
-            addPhysSol(fmtString("%s Fake GameOn", (core_gameData->gen & GEN_SAM) ? "SAM" : "Spike 1"), nullptr, nullptr, 33, GetSolenoid2State, GetSolenoid2VPMState, 0x00000010, 32);
+            addPhysSol(fmtString("%s Fake GameOn", (core_gameData->gen & GEN_SAM) ? "SAM" : "SPIKE 1"), nullptr, nullptr, 33, GetSolenoid2State, GetSolenoid2VPMState, 0x00000010, 32);
          // 33..36: Whitestar various extension boards (stored in 0x00F0 of solenoids2, which is upper flipper for other hardwares)
          else if (core_gameData->gen & GEN_ALLWS)
          {
@@ -2976,7 +2976,7 @@ static void SetupMsgApiVideoDisplays()
             //   Then, starting with Tranformers, the 520-5052-15 orange/red led matrix is used
             // - All US Stern games before AC/DC use a 128 x 32 neon plasma (520-5052-00), then LED (520-5052-15)
             def.srcId.hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN;
-         else if (core_gameData->gen == GEN_SPA || core_gameData->gen == GEN_SPIKE1) // Spike 1: an LED panel, its type not established
+         else if (core_gameData->gen == GEN_SPA || core_gameData->gen == GEN_SPIKE1) // SPIKE 1: an LED panel, its type not established
             def.srcId.hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN;
          else
             def.srcId.hardware = CTLPI_DISPLAY_HARDWARE_NEON_PLASMA;

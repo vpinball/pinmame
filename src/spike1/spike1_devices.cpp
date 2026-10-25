@@ -318,7 +318,7 @@ int32_t spike1_devices::write(handle &h, uint32_t buf, uint32_t len, uint64_t no
 	if (elg_display_port(h)) {
 		const uint8_t *p = m_mem.host(buf, len, false);
 		if (len && !p) return -E_FAULT;
-		SPIKE1_DEBUG_ONLY(if (first_time("elg display port")) note = "display: text port " + h.path + " " + bytes_hex(p, len, 32) + " (not shown: the segment frames are)";)
+		SPIKE1_DEBUG_ONLY(if (first_time("elg display port")) note = "display: text port " + h.path + ' ' + bytes_hex(p, len, 32) + " (not shown: the segment frames are)";)
 		return int32_t(len);
 	}
 	if (h.type == kind::node_bus)
@@ -1008,7 +1008,7 @@ void spike1_devices::elg_node_bus(const uint8_t *p, uint32_t len, uint64_t now_n
 	}
 	if ((cmd & 0xf8) == 0x40 && n == 4) {
 		coil_pulse(node, cmd & 7, data[0], data[1], data[2], data[3], now_ns);
-		if (tracing()) note = "node bus: node " + std::to_string(node) + " coil " + std::to_string(cmd & 7) + " " + bytes_hex(data, n);
+		if (tracing()) note = "node bus: node " + std::to_string(node) + " coil " + std::to_string(cmd & 7) + ' ' + bytes_hex(data, n);
 		return;
 	}
 	if ((cmd & 0xf8) == 0x48 && (n == 6 || n == 8)) {

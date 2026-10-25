@@ -4082,7 +4082,7 @@ float* core_dmd_update_pwm(const core_tLCDLayout* layout, unsigned int * lumFram
    switch (dmd_state->raw_combiner) {
    case CORE_DMD_PWM_PREINTEGRATED_LINEAR_4:
    {
-      const UINT8* frameData = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      const UINT8* const frameData = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       if (memcmp(dmd_state->dmdFIRBuffer, frameData, dmd_state->frameSize * sizeof(UINT8)) != 0) {
          memcpy(dmd_state->dmdFIRBuffer, frameData, dmd_state->frameSize * sizeof(UINT8));
          dmd_state->lumFrameId++;
@@ -4095,7 +4095,7 @@ float* core_dmd_update_pwm(const core_tLCDLayout* layout, unsigned int * lumFram
 
    case CORE_DMD_PWM_PREINTEGRATED_LINEAR_16: // Stern SPIKE 1: 16 regularly spread shades (bitplanes shown 1/2/4/8 periods)
    {
-      const UINT8* frameData = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      const UINT8* const frameData = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       if (memcmp(dmd_state->dmdFIRBuffer, frameData, dmd_state->frameSize * sizeof(UINT8)) != 0) {
          memcpy(dmd_state->dmdFIRBuffer, frameData, dmd_state->frameSize * sizeof(UINT8));
          dmd_state->lumFrameId++;
@@ -4107,7 +4107,7 @@ float* core_dmd_update_pwm(const core_tLCDLayout* layout, unsigned int * lumFram
 
    case CORE_DMD_PWM_PREINTEGRATED_SAM:
    {
-      const UINT8* frameData = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
+      const UINT8* const frameData = dmd_state->rawFrames + ((nf + (dmd_state->nFrames - 1)) % dmd_state->nFrames) * dmd_state->rawFrameSize;
       if (memcmp(dmd_state->dmdFIRBuffer, frameData, dmd_state->frameSize * sizeof(UINT8)) != 0) {
          memcpy(dmd_state->dmdFIRBuffer, frameData, dmd_state->frameSize * sizeof(UINT8));
          dmd_state->lumFrameId++;

@@ -82,8 +82,7 @@ extern void core_nvram(void *file, int write, void *mem, size_t length, UINT8 in
 /* hard disks */
 static void *hard_disk_handle[4];
 
-/* the files of ROMREGION_MAPPED regions, open until the machine shuts down (Stern Spike 1's
-   Avengers The Pin: its program and 365 sounds) */
+/* the files of ROMREGION_MAPPED regions, open until the machine shuts down (Stern SPIKE 1's Avengers The Pin: its program and 365 sounds) */
 #define MAX_MAPPED_ROMS		512
 static struct { const struct RomModule *rom; mame_file *file; } mapped_rom[MAX_MAPPED_ROMS];
 static int mapped_roms;

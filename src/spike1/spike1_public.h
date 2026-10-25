@@ -34,8 +34,7 @@ extern "C" {
 #define SPIKE1_ALNUM_CHARS    32
 #define SPIKE1_ALNUM_SEGMENTS 16
 
-/* One of the title's files, by its name in the game folder; the caller keeps the bytes alive
-   until spike1_pinmame_stop() */
+/* One of the title's files, by its name in the game folder; the caller keeps the bytes alive until spike1_pinmame_stop() */
 typedef struct spike1_file
 {
 	const char *name;
@@ -54,8 +53,7 @@ typedef struct spike1_symbol
 /* Starts the machine from the title's files. game is the game folder's name and program the
    program in it the machine runs (the program runs as /games/<game>/<program>; NULL: "game");
    symbols is NULL, or the list for a program without a symbol table; nvram is the block
-   spike1_pinmame_nvram() gave the last time, or NULL for a new machine. 0 on failure, with the
-   reason in error */
+   spike1_pinmame_nvram() gave the last time, or NULL for a new machine. 0 on failure, with the reason in error */
 int spike1_pinmame_start(const char *game, const char *program, const spike1_file *files, unsigned count, const spike1_symbol *symbols,
                          const unsigned char *nvram, unsigned nvram_size, char *error, unsigned error_size);
 void spike1_pinmame_stop(void);
@@ -66,8 +64,7 @@ int spike1_pinmame_running(char *reason, unsigned reason_size);
    every guest thread waits, so emulated time keeps PinMAME's pace */
 int spike1_pinmame_run(int cycles);
 
-/* Everything the machine keeps across power cycles, as one block: the size it needs, copied into
-   dst when it fits in capacity */
+/* Everything the machine keeps across power cycles, as one block: the size it needs, copied into dst when it fits in capacity */
 unsigned spike1_pinmame_nvram(unsigned char *dst, unsigned capacity);
 /* Switches the machine off as the mains would. A game keeps settings, audits and the like in
    memory and commits them to its NVRAM files when it sees the power fail, so a host calls this
@@ -89,9 +86,8 @@ unsigned spike1_pinmame_coil_output(int number);
    while a ball is in play and disarms it when the game tilts and when a ball or the game ends */
 int spike1_pinmame_coil_reflex_armed(int number);
 
-/* LED channels (an RGB LED is three): each one's factory-manual Light Reference number, its class
-   bits (1 lamp, 2 GI string, 4 flasher, 8 motor drive, 0x10 and 0x20 cabinet) and name, and its
-   level now (0-255) */
+/* LED channels (an RGB LED is three): each one's factory-manual Light Reference number, its class bits
+   (1 lamp, 2 GI string, 4 flasher, 8 motor drive, 0x10 and 0x20 cabinet) and name, and its level now (0-255) */
 #define SPIKE1_LED_MOTOR 0x08
 unsigned spike1_pinmame_led_count(void);
 int spike1_pinmame_led(unsigned index, int *number, int *kind, const char **name); /* 0 past the last */
@@ -144,8 +140,7 @@ int spike1_pinmame_display_link(const char *target);
    would give the game (WWE's clips): call after spike1_pinmame_start; 0 if the title has no
    encrypted video */
 int spike1_pinmame_video_key(const unsigned char *key);
-/* 1 when the title has encrypted LCD videos and no key for them yet: call after
-   spike1_pinmame_start */
+/* 1 when the title has encrypted LCD videos and no key for them yet: call after spike1_pinmame_start */
 int spike1_pinmame_needs_video_key(void);
 
 /* Sound: 16-bit stereo at spike1_pinmame_audio_rate(); takes up to frames frames, interleaved

@@ -95,7 +95,7 @@ int spike1_pinmame_start(const char *game, const char *program, const spike1_fil
 			const char *sub = ends_with(name, ".spv") ? "/video/" : ends_with(name, ".wav") ? "/sounds/" : "/";
 			cfg.files.push_back({ dir + sub + name, files[i].data, files[i].size });
 		}
-	cfg.executable = dir + "/" + (program ? program : "game");
+	cfg.executable = dir + '/' + (program ? program : "game");
 	for (const spike1_symbol *s = symbols; s && s->name; s++) cfg.symbols.push_back({ s->name, s->address, s->size });
 	cfg.environment = { "HOME=/root", "PATH=/bin:/usr/bin:/usr/local/bin", "LANG=C", "LC_ALL=C", "GAMES_PATH=/games" };
 	cfg.clock_hz = SPIKE1_CPU_HZ;
