@@ -184,7 +184,8 @@ Spooky Pinball: America's Most Haunted V22, V23
                 Domino's Spectacular Pinball Adventure V6
                 Jetsons, The V4
                 Rob Zombie's Spookshow International V26
-Stern SPIKE 1: Game of Thrones 1.37.0
+Stern SPIKE 1: Avengers The Pin 1.0.3
+               Game of Thrones 1.37.0
                Game of Thrones 1.37.0 Limited Edition
                Ghostbusters 1.17.0 Limited Edition
                Heavy Metal 1.02.0
@@ -193,6 +194,7 @@ Stern SPIKE 1: Game of Thrones 1.37.0
                Pabst Can Crusher, The 1.01.0
                Primus 1.03.0
                Supreme 1.01.0
+               Transformers The Pin 1.0.18
                Whoa Nellie! Big Juicy Melons 1.55.0
                (Legends of) Wrestlemania 1.35.0 Limited Edition
 WMS:  Revenge From Mars 1.60, 1.50, 1.40, 1.30, 1.20 (official updates)

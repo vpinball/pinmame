@@ -2467,8 +2467,8 @@ DRIVER(smanve,101c)     // pinball browser colorized using extend memory
 #endif
 // SPIKE 1 System
 #if HAS_SPIKE1
-                        //SPIKE 1: ??/12 Transformers The Pin
-                        //SPIKE 1: ??/13 Avengers The Pin
+DRIVER(tfcp,1018)       //SPIKE 1: ??/12 Transformers The Pin - 1.0.18
+DRIVER(avscp,103)       //SPIKE 1: ??/13 Avengers The Pin - 1.0.3
                         //SPIKE 1: ??/15 Wrestlemania
 DRIVER(wwe,135h)        //         ??/15 Legends of Wrestlemania - 1.35.0 Limited Edition
 DRIVER(wnbjm,155)       //SPIKE 1: ??/15 Whoa Nellie! Big Juicy Melons - 1.55.0

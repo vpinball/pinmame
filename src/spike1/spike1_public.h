@@ -29,6 +29,10 @@ extern "C" {
 /* The RGB LED matrix a title has in the DMD's place (Spider-Man) */
 #define SPIKE1_RGB_WIDTH  64
 #define SPIKE1_RGB_HEIGHT 32
+/* The alphanumeric display of the titles on Stern's ELG framework (Transformers, Avengers The Pin):
+   its frame's character positions, of 16 segments each. The game keeps its text to the first 16 */
+#define SPIKE1_ALNUM_CHARS    32
+#define SPIKE1_ALNUM_SEGMENTS 16
 
 /* One of the title's files, by its name in the game folder; the caller keeps the bytes alive
    until spike1_pinmame_stop() */
@@ -47,11 +51,12 @@ typedef struct spike1_symbol
 	unsigned address, size;
 } spike1_symbol;
 
-/* Starts the machine from the title's files. game is the game folder's name (the program runs as
-   /games/<game>/game); symbols is NULL, or the list for a program without a symbol table; nvram
-   is the block spike1_pinmame_nvram() gave the last time, or NULL for a new machine. 0 on failure,
-   with the reason in error */
-int spike1_pinmame_start(const char *game, const spike1_file *files, unsigned count, const spike1_symbol *symbols,
+/* Starts the machine from the title's files. game is the game folder's name and program the
+   program in it the machine runs (the program runs as /games/<game>/<program>; NULL: "game");
+   symbols is NULL, or the list for a program without a symbol table; nvram is the block
+   spike1_pinmame_nvram() gave the last time, or NULL for a new machine. 0 on failure, with the
+   reason in error */
+int spike1_pinmame_start(const char *game, const char *program, const spike1_file *files, unsigned count, const spike1_symbol *symbols,
                          const unsigned char *nvram, unsigned nvram_size, char *error, unsigned error_size);
 void spike1_pinmame_stop(void);
 /* 1 while the game program runs; when it has stopped, why, in reason */
@@ -125,6 +130,12 @@ int spike1_pinmame_lcd(unsigned short *rgb565);
 /* The RGB matrix, when the title has one: its picture as RGB565 (64x32) into rgb565; returns the
    count of frames the game has sent */
 unsigned spike1_pinmame_rgb(unsigned short *rgb565);
+/* The alphanumeric display, when the title has one: per character position its 16 segments'
+   levels (0-15) into levels, in the game's segment order (0 middle left, 1 lower left diagonal,
+   2 lower centre, 3 lower right diagonal, 4 middle right, 5 upper right diagonal, 6 upper centre,
+   7 upper left diagonal, 8 upper left, 9 lower left, 10 bottom left, 11 bottom right, 12 lower
+   right, 13 upper right, 14 top right, 15 top left); returns the count of frames the game has sent */
+unsigned spike1_pinmame_alnum(unsigned char *levels);
 /* The display the machine has, as its root filesystem's /usr/local/spike/display.hex link names
    it (Spider-Man: "rgbdotmatrix-0_1_1.hex"; the game picks its display type from the name): call
    after spike1_pinmame_start, for a title whose game reads the link */

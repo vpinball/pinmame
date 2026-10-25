@@ -22,7 +22,7 @@
 #define AUD_DISK_BAD_MD5			0x00000400
 #define AUD_OPTIONAL_ROM_NOT_FOUND	0x00000800
 
-#define AUD_MAX_ROMS		100	/* maximum roms per driver */
+#define AUD_MAX_ROMS		512	/* maximum roms per driver (Stern Spike 1's Avengers The Pin has 366) */
 #define AUD_MAX_SAMPLES		200	/* maximum samples per driver */
 
 

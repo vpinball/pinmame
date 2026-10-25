@@ -37,6 +37,12 @@ constexpr int32_t AT_FDCWD_ = -100;
 // device with nothing on its way) looks again this often
 constexpr uint64_t POLL_RECHECK_NS = 1000000;
 constexpr uint32_t PROGRAM_HWCAP = 0x97;        // swp, half, thumb, fast mult, edsp: ARMv5TE, no VFP
+// The monotonic clocks count from the board's boot, and the board boots Linux and runs its
+// start-up scripts before it starts the game: this is the uptime then (not measured). The ELG
+// titles' sys_time_init() (Transformers, Avengers The Pin) asserts that the clock is above 0; they
+// count all their time from its value then (sys_time_get_usec() and _msec() subtract it, and no
+// other code reads the clock), so any value from 1 ms on runs them alike
+constexpr uint64_t BOOT_NS = 10000000000ull;
 
 struct syscall_name { uint32_t nr; const char *name; };
 const syscall_name SYSCALL_NAMES[] = {
@@ -697,7 +703,7 @@ int32_t spike1_linux::syscall(uint32_t nr, const uint32_t a[7], bool &handled, s
 	}
 	case 116: { // sysinfo
 		uint8_t si[64] = {};
-		const uint32_t uptime = uint32_t(now_ns() / 1000000000ull), totalram = 256u << 20, freeram = 128u << 20, unit = 1;
+		const uint32_t uptime = uint32_t((BOOT_NS + now_ns()) / 1000000000ull), totalram = 256u << 20, freeram = 128u << 20, unit = 1;
 		std::memcpy(si + 0, &uptime, 4); std::memcpy(si + 16, &totalram, 4); std::memcpy(si + 20, &freeram, 4);
 		std::memcpy(si + 52, &unit, 4);
 		return m_mem.write(a[0], si, sizeof(si)) ? 0 : -E_FAULT;
@@ -772,7 +778,7 @@ int32_t spike1_linux::syscall(uint32_t nr, const uint32_t a[7], bool &handled, s
 
 	// ---- time
 	case 263: { // clock_gettime
-		const uint64_t ns = (a[0] == 0 ? m_wall_base_ns : 0) + now_ns(); // CLOCK_REALTIME vs the monotonic ones
+		const uint64_t ns = (a[0] == 0 ? m_wall_base_ns : BOOT_NS) + now_ns(); // CLOCK_REALTIME vs the monotonic ones
 		const uint32_t ts[2] = { uint32_t(ns / 1000000000ull), uint32_t(ns % 1000000000ull) };
 		return m_mem.write(a[1], ts, 8) ? 0 : -E_FAULT;
 	}
@@ -791,7 +797,7 @@ int32_t spike1_linux::syscall(uint32_t nr, const uint32_t a[7], bool &handled, s
 		return int32_t(t);
 	}
 	case 43: { // times
-		const uint32_t ticks = uint32_t(now_ns() / 10000000ull);
+		const uint32_t ticks = uint32_t((BOOT_NS + now_ns()) / 10000000ull);
 		if (a[0]) { const uint32_t tms[4] = { ticks, 0, 0, 0 }; m_mem.write(a[0], tms, 16); }
 		return int32_t(ticks);
 	}
@@ -802,7 +808,8 @@ int32_t spike1_linux::syscall(uint32_t nr, const uint32_t a[7], bool &handled, s
 		if (!m_mem.read(req, ts, 8)) return -E_FAULT;
 		const uint64_t ns = uint64_t(ts[0]) * 1000000000ull + ts[1];
 		const bool absolute = nr == 265 && (a[1] & 1);
-		uint64_t wake_ns = absolute ? (a[0] == 0 ? (ns > m_wall_base_ns ? ns - m_wall_base_ns : 0) : ns) : now_ns() + ns;
+		const uint64_t base_ns = a[0] == 0 ? m_wall_base_ns : BOOT_NS;
+		uint64_t wake_ns = absolute ? (ns > base_ns ? ns - base_ns : 0) : now_ns() + ns;
 		if (wake_ns <= now_ns()) return 0;
 		block(wake_ns, false, 0);
 		return 0;
@@ -1405,7 +1412,7 @@ int32_t spike1_linux::sys_futex(const uint32_t a[7], std::string &note)
 			if (!m_mem.read(timeout, ts, 8)) return -E_FAULT;
 			const uint64_t ns = uint64_t(ts[0]) * 1000000000ull + ts[1];
 			// the bitset form takes an absolute time, on the realtime clock with FUTEX_CLOCK_REALTIME
-			if (cmd == 9) deadline = (op & 256) ? (ns > m_wall_base_ns ? ns - m_wall_base_ns : 1) : ns;
+			if (cmd == 9) { const uint64_t base_ns = (op & 256) ? m_wall_base_ns : BOOT_NS; deadline = ns > base_ns ? ns - base_ns : 1; }
 			else deadline = now_ns() + ns;
 			if (deadline <= now_ns()) return -E_TIMEDOUT;
 		}

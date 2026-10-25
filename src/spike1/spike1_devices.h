@@ -37,6 +37,11 @@ public:
 	// 64x32 dots of 4-bit red, green and blue, as four bitplanes
 	static constexpr uint32_t RGB_WIDTH = 64, RGB_HEIGHT = 32;
 	static constexpr uint32_t RGB_FRAME_BYTES = RGB_WIDTH * RGB_HEIGHT * 3 / 8 * 4;
+	// The alphanumeric display of the home models on Stern's earlier ELG framework (Transformers,
+	// Avengers The Pin): 32 characters of 16 segments, each segment at one of 16 levels, as four
+	// bitplanes
+	static constexpr uint32_t ALNUM_CHARS = 32, ALNUM_SEGMENTS = 16;
+	static constexpr uint32_t ALNUM_FRAME_BYTES = ALNUM_CHARS * ALNUM_SEGMENTS / 8 * 4;
 
 	struct config
 	{
@@ -190,6 +195,15 @@ public:
 	// The same for the RGB matrix, as RGB565 dots row by row, and the count of its frames
 	const uint16_t *rgb_frame() const { return m_rgb565; }
 	uint64_t rgb_frame_count() const { return m_rgb_frames; }
+	// The same for the alphanumeric display: per character its 16 segments' levels (0-15), in the
+	// game's segment order (its segmentX/segmentY tables): 0 middle left, 1 lower left diagonal,
+	// 2 lower centre, 3 lower right diagonal, 4 middle right, 5 upper right diagonal, 6 upper
+	// centre, 7 upper left diagonal, 8 upper left, 9 lower left, 10 bottom left, 11 bottom right,
+	// 12 lower right, 13 upper right, 14 top right, 15 top left. And the text the game's own font
+	// (_ZL4font) draws there, '?' for a pattern it has no character for
+	const uint8_t *alnum_frame() const { return m_alnum; }
+	uint64_t alnum_frame_count() const { return m_alnum_frames; }
+	std::string alnum_text() const;
 	// Frames the game sent, per command byte and board, for bring-up statistics
 	const std::map<uint32_t, uint64_t> &node_bus_counts() const { return m_nb_counts; }
 	// The time the node bus wire has carried bytes, sent and answered
@@ -430,6 +444,9 @@ private:
 	uint64_t m_rgb_frames = 0;
 	uint16_t m_rgb565[RGB_WIDTH * RGB_HEIGHT] = {};
 	int32_t rgb_write(uint32_t buf, uint32_t len, uint64_t now_ns, uint64_t &wait_ns);
+	uint64_t m_alnum_frames = 0;
+	uint8_t m_alnum[ALNUM_CHARS * ALNUM_SEGMENTS] = {};
+	int32_t alnum_write(uint32_t buf, uint32_t len);
 
 	void log(const std::string &line) const { if (m_cfg.log) m_cfg.log(line); }
 	// cfg.trace, only in SPIKE1_DEBUG builds: without it the trace notes are compiled out (spike1_debug.h)
@@ -451,6 +468,24 @@ private:
 	void node_bus_bridge(const uint8_t *msg, uint32_t len, std::string &note);
 	void node_bus_reply(const uint8_t *data, uint32_t len, uint8_t status = 0);
 	const std::vector<uint8_t> &node_bus_nodes();
+	// The ELG framework's node bus and tables (Transformers, Avengers The Pin): its boards' bus addresses
+	bool m_elg = false;
+	std::vector<uint8_t> m_elg_nodes;
+	// The bridge's 64-byte EEPROM, kept in the NVRAM block with the I2C EEPROMs under a number no
+	// I2C slave has
+	static constexpr uint16_t ELG_BRIDGE_EEPROM = 0x8000;
+	static constexpr uint32_t ELG_BRIDGE_EEPROM_BYTES = 64;
+	void elg_node_bus(const uint8_t *p, uint32_t len, uint64_t now_ns, std::string &note);
+	void elg_bridge_command(const uint8_t *p, uint32_t len, std::string &note);
+	// The display's text port, the second serial line: its splash (proc_splash_display_t(), " STARTING
+	// GAME " scrolled for 14 s) - [0x02][16 characters][0x03] every 5 ms. Which of the text and the
+	// segment frames the display processor shows is its firmware's (alphanumeric-1_0_4.hex), not
+	// the game's; the model shows the frames
+	bool elg_display_port(const handle &h) const { return m_elg && h.path == "/dev/ttyS3"; }
+	void elg_coil_reflex(uint8_t node, uint8_t index, const uint8_t *data, uint32_t len, std::string &note);
+	void elg_load_tables();
+	bool elg_inputs_changed(uint8_t node) const;
+	void coil_pulse(uint8_t node, uint8_t index, uint8_t power1, uint32_t ms1, uint8_t power2, uint32_t ms2, uint64_t now_ns);
 	bool guest_read(uint32_t addr, void *dst, uint32_t len) { return m_mem.read(addr, dst, len); }
 	bool guest_write(uint32_t addr, const void *src, uint32_t len) { return m_mem.write(addr, src, len); }
 	uint32_t video_key_at() const { return m_cfg.symbol ? m_cfg.symbol("_ZL7rc4_key") : 0; }
