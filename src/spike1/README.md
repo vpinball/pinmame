@@ -1,21 +1,14 @@
 # Stern Spike 1
 
-Stern's first SPIKE platform (2015 on: Game of Thrones, KISS, WrestleMania, Ghostbusters, ...). The
+Stern's first SPIKE platform (2012 to 2020: Game of Thrones, KISS, Wrestlemania, Ghostbusters, ...). The
 game runs as a statically linked ARMv5TE Linux program on an ARM926-class CPU board and talks to
-the playfield's node boards over a serial bus; the display is a 128x32 DMD with 16 shades (on
-Spider-Man CP a 64x32 RGB LED matrix in its place).
-
-**Status: bring-up.** The subsystem runs as a PinMAME driver (`src/wpc/spike1.c`, sets
-`gbust_117h` Ghostbusters LE 1.17.0, `wnbjm_155` Whoa Nellie! Big Juicy Melons 1.55.0, `primus_103`
-Primus 1.03.0, `pabst_101` Pabst Can Crusher 1.01.0, `got_137h` Game of Thrones LE 1.37.0,
-`got_137` Game of Thrones Pro 1.37.0, `kiss15_141h` KISS LE 1.41.0, `wwe_135h` WWE WrestleMania LE
-1.35.0, `heavym20_102` Heavy Metal 1.02.0, `supreme_101` Supreme 1.01.0 and `smancp_101` Spider-Man
-CP 1.01) and standalone (`spike1boot`, below).
+the playfield's node boards over a serial bus; the display is a 128x32 DMD with 16 shades
+(on Spider-Man The Pin: a 64x32 RGB LED matrix in its place).
 
 ## How it works
 
-There is no board to emulate below the game program: the subsystem emulates Linux at the
-system-call level, the way the program sees it.
+There is no low level emulation of boards below the game program: the subsystem emulates Linux at the
+system-call level instead.
 
 - `mame/cpu/arm7/` - MAME's ARM7/ARM9 core, imported. The game runs on the ARM9 (v5TE) variant in
   user mode with the MMU off.
@@ -59,7 +52,7 @@ kernel's `kernel_user_helpers.rst`), so no per-instruction hook is needed; `__ku
 word the thread switch keeps current. A thread that loses the CPU between `__kuser_cmpxchg`'s load
 and its store restarts the helper, as the kernel does on pre-v6 CPUs, so the helper stays atomic.
 
-## The MAME import
+## Source imported from MAME
 
 From MAME 0.288 (tag `mame0288`, commit `27a8d9e`), `src/devices/cpu/arm7/`: `arm7.cpp`, `arm7.h`,
 `arm7core.h`, `arm7core.hxx`, `arm7help.h`, `arm7ops.cpp`, `arm7thmb.cpp`, `arm7dasm.cpp`,
@@ -72,7 +65,7 @@ From MAME 0.288 (tag `mame0288`, commit `27a8d9e`), `src/devices/cpu/arm7/`: `ar
 | `arm7.cpp` | no debugger console commands |
 | `arm7ops.cpp` BLX (register) | **bug fix**: read the target before writing the link register. `blx lr`, which glibc's `clone()` uses to call a new thread's start routine, branched to its own return address (the Thumb form was already right) |
 
-The core uses the MAME compatibility layer of the Pinball 2000 subsystem (`src/p2k/shim`), with a
+The core uses the existing MAME compatibility layer of the Pinball 2000 subsystem (`src/p2k/shim`), with a
 few additions for modern MAME's arm7: `rotr_32`, `population_count_32`, `mul_32x32_shift`,
 `util::sext`, the `TR_*` translation intents, `address_map_constructor`, the four-argument
 `memory_translate()`, `address_space::read_ptr()`/`endianness()`, `total_cycles()` and
@@ -143,7 +136,7 @@ leaves `HandleMechanics` at its default, as a table does), `--frames` saves the 
 displays as `display<n>_<second>.png`, each second's last frame, and the library's "Average FPS"
 line at the end gives the frame rate. `SPIKE1_LOG` passes the subsystem's log on.
 
-## The devices (`spike1_devices.*`)
+## Devices (`spike1_devices.*`)
 
 Each one answers the Linux driver interface the game uses, worked out from the game's own driver
 code (its symbols are in the program) rather than from any other emulator:
@@ -155,7 +148,7 @@ code (its symbols are in the program) rather than from any other emulator:
   `LineSenseThread` measures as 60 Hz and accepts as a real line; reads wait for the samples' time.
 - **DMD** (`/dev/spi0`): 2048-byte frames of four bitplanes, plane n weighing 2^n, decoded to 16
   shades; writes wait for the panel's 15.75 ms PWM pattern.
-- **RGB matrix** (Spider-Man CP, `/dev/spi0` as well): 3072-byte frames of 64x32 dots, 4 bits each
+- **RGB matrix** (Spider-Man The Pin, `/dev/spi0` as well): 3072-byte frames of 64x32 dots, 4 bits each
   of red, green and blue as four bitplanes (`rgb_write()` has the layout). The game picks its
   display by the target of the root filesystem's `/usr/local/spike/display.hex` link
   (Spider-Man's program knows `rgbdotmatrix-*`, and the 64x32 mono `dmd_1x-*` and `dotmatrix-*`,
@@ -410,7 +403,7 @@ code (its symbols are in the program) rather than from any other emulator:
   `<set>.txt` beside the set (`wwe_135h.txt`, 32 hex digits; spaces, commas and `0x` prefixes are
   allowed), which the driver reads from the ROM path when the title has such clips
   (`spike1_pinmame_needs_video_key()`) and hands to the subsystem (`spike1_pinmame_video_key()`).
-  Without it, a message names the file and the clips show as noise. Spider-Man CP's RGB matrix is its
+  Without it, a message names the file and the clips show as noise. Spider-Man's RGB matrix is its
   only display (layout `spike1_rgb`, `SPIKE1_INIT_RGB`): a 64x32 video display, display 0, in full
   colour; the set's `displayLink` goes to `spike1_pinmame_display_link()`.
 - **Sound**: a stereo stream from the device model's samples, at the rate the game sets on
@@ -447,7 +440,7 @@ Build: `cmake/spike1.cmake` (on by default, `-DPINMAME_SPIKE1=OFF` leaves it out
 `cmake/pinmame/CMakeLists_win-x64.txt` and `cmake/libpinmame/CMakeLists.txt`. With the Pinball 2000
 subsystem built too, the shim's two sources come from its library.
 
-## Where bring-up stands
+## Where the emulation stands
 
 Ghostbusters LE 1.17.0 boots to **attract mode** (high scores, replay value, "PRESENTS"), takes
 coins and **starts a game**: "CREDITS 1 / PRESS START", the start animation, then ball 1 with the
@@ -481,9 +474,9 @@ disc is lamp 172 (the game runs disc motor 2 only). The optional USB topper (`/d
 `auto_topper`) is not modelled: its writes are taken and dropped. The set is `kiss15`, as PinMAME's
 `kiss` is Bally's of 1979.
 
-WWE WrestleMania LE 1.35.0 (the oldest SDK, node firmware 0.18.4, six boards, four balls) boots to
+Wrestlemania LE 1.35.0 (the oldest SDK, node firmware 0.18.4, six boards, four balls) boots to
 attract mode with its DMD, and its playfield LCD plays the attract clips (the shattering "Legends
-of WrestleMania" logo and the WWE logo, decrypted by the game with the key from `wwe_135h.txt`,
+of Wrestlemania" logo and the WWE logo, decrypted by the game with the key from `wwe_135h.txt`,
 at 20 fps); it takes coins and
 starts a game. It needed `syncfs` (system call 373), 8-byte switch reads, its own table layouts,
 80-byte board blocks, its CPU board inputs where its switch map reads them (above; at its table's
@@ -511,14 +504,13 @@ slings (23 bytes) and Heavy Metal's (43 bytes) did not fire on their own either 
 `coil_reflex()` read each form. Its right flipper coil is named RT FLIPPER POWER, which the driver
 now takes as RIGHT FLIPPER POWER.
 
-Spider-Man CP 1.01 (node firmware 0.19.1, two boards, four balls, free play; set `smancp_101`,
+Spider-Man The Pin 1.01 (node firmware 0.19.1, two boards, four balls, free play; set `smancp_101`,
 from a raw dump of its card, `spiderman.bin`, game folder `spiderman_cp`; no manual exists; the
 game shows V1.01 - the 1.1.0 in its NVRAM files' names is their format's version) boots
 to attract mode with its RGB matrix in colour, starts a game, and fires its flippers, slings and
 pops from their switches (the 23-byte reflex form, as WWE's). Its switch table keeps each entry's
 index and number 24 bytes before the end, a third layout for `apply_manual_numbers()`; the numbers
-are the game's own, which its switch test shows, and its cabinet's are Supreme's. It runs at about
-4.7x real time in the harness. Its sound comes at 24 kHz.
+are the game's own, which its switch test shows, and its cabinet's are Supreme's. Its sound comes at 24 kHz.
 
 ## Open items
 
@@ -544,7 +536,7 @@ are the game's own, which its switch test shows, and its cabinet's are Supreme's
 8. Heavy Metal: its stepper driver board (TMC2590, node 2) and its WS2812 and QR scanner devices
    are not modelled beyond what the start-up needs; node commands 0xC0 (on its packed LED SDK),
    0xF0, 0xF1 and 0xF2 to node 4 are taken without a model. No Heavy Metal table exists yet.
-9. Spider-Man CP: its node thread reads a chip at I2C address 0x59 over SMBus (`I2C_SMBUS`, not
+9. Spider-Man The Pin: its node thread reads a chip at I2C address 0x59 over SMBus (`I2C_SMBUS`, not
    modelled) and sends each board a key (0xF3, `NODEBUS_SendKey`, taken without a model); the game
    runs on. The RGB panel's frame time is the DMD's (not known). The game writes its settings and
    audits to `/data` as they change and commits nothing at the power fail, so a power down waits

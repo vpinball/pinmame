@@ -1,6 +1,6 @@
 // license:BSD-3-Clause
 
-// PinMAME Spike 1 subsystem - the CPU board's devices, as the game reaches them through /dev
+// PinMAME SPIKE 1 subsystem - the CPU board's devices, as the game reaches them through /dev
 //
 // Each device answers the Linux driver interface the game uses (read/write/ioctl on its node),
 // so the game's own driver code runs unchanged above it. A device that would make the caller

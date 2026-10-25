@@ -1,6 +1,6 @@
 // license:BSD-3-Clause
 
-// PinMAME Spike 1 subsystem - the guest's flat 32-bit address space. See spike1_memory.h
+// PinMAME SPIKE 1 subsystem - the guest's flat 32-bit address space. See spike1_memory.h
 
 #include "spike1_memory.h"
 

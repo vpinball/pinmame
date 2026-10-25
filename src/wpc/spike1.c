@@ -1,7 +1,7 @@
 // license:BSD-3-Clause
 
 /************************************************************************************************
-  Stern Spike 1 (2012-2020: Game of Thrones, KISS, Wrestlemania, Ghostbusters, ...)
+  Stern SPIKE 1 (2012-2020: Game of Thrones, KISS, Wrestlemania, Ghostbusters, ...)
 
   The game is a statically linked ARMv5TE Linux program on an ARM926-class CPU board. It drives a
   128x32 DMD with 16 shades and talks to the node boards - switches, coils, LEDs, motors, a game's
@@ -179,7 +179,7 @@ const char *spike1cpu_info(void *context, int regnum)
 {
   (void)context;
   switch (regnum) {
-  case CPU_INFO_NAME: return "Spike 1";
+  case CPU_INFO_NAME: return "SPIKE 1";
   case CPU_INFO_FAMILY: return "ARM9 (ARMv5TE) Linux";
   case CPU_INFO_VERSION: return "1.0";
   case CPU_INFO_FILE: return __FILE__;
@@ -382,8 +382,7 @@ static void spike1_sync_io(void)
     int position = 0;
     locals.mech[i] = spike1_pinmame_motor((unsigned)i, &position, NULL) ? position : 0;
   }
-  /* the DMD: a new frame when the game has sent one (a title with the RGB matrix instead draws it
-     as video, spike1_rgb_video) */
+  /* the DMD: a new frame when the game has sent one (a title with the RGB matrix instead draws it as video, spike1_rgb_video) */
   if ((core_gameData->lcdLayout->type & CORE_SEGALL) == CORE_DMD && spike1_pinmame_dmd(NULL) != locals.dmdFrames) {
     static UINT8 dots[SPIKE1_DMD_WIDTH * SPIKE1_DMD_HEIGHT];
     locals.dmdFrames = spike1_pinmame_dmd(dots);
@@ -421,7 +420,7 @@ static INTERRUPT_GEN(spike1_vblank)
     }
     if (!locals.warned && !spike1_pinmame_running(reason, sizeof(reason))) {
       locals.warned = 1;
-      usrintf_showmessage_secs(30, "Spike 1: the game program stopped: %s", reason);
+      usrintf_showmessage_secs(30, "SPIKE 1: the game program stopped: %s", reason);
     }
   }
   core_updateSw(0); /* the flippers are the node boards' own (FLIP_SOL), see spike1_sync_io */
@@ -452,7 +451,7 @@ static PINMAME_VIDEO_UPDATE(spike1_insert_video)
   int x, y;
   (void)cliprect;
   for (y = 0; y < SPIKE1_INSERT_HEIGHT && layout->top + y < bitmap->height; y++) {
-    UINT16 *line = (UINT16 *)bitmap->line[layout->top + y] + layout->left;
+    UINT16 * const line = (UINT16 *)bitmap->line[layout->top + y] + layout->left;
     for (x = 0; x < SPIKE1_INSERT_WIDTH && layout->left + x < bitmap->width; x++) {
       UINT32 c = 0;
       if (shown) { /* RGB565 to RGB555, dimmed with the backlight */
@@ -475,7 +474,7 @@ static PINMAME_VIDEO_UPDATE(spike1_lcd_video)
   int x, y;
   (void)cliprect;
   for (y = 0; y < SPIKE1_LCD_HEIGHT && layout->top + y < bitmap->height; y++) {
-    UINT16 *line = (UINT16 *)bitmap->line[layout->top + y] + layout->left;
+    UINT16 * const line = (UINT16 *)bitmap->line[layout->top + y] + layout->left;
     for (x = 0; x < SPIKE1_LCD_WIDTH && layout->left + x < bitmap->width; x++) {
       UINT32 c = 0;
       if (shown) { /* RGB565 to RGB555 */
@@ -497,7 +496,7 @@ static PINMAME_VIDEO_UPDATE(spike1_rgb_video)
   int x, y;
   (void)cliprect;
   for (y = 0; y < SPIKE1_RGB_HEIGHT && layout->top + y < bitmap->height; y++) {
-    UINT16 *line = (UINT16 *)bitmap->line[layout->top + y] + layout->left;
+    UINT16 * const line = (UINT16 *)bitmap->line[layout->top + y] + layout->left;
     for (x = 0; x < SPIKE1_RGB_WIDTH && layout->left + x < bitmap->width; x++) {
       const UINT32 p = frames ? rgb[y * SPIKE1_RGB_WIDTH + x] : 0;
       line[x] = (UINT16)Machine->pens[SPIKE1_PEN0 + (((p >> 1) & 0x7fe0) | (p & 0x1f))]; /* RGB565 to RGB555 */
@@ -558,9 +557,9 @@ static void spike1_provide_video_key(void)
   found = spike1_read_video_key(name, key);
   if (found > 0 && spike1_pinmame_video_key(key)) return;
   if (found < 0)
-    usrintf_showmessage_secs(30, "Spike 1: %s does not hold a video key (32 hex digits)", name);
+    usrintf_showmessage_secs(30, "SPIKE 1: %s does not hold a video key (32 hex digits)", name);
   else
-    usrintf_showmessage_secs(30, "Spike 1: the LCD videos need their key: put it in %s beside the ROM set", name);
+    usrintf_showmessage_secs(30, "SPIKE 1: the LCD videos need their key: put it in %s beside the ROM set", name);
 }
 
 static core_tLCDLayout spike1_dmd[] = {
@@ -640,7 +639,7 @@ static void spike1_snd_update(int num, INT16 **buffer, int length)
 
 static int spike1_sh_start(const struct MachineSound *msound)
 {
-  const char *names[] = { "Spike 1 Left", "Spike 1 Right" };
+  static const char *names[] = { "SPIKE 1 Left", "SPIKE 1 Right" };
   const int vol[2] = { MIXER(100, MIXER_PAN_LEFT), MIXER(100, MIXER_PAN_RIGHT) };
   (void)msound;
   spike1_stream = stream_init_multi(2, names, vol, SPIKE1_AUDIO_RATE, 0, spike1_snd_update);
@@ -753,17 +752,17 @@ static MACHINE_INIT(spike1)
     }
   }
   if (missing) {
-    usrintf_showmessage_secs(30, "Spike 1: the ROM set's %s is not open", missing);
+    usrintf_showmessage_secs(30, "SPIKE 1: the ROM set's %s is not open", missing);
     return;
   }
   if (!spike1_pinmame_start(spike1_game()->folder, files, count, spike1_game()->symbols, nvBlock, nvSize, error, sizeof(error))) {
-    usrintf_showmessage_secs(30, "Spike 1: the game program does not start: %s", error);
+    usrintf_showmessage_secs(30, "SPIKE 1: the game program does not start: %s", error);
     return;
   }
   locals.running = 1;
   if (inMemory) {
-    logerror("Spike 1: %s is held in memory, not mapped from disk: a set's zip maps only what it stores uncompressed\n", inMemory);
-    usrintf_showmessage_secs(10, "Spike 1: %s is held in memory, not mapped from disk (a compressed zip?)", inMemory);
+    logerror("SPIKE 1: %s is held in memory, not mapped from disk: a set's zip maps only what it stores uncompressed\n", inMemory);
+    usrintf_showmessage_secs(10, "SPIKE 1: %s is held in memory, not mapped from disk (a compressed zip?)", inMemory);
   }
   spike1_provide_video_key();
   if (spike1_game()->displayLink) spike1_pinmame_display_link(spike1_game()->displayLink);
@@ -838,8 +837,7 @@ MACHINE_DRIVER_START(spike1)
   MDRV_PALETTE_LENGTH(SPIKE1_PEN0 + 32768)
 MACHINE_DRIVER_END
 
-/* A title with the CPU board's LCD (WWE): the DMD with the LCD below it is taller than PinMAME's
-   default screen outside VPinMAME (320x256) */
+/* A title with the CPU board's LCD (WWE): the DMD with the LCD below it is taller than PinMAME's default screen outside VPinMAME (320x256) */
 MACHINE_DRIVER_START(spike1_lcd)
   MDRV_IMPORT_FROM(spike1)
 #if CORE_SCREENY < 68 + SPIKE1_LCD_HEIGHT
@@ -1123,7 +1121,7 @@ ROM_END
 CORE_GAMEDEF(gbust, 117h, "Ghostbusters Limited Edition (1.17.0)", 2016, "Stern", spike1, 0)
 
 /*-------------------------------------------------------------------
-/ Marvel Spider-Man Home Edition
+/ Spider-Man The Pin
 /-------------------------------------------------------------------*/
 /* Node firmware 0.19.1: two boards, four balls, free play (no coin or slam switches). Its display is
    a 64x32 RGB LED matrix in the DMD's place, which the game picks by the machine's
@@ -1142,7 +1140,7 @@ ROM_START(smancp_101)
     ROM_LOAD("pinnode-LPC1112_201-0_19_1.hex", 0x10aef000, 0x0000807c, CRC(2769520c) SHA1(380f4755b683b69e59af172000c9300350bfab41))
     ROM_LOAD("pinnode-LPC1313-0_19_1.hex", 0x10af8000, 0x0000a188, CRC(feb117d1) SHA1(453a0de75a62aef43bfaa1edea1634eada328190))
 ROM_END
-CORE_GAMEDEF(smancp, 101, "Marvel Spider-Man Home Edition (1.01)", 2016, "Stern", spike1, 0)
+CORE_GAMEDEF(smancp, 101, "Spider-Man The Pin (1.01)", 2016, "Stern", spike1, 0)
 
 /*-------------------------------------------------------------------
 / Supreme

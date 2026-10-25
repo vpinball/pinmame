@@ -1,8 +1,8 @@
 // license:BSD-3-Clause
 
-// PinMAME Spike 1 subsystem - the guest's flat 32-bit address space
+// PinMAME SPIKE 1 subsystem - the guest's flat 32-bit address space
 //
-// A Spike 1 game is a Linux user-mode program, so there is no board memory map to model: the
+// A SPIKE 1 game is a Linux user-mode program, so there is no board memory map to model: the
 // guest sees RAM where the program, its heap, its mmap()s and its stack live, plus the page of
 // helper code the ARM kernel maps at 0xffff0000. Each of those is one block of host memory and one
 // fast window of the CPU's address space; anything else is a fault
