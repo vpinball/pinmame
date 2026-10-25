@@ -29,11 +29,11 @@ onwards** is listed separately below as not expected rather than as missing.
 
 | Status                           | Machines | Share |
 | -------------------------------- | -------: | ----: |
-| Fully working                    |      575 | 69.1% |
+| Fully working                    |      580 | 69.7% |
 | Partially working                |       31 |  3.7% |
 | Emulated but not working         |        1 |  0.1% |
-| Not emulated                     |       96 | 11.5% |
-| Not emulated — released recently |      129 | 15.5% |
+| Not emulated                     |       93 | 11.2% |
+| Not emulated — released recently |      127 | 15.3% |
 | **Total**                        |  **832** |       |
 
 ### By decade
@@ -44,10 +44,10 @@ onwards** is listed separately below as not expected rather than as missing.
 | 1980s  |   328 |           280 |      23 |           1 |           24 |
 | 1990s  |   148 |           142 |       3 |           0 |            3 |
 | 2000s  |    25 |            24 |       0 |           0 |            1 |
-| 2010s  |    73 |            18 |       0 |           0 |           55 |
-| 2020s  |    88 |             0 |       0 |           0 |           88 |
+| 2010s  |    73 |            22 |       0 |           0 |           51 |
+| 2020s  |    88 |             1 |       0 |           0 |           87 |
 
-## Fully working (575)
+## Fully working (580)
 
 Every known ROM set runs, and the driver flags nothing wrong with any of them.
 
@@ -603,7 +603,7 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | Pirates of the Caribbean                       | 2006 | Stern                  | DMD          | `potc_108as`, `potc_109ai`, `potc_109as` + 25 more   |             |       |
 | World Poker Tour                               | 2006 | Stern                  | DMD          | `wpt_103a`, `wpt_105a`, `wpt_106a` + 43 more         |             |       |
 | Family Guy / Shrek                             | 2007 | Stern                  | DMD          | `fg_1000af`, `fg_1000ag`, `fg_1000ai` + 18 more      |             |       |
-| Spider-Man                                     | 2007 | Stern                  | DMD          | `sman_102af`, `sman_130af`, `sman_130ai` + 46 more   |             |       |
+| Spider-Man                                     | 2007 | Stern                  | DMD          | `sman_102af`, `sman_130af`, `sman_130ai` + 47 more   |             |       |
 | Wheel of Fortune                               | 2007 | Stern                  | DMD          | `wof_100`, `wof_200`, `wof_200f` + 18 more           |             |       |
 | Batman                                         | 2008 | Stern                  | DMD          | `bdk_130`, `bdk_150`, `bdk_160` + 7 more             |             |       |
 | CSI: Crime Scene Investigation                 | 2008 | Stern                  | DMD          | `csi_102`, `csi_103`, `csi_104` + 4 more             |             |       |
@@ -625,9 +625,14 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | America's Most Haunted                         | 2014 | Spooky Pinball         | DMD          | `amh_022`, `amh_023`                                 | yes         |       |
 | Mustang                                        | 2014 | Stern                  | DMD          | `mt_120`, `mt_130`, `mt_130h` + 8 more               |             |       |
 | The Walking Dead                               | 2014 | Stern                  | DMD          | `twd_105`, `twd_111`, `twd_111h` + 20 more           |             |       |
+| Game of Thrones                                | 2015 | Stern                  | DMD          | `got_137`, `got_137h`                                |             |       |
+| Whoa Nellie / PBR                              | 2015 | Stern                  | Reels        | `wnbjm_155`, `pabst_101`, `primus_103`               |             |       |
+| WrestleMania                                   | 2015 | Stern                  | DMD          | `wwe_135h`                                           |             |       |
 | Domino's Spectacular Pinball Adventure         | 2016 | Spooky Pinball         | DMD          | `dominos_006`                                        | yes         |       |
+| Ghostbusters                                   | 2016 | Stern                  | DMD          | `gbust_117h`                                         |             |       |
 | Rob Zombie's Spookshow International           | 2016 | Spooky Pinball         | DMD          | `rzspook_026`                                        | yes         |       |
 | The Jetsons                                    | 2017 | Spooky Pinball         | DMD          | `jetsons_004`                                        | yes         |       |
+| Heavy Metal                                    | 2020 | Stern                  | DMD          | `heavym20_102`                                       |             |       |
 
 ## Partially working (31)
 
@@ -679,7 +684,7 @@ does not boot or does not play.
 | ------- | ---: | ------------ | ------------ | ---------------- | --------- | ------------ |
 | 4X4     | 1983 | Atari        | Alphanumeric | `fourx4`         |           | does not run |
 
-## Not emulated (96)
+## Not emulated (93)
 
 No driver. These machines are old enough to be in scope, so they are the candidates for
 future work.
@@ -775,15 +780,12 @@ future work.
 | The Wizard of Oz                            | 2013 | Jersey Jack Pinball       | LCD          |
 | Captain Nemo                                | 2015 | Quetzal Pinball           | LCD          |
 | Full Throttle                               | 2015 | Heighway Pinball          | LCD          |
-| Game of Thrones                             | 2015 | Stern                     | DMD          |
 | KISS                                        | 2015 | Stern                     | DMD          |
 | The Big Lebowski                            | 2015 | Dutch Pinball             | LCD          |
 | The Hobbit                                  | 2015 | Jersey Jack Pinball       | LCD          |
-| Whoa Nellie / PBR                           | 2015 | Stern                     | Reels        |
 | Wrath of Olympus                            | 2015 | Riot Pinball              | DMD          |
-| WrestleMania                                | 2015 | Stern                     | DMD          |
 
-## Not emulated — released recently (129)
+## Not emulated — released recently (127)
 
 No driver, and not expected to get one soon: see the note on end-of-life machines above.
 
@@ -791,7 +793,6 @@ No driver, and not expected to get one soon: see the note on end-of-life machine
 | ------------------------------------------------- | ---: | ------------------------ | ------------ |
 | Alien                                             | 2016 | Heighway Pinball         | LCD          |
 | Batman 66                                         | 2016 | Stern                    | LCD          |
-| Ghostbusters                                      | 2016 | Stern                    | DMD          |
 | Spider-Man (Home Edition)                         | 2016 | Stern                    | DMD          |
 | Aerosmith                                         | 2017 | Stern                    | LCD          |
 | Barnyard                                          | 2017 | Multimorphic             | LCD          |
@@ -833,7 +834,6 @@ No driver, and not expected to get one soon: see the note on end-of-life machine
 | Avengers: Infinity Quest                          | 2020 | Stern                    | LCD          |
 | Celts                                             | 2020 | Haggis Pinball           | LCD          |
 | Guns N' Roses                                     | 2020 | Jersey Jack Pinball      | LCD          |
-| Heavy Metal                                       | 2020 | Stern                    | DMD          |
 | Heist                                             | 2020 | Multimorphic             | LCD          |
 | Hot Wheels                                        | 2020 | American Pinball         | LCD          |
 | Led Zeppelin                                      | 2020 | Stern                    | LCD          |
@@ -921,7 +921,7 @@ No driver, and not expected to get one soon: see the note on end-of-life machine
 
 ## Appendix: driver entries with no machine
 
-### ROM sets that matched nothing (147)
+### ROM sets that matched nothing (149)
 
 Driver entries that matched no solid state OPDB title. Most are prototypes, test fixtures
 and regional machines OPDB does not carry. The rest are matching failures: add them to
@@ -1040,10 +1040,12 @@ and regional machines OPDB does not carry. The rest are matching failures: add t
 | `jamesb7b`         | James Bond (3/5-Ball, 7-digit conversion)                      | 2008 | Oliver                    | `src/wpc/gts80games.c`       |
 | `jamesb7`          | James Bond (Timed Play, 7-digit conversion)                    | 2008 | Oliver                    | `src/wpc/gts80games.c`       |
 | `sam1_flashb_0310` | S.A.M. Boot Flash Update (V3.1)                                | 2008 | Stern                     | `src/wpc/sam.c`              |
+| `kiss15_141h`      | KISS Limited Edition (1.41.0)                                  | 2015 | Stern                     | `src/wpc/spike1.c`           |
 | `boomranb`         | Boomerang (MOD Bugfixes patch)                                 | 2017 | Bally / Gaston            | `src/wpc/boomerang.c`        |
 | `bubba`            | Bubba the Redneck Werewolf (Hollywood Heat unofficial MOD)     | 2017 | HauntFreaks               | `src/wpc/gts80games.c`       |
 | `beachbms`         | Beach Bums (Hollywood Heat unofficial MOD)                     | 2018 | watacaractr               | `src/wpc/gts80games.c`       |
 | `clash`            | Clash, The (Rock Encore unofficial MOD)                        | 2018 | Onevox                    | `src/wpc/gts80games.c`       |
+| `supreme_101`      | Supreme (1.01.0)                                               | 2018 | Stern                     | `src/wpc/spike1.c`           |
 | `scotest8`         | Scott's Test ROM (version 8)                                   | 2019 | Scott Charles             | `src/wpc/by35games.c`        |
 | `tomjerry`         | Tom & Jerry (Hollywood Heat unofficial MOD)                    | 2019 | watacaractr               | `src/wpc/gts80games.c`       |
 | `che_cho`          | Cheech & Chong: Road-Trip'pin (Harley-Davidson unofficial MOD) | 2021 | Bally/watacaractr         | `src/wpc/sims/wpc/full/hd.c` |
@@ -1146,8 +1148,8 @@ scripts/gen_supported_machines.py
 
 The script reads a cached copy of OPDB and re-downloads only with `--refresh`; `--check`
 fails if this file is out of date. Machine data comes from the OPDB snapshot of
-**2026-10-24**; driver data from `src/wpc` at the commit this file was generated from, on
-**2026-10-24**.
+**2026-10-25**; driver data from `src/wpc` at the commit this file was generated from, on
+**2026-10-25**.
 
 A machine is one OPDB *group*, so a title and its remakes are one row, dated and credited
 to the original. Its status is that of the *worst* of its ROM sets, so "fully working"
