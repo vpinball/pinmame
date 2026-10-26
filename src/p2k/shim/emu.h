@@ -66,13 +66,13 @@ using device_timer_id = int;
 
 namespace util { class disasm_interface; }
 
-// Modern MAME helpers the Spike 1 arm7 import (src/spike1/mame/cpu/arm7) uses
+// Modern MAME helpers the SPIKE 1 arm7 import (src/spike1/mame/cpu/arm7) uses
 class address_map;
 using address_map_constructor = std::function<void (address_map &)>;
 enum { TR_READ = TRANSLATE_READ, TR_WRITE = TRANSLATE_WRITE, TR_FETCH = TRANSLATE_FETCH };
 namespace util {
 template <typename T, typename U> constexpr T sext(T value, U width)
-{ using S = std::make_signed_t<T>; return T(S(value << (8 * sizeof(T) - width)) >> (8 * sizeof(T) - width)); }
+{ using S = std::make_signed_t<T>; using V = std::make_unsigned_t<T>; return T(S(V(V(value) << (8 * sizeof(T) - width))) >> (8 * sizeof(T) - width)); }
 }
 
 // ---------------------------------------------------------------- disasm stub

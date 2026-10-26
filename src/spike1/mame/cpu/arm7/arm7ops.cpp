@@ -976,7 +976,8 @@ void arm7_cpu_device::HandleALU(uint32_t insn)
 			sc = 0;
 
 		// extra cycle (register specified shift)
-		ARM7_ICOUNT -= 1;
+		if (insn & 0x10) // PINMAME: an immediate shift (bit 4 clear) costs no extra cycle
+			ARM7_ICOUNT -= 1;
 	}
 
 	// LD TODO this comment is wrong
@@ -1547,6 +1548,9 @@ void arm7_cpu_device::arm9ops_undef(uint32_t insn)
 {
 	// unsupported instruction
 	LOGMASKED(LOG_OPS, "ARM7: Instruction %08X unsupported\n", insn);
+	// PINMAME: take the undefined instruction trap instead of skipping it (the callers then advance R15)
+	m_pendingUnd = true;
+	update_irq_state();
 }
 
 void arm7_cpu_device::arm9ops_1(uint32_t insn)
@@ -1581,8 +1585,8 @@ void arm7_cpu_device::arm9ops_57(uint32_t insn)
 	/* Cache Preload (PLD) */
 	if ((insn & 0x0070f000) == 0x0050f000)
 	{
-		// unsupported (armv6 onwards only)
-		if(m_archRev < 6) arm9ops_undef(insn);
+		// PINMAME: valid from ARMv5TE, not only from ARMv6 (glibc's memcpy uses it); a hint, so a no-op
+		if (m_archRev < 6 && !(m_archFlags & ARCHFLAG_E)) arm9ops_undef(insn);
 		R15 += 4;
 	}
 	else
@@ -1895,6 +1899,15 @@ void arm7_cpu_device::arm7ops_4567(uint32_t insn) /* Data Transfer - Single Data
 //case 5:
 //case 6:
 //case 7:
+	// PINMAME: a register offset with bit 4 set is not an LDR/STR but, before ARMv6's media instructions,
+	// the undefined instruction space (e.g. UDF, which __builtin_trap emits): take the trap
+	if ((insn & 0x02000010) == 0x02000010 && m_archRev < 6)
+	{
+		R15 += 4;
+		m_pendingUnd = true;
+		update_irq_state();
+		return;
+	}
 	HandleMemSingle(insn);
 	R15 += 4;
 //  break;

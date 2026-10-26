@@ -44,6 +44,7 @@ public:
 	void eat(int cycles) { m_icount -= cycles; }
 
 	void set_swi(std::function<void (uint32_t)> handler) { set_swi_handler(std::move(handler)); }
+	void set_fault(std::function<void (const std::string &)> handler) { set_fault_handler(std::move(handler)); }
 
 private:
 	int m_unused = 0; // the cycles end_slice() took from the slice that is running

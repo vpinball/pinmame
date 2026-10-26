@@ -61,6 +61,11 @@ public:
 	// instruction's comment field, with R15 already past the SWI. Set it before the CPU runs
 	void set_swi_handler(std::function<void (uint32_t)> handler) { m_swi_handler = std::move(handler); }
 
+	// PINMAME: nor does it handle undefined instructions, and an emulation dead end (fatalerror) must not
+	// abort the host: with this set, both call it with a description instead of taking the undefined
+	// instruction vector or aborting. Set it before the CPU runs
+	void set_fault_handler(std::function<void (const std::string &)> handler) { m_fault_handler = std::move(handler); }
+
 protected:
 	enum arm_arch_flag : uint32_t;
 	enum arm_copro_id : uint32_t;
@@ -157,6 +162,14 @@ protected:
 	bool m_pendingUnd;
 	bool m_pendingSwi;
 	std::function<void (uint32_t)> m_swi_handler; // PINMAME: see set_swi_handler()
+	std::function<void (const std::string &)> m_fault_handler; // PINMAME: see set_fault_handler()
+	// PINMAME: fatalerror() in arm7.cpp and arm7thmb.cpp; aborts as before without a fault handler
+	void pinmame_fatal(const std::string &what)
+	{
+		if (m_fault_handler) { m_fault_handler(what); return; }
+		fprintf(stderr, "%s", what.c_str());
+		abort();
+	}
 	bool m_pending_interrupt;
 	int m_icount;
 	endianness_t m_endian;

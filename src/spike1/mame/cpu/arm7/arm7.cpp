@@ -43,6 +43,10 @@ TODO:
 
 #include <cassert>
 
+// PINMAME: an emulation dead end stops the guest through set_fault_handler() instead of aborting the host
+#undef fatalerror
+#define fatalerror(...) pinmame_fatal(string_format(__VA_ARGS__))
+
 #define LOG_MMU             (1U << 1)
 #define LOG_DSP             (1U << 2)
 #define LOG_COPRO_READS     (1U << 3)

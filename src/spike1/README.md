@@ -72,6 +72,10 @@ From MAME 0.288 (tag `mame0288`, commit `27a8d9e`), `src/devices/cpu/arm7/`: `ar
 | `arm7.cpp`, `arm7core.h` | `ARM7_PINMAME_DIRECT_FETCH` (default on): instructions are fetched straight from the address space, not through the modelled prefetch queue - nothing to model with the MMU off and no self-modifying code, and measured ~28% faster |
 | `arm7.cpp` | no debugger console commands |
 | `arm7ops.cpp` BLX (register) | **bug fix**: read the target before writing the link register. `blx lr`, which glibc's `clone()` uses to call a new thread's start routine, branched to its own return address (the Thumb form was already right) |
+| `arm7.h`, `arm7core.hxx`, `arm7.cpp`, `arm7thmb.cpp` | `set_fault_handler()`: an undefined instruction or an emulation dead end (`fatalerror`) calls the host, which stops the game, instead of taking the undefined instruction vector or aborting the process |
+| `arm7ops.cpp` `arm7ops_4567`, `arm9ops_undef` | **bug fix**: undefined ARM instructions trap. A register offset LDR/STR with bit 4 set (e.g. `UDF`, from `__builtin_trap`) ran as a load or store, and the unconditional space (cond = 0xF) skipped unknown instructions |
+| `arm7ops.cpp` `arm9ops_57` | PLD is valid (a no-op) from ARMv5TE, not only from ARMv6: it would trap now, and glibc's `memcpy` uses it |
+| `arm7ops.cpp` `HandleALU` | **bug fix**: a register operand with an immediate shift takes no extra cycle, only a register specified shift does (e.g. every `add r0, r1, r2` was charged one cycle too many) |
 
 The core uses the existing MAME compatibility layer of the Pinball 2000 subsystem (`src/p2k/shim`), with a
 few additions for modern MAME's arm7: the `TR_*` translation intents, `address_map_constructor`, the four-argument

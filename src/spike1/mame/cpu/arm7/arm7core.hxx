@@ -186,6 +186,13 @@ void arm7_cpu_device::arm7_check_irq_state()
 	// Undefined instruction
 	if (m_pendingUnd)
 	{
+		if (m_fault_handler) // PINMAME: see set_fault_handler()
+		{
+			m_pendingUnd = false;
+			update_irq_state();
+			m_fault_handler(T_IS_SET(GET_CPSR) ? "undefined Thumb instruction" : "undefined ARM instruction");
+			return;
+		}
 		if (MODE26) printf("ARM7: pendingUnd (todo)\n");
 		SwitchMode(eARM7_MODE_UND);             /* Set UND mode so PC is saved to correct R14 bank */
 		// compensate for prefetch (should this also be done for normal IRQ?)

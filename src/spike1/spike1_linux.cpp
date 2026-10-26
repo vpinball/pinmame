@@ -224,7 +224,7 @@ bool spike1_linux::load_elf(const std::vector<uint8_t> &elf, uint32_t &entry, ui
 		const uint32_t type = u32(o), offset = u32(o + 4), vaddr = u32(o + 8), filesz = u32(o + 16), memsz = u32(o + 20);
 		if (type == 3) { error = "dynamically linked programs (PT_INTERP) are not supported"; return false; }
 		if (type != 1) continue;
-		if (offset + uint64_t(filesz) > elf.size() || !m_mem.host(vaddr, memsz)) { error = "segment outside the image or guest memory"; return false; }
+		if (filesz > memsz || offset + uint64_t(filesz) > elf.size() || !m_mem.host(vaddr, memsz)) { error = "segment outside the image or guest memory"; return false; }
 		uint8_t *dst = m_mem.host(vaddr, memsz);
 		std::memcpy(dst, &elf[offset], filesz);
 		std::memset(dst + filesz, 0, memsz - filesz);
@@ -357,6 +357,13 @@ bool spike1_linux::start(const config &cfg, std::string &error)
 	m_wall_base_ns = host_wall_ns();
 	m_cycles = m_idle_cycles = 0;
 	m_cpu.set_swi([this](uint32_t comment) { on_swi(comment); });
+	// an undefined instruction (e.g. a jump into data) or a CPU emulation dead end stops the game, like a data fault
+	m_cpu.set_fault([this](const std::string &what) {
+		if (m_status != status::running) return;
+		std::string reason = what;
+		while (!reason.empty() && reason.back() == '\n') reason.pop_back();
+		stop(reason + ", thread " + std::to_string(m_current ? m_current->tid : 0) + " pc " + hex(m_cpu.pc()));
+	});
 	m_status = status::running;
 	m_stop_reason.clear();
 	return true;
@@ -1527,11 +1534,15 @@ int32_t spike1_linux::sys_poll(uint32_t nr, const uint32_t a[7], std::string &no
 			if (revents) ready++;
 		}
 	} else { // select(nfds, readfds, writefds, exceptfds, timeout)
-		const uint32_t words = (a[0] + 31) / 32;
+		// like Linux: a negative count is invalid, a larger one is cut to the fd table (here FD_SETSIZE),
+		// which also keeps the word count from wrapping
+		if (int32_t(a[0]) < 0) return -E_INVAL;
+		const uint32_t nfds = std::min<uint32_t>(a[0], 1024);
+		const uint32_t words = (nfds + 31) / 32;
 		in_r.assign(words, 0); in_w.assign(words, 0); out_r.assign(words, 0); out_w.assign(words, 0);
 		if (a[1] && !m_mem.read(a[1], in_r.data(), words * 4)) return -E_FAULT;
 		if (a[2] && !m_mem.read(a[2], in_w.data(), words * 4)) return -E_FAULT;
-		for (uint32_t fd = 0; fd < a[0]; fd++) {
+		for (uint32_t fd = 0; fd < nfds; fd++) {
 			const uint32_t bit = 1u << (fd & 31);
 			if ((in_r[fd / 32] & bit) && readable(int(fd))) { out_r[fd / 32] |= bit; ready++; }
 			if ((in_w[fd / 32] & bit) && get_fd(int(fd))) { out_w[fd / 32] |= bit; ready++; }

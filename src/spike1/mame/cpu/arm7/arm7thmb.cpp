@@ -5,6 +5,10 @@
 #include "arm7core.h"
 #include "arm7help.h"
 
+// PINMAME: an undefined Thumb instruction stops the guest through set_fault_handler() instead of aborting the host
+#undef fatalerror
+#define fatalerror(...) pinmame_fatal(string_format(__VA_ARGS__))
+
 // this is our master dispatch jump table for THUMB mode, representing [(INSN & 0xffc0) >> 6] bits of the 16-bit decoded instruction
 const arm7_cpu_device::arm7thumb_ophandler arm7_cpu_device::thumb_handler[0x40*0x10] =
 {

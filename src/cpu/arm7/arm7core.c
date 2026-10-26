@@ -151,18 +151,20 @@ INLINE data32_t arm7_cpu_read32( int addr )
 	result = cpu_readmem32ledw_dword(addr);
 
 	/* Unaligned reads rotate the word, they never combine words */
-	if (addr&3) {
+	const int addr3 = addr&3;
+	if (addr3) {
 		#if ARM7_DEBUG_CORE
 			if(addr&1)
 				LOG(("%08x: Unaligned byte read %08x\n",R15,addr));
 		#endif
 
-		if ((addr&3)==3)
-			return rotl_32(result, 24);
-		if ((addr&3)==2)
-			return rotl_32(result, 16);
-		if ((addr&3)==1)
-			return rotl_32(result, 8);
+		// right by 8 * addr[1:0] (ARM ARM v4)
+		if(addr3==3)
+			return rotr_32(result, 24);
+		if(addr3==2)
+			return rotr_32(result, 16);
+		//if(addr3==1)
+			return rotr_32(result, 8);
 	}
 	return result;
 }
