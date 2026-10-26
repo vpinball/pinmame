@@ -629,7 +629,7 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | Game of Thrones                                | 2015 | Stern                  | DMD          | `got_137`, `got_137h`                                |             |       |
 | Whoa Nellie / PBR                              | 2015 | Stern                  | Reels        | `wnbjm_155`, `pabst_101`, `primus_103`               |             |       |
 | WrestleMania                                   | 2015 | Stern                  | DMD          | `wwe_135h`                                           |             |       |
-| Domino's Spectacular Pinball Adventure         | 2016 | Spooky Pinball         | DMD          | `dominos_006`                                        | yes         |       |
+| Domino's Spectacular Pinball Adventure         | 2016 | Spooky Pinball         | DMD          | `dominos_005`, `dominos_006`                         | yes         |       |
 | Ghostbusters                                   | 2016 | Stern                  | DMD          | `gbust_117h`                                         |             |       |
 | Rob Zombie's Spookshow International           | 2016 | Spooky Pinball         | DMD          | `rzspook_026`                                        | yes         |       |
 | The Jetsons                                    | 2017 | Spooky Pinball         | DMD          | `jetsons_004`                                        | yes         |       |
