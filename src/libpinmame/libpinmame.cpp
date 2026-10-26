@@ -1137,6 +1137,169 @@ PINMAMEAPI PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback, void* co
 }
 
 /******************************************************
+ * GetChecksumFromHash
+ *
+ * Extracts the CRC32 from a MAME hash data string
+ * ("c:<crc32>#s:<sha1>#m:<md5>#f:<flags>"), 0 when it
+ * doesn't hold one
+ ******************************************************/
+
+static uint32_t GetChecksumFromHash(const char* const p_hash)
+{
+	unsigned int checksum = 0;
+	if (p_hash && *p_hash)
+		sscanf(p_hash, "c:%x", &checksum);
+	return checksum;
+}
+
+/******************************************************
+ * FillExpectedRomData
+ *
+ * Fills a PinmameRom with the values a ROM file entry is
+ * expected to have, mirroring VPinMAME's CRom::Init
+ ******************************************************/
+
+static void FillExpectedRomData(PinmameRom* const p_rom, const struct RomModule* const region, const struct RomModule* const rom)
+{
+	p_rom->name = ROM_GETNAME(rom);
+	p_rom->flags = ROMREGION_GETFLAGS(region);
+	p_rom->expLength = 0;
+	for (const struct RomModule* chunk = rom_first_chunk(rom); chunk; chunk = rom_next_chunk(chunk))
+		p_rom->expLength += ROM_GETLENGTH(chunk);
+	p_rom->expChecksum = GetChecksumFromHash(ROM_GETHASHDATA(rom));
+}
+
+/******************************************************
+ * PinmameGetGameRoms
+ ******************************************************/
+
+PINMAMEAPI PINMAME_STATUS PinmameGetGameRoms(const char* const p_name, PinmameRomCallback callback, void* const p_userData)
+{
+	if (!_p_Config)
+		return PINMAME_STATUS_CONFIG_NOT_SET;
+
+	const int gameNum = GetGameNumFromString(p_name);
+
+	if (gameNum < 0)
+		return PINMAME_STATUS_GAME_NOT_FOUND;
+
+	for (const struct RomModule* region = rom_first_region(drivers[gameNum]); region; region = rom_next_region(region))
+		for (const struct RomModule* rom = rom_first_file(region); rom; rom = rom_next_file(rom))
+		{
+			PinmameRom romInfo;
+			memset(&romInfo, 0, sizeof(PinmameRom));
+			FillExpectedRomData(&romInfo, region, rom);
+
+			if (callback)
+				(*callback)(&romInfo, p_userData);
+		}
+
+	return PINMAME_STATUS_OK;
+}
+
+/******************************************************
+ * PinmameAuditGameRom
+ ******************************************************/
+
+PINMAMEAPI PINMAME_STATUS PinmameAuditGameRom(const char* const p_gameName, const char* const p_romName, const int strict, PinmameRom* const p_rom)
+{
+	if (!_p_Config)
+		return PINMAME_STATUS_CONFIG_NOT_SET;
+
+	if (!p_rom || !p_romName)
+		return PINMAME_STATUS_ROM_NOT_FOUND;
+
+	const int gameNum = GetGameNumFromString(p_gameName);
+
+	if (gameNum < 0)
+		return PINMAME_STATUS_GAME_NOT_FOUND;
+
+	const struct GameDriver* const gamedrv = drivers[gameNum];
+
+	const struct RomModule* region = nullptr;
+	const struct RomModule* rom = nullptr;
+	for (const struct RomModule* r = rom_first_region(gamedrv); r && !rom; r = rom_next_region(r))
+		for (const struct RomModule* file = rom_first_file(r); file; file = rom_next_file(file))
+			if (!strcasecmp(ROM_GETNAME(file), p_romName))
+			{
+				region = r;
+				rom = file;
+				break;
+			}
+
+	if (!rom)
+		return PINMAME_STATUS_ROM_NOT_FOUND;
+
+	// Keep the caller's checksum so it can be used to distinguish a never found ROM from a lost one
+	const uint32_t previousChecksum = p_rom->checksum;
+	FillExpectedRomData(p_rom, region, rom);
+
+	// Locate and checksum the file, falling back on the clone's romset (same as VPinMAME's CRom::Audit)
+	char hash[256];
+	strncpy(hash, strict ? "" : ROM_GETHASHDATA(rom), sizeof(hash) - 1);
+	hash[sizeof(hash) - 1] = 0;
+	const struct GameDriver* drv = gamedrv;
+	int err;
+	do
+	{
+		err = mame_fchecksum(drv->name, p_rom->name, &p_rom->length, hash);
+		drv = drv->clone_of;
+	} while (err && drv);
+
+	if (err)
+	{
+		/* not found, and it's not good anyway / not found while it was */
+		p_rom->state = !previousChecksum ? PINMAME_ROM_STATE_NOT_AVAILABLE : PINMAME_ROM_STATE_NOT_FOUND;
+	}
+	else
+	{
+		p_rom->checksum = GetChecksumFromHash(hash);
+
+		if (p_rom->expLength != p_rom->length)
+			p_rom->state = PINMAME_ROM_STATE_LENGTH_MISMATCH;
+		else if (p_rom->expChecksum != p_rom->checksum)
+		{
+			if (!p_rom->expChecksum)
+				p_rom->state = PINMAME_ROM_STATE_NEED_DUMP; // found but not known to be dumped
+			else if (p_rom->checksum == BADCRC(p_rom->expChecksum))
+				p_rom->state = PINMAME_ROM_STATE_NEED_REDUMP;
+			else
+				p_rom->state = PINMAME_ROM_STATE_BAD_CHECKSUM;
+		}
+		else
+			p_rom->state = PINMAME_ROM_STATE_OK;
+	}
+
+	return PINMAME_STATUS_OK;
+}
+
+/******************************************************
+ * PinmameIsGameRomsetAvailable
+ ******************************************************/
+
+PINMAMEAPI int PinmameIsGameRomsetAvailable(const char* const p_name)
+{
+	if (!_p_Config)
+		return 0;
+
+	const int gameNum = GetGameNumFromString(p_name);
+
+	if (gameNum < 0)
+		return 0;
+
+	const struct GameDriver* const gamedrv = drivers[gameNum];
+
+	if (!mame_faccess(gamedrv->name, FILETYPE_ROM))
+	{
+		/* if the game is a clone, check for parent */
+		if (!gamedrv->clone_of || !mame_faccess(gamedrv->clone_of->name, FILETYPE_ROM))
+			return 0;
+	}
+
+	return 1;
+}
+
+/******************************************************
  * PinmameSetConfig
  ******************************************************/
 
