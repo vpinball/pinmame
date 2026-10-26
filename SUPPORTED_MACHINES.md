@@ -1148,7 +1148,7 @@ scripts/gen_supported_machines.py
 
 The script reads a cached copy of OPDB and re-downloads only with `--refresh`; `--check`
 fails if this file is out of date. Machine data comes from the OPDB snapshot of
-**2026-10-25**; driver data from `src/wpc` at the commit this file was generated from, on
+**2026-10-26**; driver data from `src/wpc` at the commit this file was generated from, on
 **2026-10-26**.
 
 A machine is one OPDB *group*, so a title and its remakes are one row, dated and credited
