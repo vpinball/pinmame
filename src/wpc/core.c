@@ -768,6 +768,7 @@ static struct {
   UINT8     lastLampMatrix[CORE_MAXLAMPCOL];
   int       lastGI[CORE_MAXGI];
   UINT64    lastSol;
+  UINT32    lastSolHigh;   // solenoids 65 and up, see core_getAllSolHigh
   // DMD state for PWM integration
   core_tDMDPWMState* dmdStates[16]; // DMD: state structure where frames are pushed and kept to be processed for luminance/identify evaluation
   // Segment display handling
@@ -777,6 +778,8 @@ static struct {
     UINT8     disp_num_segs[64];          // number of individual segments per display
     UINT16    seg_data2[CORE_SEGCOUNT];   // 
     core_segOverallLayout_t alpha_layout; // identify some of the segment displays layouts (incomplete driver support)
+    int       alpha_seg16s;               // the displays are CORE_SEG16S: convert them for alpha_layout's renderers (see core_seg_alpha_frame_data)
+    UINT16    alpha_seg_data[CORE_SEGCOUNT]; // the converted segments
   #endif
   #if defined(VPINMAME)
     UINT8   vpm_dmd_last_dmd[DMD_MAXY * DMD_MAXX];
@@ -1525,6 +1528,12 @@ core_segOverallLayout_t layoutAlphanumericFrame(UINT64 gen, UINT8 total_disp, UI
 			layout = CORE_SEGLAYOUT_2x20Alpha;
 			break;
 
+		// Stern SPIKE 1's ELG titles (Transformers/Avengers The Pin): one line of 16 CORE_SEG16S characters, shown on the upper row (see core_seg_alpha_frame_data)
+		case GEN_SPIKE1:
+			if (total_disp == 1 && disp_num_segs[0] == 16)
+				layout = CORE_SEGLAYOUT_2x16Alpha;
+			break;
+
 		//!! unsupported so far:
 		// astro
 		case GEN_ASTRO:
@@ -1626,6 +1635,25 @@ static void core_seg_video_update(struct mame_bitmap* bitmap, const struct recta
    #endif
 }
 
+#if defined(VPINMAME) || defined(LIBPINMAME)
+// The segments for alpha_layout's renderers (usbalphanumeric.h, dmddevice), which take CORE_SEG16 bits: CORE_SEG16S (Stern SPIKE 1's
+// ELG titles) splits the top and bottom lines and has the middle left in bit 15, so it is converted
+static UINT16* core_seg_alpha_frame_data() {
+   // CORE_SEG16 bit for each CORE_SEG16S bit (matches core_ascii2seg16 / core_ascii2seg16s for all printable characters)
+   static const UINT16 seg16s_to_seg16[16] = { 0x0001, 0x0001, 0x0002, 0x0004, 0x0008, 0x0008, 0x0010, 0x0020, 0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x2000, 0x4000, 0x0040 };
+   if (!locals.alpha_seg16s)
+      return coreGlobals.drawSeg;
+   for (int i = 0; i < CORE_SEGCOUNT; i++) {
+      UINT16 seg = 0;
+      for (int bits = coreGlobals.drawSeg[i], k = 0; bits; k++, bits >>= 1)
+         if (bits & 1)
+            seg |= seg16s_to_seg16[k];
+      locals.alpha_seg_data[i] = seg;
+   }
+   return locals.alpha_seg_data;
+}
+#endif
+
 #ifdef VPINMAME
 extern void dmddeviceRenderAlphanumericFrame(core_segOverallLayout_t layout, UINT16* seg_data, UINT16* seg_data2);
 static void core_seg_send_dmddevice() {
@@ -1634,7 +1662,7 @@ static void core_seg_send_dmddevice() {
       // Port of legacy hack needed for Medusa that would call updateDisplay twice, once with the default display (4x7 and 2x2) then once for the additional display (3x2)
       // Now, all of these are processed at once, but we still need to copy the data for external dmddevice.dll backward compatibility
       memcpy(locals.seg_data2, coreGlobals.drawSeg + 4 * 7 + 2 * 2, 3 * 2 * sizeof(UINT16));
-      dmddeviceRenderAlphanumericFrame(locals.alpha_layout, coreGlobals.drawSeg, locals.seg_data2);
+      dmddeviceRenderAlphanumericFrame(locals.alpha_layout, core_seg_alpha_frame_data(), locals.seg_data2);
    }
 }
 #endif
@@ -1644,7 +1672,7 @@ static void core_seg_render_dmd() {
    // Render segments into a virtual DMD (at the moment only to pass easily to VP, e.g. tournament mode verification)
    memset(AlphaNumericFrameBuffer, 0, sizeof(AlphaNumericFrameBuffer));
    switch (locals.alpha_layout) {
-   case CORE_SEGLAYOUT_2x16Alpha: _2x16Alpha(coreGlobals.drawSeg); break;
+   case CORE_SEGLAYOUT_2x16Alpha: _2x16Alpha(core_seg_alpha_frame_data()); break;
    case CORE_SEGLAYOUT_2x20Alpha: _2x20Alpha(coreGlobals.drawSeg); break;
    case CORE_SEGLAYOUT_2x7Alpha_2x7Num: _2x7Alpha_2x7Num(coreGlobals.drawSeg); break;
    case CORE_SEGLAYOUT_2x7Alpha_2x7Num_4x1Num: _2x7Alpha_2x7Num_4x1Num(coreGlobals.drawSeg); break;
@@ -1928,8 +1956,15 @@ void core_updateSw(int flipEn) {
     UINT64 allSol = core_getAllSol();
     UINT64 chgSol = (allSol ^ locals.lastSol) & vp_getSolMask64();
     locals.lastSol = allSol;
+    const UINT32 allSolHigh = core_getAllSolHigh(); // not masked: SolMask only covers 1..64
+    const UINT32 chgSolHigh = allSolHigh ^ locals.lastSolHigh;
+    locals.lastSolHigh = allSolHigh;
     for (ii = 1; ii < CORE_FIRSTCUSTSOL + core_gameData->hw.custSol; ii++)
     {
+      if (ii == 65) { // past the 64 bits
+        allSol = allSolHigh;
+        chgSol = chgSolHigh;
+      }
       if (chgSol & 0x01) {
         OnSolenoid(ii, allSol & 0x01);
         /*-- log solenoid number on the display (except flippers) --*/
@@ -2511,8 +2546,10 @@ int core_getSol(int solNo) {
   }
   else if (solNo <= 50) // 49-50 simulated
     return sim_getSol(solNo);
-  else if (core_gameData->hw.getSol)
-    return core_gameData->hw.getSol(solNo);
+  else if (core_gameData->hw.getSol) { // 51+ custom: drivers return a level (Stern SPIKE 1: 0..255) or a mask bit (S7): 0/1 unless modulated
+    const int state = core_gameData->hw.getSol(solNo);
+    return (options.usemodsol & (CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) ? state : (state != 0);
+  }
   return 0;
 }
 
@@ -2584,10 +2621,21 @@ UINT64 core_getAllSol(void) {
   if ( core_gameData->hw.getSol ) {
     UINT64 bit = ((UINT64)1)<<(CORE_FIRSTCUSTSOL-1);
     int ii;
-    for (ii = 0; ii < core_gameData->hw.custSol; ii++) {
+    for (ii = 0; ii < core_gameData->hw.custSol && CORE_FIRSTCUSTSOL + ii <= 64; ii++) { // 65 and up: core_getAllSolHigh
       sol |= core_gameData->hw.getSol(CORE_FIRSTCUSTSOL + ii) ? bit : 0;
       bit <<= 1;
     }
+  }
+  return sol;
+}
+
+/* Custom solenoids 65 and up (bit 0 = 65), which don't fit core_getAllSol's 64 bits (Stern SPIKE 1: up to 72) */
+UINT32 core_getAllSolHigh(void) {
+  UINT32 sol = 0;
+  if (core_gameData->hw.getSol) {
+    int ii;
+    for (ii = 65; ii < CORE_FIRSTCUSTSOL + core_gameData->hw.custSol && ii <= CORE_MODOUT_SOL_MAX; ii++)
+      sol |= core_gameData->hw.getSol(ii) ? (1u << (ii - 65)) : 0;
   }
   return sol;
 }
@@ -2886,6 +2934,10 @@ static MACHINE_INIT(core) {
            default:
               assert(layout->importedLayout == NULL); // Not an import
               #if defined(VPINMAME) || defined(LIBPINMAME)
+                 if (locals.n_seg_layouts == 0)
+                    locals.alpha_seg16s = (layout->type & CORE_SEGALL) == CORE_SEG16S;
+                 else if (locals.alpha_seg16s != ((layout->type & CORE_SEGALL) == CORE_SEG16S))
+                    locals.alpha_seg16s = 0; // mixed types: not converted (layoutAlphanumericFrame maps no such machine)
                  locals.disp_num_segs[locals.n_seg_layouts++] = (UINT8)layout->length;
               #endif
               break;
@@ -3373,10 +3425,14 @@ void core_update_pwm_output_led(const double now, const int index, const int isF
   #endif
 }
 
+// Outputs whose value the driver writes itself (CORE_MODOUT_NONE, see core_set_pwm_output_driver_value)
+static UINT8 pwm_driver_value[(CORE_MODOUT_MAX + 7) / 8];
+
 void core_set_pwm_output_type(int startIndex, int count, int type)
 {
   for (int i = startIndex; i < startIndex + count; i++) {
     memset(&(coreGlobals.physicOutputState[i]), 0, sizeof(core_tPhysicOutput));
+    pwm_driver_value[i >> 3] &= (UINT8)~(1u << (i & 7)); // integrated from now on, see core_set_pwm_output_driver_value
     coreGlobals.physicOutputState[i].flipBufferPos = (coreGlobals.binaryOutputState[i >> 3] >> (i & 7)) & 1;
     coreGlobals.physicOutputState[i].type = type;
     switch (type) {
@@ -3603,6 +3659,7 @@ void core_set_pwm_output_bulb(int startIndex, int count, int bulb, float U, int 
 {
   for (int i = startIndex; i < startIndex + count; i++) {
     memset(&(coreGlobals.physicOutputState[i]), 0, sizeof(core_tPhysicOutput));
+    pwm_driver_value[i >> 3] &= (UINT8)~(1u << (i & 7)); // integrated from now on, see core_set_pwm_output_driver_value
     coreGlobals.physicOutputState[i].flipBufferPos = (coreGlobals.binaryOutputState[i >> 3] >> (i & 7)) & 1;
     coreGlobals.physicOutputState[i].type = CORE_MODOUT_CUSTOM_INTEGRATOR;
     coreGlobals.physicOutputState[i].state.bulb.bulb = bulb;
@@ -3617,11 +3674,30 @@ void core_set_pwm_output_bulb(int startIndex, int count, int bulb, float U, int 
 void core_set_pwm_output_led_vfd(int startIndex, int count, int isVFD, float relative_brightness) {
   for (int i = startIndex; i < startIndex + count; i++) {
     memset(&(coreGlobals.physicOutputState[i]), 0, sizeof(core_tPhysicOutput));
+    pwm_driver_value[i >> 3] &= (UINT8)~(1u << (i & 7)); // integrated from now on, see core_set_pwm_output_driver_value
     coreGlobals.physicOutputState[i].flipBufferPos = (coreGlobals.binaryOutputState[i >> 3] >> (i & 7)) & 1;
     coreGlobals.physicOutputState[i].type = CORE_MODOUT_CUSTOM_INTEGRATOR;
     coreGlobals.physicOutputState[i].state.bulb.relative_brightness = relative_brightness;
     coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_led;
   }
+}
+
+// For outputs whose value the driver writes itself, as the emulation only knows a level, not the on/off signal the integrators work
+// from: node board LEDs (Stern SAM, SPIKE 1), pinHeck's RGB LEDs and servos, the Rockwell VFD's duty cycle (GTS80B)... These record
+// no flips, so a type set by a table (vp_setModOutputType: SolMask(1001+), ModOutputType) would install an integrator that overwrites
+// the value with 0: tables cannot change their type (unlike e.g. Whitestar's outputs, whose flips any model can integrate).
+// TODO such an output could instead feed its level into the model a table selects (e.g. a bulb filament heated by the level's
+//      equivalent voltage or duty cycle, giving it the bulb's inertia). Only worth it where the hardware is not an LED anyway
+void core_set_pwm_output_driver_value(int startIndex, int count)
+{
+   core_set_pwm_output_type(startIndex, count, CORE_MODOUT_NONE);
+   for (int i = startIndex; i < startIndex + count; i++)
+      pwm_driver_value[i >> 3] |= (UINT8)(1u << (i & 7));
+}
+
+int core_is_pwm_output_driver_value(int index)
+{
+   return (pwm_driver_value[index >> 3] >> (index & 7)) & 1;
 }
 
 void core_set_pwm_output_types(int startIndex, int count, int* outputTypes)
@@ -3686,19 +3762,60 @@ static void core_replace_lost_pwm_flips(core_tPhysicOutput* const output, const 
 
 // Integration runs on several threads at once: the client's (VPinMAME, libpinmame getters, possibly several of them) and the emulation
 // thread (core_updateSw, Capcom flipper power, pinHeck). The integrator state (lastIntegrationFlipPos, bulb state, ...) is not thread safe,
-// so integrations are serialized with this lock. It is held for a short, non blocking computation only, and never taken recursively
+// so integrations are serialized with this lock. It is only held for a short, non blocking computation and never taken recursively,
+// so a waiter spins on a plain read (the atomic would keep taking the cache line from the holder) with the CPU's spin-wait hint.
+// Should that take longer than an integration (the holder got preempted, e.g. more busy threads than cores), it yields to the OS
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#define PWM_OS_YIELD() SwitchToThread()
+#else
+#include <sched.h>
+#define PWM_OS_YIELD() sched_yield()
+#endif
+#define PWM_SPINS_BEFORE_YIELD 1024 // about 3..40us, depending on the CPU's pause/yield latency
 #if defined(_MSC_VER)
 #include <intrin.h>
+#if defined(_M_IX86) || defined(_M_X64)
+#define PWM_SPIN_WAIT() _mm_pause()
+#elif defined(_M_ARM) || defined(_M_ARM64)
+#define PWM_SPIN_WAIT() __yield()
+#else
+#define PWM_SPIN_WAIT()
+#endif
 static volatile long pwm_integration_lock = 0;
-#define PWM_INTEGRATION_LOCK()   while (_InterlockedCompareExchange(&pwm_integration_lock, 1, 0) != 0) {}
+#define PWM_INTEGRATION_LOCK()   while (_InterlockedCompareExchange(&pwm_integration_lock, 1, 0) != 0) { pwm_integration_wait(); }
 #define PWM_INTEGRATION_UNLOCK() _InterlockedExchange(&pwm_integration_lock, 0)
 #elif defined(__GNUC__) || defined(__clang__)
+#if defined(__i386__) || defined(__x86_64__)
+#define PWM_SPIN_WAIT() __builtin_ia32_pause()
+#elif defined(__aarch64__) || (defined(__ARM_ARCH) && __ARM_ARCH >= 7)
+#define PWM_SPIN_WAIT() __asm__ __volatile__("yield" ::: "memory")
+#else
+#define PWM_SPIN_WAIT()
+#endif
 static volatile int pwm_integration_lock = 0;
-#define PWM_INTEGRATION_LOCK()   while (__sync_lock_test_and_set(&pwm_integration_lock, 1)) {}
+#define PWM_INTEGRATION_LOCK()   while (__sync_lock_test_and_set(&pwm_integration_lock, 1)) { pwm_integration_wait(); }
 #define PWM_INTEGRATION_UNLOCK() __sync_lock_release(&pwm_integration_lock)
 #else
 #error "core_update_pwm_outputs needs an atomic exchange for this compiler"
 #endif
+
+// Waits until the lock looks free (the caller then tries to take it again)
+static void pwm_integration_wait(void)
+{
+   int spins = 0;
+   while (pwm_integration_lock) {
+      if (spins < PWM_SPINS_BEFORE_YIELD) {
+         spins++;
+         PWM_SPIN_WAIT();
+      }
+      else
+         PWM_OS_YIELD();
+   }
+}
 
 static void core_update_pwm_outputs_locked(const int startIndex, const int count);
 

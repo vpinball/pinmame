@@ -630,7 +630,7 @@ static MACHINE_INIT(gts80) {
   if (core_gameData->hw.display & GTS80_DISPALPHA)
   {
      coreGlobals.nAlphaSegs = 2 * 20 * 16;
-     core_set_pwm_output_type(CORE_MODOUT_SEG0, coreGlobals.nAlphaSegs, CORE_MODOUT_NONE); // No eye flicker fusion, just the direct PWM duty ratio from the display driver
+     core_set_pwm_output_driver_value(CORE_MODOUT_SEG0, coreGlobals.nAlphaSegs); // No eye flicker fusion, just the direct PWM duty ratio from the display driver
   }
   else
   {

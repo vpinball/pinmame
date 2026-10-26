@@ -617,6 +617,7 @@ extern int core_getSwCol(int colEn);
 extern int core_getSol(int solNo);
 extern int core_getPulsedSol(int solNo);
 extern UINT64 core_getAllSol(void);
+extern UINT32 core_getAllSolHigh(void);
 extern void core_getAllPhysicSols(float* const state);
 
 /*-- AC sync and PWM integration --*/
@@ -627,10 +628,12 @@ INLINE void core_update_pwm_solenoids(void) { if (options.usemodsol & (CORE_MODO
 INLINE void core_update_pwm_segments(void) { if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS)) core_update_pwm_outputs(CORE_MODOUT_SEG0, coreGlobals.nAlphaSegs); }
 INLINE void core_update_pwm_lamps(void) { if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_LAMPS)) core_update_pwm_outputs(CORE_MODOUT_LAMP0, coreGlobals.nLamps); }
 extern void core_set_pwm_output_type(int startIndex, int count, int type);
+extern void core_set_pwm_output_driver_value(int startIndex, int count);
+extern int  core_is_pwm_output_driver_value(int index);
 extern void core_set_pwm_output_types(int startIndex, int count, int* outputTypes);
 extern void core_set_pwm_output_bulb(int startIndex, int count, int bulb, float U, int isAC, float serial_R, float relative_brightness);
 extern void core_set_pwm_output_led_vfd(int startIndex, int count, int isVFD, float relative_brightness); // Relative brightness should be (period length / pulse length)
-extern int core_get_pwm_output_type(int index);
+extern int  core_get_pwm_output_type(int index);
 extern void core_write_pwm_output(int startIndex, int count, UINT8 bitStates); // Write binary state of count outputs, taking care of PWM integration based on physical model of connected device
 extern void core_write_pwm_output_8b(int startIndex, UINT8 bitStates);
 INLINE void core_write_pwm_output_16b(int index, UINT16 bitStates) { core_write_pwm_output_8b(index, bitStates & 0xFF); core_write_pwm_output_8b(index + 8, bitStates >> 8); }

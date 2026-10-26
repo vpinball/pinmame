@@ -732,8 +732,10 @@ static void spike1_map_outputs(void)
   coreGlobals.nGI = 0;
   /* the alphanumeric display's segments are modulated outputs too (spike1_sync_io) */
   coreGlobals.nAlphaSegs = (core_gameData->lcdLayout->type & CORE_SEGALL) == CORE_SEG16S ? SPIKE1_ALNUM_DIGITS * 16 : 0;
-  core_set_pwm_output_type(CORE_MODOUT_LAMP0, coreGlobals.nLamps, CORE_MODOUT_NONE);
-  core_set_pwm_output_type(CORE_MODOUT_SOL0, coreGlobals.nSolenoids, CORE_MODOUT_NONE);
+  /* the node boards only report levels, which spike1_sync_io() writes as the outputs' values */
+  core_set_pwm_output_driver_value(CORE_MODOUT_LAMP0, coreGlobals.nLamps);
+  core_set_pwm_output_driver_value(CORE_MODOUT_SOL0, coreGlobals.nSolenoids);
+  core_set_pwm_output_driver_value(CORE_MODOUT_SEG0, coreGlobals.nAlphaSegs);
 }
 
 static void spike1_map_switches(void)
@@ -876,6 +878,7 @@ MACHINE_DRIVER_START(spike1)
   MDRV_SWITCH_UPDATE(spike1)
   MDRV_SWITCH_CONV(spike1_sw2m, spike1_m2sw)
   MDRV_LAMP_CONV(spike1_lamp2m, spike1_m2lamp)
+  MDRV_DIPS(8) /* the CPU board's DIP switches (inport 3), so that libPinMAME/VPinMAME list them too */
   MDRV_SOUND_ADD(CUSTOM, spike1_sndInt)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
   MDRV_PALETTE_LENGTH(SPIKE1_PEN0 + 32768)

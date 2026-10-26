@@ -9,6 +9,7 @@ static struct {
   UINT8  lastLampMatrix[CORE_MAXLAMPCOL];
   int    lastGI[CORE_MAXGI];
   UINT64 lastSol;
+  UINT32 lastSolHigh; // solenoids 65 and up, see core_getAllSolHigh
   UINT32 solMask[2];
   UINT8  dips[VP_MAXDIPBANKS];
   UINT16 lastSeg[CORE_SEGCOUNT];
@@ -153,8 +154,15 @@ int vp_getChangedSolenoids(vp_tChgSols chgStat)
 	 UINT64 allSol = core_getAllSol();
 	 UINT64 chgSol = (allSol ^ locals.lastSol) & vp_getSolMask64();
 	 locals.lastSol = allSol;
+	 const UINT32 allSolHigh = core_getAllSolHigh(); // not masked: SolMask only covers 1..64
+	 const UINT32 chgSolHigh = allSolHigh ^ locals.lastSolHigh;
+	 locals.lastSolHigh = allSolHigh;
 	 for (ii = 0; ii < CORE_FIRSTCUSTSOL + core_gameData->hw.custSol - 1; ii++)
 	 {
+		if (ii == 64) { // solenoid 65: past the 64 bits
+		  allSol = allSolHigh;
+		  chgSol = chgSolHigh;
+		}
 		if (chgSol & 0x01) {
 		  chgStat[idx].solNo = ii+1; // Solenoid number
 		  chgStat[idx].currStat = (allSol & 0x01);
@@ -288,7 +296,7 @@ void vp_setModOutputType(int output, int no, int type) {
 		pos = CORE_MODOUT_LAMP0 + no - 1;
 	else if (output == VP_OUT_ALPHASEG && 1 <= no && no <= coreGlobals.nAlphaSegs)
 		pos = CORE_MODOUT_SEG0 + no - 1;
-	if (pos != -1)
+	if (pos != -1 && !core_is_pwm_output_driver_value(pos)) // the driver writes the value itself: no integrator for it (see core_set_pwm_output_driver_value)
 		core_set_pwm_output_type(pos, 1, type);
 }
 

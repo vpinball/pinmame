@@ -326,7 +326,7 @@ static void pinheck_brd_init(void)
 	core_set_pwm_output_type(CORE_MODOUT_SOL0, BOARD_SOLS, CORE_MODOUT_SOL_2_STATE);
 	core_set_pwm_output_type(CORE_MODOUT_SOL0 + PINHECK_SOL_GI0, 8, CORE_MODOUT_LED);
 	core_set_pwm_output_type(CORE_MODOUT_SOL0 + PINHECK_SOL_GI8, 8, CORE_MODOUT_LED);
-	core_set_pwm_output_type(CORE_MODOUT_SOL0 + PINHECK_SOL_RGB, PINHECK_NSOLS - PINHECK_SOL_RGB, CORE_MODOUT_NONE);
+	core_set_pwm_output_driver_value(CORE_MODOUT_SOL0 + PINHECK_SOL_RGB, PINHECK_NSOLS - PINHECK_SOL_RGB); // levels, written by pinheck_brd_level()
 	/* flipper coils, where the game names them: also PinMAME's flipper outputs. Not fast on, which would write slot & 31
 	   of solenoids2: the GI 8-15 bits for 45-48, the lower flipper bits for 33-36; pinheck_brd_vblank sets the bits */
 	coreGlobals.hasModulatedFlippers = FALSE;
