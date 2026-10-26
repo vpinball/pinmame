@@ -57,7 +57,8 @@ typedef enum {
 	PINMAME_STATUS_EMULATOR_NOT_RUNNING = 4,
 	PINMAME_STATUS_MECH_HANDLE_MECHANICS = 5,
 	PINMAME_STATUS_MECH_NO_INVALID = 6,
-	PINMAME_STATUS_FILE_TYPE_INVALID = 7
+	PINMAME_STATUS_FILE_TYPE_INVALID = 7,
+	PINMAME_STATUS_ROM_NOT_FOUND = 8
 } PINMAME_STATUS;
 
 typedef enum {
@@ -345,6 +346,34 @@ typedef struct {
 	int32_t found;
 } PinmameGame;
 
+// Audit state of a ROM file, reported in PinmameRom::state. UNKNOWN until the ROM has been audited by
+// PinmameAuditGameRom. The other values are PinMAME's internal AUD_* codes, which are also the values
+// VPinMAME's IRom::get_State reports
+typedef enum {
+	PINMAME_ROM_STATE_UNKNOWN          = 0x00,
+	PINMAME_ROM_STATE_OK               = 0x01,
+	PINMAME_ROM_STATE_NEED_REDUMP      = 0x02,
+	PINMAME_ROM_STATE_NOT_FOUND        = 0x04,
+	PINMAME_ROM_STATE_NOT_AVAILABLE    = 0x08,
+	PINMAME_ROM_STATE_BAD_CHECKSUM     = 0x10,
+	PINMAME_ROM_STATE_MEMORY_ERROR     = 0x20,
+	PINMAME_ROM_STATE_LENGTH_MISMATCH  = 0x40,
+	PINMAME_ROM_STATE_NEED_DUMP        = 0x80
+} PINMAME_ROM_STATE;
+
+// One ROM file of a game's romset, as defined by the game driver. The 'exp' fields hold the values the
+// driver expects; length, checksum and state describe what PinmameAuditGameRom found on disk (all 0
+// before an audit, and 'length'/'checksum' stay 0 when no file was found)
+typedef struct {
+	const char* name;
+	uint32_t flags;       // flags of the memory region the ROM belongs to (e.g. 0x20 marks a sound-only region)
+	uint32_t expLength;   // expected length in bytes, summed over the ROM's chunks
+	uint32_t expChecksum; // expected CRC32, 0 when the driver doesn't record one
+	uint32_t length;      // length in bytes of the file found on disk
+	uint32_t checksum;    // CRC32 of the file found on disk
+	int32_t  state;       // a PINMAME_ROM_STATE value
+} PinmameRom;
+
 typedef struct {
 	PINMAME_DISPLAY_TYPE type;
 	int32_t top;
@@ -436,6 +465,7 @@ typedef struct {
 } PinmameKeyboardInfo;
 
 typedef void (PINMAMECALLBACK *PinmameGameCallback)(PinmameGame* p_game, void* const p_userData);
+typedef void (PINMAMECALLBACK *PinmameRomCallback)(PinmameRom* p_rom, void* const p_userData);
 typedef void (PINMAMECALLBACK *PinmameOnStateUpdatedCallback)(int state, void* const p_userData);
 typedef void (PINMAMECALLBACK *PinmameOnDisplayAvailableCallback)(int index, int displayCount, PinmameDisplayLayout* p_displayLayout, void* const p_userData);
 typedef void (PINMAMECALLBACK *PinmameOnDisplayUpdatedCallback)(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout, void* const p_userData);
@@ -469,6 +499,20 @@ typedef struct {
 
 PINMAMEAPI PINMAME_STATUS PinmameGetGame(const char* const p_name, PinmameGameCallback callback, void* const p_userData);
 PINMAMEAPI PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback, void* const p_userData);
+// Calls back once per ROM file the named game defines, reporting the expected values; the fields
+// describing what is on disk (length, checksum, state) are left to 0. The callback must not keep the
+// PinmameRom pointer but may copy the struct, its 'name' field stays valid
+PINMAMEAPI PINMAME_STATUS PinmameGetGameRoms(const char* const p_name, PinmameRomCallback callback, void* const p_userData);
+// Audits one ROM file of the named game against the files on disk, filling p_rom with the expected
+// values plus the found length, checksum and a PINMAME_ROM_STATE. For a clone the ROM is also searched
+// in its parent's romset. When strict is 0 the expected checksum is used to locate and verify the file
+// (a renamed file can be found by its CRC), when nonzero only the exact file name is accepted and the
+// checksum is always recomputed. The caller may pass the struct obtained from PinmameGetGameRoms; its
+// checksum field distinguishes a file never found (PINMAME_ROM_STATE_NOT_AVAILABLE) from one that was
+// previously found but is now missing (PINMAME_ROM_STATE_NOT_FOUND)
+PINMAMEAPI PINMAME_STATUS PinmameAuditGameRom(const char* const p_gameName, const char* const p_romName, const int strict, PinmameRom* const p_rom);
+// Nonzero when a romset file for the named game is accessible, for a clone also when only its parent's is
+PINMAMEAPI int PinmameIsGameRomsetAvailable(const char* const p_name);
 PINMAMEAPI void PinmameSetConfig(const PinmameConfig* const p_config);
 // Overrides the folder searched for a file type, which otherwise is a folder below PinmameConfig::vpmPath ("roms",
 // "nvram", ...). Several folders can be given separated by ';'. The override is kept across PinmameSetConfig() calls,
