@@ -265,4 +265,9 @@ static void init_dominos(void) {
 PINHECK_ROMSTART(dominos_006, "DOM_V006.PRG", 0x31990, CRC(750e27a4) SHA1(3fbebce7f885563e61dd2e4f5d7f0a8a54c53b23),
                  "PRP_V008.BIN", CRC(a51ee28d) SHA1(0556d88b6f0c7cb15e648e1f76f4d47890ddb858))
 PINHECK_ROMEND
-PINHECK_GAMEDEF(dominos, 006, "Domino's Spectacular Pinball Adventure", 2016, "Spooky Pinball", gl_mPINHECK, 0)
+PINHECK_GAMEDEF(dominos, 006, "Domino's Spectacular Pinball Adventure (V6)", 2016, "Spooky Pinball", gl_mPINHECK, 0)
+
+PINHECK_ROMSTART(dominos_005, "DOM_V005.PRG", 0x2FFA8, CRC(57B504E6) SHA1(2caf0788fc2182c67a605b045988bfd981cfb065),
+                 "PRP_V007.BIN", CRC(04EBA28B) SHA1(0c6fff2e4a6f9b69cbbd6c04b89745b4605a87b7))
+PINHECK_ROMEND
+PINHECK_GAMEDEF(dominos, 005, "Domino's Spectacular Pinball Adventure (V5)", 2016, "Spooky Pinball", gl_mPINHECK, 0)
