@@ -64,6 +64,7 @@ DISPLAY_FIXES = {
     "Jolly Joker": "alphanumeric",
     "Sisters": "alphanumeric",
     "Big Dryvers": "alphanumeric",
+    "Avengers the Pin": "alphanumeric",             # Stern/ELG SPIKE 1, 16 characters like Transformers The Pin
 }
 
 # Electromechanical machines that OPDB also carries as a solid state entry,
@@ -603,9 +604,20 @@ def match(titles, sets):
     propose(1, lambda t: [s for k in t["_keys"] for s in keys.get(k, ())])
     propose(2, lambda t: [s for k in t["_keys"] | t["_vars"]
                           for s in list(varkeys.get(k, ())) + list(keys.get(k, ()))])
-    propose(3, lambda t: contained(t, free))
+    # The looser tiers leave alone a ROM family that an exact or variant match gave to another
+    # title: The Avengers' 2016 V1.7 revisions, outside its year window, went to ELG's 2013
+    # "Avengers the Pin". The family pass below places them
+    family_owners = defaultdict(set)
+    for t in titles:
+        for s in t["sets"]:
+            family_owners[root_of(s)].add(t["id"])
+
+    def not_elsewhere(t, cands):
+        return [s for s in cands if t["id"] in family_owners.get(root_of(s), {t["id"]})]
+
+    propose(3, lambda t: not_elsewhere(t, contained(t, free)))
     all_keys = list(keys)
-    propose(4, lambda t: fuzzy(t, keys, all_keys))
+    propose(4, lambda t: not_elsewhere(t, fuzzy(t, keys, all_keys)))
 
     # Revisions outside the year window that are the same machine: rfm_160 is
     # dated 2003 for a 1999 machine and the MODs run to 2024.  Restricted to a

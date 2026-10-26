@@ -617,10 +617,10 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | The Rolling Stones                             | 2011 | Stern                  | DMD          | `rsn_100h`, `rsn_103`, `rsn_105` + 2 more            |             |       |
 | Transformers                                   | 2011 | Stern                  | DMD          | `tf_088h`, `tf_100h`, `tf_120` + 10 more             |             |       |
 | AC/DC                                          | 2012 | Stern                  | DMD          | `acd_121`, `acd_125`, `acd_130` + 21 more            |             |       |
-| The Avengers                                   | 2012 | Stern                  | DMD          | `avs_110`, `avs_120h`, `avs_140` + 3 more            |             |       |
+| The Avengers                                   | 2012 | Stern                  | DMD          | `avs_110`, `avs_120h`, `avs_140` + 5 more            |             |       |
 | Transformers The Pin                           | 2012 | Stern                  | Alphanumeric | `tfcp_1018`                                          |             |       |
 | X-Men                                          | 2012 | Stern                  | DMD          | `xmn_100`, `xmn_102`, `xmn_104` + 14 more            |             |       |
-| Avengers the Pin                               | 2013 | Stern                  | DMD          | `avscp_103`, `avs_170`, `avs_170c`                   |             |       |
+| Avengers the Pin                               | 2013 | Stern                  | Alphanumeric | `avscp_103`                                          |             |       |
 | Metallica                                      | 2013 | Stern                  | DMD          | `mtl_052`, `mtl_103`, `mtl_105` + 31 more            |             |       |
 | Star Trek                                      | 2013 | Stern                  | DMD          | `st_120`, `st_130`, `st_140` + 15 more               |             |       |
 | America's Most Haunted                         | 2014 | Spooky Pinball         | DMD          | `amh_022`, `amh_023`                                 | yes         |       |
@@ -1149,7 +1149,7 @@ scripts/gen_supported_machines.py
 The script reads a cached copy of OPDB and re-downloads only with `--refresh`; `--check`
 fails if this file is out of date. Machine data comes from the OPDB snapshot of
 **2026-10-25**; driver data from `src/wpc` at the commit this file was generated from, on
-**2026-10-25**.
+**2026-10-26**.
 
 A machine is one OPDB *group*, so a title and its remakes are one row, dated and credited
 to the original. Its status is that of the *worst* of its ROM sets, so "fully working"

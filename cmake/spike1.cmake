@@ -3,7 +3,8 @@
 #
 #  ON by default; disable with -DPINMAME_SPIKE1=OFF, which leaves neither
 #  src/wpc/spike1.c's games nor the SPIKE 1 CPU registered. The games need a
-#  64-bit build: a title's asset image is over 1 GB, and it is a ROM.
+#  64-bit build (a title's asset image is over 1 GB, and it is a ROM), so
+#  32-bit builds always leave it out.
 #
 #  Like the Pinball 2000 subsystem (cmake/p2k.cmake, which explains why in
 #  full) it is its own OBJECT library: it needs C++17, RTTI and its include
@@ -107,6 +108,10 @@ endfunction()
 # Attach the Spike 1 subsystem to a pinmame target. No-op unless PINMAME_SPIKE1 is ON.
 function(pinmame_enable_spike1 target)
    if(NOT PINMAME_SPIKE1)
+      return()
+   endif()
+   # 64-bit only: the asset images are over 1 GB, and the guest memory is reserved up front
+   if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
       return()
    endif()
    if(NOT TARGET spike1)
