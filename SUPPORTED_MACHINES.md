@@ -5,8 +5,8 @@
 Every solid state pinball machine known to the [Open Pinball Database](https://opdb.org/),
 matched against the drivers in `src/wpc`, so you can see at a glance what PinMAME
 emulates, what it emulates imperfectly, and what it does not emulate at all. Note that it
-maynot be complete, so use the builtin functionality to create a gamelistthat features the
-full list of games.
+may not be complete, so use the builtin functionality to create a gamelist that features
+the full list of games.
 
 ## Scope: solid state, and end of life
 
