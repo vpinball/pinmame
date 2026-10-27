@@ -771,6 +771,8 @@ static struct {
   UINT32    lastSolHigh;   // solenoids 65 and up, see core_getAllSolHigh
   // DMD state for PWM integration
   core_tDMDPWMState* dmdStates[16]; // DMD: state structure where frames are pushed and kept to be processed for luminance/identify evaluation
+  // Outputs whose value the driver writes itself (CORE_MODOUT_NONE, see core_set_pwm_output_driver_value)
+  UINT8 pwm_driver_value[(CORE_MODOUT_MAX + 7) / 8];
   // Segment display handling
   #if defined(VPINMAME) || defined(LIBPINMAME)
     int       hasDmdOrVideo;              // Flag to indicate if the current game has a DMD or Video display
@@ -3425,14 +3427,11 @@ void core_update_pwm_output_led(const double now, const int index, const int isF
   #endif
 }
 
-// Outputs whose value the driver writes itself (CORE_MODOUT_NONE, see core_set_pwm_output_driver_value)
-static UINT8 pwm_driver_value[(CORE_MODOUT_MAX + 7) / 8];
-
 void core_set_pwm_output_type(int startIndex, int count, int type)
 {
   for (int i = startIndex; i < startIndex + count; i++) {
     memset(&(coreGlobals.physicOutputState[i]), 0, sizeof(core_tPhysicOutput));
-    pwm_driver_value[i >> 3] &= (UINT8)~(1u << (i & 7)); // integrated from now on, see core_set_pwm_output_driver_value
+    locals.pwm_driver_value[i >> 3] &= (UINT8)~(1u << (i & 7)); // integrated from now on, see core_set_pwm_output_driver_value
     coreGlobals.physicOutputState[i].flipBufferPos = (coreGlobals.binaryOutputState[i >> 3] >> (i & 7)) & 1;
     coreGlobals.physicOutputState[i].type = type;
     switch (type) {
@@ -3655,7 +3654,7 @@ void core_set_pwm_output_bulb(int startIndex, int count, int bulb, float U, int 
 {
   for (int i = startIndex; i < startIndex + count; i++) {
     memset(&(coreGlobals.physicOutputState[i]), 0, sizeof(core_tPhysicOutput));
-    pwm_driver_value[i >> 3] &= (UINT8)~(1u << (i & 7)); // integrated from now on, see core_set_pwm_output_driver_value
+    locals.pwm_driver_value[i >> 3] &= (UINT8)~(1u << (i & 7)); // integrated from now on, see core_set_pwm_output_driver_value
     coreGlobals.physicOutputState[i].flipBufferPos = (coreGlobals.binaryOutputState[i >> 3] >> (i & 7)) & 1;
     coreGlobals.physicOutputState[i].type = CORE_MODOUT_CUSTOM_INTEGRATOR;
     coreGlobals.physicOutputState[i].state.bulb.bulb = bulb;
@@ -3670,7 +3669,7 @@ void core_set_pwm_output_bulb(int startIndex, int count, int bulb, float U, int 
 void core_set_pwm_output_led_vfd(int startIndex, int count, int isVFD, float relative_brightness) {
   for (int i = startIndex; i < startIndex + count; i++) {
     memset(&(coreGlobals.physicOutputState[i]), 0, sizeof(core_tPhysicOutput));
-    pwm_driver_value[i >> 3] &= (UINT8)~(1u << (i & 7)); // integrated from now on, see core_set_pwm_output_driver_value
+    locals.pwm_driver_value[i >> 3] &= (UINT8)~(1u << (i & 7)); // integrated from now on, see core_set_pwm_output_driver_value
     coreGlobals.physicOutputState[i].flipBufferPos = (coreGlobals.binaryOutputState[i >> 3] >> (i & 7)) & 1;
     coreGlobals.physicOutputState[i].type = CORE_MODOUT_CUSTOM_INTEGRATOR;
     coreGlobals.physicOutputState[i].state.bulb.relative_brightness = relative_brightness;
@@ -3688,12 +3687,12 @@ void core_set_pwm_output_driver_value(int startIndex, int count)
 {
    core_set_pwm_output_type(startIndex, count, CORE_MODOUT_NONE);
    for (int i = startIndex; i < startIndex + count; i++)
-      pwm_driver_value[i >> 3] |= (UINT8)(1u << (i & 7));
+      locals.pwm_driver_value[i >> 3] |= (UINT8)(1u << (i & 7));
 }
 
 int core_is_pwm_output_driver_value(int index)
 {
-   return (pwm_driver_value[index >> 3] >> (index & 7)) & 1;
+   return (locals.pwm_driver_value[index >> 3] >> (index & 7)) & 1;
 }
 
 void core_set_pwm_output_types(int startIndex, int count, int* outputTypes)
