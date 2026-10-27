@@ -1771,6 +1771,26 @@ ROM_START(kiss15_141h)
 ROM_END
 CORE_GAMEDEF(kiss15, 141h, "KISS Limited Edition (1.41.0)", 2015, "Stern", spike1, 0)
 
+/* The same asset image and node firmware as the Limited Edition, its own game program (folder KISS).
+   No Starchild motor, lock, diverter or 1-bank drop target, and the KISS targets are standups: no
+   limit motor, and 21 coils, 72 switches. The cabinet's switch numbers are the LE's; the Light
+   References are numbered anew, up to 137, and the spinning disc runs on lamp 137 */
+SPIKE1_INIT(kiss15p, "KISS", spike1_dmd, 137, SPIKE1_SWITCHES(10, 11, 65, 66, 67, 68, 69, 70, 72, 77))
+ROM_START(kiss15_141)
+  ROM_REGION(0x3ee25000, SPIKE1_REGION, ROMREGION_MAPPED)
+    ROM_LOAD("game", 0x00000000, 0x004e5532, CRC(194d244f) SHA1(73909c34fc9cd6e694528e5d41789079c54362d7))
+    ROM_LOAD("image.bin", 0x004e6000, 0x3e8f02ec, CRC(d96ccf4c) SHA1(ac04430ffc184e2bdfe268f0f6ba91fa3fcc899e))
+    ROM_LOAD("coil4node-LPC1112_101-0_28_0.hex", 0x3edd7000, 0x00008487, CRC(29d48577) SHA1(2cef71c04de9d2ff8c4664fafaeab077532f6178))
+    ROM_LOAD("coil4node-LPC1112_201-0_28_0.hex", 0x3ede0000, 0x00008487, CRC(19aac926) SHA1(c53e6f2fe65d68a841b23a79ad35dc3422da3e6b))
+    ROM_LOAD("coil4node-LPC1313-0_28_0.hex", 0x3ede9000, 0x0000c23a, CRC(e019995b) SHA1(7d09cd36e12e79c9545e8f32e94f738951e45468))
+    ROM_LOAD("lcdnode-LPC1113_302-0_28_0.hex", 0x3edf6000, 0x0000b484, CRC(d139cac7) SHA1(e4a57e712a599041f7ba7dfcf08f07a724ccbd9f))
+    ROM_LOAD("pinnode-LPC1112_101-0_28_0.hex", 0x3ee02000, 0x00007f1c, CRC(83ca12dc) SHA1(2ac8f8c9384e8c5e0bbc1ca2d9f2ddd8bb831d3d))
+    ROM_LOAD("pinnode-LPC1112_201-0_28_0.hex", 0x3ee0a000, 0x00007f66, CRC(cee92fdc) SHA1(048abb5d42962204595d7c311dd351c9cb25fd6c))
+    ROM_LOAD("pinnode-LPC1313-0_28_0.hex", 0x3ee12000, 0x0000c859, CRC(18c17d1d) SHA1(6b2f232c0b6c2389c59f998d0487081491e9d177))
+    ROM_LOAD("ws2812node-LPC1313-0_28_0.hex", 0x3ee1f000, 0x00005590, CRC(921dc0f7) SHA1(2c49842bb5163b75a19ebac37f0379ef72c64d4a))
+ROM_END
+SPIKE1_CLONEDEF(kiss15, 141, kiss15_141h, kiss15p, "KISS (1.41.0)", 2015, spike1)
+
 /*-------------------------------------------------------------------
 / Game of Thrones
 /-------------------------------------------------------------------*/
@@ -1847,6 +1867,33 @@ ROM_START(gbust_117h)
     ROM_LOAD("ws2812node-LPC1313-0_52_0.hex", 0x47c3b000, 0x00008676, CRC(d0008f92) SHA1(ea5d965703e4244399d3f6012ddfc7b358654d80))
 ROM_END
 CORE_GAMEDEF(gbust, 117h, "Ghostbusters Limited Edition (1.17.0)", 2016, "Stern", spike1, 0)
+
+/* The same asset image and node firmware as the Limited Edition, its own game program (folder
+   ghostbusters_pro). No Ecto goggles LCD insert, subway lock or electric gate, and slings instead
+   of the LE's sling magnets. Slimer is not an encoder motor here but a limit motor the game runs
+   itself, as KISS's Starchild: SLIMER MOTOR FORWARD toward his AWAY switch and SLIMER MOTOR
+   BACKWARD toward HOME (lamps 151 and 152, switches 70 and 69), mech 0, from 0 at home to 100
+   away. His travel time is not measured: 1 s, well inside the game's own limit of about 5 s (312
+   passes of its main loop, which runs 64 times a second) */
+SPIKE1_INIT_EX(gbustp, "ghostbusters_pro", spike1_dmd, 165, FLIP_L, SPIKE1_SWITCHES(9, 10, 11, 12, 81, 82, 83, 84, 86, 89), SPIKE1_NOHOMES, SPIKE1_LIMIT_MOTOR(151, 152, 69, 70, 1000))
+ROM_START(gbust_117)
+  ROM_REGION(0x46a11000, SPIKE1_REGION, ROMREGION_MAPPED)
+    ROM_LOAD("game", 0x00000000, 0x006bb00f, CRC(19aec4a4) SHA1(d482f5d28dd3f7f894153bc0536a1c48a1790993))
+    ROM_LOAD("image.bin", 0x006bc000, 0x462dcb94, CRC(26796bf5) SHA1(fe9ddeb83ff128f2af13ef5db48c0d12dcc93d35))
+    ROM_LOAD("accbridgenode-LPC1313-0_52_0.hex", 0x46999000, 0x0000527e, CRC(c4a99441) SHA1(a87fb68db17a757c4cbd7edfc401a7dbdb7f0722))
+    ROM_LOAD("coil4node-LPC1112_101-0_52_0.hex", 0x4699f000, 0x00008543, CRC(98264c96) SHA1(13a1401393ba2eee5c5d22f64cdc9657f658ceba))
+    ROM_LOAD("coil4node-LPC1112_201-0_52_0.hex", 0x469a8000, 0x00008543, CRC(41a33f10) SHA1(2c9388aef25694a16dfe4688b81bb191de80322f))
+    ROM_LOAD("coil4node-LPC1313-0_52_0.hex", 0x469b1000, 0x0000df1e, CRC(42b641b3) SHA1(d6d18652993b0fcb8def0fbc8504de8cdc3735da))
+    ROM_LOAD("lcdnode-LPC1113_302-0_52_0.hex", 0x469bf000, 0x0000b6fa, CRC(118be40f) SHA1(4f9f2b32229e386517c439dba27527f48632d3dc))
+    ROM_LOAD("netbridge-LPC1313-0_52_0.hex", 0x469cb000, 0x0000f53c, CRC(29323686) SHA1(6c7efc3cacfd4247402969c65dc6d489ae9c8cb3))
+    ROM_LOAD("node4-LPC1124_303-0_52_0.hex", 0x469db000, 0x000065d4, CRC(13217fb3) SHA1(1eb461cedc2059e46e8c35cfb90599440642dcd6))
+    ROM_LOAD("nodebusanalyzer-LPC1313-0_52_0.hex", 0x469e2000, 0x0000546d, CRC(69c0666c) SHA1(12557754046833b136199d24cada86df96fbb8a5))
+    ROM_LOAD("pinnode-LPC1112_101-0_52_0.hex", 0x469e8000, 0x00007fc8, CRC(9f0f6f3f) SHA1(bc95697e1da01e2b6345385ca7ee1118feb50c22))
+    ROM_LOAD("pinnode-LPC1112_201-0_52_0.hex", 0x469f0000, 0x00008005, CRC(a2bc8685) SHA1(da95f7350eca021d7accf3ee8f1b2dabe1a800e4))
+    ROM_LOAD("pinnode-LPC1313-0_52_0.hex", 0x469f9000, 0x0000ea4e, CRC(ac00f191) SHA1(3072a56c8d3f8b69da5b76c93ea9706716f9265c))
+    ROM_LOAD("ws2812node-LPC1313-0_52_0.hex", 0x46a08000, 0x00008676, CRC(d0008f92) SHA1(ea5d965703e4244399d3f6012ddfc7b358654d80))
+ROM_END
+SPIKE1_CLONEDEF(gbust, 117, gbust_117h, gbustp, "Ghostbusters (1.17.0)", 2016, spike1)
 
 /*-------------------------------------------------------------------
 / Spider-Man The Pin
