@@ -132,11 +132,8 @@ reading 2 bits per dot and generating 4 frames from these. These 4 frames are ma
 - 2 -> 0101 -> 50% luminance
 - 3 -> 1111 -> 100% luminance
 
-TODO: the emulation does not match this table: it rasterizes 2 as 1101 (75% luminance), not 0101 (50%), see capcom.c (cc_dmd_rasterizer_sync).
-Either the emulation or this table is wrong, this needs hardware recordings to be decided.
-
 The emulation logs show that on some animations, the CPU may also dynamically toggle pages very quickly (2ms), leading to more complex
-PWM patterns and hence more perceived shades.
+PWM patterns and hence more perceived shades, which are not yet fully emulated.
 
 The U16 always rasterizes 256 dots per row, even if the DMD is only 128 dots wide. The extra dots are simply not processed by the display
 (actually the ignored dots are the first ones of the line as they are pushed outside of the 128 bit shift register by the other bits).

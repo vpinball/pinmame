@@ -1129,16 +1129,15 @@ static void cc_dmd_rasterizer_sync(int param) {
       }
    }
    // U16 rasterizer decodes and produces 4 frames with the following order: 0,1,2,1 leading to 0 / 25 / 50 / 100 luminance levels as the PWM patterns are the followings:
-   // 0 => 0 / 0 / 0 / 0
-   // 1 => 1 / 0 / 0 / 0
-   // 2 => 0 / 1 / 0 / 1
-   // 3 => 1 / 1 / 1 / 1
-   // TODO the code does not match the table above: 1 gives 1 / 0 / 0 / 0 (25%) but 2 gives 1 / 1 / 0 / 1 (75%, PWM0 being lum0 | lum1), not 50%.
-   // Either the bitplanes or the table/docs (docs/dmd.md) are wrong, this needs hardware recordings to be decided
+   // (see recordings on real hardware https://github.com/PPUC/dmdreader/tree/ppuc/logicanalyzer)
+   // 0 => 0 / 0 / 0 / 0 - PWM0 = 0 / PWM1 = 0 / PWM2 = 0
+   // 1 => 1 / 0 / 0 / 0 - PWM0 = 1 / PWM1 = 0 / PWM2 = 0
+   // 2 => 0 / 1 / 0 / 1 - PWM0 = 1 / PWM1 = 1 / PWM2 = 0
+   // 3 => 1 / 1 / 1 / 1 - PWM0 = 1 / PWM1 = 1 / PWM2 = 1
    core_dmd_submit_frame(core_gameData->lcdLayout, &locals.pwmDmdFrames[0 * 256 * 8], 1); // PWM0
-   core_dmd_submit_frame(core_gameData->lcdLayout, &locals.pwmDmdFrames[1 * 256 * 8], 1); // PWM1
    core_dmd_submit_frame(core_gameData->lcdLayout, &locals.pwmDmdFrames[2 * 256 * 8], 1); // PWM2
    core_dmd_submit_frame(core_gameData->lcdLayout, &locals.pwmDmdFrames[1 * 256 * 8], 1); // PWM1
+   core_dmd_submit_frame(core_gameData->lcdLayout, &locals.pwmDmdFrames[2 * 256 * 8], 1); // PWM2
 }
 
 // Goofy Hoops - using Q-Sound chip and different memory / port mapping on 68306 MPU 
