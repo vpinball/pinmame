@@ -462,8 +462,8 @@ static void gen_mem_write(struct jit_ctl *jit, int siz, data32_t addr, int rd, i
 static void gen_mem(struct jit_ctl *jit, int rd, int ld, int siz, int sx, int addr, int *is_br,
 					int nativeReg, data32_t immAddr, int sp_inc)
 {
-	// set when the LDRSH path below has already produced the final sign-extended
-	// 32-bit value in EAX, so the generic extend step at the end must be skipped
+	// set when the LDRH/LDRSH paths below have already produced the final 32-bit
+	// value in EAX, so the generic extend step at the end must be skipped
 	int sx16_done = 0;
 
 	if (ld)
@@ -500,6 +500,34 @@ static void gen_mem(struct jit_ctl *jit, int rd, int ld, int siz, int sx, int ad
 				jit_resolve_label(lOdd);
 				gen_mem_read(jit, 8, nativeReg, immAddr, 0);
 				emit(MOVSX, EAX, AL);
+				jit_resolve_label(lDone);
+			}
+			sx16_done = 1;
+		}
+		else if (siz == 16)
+		{
+			// LDRH from an ODD address: a real ARM7TDMI reads the halfword at (addr & ~1) and
+			// rotates the word right by 8 - as HandleHalfWordDT does
+			if (nativeReg == Imm)
+			{
+				gen_mem_read(jit, 16, Imm, immAddr & ~1, 0);
+				emit(MOVZX, EAX, AX);
+				if (immAddr & 1)
+					emit(ROR, EAX, Imm, 8);
+			}
+			else
+			{
+				struct jit_label *lOdd = jit_new_fwd_label();
+				struct jit_label *lDone = jit_new_fwd_label();
+				emit(TEST, nativeReg, Imm, 1);
+				emit(JNE, Label, lOdd);
+				gen_mem_read(jit, 16, nativeReg, immAddr, 0);
+				emit(MOVZX, EAX, AX);
+				emit(JMP, Label, lDone);
+				jit_resolve_label(lOdd);
+				gen_mem_read(jit, 16, nativeReg, immAddr, 0);
+				emit(MOVZX, EAX, AX);
+				emit(ROR, EAX, Imm, 8);
 				jit_resolve_label(lDone);
 			}
 			sx16_done = 1;
@@ -543,7 +571,7 @@ static void gen_mem(struct jit_ctl *jit, int rd, int ld, int siz, int sx, int ad
 			}*/
 			else if (siz == 16 && !sx16_done)
 			{
-				// 16 bits, zero-extend AX to EAX (the signed form was fully handled above)
+				// 16 bits, zero-extend AX to EAX (both loads were fully handled above)
 				emit(MOVZX, EAX, AX);
 			}
 			else if (siz == 8)
@@ -1593,6 +1621,9 @@ static int SWAP(struct jit_ctl *jit, data32_t addr, data32_t insn, int *cycles)
 	// swap takes 1S+2N+1I cycles - update from default 3
 	*cycles += 1;
 
+	// the accesses may raise an IRQ, as after LDR/STR
+	gen_test_irq(jit, addr);
+
 	// successful translation
 	return 1;
 }
@@ -1709,6 +1740,11 @@ static int LDM_STM(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br
 	// mode, which is a run-time property (see ldm_loads_base() in arm7core.c) and so is
 	// not decidable here. Leave that case to the interpreter.
 	if (ld && user_bank_xfer && ((insn >> rb) & 1))
+		return 0;
+
+	// STM with write-back and the base in the list but not first stores the UPDATED base
+	// (HandleMemBlock): leave that rare case to the interpreter too
+	if (!ld && wrt && ((insn >> rb) & 1) && (insn & ((1u << rb) - 1)))
 		return 0;
 
 	// Don't bother with the write-back for LDM if the base register is in the load list.

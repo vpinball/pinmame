@@ -734,7 +734,7 @@ static uint32_t arm7_aj_fetch(uint32_t pc) { return cpu_readop32(pc); }
 // Uniform uint32_t signatures keep the call ABI uniform; static (arm7core.c is #included
 // into multiple CPU TUs); wired via arm7_aj_set_mem_callbacks
 static uint32_t arm7_aj_r8 (uint32_t addr) { return READ8((int)addr); }
-static uint32_t arm7_aj_r16(uint32_t addr) { return READ16((int)addr); }
+static uint32_t arm7_aj_r16(uint32_t addr) { const uint32_t v = (data16_t)READ16((int)(addr & ~1u)); return (addr & 1) ? rotr_32(v, 8) : v; } // odd: as HandleHalfWordDT's LDRH
 static uint32_t arm7_aj_r32(uint32_t addr) { return READ32((int)addr); }
 // Each store also invalidates any translated block covering the written address
 // (self-modifying code). The interpreter does this in HandleMemSingle for STR; the
@@ -762,11 +762,9 @@ static uint32_t arm7_aj_exc_return(uint32_t newpc)
 	return R15;
 }
 
-// Set to 1 by a translated block when it exits at a single LDR/STR with a
-// pending+unmasked abort/IRQ/FIQ. The JIT exec loop vectors interrupts only when this
-// flag is set, matching the interpreter -- which runs ARM7_CHECKIRQ only after a single
-// data transfer (arm7exec.c case 4-7), not after branch/ALU/LDM/STM/halfword. Transient:
-// set by the block, consumed by the exec loop on the same iteration
+// Set to 1 by a translated block when it exits after a memory access or an MSR that
+// made an abort/IRQ/FIQ due; it ends a chain, so the exec loop's exception check
+// vectors before the next block. Transient: set by the block, cleared by the exec loop
 static data8_t arm7_aj_irq_flag = 0;
 // Install the thunks into a controller. Defined here (where the thunks live) and
 // called from the CPU-specific init (e.g. at91_init_jit). Its address is taken in
@@ -776,9 +774,9 @@ static data8_t arm7_aj_irq_flag = 0;
 static void arm7_aj_wire_mem(void *ctl)
 {
 	arm7_aj_set_mem_callbacks((ArmAsmjitCtl *)ctl, arm7_aj_r8, arm7_aj_r16, arm7_aj_r32, arm7_aj_w8, arm7_aj_w16, arm7_aj_w32);
-	// Abort/IRQ hooks (legacy gen_test_abort/gen_test_irq parity): after a single data
-	// transfer a translated block exits to the emulator so a pending+unmasked abort/IRQ/FIQ
-	// vectors, matching the interpreter's per-LDR/STR ARM7_CHECKIRQ
+	// Abort/IRQ hooks (legacy gen_test_abort/gen_test_irq parity): after a memory access or
+	// an MSR a translated block exits to the emulator when an abort/IRQ/FIQ is due, so it
+	// vectors at the same instruction boundary as in the interpreter
 	arm7_aj_set_irq_hooks((ArmAsmjitCtl *)ctl, (const void *)&arm7_check_irq_state,
 		(const void *)&ARM7.pendingAbtD, (const void *)&ARM7.pendingIrq, (const void *)&ARM7.pendingFiq, (const void *)&arm7_aj_irq_flag);
 	// MRS/MSR support: translated blocks call the interpreter's own PSR-transfer
@@ -1029,16 +1027,25 @@ static void arm7_core_set_irq_line(int irqline, int state)
  *                            OPCODE HANDLING
  ***************************************************************************/
 
+// No co-processor answers (the AT91 has none): the ARM7TDMI then takes the undefined instruction trap.
+// The caller advances R15 as usual, and the exec loop's exception check vectors (R14 = insn + 4)
+static void HandleCoProcAbsent(void)
+{
+#if ARM7_DEBUG_CORE
+	LOG(("%08x: Co-Processor instruction executed, but no callback defined!\n",R15));
+#endif
+	ARM7.pendingUnd = 1;
+	ARM7_ICOUNT -= 1;	//undefined takes 4 cycles (page 77)
+}
+
 // Co-Processor Data Operation
 static void HandleCoProcDO(data32_t insn)
 {
 	// This instruction simply instructs the co-processor to do something, no data is returned to ARM7 core
 	if(arm7_coproc_do_callback)
 		arm7_coproc_do_callback(insn,0,0);		//simply pass entire opcode to callback - since data format is actually dependent on co-proc implementation
-#if ARM7_DEBUG_CORE
 	else
-		LOG(("%08x: Co-Processor Data Operation executed, but no callback defined!\n",R15));
-#endif
+		HandleCoProcAbsent();
 }
 
 //Co-Processor Register Transfer - To/From Arm to Co-Proc
@@ -1059,20 +1066,16 @@ static void HandleCoProcRT(data32_t insn)
 				else
 					SET_REGISTER(rd,res);
 			}
-#if ARM7_DEBUG_CORE
 			else
-				LOG(("%08x: Co-Processor Register Transfer executed, but no RT Read callback defined!\n",R15));
-#endif
+				HandleCoProcAbsent();
 		}
 	// Store (MCR) data from ARM7 to Co-Proc register
 	else
 		{
-		if(arm7_coproc_rt_r_callback)
+		if(arm7_coproc_rt_w_callback)
 			arm7_coproc_rt_w_callback(insn,GET_REGISTER((insn>>12)&0xf),0);
-#if ARM7_DEBUG_CORE
 		else
-			LOG(("%08x: Co-Processor Register Transfer executed, but no RT Write callback defined!\n",R15));
-#endif
+			HandleCoProcAbsent();
 		}
 }
 
@@ -1122,20 +1125,16 @@ static void HandleCoProcDT(data32_t insn)
 		{
 			if(arm7_coproc_dt_r_callback)
 				arm7_coproc_dt_r_callback(insn,prn,read32);
-#if ARM7_DEBUG_CORE
 			else
-				LOG(("%08x: Co-Processer Data Transfer executed, but no READ callback defined!\n",R15));
-#endif
+				HandleCoProcAbsent();
 		}
 	// Store (STC) data from Co-Proc to ARM7 memory
 	else
 		{
 			if(arm7_coproc_dt_w_callback)
 				arm7_coproc_dt_w_callback(insn,prn,write32);
-#if ARM7_DEBUG_CORE
 			else
-				LOG(("%08x: Co-Processer Data Transfer executed, but no WRITE callback defined!\n",R15));
-#endif
+				HandleCoProcAbsent();
 		}
 		
 	if (ARM7.pendingUnd != 0) return;
@@ -1504,7 +1503,11 @@ static void HandleHalfWordDT(data32_t insn)
 		//Unsigned Half Word
 		else
 		{
-			data32_t newval = READ16(rnv);
+			// LDRH from an odd address is UNPREDICTABLE in the architecture; a real ARM7TDMI reads
+			// the halfword at (addr & ~1) and rotates the word right by 8 (as MAME's arm7 core does)
+			data32_t newval = (data16_t)READ16(rnv & ~1);
+			if (rnv & 1)
+				newval = rotr_32(newval, 8);
 			
 			if (ARM7.pendingAbtD == 0)
 			{
@@ -1664,8 +1667,12 @@ static void HandleSwap(data32_t insn)
 static void HandleMSR(int spsr, data32_t val, data32_t fields)
 {
 	int oldmode = GET_CPSR & MODE_FLAG;
-	int reg = (spsr && oldmode != eARM7_MODE_USER) ? SPSR : eCPSR;        //Either CPSR or SPSR
+	int reg = spsr ? SPSR : eCPSR;        //Either CPSR or SPSR
 	data32_t newval;
+
+	// User and System mode have no SPSR: an MSR to it does nothing (it wrote the CPSR before)
+	if (spsr && (oldmode == eARM7_MODE_USER || oldmode == eARM7_MODE_SYS))
+		return;
 
 	// get current value of CPSR/SPSR - we'll use this as the basis for
 	// any bits not affected by the MSR
@@ -1692,8 +1699,8 @@ static void HandleMSR(int spsr, data32_t val, data32_t fields)
 		// status flags can be modified regardless of mode
 		if (fields & 0x00080000)
 		{
-			// TODO for non ARMv5E mask should be 0xf0000000 (ie mask Q bit)
-			newval = (newval & 0x00ffffff) | (val & 0xf8000000);
+			// N, Z, C, V only: the ARM7TDMI (ARMv4T) has no Q bit (bit 27, ARMv5TE)
+			newval = (newval & 0x00ffffff) | (val & 0xf0000000);
 		}
 	}
 	else    // SPSR has stricter requirements
@@ -1714,8 +1721,8 @@ static void HandleMSR(int spsr, data32_t val, data32_t fields)
 			}
 			if (fields & 0x00080000)
 			{
-				// TODO for non ARMv5E mask should be 0xf0000000 (ie mask Q bit)
-				newval = (newval & 0x00ffffff) | (val & 0xf8000000);
+				// N, Z, C, V only: no Q bit on ARMv4T
+				newval = (newval & 0x00ffffff) | (val & 0xf0000000);
 			}
 		}
 	}
@@ -2027,7 +2034,9 @@ static void HandleMul( data32_t insn)
 		SET_CPSR ( (GET_CPSR &~ (N_MASK | Z_MASK)) | HandleALUNZFlags(r));
 	}
 
-	if (rs & SIGN_BIT) rs = -rs;
+	// m = 1 when bits 31-8 of the multiplier are all 0 or all 1, 2 for bits 31-16, 3 for bits
+	// 31-24, else 4: complementing a negative value turns "all 1" into "all 0"
+	if (rs & SIGN_BIT) rs = ~rs;
 	if (rs < 0x00000100) ARM7_ICOUNT -= 1 + 1;
 	else if (rs < 0x00010000) ARM7_ICOUNT -= 1 + 2;
 	else if (rs < 0x01000000) ARM7_ICOUNT -= 1 + 3;
@@ -2079,7 +2088,7 @@ static void HandleSMulLong( data32_t insn)
 		SET_CPSR ( (GET_CPSR &~ (N_MASK | Z_MASK)) | HandleLongALUNZFlags(res));
 	}
 
-	if (rs < 0) rs = -rs;
+	if (rs < 0) rs = ~rs;	// m as in HandleMul
 	if ((UINT32)rs < 0x00000100u) ARM7_ICOUNT -= 1 + 1 + 1;
 	else if ((UINT32)rs < 0x00010000u) ARM7_ICOUNT -= 1 + 2 + 1;
 	else if ((UINT32)rs < 0x01000000u) ARM7_ICOUNT -= 1 + 3 + 1;
@@ -2351,6 +2360,16 @@ static void HandleMemBlock( data32_t insn)
 			/* special case handling if writing to PC */
 			R15 += 12;
 		}
+		// With write-back and the base in the list, the ARM7TDMI stores the original base only when
+		// it is the first register stored: the base is written back after the first transfer, so a
+		// later one stores the updated value
+		int base_written = 0;
+		if ((insn & INSN_BDT_W) && ((insn >> rb) & 1) && (insn & ((1u << rb) - 1)) && rb != eR15)
+		{
+			const data32_t n = popcount16(insn & 0xffff);
+			SET_REGISTER(rb, (insn & INSN_BDT_U) ? (rbp + n * 4) : (rbp - n * 4));
+			base_written = 1;
+		}
 		if (insn & INSN_BDT_U)
 		{
 			/* Incrementing */
@@ -2377,7 +2396,7 @@ static void HandleMemBlock( data32_t insn)
 			else
 				result = storeIncMode(insn & 0xffff, rbp, GET_MODE);
 
-			if(( insn & INSN_BDT_W ) && (ARM7.pendingAbtD == 0))
+			if(( insn & INSN_BDT_W ) && (ARM7.pendingAbtD == 0) && !base_written)
 			{
 				SET_REGISTER(rb,GET_REGISTER(rb)+result*4);
 			}
@@ -2406,7 +2425,7 @@ static void HandleMemBlock( data32_t insn)
 			else
 				result = storeDecMode(insn & 0xffff, rbp, GET_MODE);
 
-			if(( insn & INSN_BDT_W ) && (ARM7.pendingAbtD == 0))
+			if(( insn & INSN_BDT_W ) && (ARM7.pendingAbtD == 0) && !base_written)
 			{
 				SET_REGISTER(rb,GET_REGISTER(rb)-result*4);
 			}

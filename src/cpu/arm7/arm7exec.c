@@ -151,6 +151,11 @@ extern unsigned at91_get_reg(int regnum);
 	RESET_ICOUNT
 	do
 	{
+		/* Take a pending, unmasked exception at every instruction boundary, as the hardware does. The
+		   pending flags and the I/F masks only change between time slices or in an instruction (a memory
+		   access reaching the AIC, MSR, an exception return), so this also covers a JIT block's exit */
+		if (ARM7_EXCEPTION_DUE)
+			ARM7_CHECKIRQ;
 
 		/* Hook for Pre-Opcode Processing */
 		BEFORE_OPCODE_EXEC_HOOK
@@ -175,12 +180,10 @@ extern unsigned at91_get_reg(int regnum);
 			if (arm7_aj_run((ArmAsmjitCtl *)ARM7.ajit, &ARM7.sArmRegister[0], pc, arm7_aj_fetch, &aj_newpc))
 			{
 				R15 = aj_newpc;
-				// Match the interpreter's interrupt timing: vector only when a block
-				// exited at a single LDR/STR with a pending+unmasked abort/IRQ/FIQ (it
-				// sets arm7_aj_irq_flag; such an exit also ends a chain), not after every
-				// block -- the interpreter checks only after single data transfers
-				// (arm7exec.c case 4-7)
-				if (arm7_aj_irq_flag) { arm7_aj_irq_flag = 0; ARM7_CHECKIRQ; }
+				// A block exits right after an instruction that made an abort/IRQ/FIQ due
+				// (it sets arm7_aj_irq_flag; such an exit also ends a chain), and the
+				// check at the top of the loop then vectors
+				arm7_aj_irq_flag = 0;
 				continue;
 			}
 		}
@@ -402,7 +405,6 @@ extern unsigned at91_get_reg(int regnum);
 				}
 				HandleMemSingle(insn);
 				R15 += 4;
-				ARM7_CHECKIRQ;
 				break;
 			/* Block Data Transfer/Access */
 			case 8:
@@ -444,7 +446,6 @@ extern unsigned at91_get_reg(int regnum);
 				L_Next:
 					R15 += 4;
 					ARM7_ICOUNT +=2;	//Any unexecuted instruction only takes 1 cycle (page 193)
-					ARM7_CHECKIRQ;
 		}
 		/* All instructions remove 3 cycles.. Others taking less / more will have adjusted this # prior to here */
 		ARM7_ICOUNT -= 3;

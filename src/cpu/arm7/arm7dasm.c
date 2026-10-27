@@ -147,6 +147,10 @@ static char *WriteDataProcessingOperand( char *pBuf, data32_t opcode, int printO
 	if( ((opcode&0x2000000) == 0) && (((opcode>>4) & 0xff)==0) )
 		return pBuf;
 
+	// ROR #0 is RRX
+	if( ((opcode&0x70)==0x60) && (((opcode>>7)&0x1f)==0) )
+		return pBuf + sprintf(pBuf, ",RRX");
+
 	pBuf += sprintf(pBuf, ",%s ", pRegOp[(opcode>>5)&3] );
 	//SJE: pBuf += sprintf(pBuf, "%s ", pRegOp[(opcode>>5)&3] );
 
@@ -170,19 +174,21 @@ static char *WriteRegisterOperand1( char *pBuf, data32_t opcode )
 
 	pBuf += sprintf(
 		pBuf,
-		", R%d", /* Operand 1 register, Operand 2 register, shift type */
-		(opcode>> 0)&0xf);
+		", %sR%d", /* Operand 1 register, Operand 2 register, shift type */
+		(opcode&0x800000)?"":"-", (opcode>> 0)&0xf);	//Bit 23 clear: subtract the offset
 
 	//check for LSL 0
-	if( (((opcode>>5)&3)==0) && (((opcode>>7)&0xf)==0) )
+	if( (((opcode>>5)&3)==0) && (((opcode>>7)&0x1f)==0) )
 		return pBuf;
-	else
+	// ROR #0 is RRX
+	if( (((opcode>>5)&3)==3) && (((opcode>>7)&0x1f)==0) && !(opcode&0x10) )
+		return pBuf + sprintf(pBuf," RRX");
 	//Add rotation type
-		pBuf += sprintf(pBuf," %s ",pRegOp[(opcode>>5)&3]);
+	pBuf += sprintf(pBuf," %s ",pRegOp[(opcode>>5)&3]);
 
 	if( opcode&0x10 ) /* Shift amount specified in bottom bits of RS */
 	{
-		pBuf += sprintf( pBuf, "R%d", (opcode>>7)&0xf );
+		pBuf += sprintf( pBuf, "R%d", (opcode>>8)&0xf );
 	}
 	else /* Shift amount immediate 5 bit unsigned integer */
 	{
@@ -293,6 +299,7 @@ void arm7_disasm( char *pBuf, data32_t pc, data32_t opcode )
 				/* xxxx 0001 0B00 nnnn dddd 0000 1001 mmmm */
 				pBuf += sprintf( pBuf, "SWP" );
 				pBuf += sprintf( pBuf, "%s%s", pConditionCode, (opcode & 0x400000)?"B":"" );	//Bit 22 = Byte/Word selection
+				pBuf = WritePadding( pBuf, pBuf0 );
 				//Rd, Rm, [Rn]
 				pBuf += sprintf( pBuf, "R%d, R%d, [R%d]",
 								(opcode>>12)&0xf, opcode&0xf, (opcode>>16)&0xf );
@@ -386,11 +393,16 @@ void arm7_disasm( char *pBuf, data32_t pc, data32_t opcode )
 			//MSR ( bit 21 set )
 			if( (opcode&0x00200000) ) {
 				pBuf += sprintf(pBuf, "MSR%s",pConditionCode );
-				//Flag Bits Only? (Bit 16 Clear)
-				if( (opcode&0x10000)==0)	pBuf += sprintf(pBuf, "F");	
 				pBuf = WritePadding( pBuf, pBuf0 );
-				pBuf += sprintf(pBuf, "%s,",strpsr);
-				WriteDataProcessingOperand(pBuf, opcode, (opcode&0x02000000)?1:0, 0, 1);
+				//the fields written (bits 19-16): flags, status, extension, control
+				pBuf += sprintf(pBuf, "%s_%s%s%s%s",strpsr,(opcode&0x80000)?"f":"",(opcode&0x40000)?"s":"",
+					(opcode&0x20000)?"x":"",(opcode&0x10000)?"c":"");
+				if( opcode&0x02000000 )
+					WriteImmediateOperand(pBuf, opcode);	//", #$imm"
+				else {
+					pBuf += sprintf(pBuf, ",");
+					WriteDataProcessingOperand(pBuf, opcode, 0, 0, 1);
+				}
 			}
 			//MRS ( bit 21 clear )
 			else {

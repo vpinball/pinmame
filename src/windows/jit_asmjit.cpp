@@ -271,9 +271,8 @@ struct MemCallbacks {
     // check_irq is the emulator's arm7_check_irq_state -- currently informational
     // (the exit-to-emulator path needs no in-JIT call), reserved for a future in-JIT
     // fast-path that would avoid breaking the block when an IRQ is pending-but-masked.
-    // pIrqFlag is a byte the block sets on exit to request that the exec loop run
-    // ARM7_CHECKIRQ (so the loop vectors only at the interpreter's check points, not
-    // after every block -- see arm7_aj_irq_flag / arm7exec.c)
+    // pIrqFlag is a byte the block sets when it exits for a due exception, which
+    // ends a chain so the exec loop vectors first (see arm7_aj_irq_flag / arm7exec.c)
     const void *check_irq, *pAbtD, *pIrq, *pFiq, *pIrqFlag;
     // The emulator's HandlePSRTransfer(insn) -- void fn(uint32_t). With it wired,
     // translated blocks handle MRS/MSR by calling it (exact interpreter semantics,
@@ -381,19 +380,17 @@ inline void emit_charge_cycles(x86::Assembler& a, int cyc, const x86::Gp& scratc
     else         a.add(x86::dword_ptr(scratch), -cyc);
 }
 
-// Abort/IRQ check emitted right after a SINGLE data transfer (LDR/STR) in Callback
-// mode, and ONLY there -- matching the interpreter, which runs ARM7_CHECKIRQ after a
-// single data transfer (arm7exec.c case 4-7) but not after LDM/STM or the DP/halfword
-// class. A load/store can touch a peripheral that raises a data abort or an IRQ/FIQ;
-// this yields the same observable result as the legacy JIT WITHOUT calling into the
-// emulator from generated code (ABI/stack-fragile): the block exits at the next-
-// instruction PC and the exec loop's ARM7_CHECKIRQ vectors it. Exit ONLY when the
-// interrupt would truly vector -- pending AND unmasked (CPSR I/F) -- mirroring
-// arm7_check_irq_state; a pending-but-masked interrupt must not break the block (that
-// caused spurious exits + cycle over-count). Cheap guard (byte/flag tests, no call).
-// NB: an early exit charges the block's full cycle total (minor over-count); the abort
-// test runs after this op's side effects (unobservable on the AT91: no MMU, no data
-// abort). No-op unless the hooks are wired (self-test/Mock paths leave them null)
+// Abort/IRQ check, emitted in Callback mode after every instruction that can make an
+// exception due: a memory access (it can reach a peripheral that raises one) and an MSR
+// (it can unmask one). Nothing else changes the pending flags or the masks within a
+// block, so this matches the interpreter's check at every instruction boundary
+// (arm7exec.c). Unlike the legacy JIT it does not call into the emulator (ABI/stack-
+// fragile): the block exits at the next instruction and the exec loop vectors. It exits
+// only when the exception would be taken - pending AND unmasked (CPSR I/F), as in
+// arm7_check_irq_state: exiting for a masked one was spurious and over-counted cycles.
+// The exit charges 'cyc', the instructions run so far. The abort test runs after this
+// op's side effects (unobservable on the AT91: no MMU, no data abort). No-op unless the
+// hooks are wired (self-test/Mock paths leave them null)
 inline void emit_mem_post_checks(x86::Assembler& a, const x86::Gp& ctx, uint32_t pc, const FuncFrame& frame, int cyc)
 {
     if (!s_memcb.pIrq || !s_memcb.pIrqFlag) return; // hooks not wired -> no codegen
@@ -421,9 +418,8 @@ inline void emit_mem_post_checks(x86::Assembler& a, const x86::Gp& ctx, uint32_t
     emit_mov_ptr(a, a.zax(), s_memcb.pIrq);  a.movzx(x86::eax, x86::byte_ptr(a.zax())); a.test(x86::eax, x86::eax); a.j(CC::kZero, cont);
     a.test(cpsr, 0x80u); a.j(CC::kNotZero, cont);     // (cpsr & I_MASK)!=0 -> masked -> continue in-block
     a.bind(do_exit);
-    // Request the IRQ check in the exec loop (byte write via a register; mov m8,r8 is
-    // a proven encoding here). The exec loop runs ARM7_CHECKIRQ only when this is set,
-    // so it vectors at the interpreter's check points (single data transfers) only.
+    // Set the flag, which ends a chain so the exec loop vectors before the next block
+    // (byte write via a register; mov m8,r8 is a proven encoding here)
     emit_mov_ptr(a, a.zax(), s_memcb.pIrqFlag);
     a.mov(x86::ecx, 1);
     a.mov(x86::byte_ptr(a.zax()), x86::cl);
@@ -941,13 +937,10 @@ bool emit_arm_ldrstr(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uint3
             else               a.mov(x86::edx, x86::dword_ptr(ctx, reg_off((int)Rd))); // arg1 = value
             emit_mem_call(a, B ? s_memcb.w8 : s_memcb.w32, true);
         }
-        // LDR into PC exited above WITHOUT the post-check or the irq flag, so the
-        // exec loop's flag-gated ARM7_CHECKIRQ doesn't run for it either -- a small,
-        // deliberate divergence from the interpreter (which checks after EVERY single
-        // data transfer): an exception raised synchronously by that load's own access
-        // (a PC load from a peripheral register -- no known code) stays pending until
-        // the next post-checked LDR/STR. Externally raised IRQs are unaffected
-        // (arm7_core_set_irq_line runs its own check). Everything else checks here
+        // LDR into PC exited above WITHOUT the post-check, so an exception raised by
+        // that load's own access (a PC load from a peripheral register -- no known
+        // code) waits until the chain ends and the exec loop checks; the same goes for
+        // LDM ...,PC. Everything else checks here
         if (!(L && Rd == 15u)) emit_mem_post_checks(a, ctx, pc, frame, cyc);
         return true;
     }
@@ -1082,9 +1075,7 @@ bool emit_arm_halfword(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, uin
             else          a.mov(x86::edx, x86::dword_ptr(ctx, reg_off((int)Rd))); // arg1 = value (w16 truncates)
             emit_mem_call(a, s_memcb.w16, true);
         }
-        // NB: no abort/IRQ post-check here -- the interpreter checks IRQ only after a
-        // SINGLE data transfer (LDR/STR), not after halfword/DP-class ops. See the
-        // matching note in emit_arm_blocktransfer
+        // emit_arm_insn adds the abort/IRQ post-check
         return true;
     }
 
@@ -1196,10 +1187,8 @@ bool emit_arm_blocktransfer(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn
             emit_charge_cycles(a, cyc, a.zdx());    // (EDX's PC already copied to EAX)
             a.emit_epilog(frame);
         }
-        // NB: no abort/IRQ post-check here. The interpreter checks IRQ only after a
-        // SINGLE data transfer (arm7exec.c case 4-7), NOT after block transfer
-        // (case 8-9); a check here would vector interrupts earlier than the
-        // interpreter does, so match its timing exactly
+        // emit_arm_insn adds the abort/IRQ post-check, unless the PC was loaded (the
+        // block has exited then, and the exec loop checks)
         return true;
     }
 
@@ -1303,9 +1292,9 @@ bool emit_arm_bx(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn, const Fun
 }
 
 // Single data swap SWP/SWPB: tmp = read(Rn); write(Rn, Rm); Rd = tmp -- an LDR
-// followed by an STR, per the interpreter (HandleSwap). No abort/IRQ post-check:
-// the interpreter runs none after HandleSwap (arm7exec.c case 1). Callback mode
-// only (two memory calls). R15 anywhere is deferred; so is Rd aliasing Rn/Rm:
+// followed by an STR, per the interpreter (HandleSwap); emit_arm_insn adds the
+// abort/IRQ post-check. Callback mode only (two memory calls). R15 anywhere is
+// deferred; so is Rd aliasing Rn/Rm:
 // nothing survives a call in a volatile register, so the loaded value is parked
 // in the Rd slot BETWEEN the two calls -- earlier than the interpreter writes it,
 // which is only observable through such aliasing (UNPREDICTABLE on hardware)
@@ -1327,13 +1316,13 @@ bool emit_arm_swap(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn)
     return true;
 }
 
-// Multiplies cost 1S + mI, where m = 1..4 by MULTIPLIER magnitude (byte count
-// of |Rs|: <0x100 -> 1 ... else 4; long forms +1I; see arm7core.c HandleMul et
-// al). The block's exit constant charges the worst case (m = 4, arm_insn_cycles);
-// this emits the run-time correction "ARM7_ICOUNT += 4 - m" from the actual Rs
-// value, making the charged total spec/interpreter-exact. 'sign': MUL/MLA and
-// SMULL/SMLAL classify |Rs| unsigned (0x80000000 stays put under negation ->
-// m = 4, matching HandleMul/HandleSMulLong); UMULL/UMLAL classify Rs raw.
+// Multiplies cost 1S + mI, where m = 1..4 by the multiplier's significant bytes
+// (m = 1 when Rs bits 31-8 are all 0 or all 1, ... else 4; long forms +1I; see
+// arm7core.c HandleMul et al). The block's exit constant charges the worst case
+// (m = 4, arm_insn_cycles); this emits the run-time correction "ARM7_ICOUNT += 4 - m"
+// from the actual Rs, making the total interpreter-exact. 'sign' (MUL/MLA, SMULL/
+// SMLAL): a negative Rs is complemented, so all-1 bytes count like all-0 ones;
+// UMULL/UMLAL classify Rs raw.
 // Emitted BEFORE the multiply's own code so an Rd == Rs overwrite cannot skew it.
 // Clobbers ECX/EDX. No-op in uncharged mode (s_picount null)
 void emit_mul_cycle_refund(x86::Assembler& a, const x86::Gp& ctx, uint32_t Rs, bool sign)
@@ -1343,8 +1332,7 @@ void emit_mul_cycle_refund(x86::Assembler& a, const x86::Gp& ctx, uint32_t Rs, b
     if (sign) {
         a.mov(x86::edx, x86::ecx);
         a.sar(x86::edx, 31);
-        a.xor_(x86::ecx, x86::edx);
-        a.sub(x86::ecx, x86::edx);  // |Rs|
+        a.xor_(x86::ecx, x86::edx); // ~Rs when negative
     }
     a.or_(x86::ecx, 1);             // Rs == 0: keep BSR defined -> m = 1
     a.bsr(x86::edx, x86::ecx);      // index of the top set bit
@@ -1370,7 +1358,7 @@ bool emit_arm_mul32(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn)
     const bool     A  = (insn >> 21) & 1u;
     const bool     S  = (insn >> 20) & 1u;
     if (Rd == 15u || Rm == 15u || Rs == 15u || (A && Rn == 15u)) return false;
-    emit_mul_cycle_refund(a, ctx, Rs, true); // MUL/MLA: m from |Rs| (HandleMul)
+    emit_mul_cycle_refund(a, ctx, Rs, true); // MUL/MLA: signed m (HandleMul)
     a.mov(x86::eax, x86::dword_ptr(ctx, reg_off((int)Rm)));
     a.imul(x86::eax, x86::dword_ptr(ctx, reg_off((int)Rs)));
     if (A) a.add(x86::eax, x86::dword_ptr(ctx, reg_off((int)Rn)));
@@ -1395,7 +1383,7 @@ bool emit_arm_mul64(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn)
     const bool   A      = (insn >> 21) & 1u;
     const bool   S      = (insn >> 20) & 1u;
     if (RdHi == 15u || RdLo == 15u || Rs == 15u || Rm == 15u) return false;
-    emit_mul_cycle_refund(a, ctx, Rs, signd); // m from Rs (|Rs| when signed), HandleS/UMulLong
+    emit_mul_cycle_refund(a, ctx, Rs, signd); // signed m for SMULL, raw for UMULL (HandleS/UMulLong)
     a.mov(x86::eax, x86::dword_ptr(ctx, reg_off((int)Rm)));
     if (signd) a.imul(x86::dword_ptr(ctx, reg_off((int)Rs))); // EDX:EAX = Rm * Rs (signed)
     else       a.mul (x86::dword_ptr(ctx, reg_off((int)Rs))); //                   (unsigned)
@@ -1427,10 +1415,8 @@ bool emit_arm_mul64(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn)
 // EXACT interpreter semantics by construction, including SPSR banking, field
 // masks, and mode switches (SwitchMode swaps the banked registers through the
 // active sArmRegister[0..15] window, so the ctx offsets this JIT uses stay
-// valid for the rest of the block). No IRQ check afterwards: the interpreter
-// does not run ARM7_CHECKIRQ after a PSR transfer either (arm7exec.c case 0/1;
-// an MSR that unmasks a pending IRQ vectors at the next check point, typically
-// the LDR/STR post-check or the interpreted exception-return instruction).
+// valid for the rest of the block). emit_arm_insn adds the IRQ check after an
+// MSR, which can unmask a pending IRQ/FIQ
 // Needs Callback mode: the call requires the block's reserved call stack, and
 // the helper address arrives with the other hooks
 bool emit_arm_psr(x86::Assembler& a, const x86::Gp& ctx, uint32_t insn)
@@ -1926,7 +1912,7 @@ bool emit_arm_ldrstr(a64::Assembler& a, const a64::Gp& ctx, uint32_t insn, uint3
 }
 
 // Halfword & signed transfer LDRH/STRH/LDRSB/LDRSH: mirrors the x86 twin
-// (same decode/deferrals; no post-check -- see the note there)
+// (same decode/deferrals; emit_arm_insn adds the post-check)
 bool emit_arm_halfword(a64::Assembler& a, const a64::Gp& ctx, uint32_t insn, uint32_t pc)
 {
     if (s_memMode == MemMode::Defer) return false;
@@ -2087,7 +2073,7 @@ bool emit_arm_blocktransfer(a64::Assembler& a, const a64::Gp& ctx, uint32_t insn
             emit_charge_cycles(a, cyc);
             a.emit_epilog(frame);
         }
-        // no post-check: interpreter parity (see the x86 twin's note)
+        // emit_arm_insn adds the post-check (see the x86 twin)
         return true;
     }
 
@@ -2164,15 +2150,14 @@ bool emit_arm_swap(a64::Assembler& a, const a64::Gp& ctx, uint32_t insn)
 
 // Run-time multiply cycle refund "ARM7_ICOUNT += 4 - m" (see the x86 twin for
 // the model). On this host the whole bsr/shr/xor dance collapses to
-// refund = clz(|Rs| | 1) >> 3. Clobbers w16/w17/x1; emitted BEFORE the multiply
+// refund = clz(Rs' | 1) >> 3. Clobbers w16/w17/x1; emitted BEFORE the multiply
 void emit_mul_cycle_refund(a64::Assembler& a, const a64::Gp& ctx, uint32_t Rs, bool sign)
 {
     if (!s_picount) return;
     a.ldr(a64::w16, a64::ptr(ctx, reg_off((int)Rs)));
-    if (sign) {                              // |Rs| (INT32_MIN stays put -> m = 4)
+    if (sign) {                              // ~Rs when negative
         a.asr(a64::w17, a64::w16, 31);
         a.eor(a64::w16, a64::w16, a64::w17);
-        a.sub(a64::w16, a64::w16, a64::w17);
     }
     a.orr(a64::w16, a64::w16, 1u);           // Rs == 0 -> m = 1
     a.clz(a64::w17, a64::w16);
@@ -2297,10 +2282,14 @@ bool emit_arm_insn(HostAssembler& a, const HostGp& ctx, uint32_t insn, uint32_t 
         } else if ((insn & 0x02000090u) == 0x00000090u && ((insn >> 5) & 0x3u) != 0u) {
             // Halfword/signed transfer: bit7 = bit4 = 1, bit25 = 0, SH (bits 6-5) != 0
             ok = emit_arm_halfword(a, ctx, insn, pc);
+            if (ok) emit_mem_post_checks(a, ctx, pc, frame, cycCharge);
         } else if (arm_is_swap(insn)) {
             ok = emit_arm_swap(a, ctx, insn);
+            if (ok) emit_mem_post_checks(a, ctx, pc, frame, cycCharge);
         } else if (arm_is_psr(insn)) {
             ok = emit_arm_psr(a, ctx, insn);
+            // an MSR can unmask a pending IRQ/FIQ
+            if (ok && ((insn >> 21) & 1u)) emit_mem_post_checks(a, ctx, pc, frame, cycCharge);
         } else {
             ok = emit_arm_dp(a, ctx, insn, pc);
             // A DP op that writes R15 (and isn't a no-write-back compare TST/TEQ/
@@ -2319,7 +2308,11 @@ bool emit_arm_insn(HostAssembler& a, const HostGp& ctx, uint32_t insn, uint32_t 
     else if (cls == 1u)        ok = emit_arm_ldrstr(a, ctx, insn, pc, frame, cycCharge); // LDR/STR
     else if (cls == 2u) {
         if ((insn >> 25) & 1u) ok = emit_arm_branch(a, ctx, insn, pc, frame, cycCharge);        // B/BL (101)
-        else                   ok = emit_arm_blocktransfer(a, ctx, insn, pc, frame, cycCharge); // LDM/STM (100)
+        else {
+            ok = emit_arm_blocktransfer(a, ctx, insn, pc, frame, cycCharge); // LDM/STM (100)
+            // (an LDM that loads the PC has already left the block)
+            if (ok && !(((insn >> 20) & 1u) && ((insn >> 15) & 1u))) emit_mem_post_checks(a, ctx, pc, frame, cycCharge);
+        }
     }
     else                       ok = false;  // coprocessor / SWI -> later
     if (ok && refundSkip) {
@@ -3665,8 +3658,8 @@ extern "C" void arm7_aj_set_mem_callbacks(ArmAsmjitCtl *c,
 // block consults these to vector a data abort / FIQ / IRQ raised by the access.
 // Unset (self-tests only; the real build always wires them via arm7_aj_wire_mem),
 // no post-check is emitted, so an exception raised synchronously BY a JITted memory
-// access is DELAYED until the next external raise or interpreted LDR/STR check --
-// externally raised IRQs are unaffected. Discards blocks translated under the old hooks
+// access is DELAYED until the block (or chain) ends and the exec loop checks.
+// Discards blocks translated under the old hooks
 extern "C" void arm7_aj_set_irq_hooks(ArmAsmjitCtl *c,
         const void *check_irq, const void *pAbtD, const void *pIrq, const void *pFiq,
         const void *pIrqFlag)
@@ -4039,9 +4032,8 @@ extern "C" void arm7_aj_set_chaining(ArmAsmjitCtl *c, int enabled)
 // if 'pc' has no translated block (caller interprets it); otherwise runs one
 // block -- or, with chaining, as many cached blocks as the cycle budget allows
 // -- charges ARM7_ICOUNT internally for everything it ran, stores the resume
-// PC in *out_newpc, and returns 1. The caller must then honor the IRQ flag
-// (arm7_aj_irq_flag) exactly as before: a post-check exit stops the chain so
-// the flag is pending when this returns
+// PC in *out_newpc, and returns 1. A post-check exit (arm7_aj_irq_flag) stops
+// the chain, so the caller's exception check runs before the next block
 extern "C" int arm7_aj_run(ArmAsmjitCtl *c, void *cpu_ctx, uint32_t pc,
                            uint32_t (*fetch)(uint32_t), uint32_t *out_newpc)
 {
@@ -4818,7 +4810,7 @@ static int jit_asmjit_cyc_skip_selftest(void)
 
 // Cycle accounting: multiply costs are data-dependent (1S + mI, m = 1..4 by
 // multiplier magnitude) -- the block charges the worst case and the emitted
-// refund corrects it from the ACTUAL Rs value, incl. |Rs| for the signed forms
+// refund corrects it from the ACTUAL Rs value, incl. ~Rs for negative signed forms
 static int jit_asmjit_cyc_mul_selftest(void)
 {
     static const uint32_t progM[] = {
@@ -4842,11 +4834,16 @@ static int jit_asmjit_cyc_mul_selftest(void)
     cpuB.r[0] = 2; cpuB.r[1] = 0x12345u;
     g_chain_icount = 100;
     ok = ok && (fn(&cpuB) == 0x1004u) && (g_chain_icount == 93);
-    // signed: |-3| = 3 -> m = 1 (the raw value 0xFFFFFFFD would be m = 4)
+    // signed: ~-3 = 2 -> m = 1 (the raw value 0xFFFFFFFD would be m = 4)
     ArmCpuSelfTest cpuC{};
     cpuC.r[0] = 2; cpuC.r[1] = 0xFFFFFFFDu;
     g_chain_icount = 100;
     ok = ok && (fn(&cpuC) == 0x1004u) && (cpuC.r[2] == 0xFFFFFFFAu) && (g_chain_icount == 95);
+    // signed: -256 has bits 31-8 all 1 -> m = 1 (its magnitude 0x100 would give m = 2)
+    ArmCpuSelfTest cpuF{};
+    cpuF.r[0] = 2; cpuF.r[1] = 0xFFFFFF00u;
+    g_chain_icount = 100;
+    ok = ok && (fn(&cpuF) == 0x1004u) && (g_chain_icount == 95);
     arm7_aj_delete(c);
     if (!ok) return 0;
     // UMULL classifies Rs UNSIGNED: 0xFFFFFFFD -> m = 4 (no refund)
