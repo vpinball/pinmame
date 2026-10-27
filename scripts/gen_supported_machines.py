@@ -837,8 +837,8 @@ def render(titles, orphans, other, stamp, cutoff, eol_years):
     w("Every solid state pinball machine known to the "
       "[Open Pinball Database](https://opdb.org/), matched against the drivers "
       "in `src/wpc`, so you can see at a glance what PinMAME emulates, what it "
-      "emulates imperfectly, and what it does not emulate at all. Note that it may"
-      "not be complete, so use the builtin functionality to create a gamelist"
+      "emulates imperfectly, and what it does not emulate at all. Note that it may "
+      "not be complete, so use the builtin functionality to create a gamelist "
       "that features the full list of games.")
     w("")
     w("## Scope: solid state, and end of life")
