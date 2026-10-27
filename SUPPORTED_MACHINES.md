@@ -631,7 +631,7 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | WrestleMania                                   | 2015 | Stern                  | DMD          | `wwe_135h`                                           |             |       |
 | Domino's Spectacular Pinball Adventure         | 2016 | Spooky Pinball         | DMD          | `dominos_005`, `dominos_006`                         | yes         |       |
 | Ghostbusters                                   | 2016 | Stern                  | DMD          | `gbust_117h`                                         |             |       |
-| Rob Zombie's Spookshow International           | 2016 | Spooky Pinball         | DMD          | `rzspook_026`                                        | yes         |       |
+| Rob Zombie's Spookshow International           | 2016 | Spooky Pinball         | DMD          | `rzspook_019`, `rzspook_026`                         | yes         |       |
 | The Jetsons                                    | 2017 | Spooky Pinball         | DMD          | `jetsons_004`                                        | yes         |       |
 | Heavy Metal                                    | 2020 | Stern                  | DMD          | `heavym20_102`                                       |             |       |
 
@@ -1148,8 +1148,8 @@ scripts/gen_supported_machines.py
 
 The script reads a cached copy of OPDB and re-downloads only with `--refresh`; `--check`
 fails if this file is out of date. Machine data comes from the OPDB snapshot of
-**2026-10-26**; driver data from `src/wpc` at the commit this file was generated from, on
-**2026-10-26**.
+**2026-10-27**; driver data from `src/wpc` at the commit this file was generated from, on
+**2026-10-27**.
 
 A machine is one OPDB *group*, so a title and its remakes are one row, dated and credited
 to the original. Its status is that of the *worst* of its ROM sets, so "fully working"
