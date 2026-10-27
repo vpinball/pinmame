@@ -529,8 +529,8 @@ static MACHINE_INIT(by6803) {
 
   // Initialize PWM outputs
   coreGlobals.nLamps = 64 + core_gameData->hw.lampCol * 8;
-  core_set_pwm_output_type(CORE_MODOUT_LAMP0, 48, CORE_MODOUT_BULB_44_20V_AC_POS_BY);
-  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 48, 48, CORE_MODOUT_BULB_44_20V_AC_NEG_BY);
+  core_set_pwm_output_type(CORE_MODOUT_LAMP0, 48, CORE_MODOUT_BULB_44_10V_AC_POS_BY);
+  core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 48, 48, CORE_MODOUT_BULB_44_10V_AC_NEG_BY);
   if (coreGlobals.nLamps > 96) // Should always be 96 (3x15 x 2 phases), just put there for safety, but the lamps are wrong
     core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 96, coreGlobals.nLamps - 96, CORE_MODOUT_BULB_44_20V_DC_CC);
   coreGlobals.nSolenoids = CORE_FIRSTCUSTSOL - 1 + core_gameData->hw.custSol;
