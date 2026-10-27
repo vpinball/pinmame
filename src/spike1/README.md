@@ -297,10 +297,12 @@ code (its symbols are in the program) rather than from any other emulator:
   as "count from home again" and leaves the stepper as it is (older titles put the stepper where
   the reply length goes, and the stepper seeks step 0). The host links such a switch to its
   stepper (`link_stepper_home()`).
-- **Limit motors** (KISS's Starchild, the game's `StarchildMotor`): a motor the game runs itself
+- **Limit motors** (KISS's Starchild, the game's `StarchildMotor`; Ghostbusters Pro's Slimer, its
+  `SlimerMotor`): a motor the game runs itself
   through an H-bridge on two LED channels, between a home and an away switch - one channel at full
   level drives it toward away, the other toward home, until the game sees the switch or gives up
-  (KISS: 434 of its ticks, about 5 s). The host links the channels and switches and gives a travel
+  (KISS: 434 of its ticks, about 5 s; Ghostbusters Pro: 312 passes of its main loop, which runs 64
+  times a second, about 5 s). The host links the channels and switches and gives a travel
   time (`link_limit_motor()`); each switch is closed over the last 2% of the way, so the start-up
   LED test, a few ms on each channel, leaves the motor on its home switch, where it stands at
   power-on. The model moves it on at every LED update and switch read.
@@ -430,11 +432,12 @@ model takes it for a program with `node_query_t()` and `nodemap_init()` (`elg_*`
   says so). Avengers' root file system lies in the dump's first 172 MB, so each pass unpacks no
   more than that: about 10 s for the set.
 - **Editions**: Stern's Pro is a lesser-featured edition of a title. Its set is a clone of the
-  Limited Edition's, named as PinMAME names Stern's SAM sets (`got_137` beside `got_137h`), with
-  its own game data (`SPIKE1_CLONEDEF`: its folder, switch numbers and steppers). The files it
-  shares with the parent - Game of Thrones Pro shares all but the game program - can come from the
-  parent's ROM set, so a Pro set's zip can hold its game program alone; the builder writes the
-  whole folder.
+  Limited Edition's, named as PinMAME names Stern's SAM sets (`got_137` beside `got_137h`,
+  `kiss15_141` beside `kiss15_141h`, `gbust_117` beside `gbust_117h`), with its own game data
+  (`SPIKE1_CLONEDEF`: its folder, display layout, switch numbers, lamps, steppers and motors). The
+  files it shares with the parent - the Game of Thrones, KISS and Ghostbusters Pros share all but
+  the game program, and the Ghostbusters Pro has no `lcdinsert.bin` - can come from the parent's
+  ROM set, so a Pro set's zip can hold its game program alone; the builder writes the whole folder.
 - **A program without a symbol table** (Heavy Metal): the set's `SPIKE1_INIT_SYMBOLS` lists the
   addresses of the tables and functions the subsystem reads by name, which `spike1_pinmame_start()`
   adds to the program's (empty) symbol table; `spike1boot --symbols <file>` takes the same list as
@@ -472,9 +475,9 @@ model takes it for a program with `node_query_t()` and `nodemap_init()` (`elg_*`
   steppers, as mechs (`GetMech(n)`: Ghostbusters' Slimer is mech 0; the 1000s, 100s, 10s, 1s and
   credit reels of Whoa Nellie, Primus and Pabst Can Crusher - one hardware, one set of switch
   numbers - are mechs 0-4, as steps 0-199; Game of Thrones' dragon and topper dragon are mechs 0
-  and 1, as steps 0-199, the wings at 23, 80, 125 or 180; then a limit motor, KISS's Starchild as
-  mech 0, from 0 at home to 100 away). Slimer's mech is its encoder count, 0 at the home zone's
-  edge. The driver takes the mechs' positions on the machine's thread at each I/O exchange, so
+  and 1, as steps 0-199, the wings at 23, 80, 125 or 180; then a limit motor, KISS's Starchild or
+  Ghostbusters Pro's Slimer as mech 0, from 0 at home to 100 away). The LE Slimer's mech is its
+  encoder count, 0 at the home zone's edge. The driver takes the mechs' positions on the machine's thread at each I/O exchange, so
   `GetMech()` from the host's thread reads the last ones taken. A title's stepper home switches on
   other boards are its `SPIKE1_HOMES`, its limit motor its `SPIKE1_LIMIT_MOTOR`, its encoder motor's
   mechanism its `SPIKE1_ENCODER_MOTOR` (`SPIKE1_INIT_ENCODER`; Slimer: node 8, motor 0, stops at -6
@@ -548,6 +551,16 @@ power-on and at each game start; the service menu's SLIMER MOTOR TEST moves it t
 asks for (42, 50, 60) and reads it back, and SLIMER MOTOR CALIBRATION ends "COMPLETE: PASSED"
 (POS 0, MIN -5, MAX 97, RANGE 102); the ball search drives it up to its stop until its time-out.
 
+Ghostbusters Pro 1.17.0 (folder `ghostbusters_pro`; five boards, 82 switches, 20 coils, 135 LED
+channels, Light References up to 165) boots to attract mode, takes coins and starts a game in the
+harness and through libpinmame. It is the LE's machine without the Ecto goggles' LCD insert (no
+`lcdinsert.bin`; the set's layout is the DMD alone), the subway lock and the electric gate, with
+slings instead of the LE's sling magnets. Its Slimer is no encoder motor: the game runs him
+between SLIMER MOTOR (HOME) and (AWAY), switches 69 and 70, on SLIMER MOTOR FORWARD toward away
+and BACKWARD toward home (lamps 151 and 152), a limit motor as KISS's Starchild, mech 0. His
+travel time, 1 s, is not measured. In attract mode the game shakes him out from home and back.
+Its cabinet switches and flipper coils are the LE's.
+
 Game of Thrones LE 1.37.0 (six boards, 241 LED channels, Light References up to 265) boots to
 attract mode, takes coins (four to a credit at its default pricing) and starts a game in the
 harness and through libpinmame; its dragon homes on its switch and stands at step 23, the upper
@@ -565,6 +578,14 @@ ball search drives it to the away switch and back, and its switch checks stay go
 disc is lamp 172 (the game runs disc motor 2 only). The optional USB topper (`/dev/ttyUSB0`,
 `auto_topper`) is not modelled: its writes are taken and dropped. The set is `kiss15`, as PinMAME's
 `kiss` is Bally's of 1979.
+
+KISS Pro 1.41.0 (folder `KISS`; five boards, 72 switches, 21 coils, 124 LED channels, Light
+References up to 137) boots to attract mode, takes coins and starts a game in the harness and
+through libpinmame. It needed no change to the subsystem: it is the LE's machine without the
+Starchild motor, the lock, the right ramp diverter, the PAUL DANCE coil, the 1-bank drop target
+and the 4-bank drop's reset (its KISS targets are standups), so it has no limit motor. Its cabinet switches and flipper
+coils are the LE's; its lamps are numbered anew, and the game's ball search runs its spinning disc
+on lamp 137 (MOTOR-SPIN DISC 2).
 
 Wrestlemania LE 1.35.0 (the oldest SDK, node firmware 0.18.4, six boards, four balls) boots to
 attract mode with its DMD, and its playfield LCD plays the attract clips (the shattering "Legends

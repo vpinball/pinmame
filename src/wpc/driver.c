@@ -2474,11 +2474,11 @@ DRIVER(avscp,103)       //SPIKE 1: ??/13 Avengers The Pin - 1.0.3
                         //SPIKE 1: ??/15 Wrestlemania
 DRIVER(wwe,135h)        //         ??/15 Legends of Wrestlemania - 1.35.0 Limited Edition
 DRIVER(wnbjm,155)       //SPIKE 1: ??/15 Whoa Nellie! Big Juicy Melons - 1.55.0
-                        //SPIKE 1: ??/15 KISS
+DRIVER(kiss15,141)      //SPIKE 1: ??/15 KISS - 1.41.0
 DRIVER(kiss15,141h)     //         ??/15 KISS - 1.41.0 Limited Edition
 DRIVER(got,137)         //SPIKE 1: ??/15 Game of Thrones - 1.37.0
 DRIVER(got,137h)        //         ??/15 Game of Thrones - 1.37.0 Limited Edition
-                        //SPIKE 1: ??/16 Ghostbusters
+DRIVER(gbust,117)       //SPIKE 1: ??/16 Ghostbusters - 1.17.0
 DRIVER(gbust,117h)      //         ??/16 Ghostbusters - 1.17.0 Limited Edition
 DRIVER(pabst,101)       //SPIKE 1: ??/16 Pabst Can Crusher, The - 1.01.0
 DRIVER(smancp,101)      //SPIKE 1: ??/16 Spider-Man The Pin - 1.01
