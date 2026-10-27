@@ -494,8 +494,8 @@ enum
 
 #define SR_MODE32               0x10
 
-#define MODE32                  (GET_CPSR & SR_MODE32)
-#define MODE26                  (!(GET_CPSR & SR_MODE32))
+#define MODE32                  1 // PINMAME: no 26-bit modes from ARMv4 on
+#define MODE26                  0
 #define GET_PC                  (MODE32 ? R15 : R15 & 0x03FFFFFC)
 
 #define ARM7_TLB_ABORT_D (1 << 0)

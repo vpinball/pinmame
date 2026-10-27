@@ -76,6 +76,7 @@ From MAME 0.288 (tag `mame0288`, commit `27a8d9e`), `src/devices/cpu/arm7/`: `ar
 | `arm7ops.cpp` `arm7ops_4567`, `arm9ops_undef` | **bug fix**: undefined ARM instructions trap. A register offset LDR/STR with bit 4 set (e.g. `UDF`, from `__builtin_trap`) ran as a load or store, and the unconditional space (cond = 0xF) skipped unknown instructions |
 | `arm7ops.cpp` `arm9ops_57` | PLD is valid (a no-op) from ARMv5TE, not only from ARMv6: it would trap now, and glibc's `memcpy` uses it |
 | `arm7ops.cpp` `HandleALU` | **bug fix**: a register operand with an immediate shift takes no extra cycle, only a register specified shift does (e.g. every `add r0, r1, r2` was charged one cycle too many) |
+| `arm7.cpp` `execute_run`, `arm7help.h`, `arm7core.h`, `arm7.h` | speed, measured 1.7x on a scripted game: the handlers are called directly from a switch (data processing first) instead of through the member pointer table; a fetch reuses the fast window of the last one; `arm7_check_irq_state()` is only called with an interrupt pending; registers are read from the user bank without the mode table (user mode only, checked on entry); `MODE32` is constant; the memory accessors are called non-virtually; `decodeShift()` is inlined |
 
 The core uses the existing MAME compatibility layer of the Pinball 2000 subsystem (`src/p2k/shim`), with a
 few additions for modern MAME's arm7: the `TR_*` translation intents, `address_map_constructor`, the four-argument

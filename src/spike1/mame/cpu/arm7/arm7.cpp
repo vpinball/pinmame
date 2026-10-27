@@ -1281,6 +1281,12 @@ void arm7_cpu_device::execute_run()
 	m_tlb_log = m_actual_log;
 
 	uint32_t insn;
+#if ARM7_PINMAME_DIRECT_FETCH
+	uintptr_t fetch_adj = 0; // PINMAME: the fast window the last instruction came from, so a fetch skips the window search
+	uint32_t fetch_lo = 0, fetch_len = 0;
+#endif
+	if (GET_MODE != eARM7_MODE_USER) // PINMAME: GetRegister() reads the user bank directly
+		fatalerror("ARM7: mode %x is not supported\n", GET_MODE);
 
 	do
 	{
@@ -1502,6 +1508,9 @@ void arm7_cpu_device::execute_run()
 				goto skip_exec;
 			}
 			(this->*thumb_handler[(insn & 0xffc0) >> 6])(pc, insn);
+#if ARM7_PINMAME_DIRECT_FETCH
+			fetch_len = 0;
+#endif
 		}
 		else
 		{
@@ -1510,6 +1519,11 @@ void arm7_cpu_device::execute_run()
 			// "In ARM state, bits [1:0] of r15 are undefined and must be ignored. Bits [31:2] contain the PC."
 			offs_t const raddr = pc & ~uint32_t(3);
 
+#if ARM7_PINMAME_DIRECT_FETCH
+			if (uint32_t(raddr - fetch_lo) < fetch_len || m_program->direct_range(raddr, fetch_adj, fetch_lo, fetch_len))
+				std::memcpy(&insn, reinterpret_cast<const uint8_t *>(fetch_adj + raddr), 4);
+			else
+#endif
 			if (!insn_fetch_arm(raddr, insn))
 			{
 #if PRINT_CE_KERNEL
@@ -1596,12 +1610,33 @@ void arm7_cpu_device::execute_run()
 			/*******************************************************************/
 			/* If we got here - condition satisfied, so decode the instruction */
 			/*******************************************************************/
-			(this->*ops_handler[((insn & 0xF000000) >> 24) + op_offset])(insn);
+			switch (((insn & 0xF000000) >> 24) + op_offset) // PINMAME: direct calls instead of the handler table, data processing first
+			{
+			case 0x0: case 0x1: case 0x2: case 0x3:
+				if ((insn & 0x01900000) != 0x01000000 && (insn & 0x0e000090) != 0x00000090)
+					HandleALU(insn);
+				else
+					arm7ops_0123(insn);
+				break;
+			case 0x4: case 0x5: case 0x6: case 0x7: arm7ops_4567(insn); break;
+			case 0x8: case 0x9: arm7ops_89(insn); break;
+			case 0xa: case 0xb: arm7ops_ab(insn); break;
+			case 0xc: case 0xd: arm7ops_cd(insn); break;
+			case 0xe: arm7ops_e(insn); break;
+			case 0xf:
+				arm7ops_f(insn);
+#if ARM7_PINMAME_DIRECT_FETCH
+				fetch_len = 0; // a SWI reaches the host, which may replace the guest's memory
+#endif
+				break;
+			default: (this->*ops_handler[((insn & 0xF000000) >> 24) + op_offset])(insn); break;
+			}
 		}
 
 skip_exec:
 
-		arm7_check_irq_state();
+		if (m_pending_interrupt) // PINMAME: the call is not cheap enough to make on every instruction
+			arm7_check_irq_state();
 
 		/* All instructions remove 3 cycles.. Others taking less / more will have adjusted this # prior to here */
 		m_icount -= 3;

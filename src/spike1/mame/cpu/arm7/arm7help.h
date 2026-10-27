@@ -142,8 +142,8 @@
 
 
 // used to be functions, but no longer a need, so we'll use define for better speed.
-#define GetRegister(rIndex)        m_r[m_reg_group[rIndex]]
-#define SetRegister(rIndex, value) m_r[m_reg_group[rIndex]] = value
+#define GetRegister(rIndex)        m_r[(rIndex) == SPSR ? eCPSR : (rIndex)] // PINMAME: user mode only (execute_run checks), without the bank table
+#define SetRegister(rIndex, value) m_r[(rIndex) == SPSR ? eCPSR : (rIndex)] = value
 
 #define GetModeRegister(mode, rIndex)        m_r[sRegisterTable[mode][rIndex]]
 #define SetModeRegister(mode, rIndex, value) m_r[sRegisterTable[mode][rIndex]] = value
@@ -152,11 +152,11 @@
 /* Macros that can be re-defined for custom cpu implementations - The core expects these to be defined */
 /* In this case, we are using the default arm7 handlers (supplied by the core)
    - but simply changes these and define your own if needed for cpu implementation specific needs */
-#define READ8(addr)         arm7_cpu_read8(addr)
-#define WRITE8(addr,data)   arm7_cpu_write8(addr,data)
-#define READ16(addr)        arm7_cpu_read16(addr)
-#define WRITE16(addr,data)  arm7_cpu_write16(addr,data)
-#define READ32(addr)        arm7_cpu_read32(addr)
-#define WRITE32(addr,data)  arm7_cpu_write32(addr,data)
+#define READ8(addr)         arm7_cpu_device::arm7_cpu_read8(addr) // PINMAME: qualified, so not virtual
+#define WRITE8(addr,data)   arm7_cpu_device::arm7_cpu_write8(addr,data)
+#define READ16(addr)        arm7_cpu_device::arm7_cpu_read16(addr)
+#define WRITE16(addr,data)  arm7_cpu_device::arm7_cpu_write16(addr,data)
+#define READ32(addr)        arm7_cpu_device::arm7_cpu_read32(addr)
+#define WRITE32(addr,data)  arm7_cpu_device::arm7_cpu_write32(addr,data)
 #define PTR_READ32          &arm7_cpu_read32
 #define PTR_WRITE32         &arm7_cpu_write32
