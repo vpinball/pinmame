@@ -84,7 +84,7 @@ and listen to/record the pinball game sounds with the pure PinMAME package itsel
 
 ## Games supported (incomplete)
 
-See [SUPPORTED_MACHINES.md](SUPPORTED_MACHINES.md) for a more complete, machine-by-machine list.
+See [SUPPORTED_MACHINES.md](SUPPORTED_MACHINES.md) for a more complete, machine-by-machine list (limited though to entries that can be found on Open Pinball Database).
 
 - *Midway Pinball 2000* - All games from Revenge From Mars (1999) to Star Wars Episode I (1999)
 - *Williams/Bally WPC* - All games from Dr. Dude (1990) to Cactus Canyon (1998)
