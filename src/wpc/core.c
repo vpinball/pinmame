@@ -3540,21 +3540,17 @@ void core_set_pwm_output_type(int startIndex, int count, int type)
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
       break;
-    // TODO Bally 6803 lamps are likely modelled far too hot: the ROMs (eballchp, dungdrag) fire a lit lamp's SCR 0.7..1.8ms after each zero
-    // cross, so it conducts nearly the whole half wave: at 20.5V AC a #44 gets about 13V RMS, twice its rating, and lit inserts sit at the
-    // BULB_T_MAX clamp (about 4.5x the rated brightness). The rating (2710K) would be reached at about 8..9V AC: check the lamp supply
-    // (tap, serial resistance, bulb type) against the schematics
-    case CORE_MODOUT_BULB_44_20V_AC_POS_BY: // Strobed bulb, 20.5V AC switched through a SCR and a diode limiting to positive half of the AC sine (Bally 6803)
+    case CORE_MODOUT_BULB_44_10V_AC_POS_BY: // Strobed bulb, 10.25V AC switched through a SCR and a diode limiting to positive half of the AC sine (Bally 6803)
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
-      coreGlobals.physicOutputState[i].state.bulb.U = 20.5f - 0.7f - 0.7f;
+      coreGlobals.physicOutputState[i].state.bulb.U = 10.25f - 0.7f - 0.7f;
       coreGlobals.physicOutputState[i].state.bulb.isAC = 2;
       coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.f;
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
       coreGlobals.physicOutputState[i].integrator = &core_update_pwm_output_bulb;
       break;
-    case CORE_MODOUT_BULB_44_20V_AC_NEG_BY: // Strobed bulb, 20.5V AC switched through a SCR and a diode limiting to negative half of the AC sine (Bally 6803)
+    case CORE_MODOUT_BULB_44_10V_AC_NEG_BY: // Strobed bulb, 10.25V AC switched through a SCR and a diode limiting to negative half of the AC sine (Bally 6803)
       coreGlobals.physicOutputState[i].state.bulb.bulb = BULB_44;
-      coreGlobals.physicOutputState[i].state.bulb.U = 20.5f - 0.7f - 0.7f;
+      coreGlobals.physicOutputState[i].state.bulb.U = 10.25f - 0.7f - 0.7f;
       coreGlobals.physicOutputState[i].state.bulb.isAC = 3;
       coreGlobals.physicOutputState[i].state.bulb.serial_R = 0.f;
       coreGlobals.physicOutputState[i].state.bulb.relative_brightness = 1.f;
