@@ -1286,7 +1286,10 @@ void arm7_cpu_device::execute_run()
 	uint32_t fetch_lo = 0, fetch_len = 0;
 #endif
 	if (GET_MODE != eARM7_MODE_USER) // PINMAME: GetRegister() reads the user bank directly
+	{
 		fatalerror("ARM7: mode %x is not supported\n", GET_MODE);
+		return; // a fault handler makes fatalerror() return
+	}
 
 	do
 	{

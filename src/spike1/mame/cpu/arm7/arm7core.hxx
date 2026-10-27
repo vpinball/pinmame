@@ -123,6 +123,9 @@ void arm7_cpu_device::arm7_check_irq_state()
 		if ((COPRO_CTRL & COPRO_CTRL_MMU_EN) && (COPRO_CTRL & COPRO_CTRL_INTVEC_ADJUST)) R15 |= 0xFFFF0000;
 		m_pendingAbtD = false;
 		update_irq_state();
+		// PINMAME: an asynchronous exception's entry takes 2S + 1N (the pipeline refill); SWI and undefined are
+		// charged as instructions by the dispatch loop
+		ARM7_ICOUNT -= 3;
 		return;
 	}
 
@@ -139,6 +142,7 @@ void arm7_cpu_device::arm7_check_irq_state()
 		R15 = 0x1c;                             /* IRQ Vector address */
 		R15 |= m_vectorbase;
 		if ((COPRO_CTRL & COPRO_CTRL_MMU_EN) && (COPRO_CTRL & COPRO_CTRL_INTVEC_ADJUST)) R15 |= 0xFFFF0000;
+		ARM7_ICOUNT -= 3; // PINMAME: exception entry, see data abort
 		return;
 	}
 
@@ -164,12 +168,20 @@ void arm7_cpu_device::arm7_check_irq_state()
 		}
 		R15 |= m_vectorbase;
 		if ((COPRO_CTRL & COPRO_CTRL_MMU_EN) && (COPRO_CTRL & COPRO_CTRL_INTVEC_ADJUST)) R15 |= 0xFFFF0000;
+		ARM7_ICOUNT -= 3; // PINMAME: exception entry, see data abort
 		return;
 	}
 
 	// Prefetch Abort
 	if (m_pendingAbtP)
 	{
+		if (m_fault_handler) // PINMAME: see set_fault_handler(); a BKPT or a fetch that failed
+		{
+			m_pendingAbtP = false;
+			update_irq_state();
+			m_fault_handler("prefetch abort (BKPT or no instruction memory)");
+			return;
+		}
 		if (MODE26) fatalerror("pendingAbtP (todo)\n");
 		SwitchMode(eARM7_MODE_ABT);             /* Set ABT mode so PC is saved to correct R14 bank */
 		SetRegister(14, pc - 4 + 4);                   /* save PC to R14 */
@@ -180,6 +192,7 @@ void arm7_cpu_device::arm7_check_irq_state()
 		if ((COPRO_CTRL & COPRO_CTRL_MMU_EN) && (COPRO_CTRL & COPRO_CTRL_INTVEC_ADJUST)) R15 |= 0xFFFF0000;
 		m_pendingAbtP = false;
 		update_irq_state();
+		ARM7_ICOUNT -= 3; // PINMAME: exception entry, see data abort
 		return;
 	}
 

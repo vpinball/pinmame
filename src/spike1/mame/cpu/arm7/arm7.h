@@ -222,6 +222,7 @@ protected:
 	void HandleSMulLong(uint32_t insn);
 	void HandleUMulLong(uint32_t insn);
 	void HandleMemBlock(uint32_t insn);
+	void HandleLDMPC(uint32_t insn); // PINMAME
 
 	void arm7ops_0123(uint32_t insn);
 	void arm7ops_4567(uint32_t insn);

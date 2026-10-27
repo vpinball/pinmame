@@ -363,7 +363,8 @@ typedef enum {
 
 // One ROM file of a game's romset, as defined by the game driver. The 'exp' fields hold the values the
 // driver expects; length, checksum and state describe what PinmameAuditGameRom found on disk (all 0
-// before an audit, and 'length'/'checksum' stay 0 when no file was found)
+// before an audit). When no file is found, 'length' and 'checksum' keep the values passed in (0 from
+// PinmameGetGameRoms, or those of an earlier audit), as VPinMAME's IRom does
 typedef struct {
 	const char* name;
 	uint32_t flags;       // flags of the memory region the ROM belongs to (e.g. 0x20 marks a sound-only region)
