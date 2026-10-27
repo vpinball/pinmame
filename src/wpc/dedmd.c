@@ -1,3 +1,7 @@
+// NOTE: stwr_107, rab_320 and mj_130 (as examples) feature a long blank period on startup (about 26s for Star Wars, 16s for R&B, 18s for MJ),
+// BUT it only happens with an empty trough: during that time the ROM fires the trough coils and lights nothing, then goes to attract.
+// With the trough switches closed (e.g. 11/12/13 on Star Wars), all three reach attract in about 5 s on every build.
+
 #include "driver.h"
 #include "vidhrdw/crtc6845.h" //!! use MAME mc6845? -> much more complex
 #include "cpu/m6809/m6809.h"

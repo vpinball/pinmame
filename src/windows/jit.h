@@ -1,3 +1,6 @@
+// TODO: as soon as the new asmjit based JIT path (x64 and arm64 already uses it)
+//       got more testing, remove the legacy 32bit only code
+
 /*
  *   Just-in-time machine code translator infrastructure
  *
@@ -264,8 +267,8 @@ typedef unsigned char byte;
  *   these macros or at JIT_ENABLED.  It is gated solely by PINMAME_JIT_ASMJIT
  *   (a build option, on by default for x86/x64 targets and forced off for all
  *   other architectures by cmake/asmjit.cmake) plus a runtime check
- *   (ARM7.ajit != NULL), so it DOES run on x86 and x64 (ARM64 backend
- *   still to come).  The dependency runs the other way only: defining
+ *   (ARM7.ajit != NULL), so it DOES run on x86 and x64, plus arm64.
+ *   The dependency runs the other way only: defining
  *   PINMAME_JIT_ASMJIT forces JIT_ENABLED to 0, because the two JITs are
  *   mutually exclusive (see the master switch below).
  *   See src/windows/jit_asmjit.cpp
