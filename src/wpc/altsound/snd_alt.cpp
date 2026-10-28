@@ -551,11 +551,9 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 		*cmd_filter = 0;
 		if ((cmd_buffer[2] == 0x79) && (cmd_buffer[1] == (cmd_buffer[0] ^ 0xFF))) // change volume op (following first byte = volume, second = ~volume, if these don't match: ignore)
 		{
-			// DAR@20230518
-			// I don't know why this is nerfing the volume.  It does not
-			// appear to work correctly in all cases. 
+			// the pre-DCS sound ROM volume runs 0..31, like the Whitestar one below
 			if (processor->romControlsVol()) {
-				processor->setGlobalVol(std::min((float)cmd_buffer[1] / 127.f, 1.0f));
+				processor->setGlobalVol(std::min((float)cmd_buffer[1] / 31.f, 1.0f));
 				ALT_INFO(0, "Change volume %.02f", processor->getGlobalVol());
 			}
 
