@@ -154,6 +154,20 @@ bool spike1_vfs::remove(const std::string &path)
 	return true;
 }
 
+bool spike1_vfs::rename(const std::string &from, const std::string &to)
+{
+	if (lookup(from) == type::directory) {
+		if (lookup(to) == type::none && !make_directory(to)) return false;
+		for (const auto &e : list(from))
+			if (!rename(from + '/' + e.name, to + '/' + e.name)) return false;
+	} else {
+		auto bytes = open_write(from, false);
+		if (!bytes) return false;
+		m_written[to] = bytes;
+	}
+	return remove(from);
+}
+
 std::vector<uint8_t> spike1_vfs::save() const
 {
 	std::vector<uint8_t> out(NV_MAGIC, NV_MAGIC + 4);

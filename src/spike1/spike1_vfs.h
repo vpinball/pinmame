@@ -49,6 +49,9 @@ public:
 	std::shared_ptr<std::vector<uint8_t>> open_write(const std::string &path, bool truncate);
 	bool make_directory(const std::string &path);
 	bool remove(const std::string &path);
+	// Moves a file, or a directory with everything in it, to a free path; a file replaces a file
+	// there, a directory an empty directory. Base files are copied up; open files keep their bytes
+	bool rename(const std::string &from, const std::string &to);
 
 	// The written layer as one block: what the host saves as the machine's NVRAM. load() replaces
 	// the layer and fails, leaving it empty, on a block it does not recognise

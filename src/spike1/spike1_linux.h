@@ -197,6 +197,7 @@ private:
 	int32_t sys_write(int fd, uint32_t buf, uint32_t len, std::string &note);
 	int32_t sys_ioctl(int fd, uint32_t req, uint32_t arg, std::string &note);
 	int32_t sys_stat(const std::string &guest, uint32_t buf, bool follow);
+	int32_t sys_rename(const std::string &from, const std::string &to);
 	int32_t sys_fstat(int fd, uint32_t buf);
 	int32_t sys_getdents64(int fd, uint32_t buf, uint32_t len);
 	int32_t sys_lseek(int fd, int64_t offset, int whence, int64_t &result);

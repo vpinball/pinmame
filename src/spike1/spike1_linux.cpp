@@ -18,7 +18,7 @@ namespace {
 
 // Linux errno values (asm-generic)
 enum : int32_t {
-	E_PERM = 1, E_NOENT = 2, E_INTR = 4, E_IO = 5, E_BADF = 9, E_AGAIN = 11, E_NOMEM = 12,
+	E_PERM = 1, E_NOENT = 2, E_INTR = 4, E_IO = 5, E_NXIO = 6, E_BADF = 9, E_AGAIN = 11, E_NOMEM = 12,
 	E_ACCES = 13, E_FAULT = 14, E_EXIST = 17, E_NOTDIR = 20, E_ISDIR = 21, E_INVAL = 22,
 	E_SRCH = 3, E_MFILE = 24, E_NOTTY = 25, E_SPIPE = 29, E_ROFS = 30, E_RANGE = 34, E_NOSYS = 38,
 	E_NOTEMPTY = 39, E_AFNOSUPPORT = 97, E_TIMEDOUT = 110
@@ -47,8 +47,8 @@ constexpr uint64_t BOOT_NS = 10000000000ull;
 struct syscall_name { uint32_t nr; const char *name; };
 const syscall_name SYSCALL_NAMES[] = {
 	{1,"exit"},{3,"read"},{4,"write"},{5,"open"},{6,"close"},{10,"unlink"},{12,"chdir"},{13,"time"},
-	{15,"chmod"},{19,"lseek"},{20,"getpid"},{33,"access"},{36,"sync"},{37,"kill"},{38,"rename"},
-	{39,"mkdir"},{40,"rmdir"},{41,"dup"},{42,"pipe"},{43,"times"},{45,"brk"},{54,"ioctl"},{55,"fcntl"},
+	{15,"chmod"},{19,"lseek"},{20,"getpid"},{21,"mount"},{33,"access"},{36,"sync"},{37,"kill"},{38,"rename"},
+	{39,"mkdir"},{40,"rmdir"},{41,"dup"},{42,"pipe"},{43,"times"},{45,"brk"},{52,"umount2"},{54,"ioctl"},{55,"fcntl"},
 	{57,"setpgid"},{60,"umask"},{63,"dup2"},{64,"getppid"},{66,"setsid"},{77,"getrusage"},
 	{78,"gettimeofday"},{85,"readlink"},{91,"munmap"},{93,"ftruncate"},{96,"getpriority"},
 	{97,"setpriority"},{106,"stat"},{108,"fstat"},{114,"wait4"},{116,"sysinfo"},{118,"fsync"},
@@ -962,6 +962,20 @@ int32_t spike1_linux::syscall(uint32_t nr, const uint32_t a[7], bool &handled, s
 		if ((t == spike1_vfs::type::directory) != (nr == 40)) return nr == 40 ? -E_NOTDIR : -E_ISDIR;
 		return m_vfs.remove(g) ? 0 : -E_NOTEMPTY;
 	}
+	case 38: { // rename
+		std::string from, to;
+		if (!m_mem.read_string(a[0], from) || !m_mem.read_string(a[1], to)) return -E_FAULT;
+		const std::string f = guest_absolute(from), t = guest_absolute(to);
+		SPIKE1_DEBUG_ONLY(note = "rename " + f + " to " + t;)
+		return sys_rename(f, t);
+	}
+	// The service menu's USB functions (Utilities' SAVE SETTINGS and RESTORE SETTINGS, the audit
+	// dump) mount a USB stick's FAT file system on /media from /dev/sda1, /dev/sda, /dev/sdb1 or
+	// /dev/sdb, and unmount /media before and after. No stick is in: the board's /dev is static
+	// (its start-up runs no udev), so the device files are there and the kernel finds no disk
+	// behind them, and nothing is mounted on /media. The game says so and waits for a stick or BACK
+	case 21: return -E_NXIO;  // mount
+	case 52: return -E_INVAL; // umount2
 	case 36: case 373: m_syncs++; return 0; // sync, syncfs
 	case 118: case 148: return 0;          // fsync, fdatasync
 	case 143: return 0; // flock
@@ -1290,6 +1304,27 @@ int32_t spike1_linux::sys_stat(const std::string &path, uint32_t buf, bool follo
 	if (t == spike1_vfs::type::none) return -E_NOENT;
 	if (t == spike1_vfs::type::directory) return write_stat64(buf, S_IFDIR_ | 0755, 4096, std::hash<std::string>()(g));
 	return write_stat64(buf, S_IFREG_ | 0755, size, std::hash<std::string>()(g));
+}
+
+// The game renames its NVRAM files: SafeFile::load() numbers a file's versions from 0 again once
+// they pass 9999. The checks, in the kernel's order (do_renameat2(), vfs_rename())
+int32_t spike1_linux::sys_rename(const std::string &from, const std::string &to)
+{
+	using vt = spike1_vfs::type;
+	const auto below = [](const std::string &path, const std::string &dir) {
+		return path.size() > dir.size() && path.compare(0, dir.size(), dir) == 0 && (dir == "/" || path[dir.size()] == '/');
+	};
+	const vt source = m_vfs.lookup(from), target = m_vfs.lookup(to);
+	const size_t slash = to.rfind('/');
+	if (source == vt::none || m_vfs.lookup(slash ? to.substr(0, slash) : "/") != vt::directory) return -E_NOENT;
+	if (from == to) return 0;
+	if (below(to, from)) return -E_INVAL;
+	if (below(from, to)) return -E_NOTEMPTY;
+	if (target == vt::directory) {
+		if (source != vt::directory) return -E_ISDIR;
+		if (!m_vfs.list(to).empty()) return -E_NOTEMPTY;
+	} else if (target == vt::file && source == vt::directory) return -E_NOTDIR;
+	return m_vfs.rename(from, to) ? 0 : -E_NOENT;
 }
 
 int32_t spike1_linux::sys_fstat(int fd, uint32_t buf)

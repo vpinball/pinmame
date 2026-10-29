@@ -49,7 +49,17 @@ system-call level instead.
   starts it a second later as a new process: new memory, threads and open files, and the program
   loaded again. The files it wrote, the CPU board's devices, the node boards, the EEPROMs and the
   clock carry on. A slam tilt ends the program on purpose (`slam_tilt_debounce_proc()` calls
-  `exit(0)`) and comes back this way. A fault or an unimplemented system call stops the machine.
+  `exit(0)`) and comes back this way. A fault or an unimplemented system call stops the machine;
+  the system calls the programs hold but no code reaches (`statfs`, `symlink`, `ftruncate64`,
+  `setitimer`, and the socket calls behind `socket()`, which fails) are left out. The service
+  menu's USB functions - Utilities' SAVE SETTINGS and RESTORE SETTINGS (Ghostbusters, Game of
+  Thrones, Heavy Metal) and Audits' DUMP AUDITS TO USB (every title but the ELG ones) - mount a USB
+  stick's FAT file system on `/media` from `/dev/sda1`, `/dev/sda`, `/dev/sdb1` or `/dev/sdb`. No
+  stick is in: `mount` fails as the board's kernel fails it without one (ENXIO: the board's `/dev`
+  is static, so the device files are there with no disk behind them), `umount2` finds nothing
+  mounted (EINVAL), and the game shows "INSERT USB MEMORY STICK OR PRESS BACK TO EXIT" until BACK.
+  `rename` moves files in the written layer: once an NVRAM file's version number passes 9999
+  (some 10000 commits), `SafeFile::load()` numbers its versions from 0 again at the next start.
 - `spike1_pinmame.cpp`, `spike1_public.h` - the plain C contract with PinMAME's half,
   `src/wpc/spike1.c`; the subsystem includes no PinMAME header.
 - `spike1_boot.cpp` - the standalone harness.
