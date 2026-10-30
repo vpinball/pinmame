@@ -819,3 +819,9 @@ pinmame_enable_asmjit(sdl3pinmame)
 # the target's own options above - see cmake/p2k.cmake
 include(${CMAKE_SOURCE_DIR}/cmake/p2k.cmake)
 pinmame_enable_p2k(sdl3pinmame)
+
+# --- Stern SPIKE 1 subsystem (src/spike1)
+# On by default; -DPINMAME_SPIKE1=OFF leaves neither the SPIKE 1 drivers nor its CPU registered.
+# After the Pinball 2000 subsystem, whose MAME compatibility layer it shares - see cmake/spike1.cmake
+include(${CMAKE_SOURCE_DIR}/cmake/spike1.cmake)
+pinmame_enable_spike1(sdl3pinmame)

@@ -284,4 +284,9 @@ static void init_rzspook(void) {
 PINHECK_ROMSTART(rzspook_026, "RZO_V026.PRG", 0x4B350, CRC(db1ee6f9) SHA1(9bf575f033cfdb17dd5abad5e05735ea24f0ef24),
                  "PRP_V008.BIN", CRC(caeb2c41) SHA1(0393c4bbb6902cf18ef921fb19451e5e1064b6d6))
 PINHECK_ROMEND
-PINHECK_GAMEDEF(rzspook, 026, "Rob Zombie's Spookshow International", 2016, "Spooky Pinball", gl_mPINHECK, 0)
+PINHECK_GAMEDEF(rzspook, 026, "Rob Zombie's Spookshow International (V26)", 2016, "Spooky Pinball", gl_mPINHECK, 0)
+
+PINHECK_ROMSTART(rzspook_019, "RZO_V019.PRG", 0x3C5B8, CRC(B3B21D17) SHA1(74f8756a2d1efc9d47cd5e1c67172fecb04b827f),
+                 "PRP_V007.BIN", CRC(04EBA28B) SHA1(0c6fff2e4a6f9b69cbbd6c04b89745b4605a87b7))
+PINHECK_ROMEND
+PINHECK_GAMEDEF(rzspook, 019, "Rob Zombie's Spookshow International (V19)", 2016, "Spooky Pinball", gl_mPINHECK, 0)

@@ -1149,7 +1149,7 @@ static WRITE32_HANDLER(sambank_w)
 
 				// Board 520-5332-00: AC/DC LE special aux board for flame lights (8 LEDs)
 				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_ACDC_FLAMES) && (samlocals.auxstrb & ~data & 0x08)) // BSTB
-					core_write_pwm_output(CORE_MODOUT_LAMP0 + 152 - 1, 8, samlocals.auxdata); // 151..158
+					core_write_pwm_output(CORE_MODOUT_LAMP0 + 151 - 1, 8, samlocals.auxdata); // 151..158
 
 				// Board 520-6801-00: Magnet processor (Metallica)
 				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_METALLICA_MAGNET) && (~data & 0x08)) // BSTB (not sure if it is triggered by edge or state since it uses a microcontroller)
@@ -1396,7 +1396,7 @@ static MACHINE_INIT(sam) {
 	core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 80, CORE_MODOUT_LAMP_MAX - CORE_MODOUT_LAMP0 - 80, CORE_MODOUT_NONE);
 	core_set_pwm_output_type(CORE_MODOUT_GI0, coreGlobals.nGI, CORE_MODOUT_BULB_44_5_7V_AC);
 	core_set_pwm_output_type(CORE_MODOUT_SOL0, 32, CORE_MODOUT_SOL_2_STATE); // Base 32 solenoid outputs
-	core_set_pwm_output_type(CORE_MODOUT_SOL0 + SAM_FASTFLIPSOL - 1, 1, CORE_MODOUT_NONE); // GameOn fake solenoid
+	core_set_pwm_output_driver_value(CORE_MODOUT_SOL0 + SAM_FASTFLIPSOL - 1, 1); // GameOn fake solenoid, written by the VBLANK
 	core_set_pwm_output_type(CORE_MODOUT_SOL0 + CORE_FIRSTCUSTSOL - 1, 16, CORE_MODOUT_SOL_2_STATE); // Aux board
 	// Flipper use a 12ms PWM duty cycle so we try to limit the latency added by the fact we do not support PWM solenoids for the time being (it impacts flipper tricks)
 	// FIXME: we set this for solenoids 13/14 which are upper flippers but not for all tables (this is not declared in the hardware)
@@ -1415,6 +1415,7 @@ static MACHINE_INIT(sam) {
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 19 - 1, 1, CORE_MODOUT_LED_STROBE_1_10MS); // LED flasher
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 20 - 1, 4, CORE_MODOUT_BULB_89_20V_DC_WPC);
 		core_set_pwm_output_type(CORE_MODOUT_SOL0 + 25 - 1, 7, CORE_MODOUT_BULB_89_20V_DC_WPC);
+		core_set_pwm_output_type(CORE_MODOUT_LAMP0 + 151 - 1, 8, CORE_MODOUT_LED); // Flame LEDs (aux board 520-5332-00), latched by BSTB
 		sam_init_nodeboard(SAM_NB_ACDC_METALLICA);
 	}
 	else if (strncasecmp(gn, "avs_", 4) == 0) { // Avengers
@@ -1599,7 +1600,8 @@ static MACHINE_INIT(sam) {
 			if (coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].type != CORE_MODOUT_SOL_2_STATE
 				&& coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].type != CORE_MODOUT_BULB_89_20V_DC_WPC
 				&& coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].type != CORE_MODOUT_LED
-				&& coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].type != CORE_MODOUT_LED_STROBE_1_10MS)
+				&& coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i].type != CORE_MODOUT_LED_STROBE_1_10MS
+				&& !core_is_pwm_output_driver_value(CORE_MODOUT_SOL0 + i)) // GameOn (33): written by the VBLANK, it records no flips
 				core_set_pwm_output_type(CORE_MODOUT_SOL0 + i, 1, CORE_MODOUT_LEGACY_SOL_2_STATE);
 }
 
@@ -1927,6 +1929,13 @@ static void sam_init_nodeboard(int bridge) {
 		}
 		break;
 	}
+	// The boards only report levels, which the bus handler writes as the outputs' values
+	for (int nb = 0; nb < 16; nb++) // ledCount is 0 for a board not set up (its type can be 0, e.g. Metallica's)
+		for (int i = 0; i < nblocals.nodeboards[nb].ledCount; i++)
+			core_set_pwm_output_driver_value(nblocals.nodeboards[nb].ledMap[i], 1);
+	if (bridge == SAM_NB_ACDC_METALLICA)
+		for (int i = 0; i < 4; i++)
+			core_set_pwm_output_driver_value(CORE_MODOUT_LAMP0 + 129 + i * 2, 1); // GI strings, as lamps 130, 132, 134, 136
 }
 
 static void sam_set_nodeboard(UINT8 address, int type) {
@@ -2104,6 +2113,8 @@ static void sam_nodebus_msg_received()
 			UINT8 cmd = nblocals.rcvMsg[2];
 			if ((cmd & 0xC0) == 0x80) {
 				// 0x80/0x90/0xA0/0xB0: Set/Fade LED command
+				// TODO startLedIndex (up to 63) plus the message's LED count is not checked against ledCount / ledMap[64]: a long or malformed
+				//      message would read past ledMap and write the level into whatever output slot it finds there
 				int startLedIndex = cmd & 0x3F;
 				if ((nblocals.bridge == SAM_NB_STARTREK) || (nblocals.bridge == SAM_NB_MUSTANG) ) {
 					int ledCount = payload - 1;

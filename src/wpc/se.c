@@ -842,7 +842,8 @@ static WRITE_HANDLER(giaux_w) {
        core_write_masked_pwm_output_8b(CORE_MODOUT_SOL0 + 33 - 1, outputs, 0x07); // Solenoids 33..35
    }
 
-   // Board 520-5192-00 wired to U206/J3 latch (bits 3-5)
+   // Board 520-5192-00 wired to U206/J3 latch (bits 3-5): UK only Post Save up/down posts (RCT manual: J3-9..11 drive TIP122s, high = coil on).
+   // Only meaningful on UK configured games: otherwise nothing is connected, these are the BSTB/CSTB/DSTB strobes idling high (33-35 read on)
    if (core_gameData->hw.display & SE_BOARDID_520_5192_00_J3) {
        const UINT8 outputs = (data & 0x38) >> 3;
        coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (outputs << 4);

@@ -372,6 +372,14 @@ UINT32 osd_fwrite(osd_file *file, const void *buffer, UINT32 length);
 /* Close an open file */
 void osd_fclose(osd_file *file);
 
+/* Map length bytes of a file from offset read-only into memory, paged in from disk as they are
+   read; *data is the first byte. Returns the mapping for osd_funmap(), or NULL when the file
+   cannot be mapped (a host that does not map files returns NULL, and the caller loads it) */
+void *osd_fmap(int pathtype, int pathindex, const char *filename, UINT64 offset, UINT64 length, const UINT8 **data);
+
+/* Release a mapping from osd_fmap() */
+void osd_funmap(void *mapping);
+
 
 
 /******************************************************************************

@@ -4,7 +4,9 @@
 
 Every solid state pinball machine known to the [Open Pinball Database](https://opdb.org/),
 matched against the drivers in `src/wpc`, so you can see at a glance what PinMAME
-emulates, what it emulates imperfectly, and what it does not emulate at all.
+emulates, what it emulates imperfectly, and what it does not emulate at all. Note that it
+may not be complete, so use the builtin functionality to create a gamelist that features
+the full list of games.
 
 ## Scope: solid state, and end of life
 
@@ -22,18 +24,18 @@ Dorado City of Gold*, the row is the solid state one.
 
 **PinMAME only emulates machines that are considered end of life.** Work starts on a
 machine once it is no longer commercially current. In practice this means a machine
-released less than 10 years ago is unlikely to be emulated, so everything from **2016
+released less than 5 years ago is unlikely to be emulated, so everything from **2021
 onwards** is listed separately below as not expected rather than as missing.
 
 ## Summary
 
 | Status                           | Machines | Share |
 | -------------------------------- | -------: | ----: |
-| Fully working                    |      575 | 69.1% |
+| Fully working                    |      582 | 70.0% |
 | Partially working                |       31 |  3.7% |
 | Emulated but not working         |        1 |  0.1% |
-| Not emulated                     |       96 | 11.5% |
-| Not emulated — released recently |      129 | 15.5% |
+| Not emulated                     |      142 | 17.1% |
+| Not emulated — released recently |       76 |  9.1% |
 | **Total**                        |  **832** |       |
 
 ### By decade
@@ -44,10 +46,10 @@ onwards** is listed separately below as not expected rather than as missing.
 | 1980s  |   328 |           280 |      23 |           1 |           24 |
 | 1990s  |   148 |           142 |       3 |           0 |            3 |
 | 2000s  |    25 |            24 |       0 |           0 |            1 |
-| 2010s  |    73 |            18 |       0 |           0 |           55 |
-| 2020s  |    88 |             0 |       0 |           0 |           88 |
+| 2010s  |    73 |            24 |       0 |           0 |           49 |
+| 2020s  |    88 |             1 |       0 |           0 |           87 |
 
-## Fully working (575)
+## Fully working (582)
 
 Every known ROM set runs, and the driver flags nothing wrong with any of them.
 
@@ -308,7 +310,7 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | Touchdown                                      | 1984 | Gottlieb               | Alphanumeric | `touchdn`                                            |             |       |
 | UFO-X                                          | 1984 | Playmatic              | Alphanumeric | `ufo_x`                                              |             |       |
 | Andromeda                                      | 1985 | Game Plan              | Alphanumeric | `andromea`, `andromed`                               |             |       |
-| Apocalypse Now                                 | 1985 | Jeutel                 | Alphanumeric | `apocalypse_now`                                     |             |       |
+| Apocalypse Now                                 | 1985 | Jeutel                 | Alphanumeric | `apclpsnw`                                           |             |       |
 | Ator                                           | 1985 | Videodens              | Alphanumeric | `ator`, `ator2`                                      |             |       |
 | Beat the Clock                                 | 1985 | Bally                  | Alphanumeric | `beatclc2`, `beatclck`                               |             |       |
 | Bounty Hunter                                  | 1985 | Gottlieb               | Alphanumeric | `bountgfp`, `bounthfp`, `bountyh` + 1 more           |             |       |
@@ -603,7 +605,7 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | Pirates of the Caribbean                       | 2006 | Stern                  | DMD          | `potc_108as`, `potc_109ai`, `potc_109as` + 25 more   |             |       |
 | World Poker Tour                               | 2006 | Stern                  | DMD          | `wpt_103a`, `wpt_105a`, `wpt_106a` + 43 more         |             |       |
 | Family Guy / Shrek                             | 2007 | Stern                  | DMD          | `fg_1000af`, `fg_1000ag`, `fg_1000ai` + 18 more      |             |       |
-| Spider-Man                                     | 2007 | Stern                  | DMD          | `sman_102af`, `sman_130af`, `sman_130ai` + 46 more   |             |       |
+| Spider-Man                                     | 2007 | Stern                  | DMD          | `sman_102af`, `sman_130af`, `sman_130ai` + 47 more   |             |       |
 | Wheel of Fortune                               | 2007 | Stern                  | DMD          | `wof_100`, `wof_200`, `wof_200f` + 18 more           |             |       |
 | Batman                                         | 2008 | Stern                  | DMD          | `bdk_130`, `bdk_150`, `bdk_160` + 7 more             |             |       |
 | CSI: Crime Scene Investigation                 | 2008 | Stern                  | DMD          | `csi_102`, `csi_103`, `csi_104` + 4 more             |             |       |
@@ -617,17 +619,24 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | The Rolling Stones                             | 2011 | Stern                  | DMD          | `rsn_100h`, `rsn_103`, `rsn_105` + 2 more            |             |       |
 | Transformers                                   | 2011 | Stern                  | DMD          | `tf_088h`, `tf_100h`, `tf_120` + 10 more             |             |       |
 | AC/DC                                          | 2012 | Stern                  | DMD          | `acd_121`, `acd_125`, `acd_130` + 21 more            |             |       |
-| The Avengers                                   | 2012 | Stern                  | DMD          | `avs_110`, `avs_120h`, `avs_140` + 3 more            |             |       |
+| The Avengers                                   | 2012 | Stern                  | DMD          | `avs_110`, `avs_120h`, `avs_140` + 5 more            |             |       |
+| Transformers The Pin                           | 2012 | Stern                  | Alphanumeric | `tfcp_1018`                                          |             |       |
 | X-Men                                          | 2012 | Stern                  | DMD          | `xmn_100`, `xmn_102`, `xmn_104` + 14 more            |             |       |
-| Avengers the Pin                               | 2013 | Stern                  | DMD          | `avs_170`, `avs_170c`                                |             |       |
+| Avengers the Pin                               | 2013 | Stern                  | Alphanumeric | `avscp_103`                                          |             |       |
 | Metallica                                      | 2013 | Stern                  | DMD          | `mtl_052`, `mtl_103`, `mtl_105` + 31 more            |             |       |
 | Star Trek                                      | 2013 | Stern                  | DMD          | `st_120`, `st_130`, `st_140` + 15 more               |             |       |
 | America's Most Haunted                         | 2014 | Spooky Pinball         | DMD          | `amh_022`, `amh_023`                                 | yes         |       |
 | Mustang                                        | 2014 | Stern                  | DMD          | `mt_120`, `mt_130`, `mt_130h` + 8 more               |             |       |
 | The Walking Dead                               | 2014 | Stern                  | DMD          | `twd_105`, `twd_111`, `twd_111h` + 20 more           |             |       |
-| Domino's Spectacular Pinball Adventure         | 2016 | Spooky Pinball         | DMD          | `dominos_006`                                        | yes         |       |
-| Rob Zombie's Spookshow International           | 2016 | Spooky Pinball         | DMD          | `rzspook_026`                                        | yes         |       |
+| Game of Thrones                                | 2015 | Stern                  | DMD          | `got_137`, `got_137h`                                |             |       |
+| KISS                                           | 2015 | Stern                  | DMD          | `kiss15_141`, `kiss15_141h`                          |             |       |
+| Whoa Nellie / PBR                              | 2015 | Stern                  | Reels        | `wnbjm_155`, `pabst_101`, `primus_103`               |             |       |
+| WrestleMania                                   | 2015 | Stern                  | DMD          | `wwe_135h`                                           |             |       |
+| Domino's Spectacular Pinball Adventure         | 2016 | Spooky Pinball         | DMD          | `dominos_005`, `dominos_006`                         | yes         |       |
+| Ghostbusters                                   | 2016 | Stern                  | DMD          | `gbust_117`, `gbust_117h`                            |             |       |
+| Rob Zombie's Spookshow International           | 2016 | Spooky Pinball         | DMD          | `rzspook_019`, `rzspook_026`                         | yes         |       |
 | The Jetsons                                    | 2017 | Spooky Pinball         | DMD          | `jetsons_004`                                        | yes         |       |
+| Heavy Metal                                    | 2020 | Stern                  | DMD          | `heavym20_102`                                       |             |       |
 
 ## Partially working (31)
 
@@ -679,7 +688,7 @@ does not boot or does not play.
 | ------- | ---: | ------------ | ------------ | ---------------- | --------- | ------------ |
 | 4X4     | 1983 | Atari        | Alphanumeric | `fourx4`         |           | does not run |
 
-## Not emulated (96)
+## Not emulated (142)
 
 No driver. These machines are old enough to be in scope, so they are the candidates for
 future work.
@@ -770,78 +779,71 @@ future work.
 | Vacation America                            | 2003 | Chicago Coin              | Alphanumeric |
 | King of Diamonds                            | 2010 | Retro Pinball             | Reels        |
 | New Canasta                                 | 2010 | Marsa Play                | LCD          |
-| Transformers The Pin                        | 2012 | Stern                     | Alphanumeric |
 | Predator                                    | 2013 | Skit-B Pinball            | DMD          |
 | The Wizard of Oz                            | 2013 | Jersey Jack Pinball       | LCD          |
 | Captain Nemo                                | 2015 | Quetzal Pinball           | LCD          |
 | Full Throttle                               | 2015 | Heighway Pinball          | LCD          |
-| Game of Thrones                             | 2015 | Stern                     | DMD          |
-| KISS                                        | 2015 | Stern                     | DMD          |
 | The Big Lebowski                            | 2015 | Dutch Pinball             | LCD          |
 | The Hobbit                                  | 2015 | Jersey Jack Pinball       | LCD          |
-| Whoa Nellie / PBR                           | 2015 | Stern                     | Reels        |
 | Wrath of Olympus                            | 2015 | Riot Pinball              | DMD          |
-| WrestleMania                                | 2015 | Stern                     | DMD          |
+| Alien                                       | 2016 | Heighway Pinball          | LCD          |
+| Batman 66                                   | 2016 | Stern                     | LCD          |
+| Spider-Man (Home Edition)                   | 2016 | Stern                     | DMD          |
+| Aerosmith                                   | 2017 | Stern                     | LCD          |
+| Barnyard                                    | 2017 | Multimorphic              | LCD          |
+| Cannon Lagoon                               | 2017 | Multimorphic              | LCD          |
+| Dialed In!                                  | 2017 | Jersey Jack Pinball       | LCD          |
+| Guardians of the Galaxy                     | 2017 | Stern                     | LCD          |
+| Houdini: Master of Mystery                  | 2017 | American Pinball          | LCD          |
+| Lexy Lightspeed - Escape From Earth         | 2017 | Multimorphic              | LCD          |
+| Lexy Lightspeed – Secret Agent Showdown     | 2017 | Multimorphic              | LCD          |
+| Magic Girl                                  | 2017 | Zidware                   | LCD          |
+| Star Wars                                   | 2017 | Stern                     | LCD          |
+| Total Nuclear Annihilation                  | 2017 | Spooky Pinball            | LCD          |
+| Alice Cooper's Nightmare Castle             | 2018 | Spooky Pinball            | LCD          |
+| Beatles                                     | 2018 | Stern                     | LCD          |
+| Cosmic Cart Racing                          | 2018 | Multimorphic              | LCD          |
+| Deadpool                                    | 2018 | Stern                     | LCD          |
+| Grand Slam Rally                            | 2018 | Multimorphic              | LCD          |
+| Iron Maiden: Legacy of the Beast            | 2018 | Stern                     | LCD          |
+| Oktoberfest                                 | 2018 | American Pinball          | LCD          |
+| Pirates of the Caribbean                    | 2018 | Jersey Jack Pinball       | LCD          |
+| Supreme x Stern                             | 2018 | Stern                     | DMD          |
+| The Mafia                                   | 2018 | Team Pinball              | LCD          |
+| Thunderbirds                                | 2018 | Homepin                   | DMD          |
+| Black Knight: Sword of Rage                 | 2019 | Stern                     | LCD          |
+| Cosmic Carnival                             | 2019 | Suncoast Pinball          | LCD          |
+| Elvira's House of Horrors                   | 2019 | Stern                     | LCD          |
+| Hoopin' It Up                               | 2019 | Multimorphic              | LCD          |
+| Jurassic Park                               | 2019 | Stern                     | LCD          |
+| Retro Atomic Zombie Adventureland           | 2019 | deeproot                  | LCD          |
+| Rick and Morty                              | 2019 | Spooky Pinball            | LCD          |
+| Star Wars (Home Edition)                    | 2019 | Stern                     | LCD          |
+| Stranger Things                             | 2019 | Stern                     | LCD          |
+| Super Canasta                               | 2019 | Quetzal Pinball           | LCD          |
+| Super Panic Ball                            | 2019 | Bandai Namco              | Alphanumeric |
+| The Flip Side                               | 2019 | American Girl             | Alphanumeric |
+| The Munsters                                | 2019 | Stern                     | LCD          |
+| Tokyo Perfect Drift                         | 2019 | Quetzal Pinball           | LCD          |
+| Willy Wonka & The Chocolate Factory         | 2019 | Jersey Jack Pinball       | LCD          |
+| Avengers: Infinity Quest                    | 2020 | Stern                     | LCD          |
+| Celts                                       | 2020 | Haggis Pinball            | LCD          |
+| Guns N' Roses                               | 2020 | Jersey Jack Pinball       | LCD          |
+| Heist                                       | 2020 | Multimorphic              | LCD          |
+| Hot Wheels                                  | 2020 | American Pinball          | LCD          |
+| Led Zeppelin                                | 2020 | Stern                     | LCD          |
+| Legends of Valhalla                         | 2020 | Riot Pinball              | LCD          |
+| Ranger in the Ruins                         | 2020 | For Amusement Only Games  | LCD          |
+| ROCs                                        | 2020 | Multimorphic              | LCD          |
+| Shoot 'n Scoot                              | 2020 | Multimorphic              | LCD          |
+| Teenage Mutant Ninja Turtles                | 2020 | Stern                     | LCD          |
 
-## Not emulated — released recently (129)
+## Not emulated — released recently (76)
 
 No driver, and not expected to get one soon: see the note on end-of-life machines above.
 
 | Machine                                           | Year | Manufacturer             | Display      |
 | ------------------------------------------------- | ---: | ------------------------ | ------------ |
-| Alien                                             | 2016 | Heighway Pinball         | LCD          |
-| Batman 66                                         | 2016 | Stern                    | LCD          |
-| Ghostbusters                                      | 2016 | Stern                    | DMD          |
-| Spider-Man (Home Edition)                         | 2016 | Stern                    | DMD          |
-| Aerosmith                                         | 2017 | Stern                    | LCD          |
-| Barnyard                                          | 2017 | Multimorphic             | LCD          |
-| Cannon Lagoon                                     | 2017 | Multimorphic             | LCD          |
-| Dialed In!                                        | 2017 | Jersey Jack Pinball      | LCD          |
-| Guardians of the Galaxy                           | 2017 | Stern                    | LCD          |
-| Houdini: Master of Mystery                        | 2017 | American Pinball         | LCD          |
-| Lexy Lightspeed - Escape From Earth               | 2017 | Multimorphic             | LCD          |
-| Lexy Lightspeed – Secret Agent Showdown           | 2017 | Multimorphic             | LCD          |
-| Magic Girl                                        | 2017 | Zidware                  | LCD          |
-| Star Wars                                         | 2017 | Stern                    | LCD          |
-| Total Nuclear Annihilation                        | 2017 | Spooky Pinball           | LCD          |
-| Alice Cooper's Nightmare Castle                   | 2018 | Spooky Pinball           | LCD          |
-| Beatles                                           | 2018 | Stern                    | LCD          |
-| Cosmic Cart Racing                                | 2018 | Multimorphic             | LCD          |
-| Deadpool                                          | 2018 | Stern                    | LCD          |
-| Grand Slam Rally                                  | 2018 | Multimorphic             | LCD          |
-| Iron Maiden: Legacy of the Beast                  | 2018 | Stern                    | LCD          |
-| Oktoberfest                                       | 2018 | American Pinball         | LCD          |
-| Pirates of the Caribbean                          | 2018 | Jersey Jack Pinball      | LCD          |
-| Supreme x Stern                                   | 2018 | Stern                    | DMD          |
-| The Mafia                                         | 2018 | Team Pinball             | LCD          |
-| Thunderbirds                                      | 2018 | Homepin                  | DMD          |
-| Black Knight: Sword of Rage                       | 2019 | Stern                    | LCD          |
-| Cosmic Carnival                                   | 2019 | Suncoast Pinball         | LCD          |
-| Elvira's House of Horrors                         | 2019 | Stern                    | LCD          |
-| Hoopin' It Up                                     | 2019 | Multimorphic             | LCD          |
-| Jurassic Park                                     | 2019 | Stern                    | LCD          |
-| Retro Atomic Zombie Adventureland                 | 2019 | deeproot                 | LCD          |
-| Rick and Morty                                    | 2019 | Spooky Pinball           | LCD          |
-| Star Wars (Home Edition)                          | 2019 | Stern                    | LCD          |
-| Stranger Things                                   | 2019 | Stern                    | LCD          |
-| Super Canasta                                     | 2019 | Quetzal Pinball          | LCD          |
-| Super Panic Ball                                  | 2019 | Bandai Namco             | Alphanumeric |
-| The Flip Side                                     | 2019 | American Girl            | Alphanumeric |
-| The Munsters                                      | 2019 | Stern                    | LCD          |
-| Tokyo Perfect Drift                               | 2019 | Quetzal Pinball          | LCD          |
-| Willy Wonka & The Chocolate Factory               | 2019 | Jersey Jack Pinball      | LCD          |
-| Avengers: Infinity Quest                          | 2020 | Stern                    | LCD          |
-| Celts                                             | 2020 | Haggis Pinball           | LCD          |
-| Guns N' Roses                                     | 2020 | Jersey Jack Pinball      | LCD          |
-| Heavy Metal                                       | 2020 | Stern                    | DMD          |
-| Heist                                             | 2020 | Multimorphic             | LCD          |
-| Hot Wheels                                        | 2020 | American Pinball         | LCD          |
-| Led Zeppelin                                      | 2020 | Stern                    | LCD          |
-| Legends of Valhalla                               | 2020 | Riot Pinball             | LCD          |
-| Ranger in the Ruins                               | 2020 | For Amusement Only Games | LCD          |
-| ROCs                                              | 2020 | Multimorphic             | LCD          |
-| Shoot 'n Scoot                                    | 2020 | Multimorphic             | LCD          |
-| Teenage Mutant Ninja Turtles                      | 2020 | Stern                    | LCD          |
 | Godzilla                                          | 2021 | Stern                    | LCD          |
 | Halloween                                         | 2021 | Spooky Pinball           | LCD          |
 | Heads Up!                                         | 2021 | Multimorphic             | LCD          |
@@ -921,7 +923,7 @@ No driver, and not expected to get one soon: see the note on end-of-life machine
 
 ## Appendix: driver entries with no machine
 
-### ROM sets that matched nothing (147)
+### ROM sets that matched nothing (148)
 
 Driver entries that matched no solid state OPDB title. Most are prototypes, test fixtures
 and regional machines OPDB does not carry. The rest are matching failures: add them to
@@ -1044,6 +1046,7 @@ and regional machines OPDB does not carry. The rest are matching failures: add t
 | `bubba`            | Bubba the Redneck Werewolf (Hollywood Heat unofficial MOD)     | 2017 | HauntFreaks               | `src/wpc/gts80games.c`       |
 | `beachbms`         | Beach Bums (Hollywood Heat unofficial MOD)                     | 2018 | watacaractr               | `src/wpc/gts80games.c`       |
 | `clash`            | Clash, The (Rock Encore unofficial MOD)                        | 2018 | Onevox                    | `src/wpc/gts80games.c`       |
+| `supreme_101`      | Supreme (1.01.0)                                               | 2018 | Stern                     | `src/wpc/spike1.c`           |
 | `scotest8`         | Scott's Test ROM (version 8)                                   | 2019 | Scott Charles             | `src/wpc/by35games.c`        |
 | `tomjerry`         | Tom & Jerry (Hollywood Heat unofficial MOD)                    | 2019 | watacaractr               | `src/wpc/gts80games.c`       |
 | `che_cho`          | Cheech & Chong: Road-Trip'pin (Harley-Davidson unofficial MOD) | 2021 | Bally/watacaractr         | `src/wpc/sims/wpc/full/hd.c` |
@@ -1146,8 +1149,8 @@ scripts/gen_supported_machines.py
 
 The script reads a cached copy of OPDB and re-downloads only with `--refresh`; `--check`
 fails if this file is out of date. Machine data comes from the OPDB snapshot of
-**2026-10-21**; driver data from `src/wpc` at the commit this file was generated from, on
-**2026-10-21**.
+**2026-10-27**; driver data from `src/wpc` at the commit this file was generated from, on
+**2026-10-27**.
 
 A machine is one OPDB *group*, so a title and its remakes are one row, dated and credited
 to the original. Its status is that of the *worst* of its ROM sets, so "fully working"

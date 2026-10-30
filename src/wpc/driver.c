@@ -1058,8 +1058,7 @@ DRIVERNV(formula1)      //Formula 1 (??/1988)
 DRIVERNV(leking)        //Le King (??/1983)
 DRIVERNV(olympic)       //Olympic Games (??/1984)
 DRIVERNV(jpapillon)     //Papillon (12/1984)
-DRIVERNV(apocalypse_now) //Apocalypse Now (??/1985)
-                        //Apocalypse Now (??/1985)
+DRIVERNV(apclpsnw)      //Apocalypse Now (??/1985)
                         //Apocalypse Now (??/1986)
 
 // ----------------
@@ -1479,7 +1478,9 @@ DRIVERNV(topgamet)      // 19?? - Top Game Turbo (Bingo)
 DRIVERNV(pinheck)       // PinHeck System (not a game)
 DRIVERNV(amh_022)       // 2014 - America's Most Haunted (V22)
 DRIVERNV(amh_023)       // 2014 - America's Most Haunted (V23)
+DRIVERNV(dominos_005)   // 2016 - Domino's Spectacular Pinball Adventure (V5)
 DRIVERNV(dominos_006)   // 2016 - Domino's Spectacular Pinball Adventure (V6)
+DRIVERNV(rzspook_019)   // 2016 - Rob Zombie's Spookshow International (V19)
 DRIVERNV(rzspook_026)   // 2016 - Rob Zombie's Spookshow International (V26)
 DRIVERNV(jetsons_004)   // 2017 - Jetsons, The (V4)
 
@@ -2465,6 +2466,25 @@ DRIVER(smanve,101)      //        05/16 Spider-Man - V1.01 Vault Edition
 DRIVER(smanve,100c)     // pinball browser colorized using extend memory
 DRIVER(smanve,101c)     // pinball browser colorized using extend memory
 #endif
+#endif
+// SPIKE 1 System
+#if HAS_SPIKE1
+DRIVER(tfcp,1018)       //SPIKE 1: ??/12 Transformers The Pin - 1.0.18
+DRIVER(avscp,103)       //SPIKE 1: ??/13 Avengers The Pin - 1.0.3
+                        //SPIKE 1: ??/15 Wrestlemania
+DRIVER(wwe,135h)        //         ??/15 Legends of Wrestlemania - 1.35.0 Limited Edition
+DRIVER(wnbjm,155)       //SPIKE 1: ??/15 Whoa Nellie! Big Juicy Melons - 1.55.0
+DRIVER(kiss15,141)      //SPIKE 1: ??/15 KISS - 1.41.0
+DRIVER(kiss15,141h)     //         ??/15 KISS - 1.41.0 Limited Edition
+DRIVER(got,137)         //SPIKE 1: ??/15 Game of Thrones - 1.37.0
+DRIVER(got,137h)        //         ??/15 Game of Thrones - 1.37.0 Limited Edition
+DRIVER(gbust,117)       //SPIKE 1: ??/16 Ghostbusters - 1.17.0
+DRIVER(gbust,117h)      //         ??/16 Ghostbusters - 1.17.0 Limited Edition
+DRIVER(pabst,101)       //SPIKE 1: ??/16 Pabst Can Crusher, The - 1.01.0
+DRIVER(smancp,101)      //SPIKE 1: ??/16 Spider-Man The Pin - 1.01
+DRIVER(supreme,101)     //SPIKE 1: ??/18 Supreme - 1.01.0
+DRIVER(primus,103)      //SPIKE 1: ??/18 Primus - 1.03.0
+DRIVER(heavym20,102)    //SPIKE 1: ??/20 Heavy Metal - 1.02.0
 #endif
 
 // ---------------

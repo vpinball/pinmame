@@ -25,6 +25,15 @@ static struct intfData {
   int noDataLog; // the main board logs the sound commands itself, see sndbrd_logData
 } intf[2];
 
+/* The interface that drives the board now: its own one, or with the sound off its
+   soundOff stand-in (if any, else none). With the sound on it is always its own one. */
+static const struct sndbrdIntf *sndbrd_intf(int board) {
+  const struct sndbrdIntf *b = intf[board].brdIntf;
+  if (b && !coreGlobals.soundEn && !(b->flags & SNDBRD_NOTSOUND))
+    return (Machine->sample_rate == 0) ? b->soundOff : NULL;
+  return b;
+}
+
 void sndbrd_init(int brdNo, int brdType, int cpuNo, UINT8 *romRegion,
                  WRITE_HANDLER((*data_cb)),WRITE_HANDLER((*ctrl_cb))) {
   const struct sndbrdIntf *b = allsndboards[brdType>>8];
@@ -47,7 +56,8 @@ void sndbrd_init(int brdNo, int brdType, int cpuNo, UINT8 *romRegion,
     i->data_cb = data_cb;
     i->ctrl_cb = ctrl_cb;
     i->manCmdBuf = -1;
-    if (b && (coreGlobals.soundEn || b->flags & SNDBRD_NOTSOUND) && b->init)
+    b = sndbrd_intf(brdNo);
+    if (b && b->init)
       b->init(&brdData);
   }
 
@@ -63,14 +73,14 @@ const char* sndbrd_typestr(int board) {
 }
 
 void sndbrd_exit(int board) {
-  const struct sndbrdIntf *b = intf[board].brdIntf;
-  if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->exit)
+  const struct sndbrdIntf *b = sndbrd_intf(board);
+  if (b && b->exit)
     b->exit(board);
   memset(&intf[board],0,sizeof(intf[0]));
 }
 void sndbrd_diag(int board, int button) {
-  const struct sndbrdIntf *b = intf[board].brdIntf;
-  if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->diag)
+  const struct sndbrdIntf *b = sndbrd_intf(board);
+  if (b && b->diag)
     b->diag(button);
 }
 
@@ -83,7 +93,8 @@ void sndbrd_data_w(int board, int data) {
     lisy_sound_handler( board, data ); // LISY still gets every write, as before sndbrd_logData
 #endif
   }
-  if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->data_w) {
+  b = sndbrd_intf(board);
+  if (b && b->data_w) {
 #if 0
     if((b->flags & SNDBRD_NOTSOUND)==0)
       snd_cmd_log(board, data);
@@ -98,14 +109,14 @@ void sndbrd_data_w(int board, int data) {
   }
 }
 int sndbrd_data_r(int board) {
-  const struct sndbrdIntf *b = intf[board].brdIntf;
-  if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->data_r)
+  const struct sndbrdIntf *b = sndbrd_intf(board);
+  if (b && b->data_r)
     return b->data_r(board);
   return 0;
 }
 void sndbrd_ctrl_w(int board, int data) {
-  const struct sndbrdIntf *b = intf[board].brdIntf;
-  if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->ctrl_w) {
+  const struct sndbrdIntf *b = sndbrd_intf(board);
+  if (b && b->ctrl_w) {
     if (b->flags & SNDBRD_NOCTRLSYNC)
       b->ctrl_w(board, data);
     else
@@ -113,8 +124,8 @@ void sndbrd_ctrl_w(int board, int data) {
   }
 }
 int sndbrd_ctrl_r(int board) {
-  const struct sndbrdIntf *b = intf[board].brdIntf;
-  if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->ctrl_r)
+  const struct sndbrdIntf *b = sndbrd_intf(board);
+  if (b && b->ctrl_r)
     return b->ctrl_r(board);
   return 0;
 }
@@ -135,8 +146,8 @@ void sndbrd_data_cb(int board, int data) {
   }
 }
 void sndbrd_manCmd(int board, int cmd) {
-  const struct sndbrdIntf *b = intf[board].brdIntf;
-  if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->manCmd_w) {
+  const struct sndbrdIntf *b = sndbrd_intf(board);
+  if (b && b->manCmd_w) {
     if ((b->flags & SNDBRD_DOUBLECMD) && (intf[board].manCmdBuf < 0))
       { intf[board].manCmdBuf = cmd; return; }
     b->manCmd_w(intf[board].manCmdBuf, cmd); intf[board].manCmdBuf = -1;

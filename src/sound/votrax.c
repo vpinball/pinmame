@@ -30,6 +30,10 @@ the variable VotraxBaseFrequency, this is defaulted to 8000
 // the printer port 1. Connect the data lines P0-P5 to D1-D6, I0-I1 to D7-D6,
 // ACK to ACK and STROBE to STROBE.
 
+#define VOTRAX_CLOSURE_FIX 1
+// closure timing and noise balance after MAME PR #16372 (Tamas Geczy, measured
+// on a real SC-01-A), P, T and K get their release burst back
+
 /*
   tp3 stb i1 i2 tp2
   1   1   o  o  white noise
@@ -449,7 +453,11 @@ static void phone_commit()
 
 			// That does not happen in the sc01(a) rom, but let's
 			// cover our behind.
+#if VOTRAX_CLOSURE_FIX
+			if (votraxsc01_locals.rom_vd == 0)
+#else
 			if (votraxsc01_locals.rom_cld == 0)
+#endif
 				votraxsc01_locals.cur_closure = votraxsc01_locals.rom_closure;
 
 			return;
@@ -479,7 +487,18 @@ static void chip_update()
 		if (votraxsc01_locals.phonetick == ((votraxsc01_locals.rom_duration << 2) | 1)) {
 			votraxsc01_locals.phonetick = 0;
 			votraxsc01_locals.ticks++;
+#if VOTRAX_CLOSURE_FIX
+			// The closure latches on the same delay that gates the noise
+			// amplitude (rom_vd).  US 4,433,210 gives the closure and the
+			// fricative amplitude one shared delay and the vocal amplitude
+			// a delay of its own; latching on rom_cld, the field that gates
+			// the voice amplitude, kept a stop's closure on well into the
+			// next phone, after its noise had decayed, so P, T and K lost
+			// their release burst.
+			if (votraxsc01_locals.ticks == votraxsc01_locals.rom_vd)
+#else
 			if (votraxsc01_locals.ticks == votraxsc01_locals.rom_cld)
+#endif
 				votraxsc01_locals.cur_closure = votraxsc01_locals.rom_closure;
 		}
 	}
@@ -499,7 +518,9 @@ static void chip_update()
 	// noise volumes are zero.
 	if (tick_208 && (!votraxsc01_locals.rom_pause || !(votraxsc01_locals.filt_fa || votraxsc01_locals.filt_va))) {
 		//      interpolate(&votraxsc01_locals.cur_va,  votraxsc01_locals.rom_va);
+#if !VOTRAX_CLOSURE_FIX // with VOTRAX_CLOSURE_FIX, fc moves with fa, below
 		interpolate(&votraxsc01_locals.cur_fc, votraxsc01_locals.rom_fc);
+#endif
 		interpolate(&votraxsc01_locals.cur_f1, votraxsc01_locals.rom_f1);
 		interpolate(&votraxsc01_locals.cur_f2, votraxsc01_locals.rom_f2);
 		interpolate(&votraxsc01_locals.cur_f2q, votraxsc01_locals.rom_f2q);
@@ -511,8 +532,16 @@ static void chip_update()
 
 	// Non-formant update. Same bug there, va should be updated, not fc.
 	if(tick_625) {
-		if (votraxsc01_locals.ticks >= votraxsc01_locals.rom_vd)
+		if (votraxsc01_locals.ticks >= votraxsc01_locals.rom_vd) {
 			interpolate(&votraxsc01_locals.cur_fa, votraxsc01_locals.rom_fa);
+#if VOTRAX_CLOSURE_FIX
+			// fc routes the noise, so it moves with the noise amplitude:
+			// fast and on the same delay.  On the slow formant update a
+			// stop's fc was still drifting toward its own value when the
+			// stop released, so its noise took the wrong path.
+			interpolate(&votraxsc01_locals.cur_fc, votraxsc01_locals.rom_fc);
+#endif
+		}
 		if (votraxsc01_locals.ticks >= votraxsc01_locals.rom_cld)
 			//          interpolate(&votraxsc01_locals.cur_fc, votraxsc01_locals.rom_fc);
 			interpolate(&votraxsc01_locals.cur_va, votraxsc01_locals.rom_va);
@@ -1107,8 +1136,7 @@ static float analog_calc()
 
 	v = votraxsc01_locals.pitch >= (9 << 3) ? 0 : s_glottal_wave[votraxsc01_locals.pitch >> 3];
 
-	// 2. Multiply by the initial amplifier.  It's linear on the die,
-	// even if it's not in the patent.
+	// 2. Multiply by the initial amplifier.  It's linear on the die, even if it's not in the patent
 	v = v * votraxsc01_locals.filt_va * (1.0/15.0);
 	shift_hist(v, votraxsc01_locals.voice_1, 4);
 
@@ -1121,10 +1149,14 @@ static float analog_calc()
 	shift_hist(v, votraxsc01_locals.voice_3, 4);
 
 	// Noise-only path
-	// 5. Pick up the noise pitch.  Amplitude is linear.  Base
-	// intensity should be checked w.r.t the voice.
-	n = 1e4 * ((votraxsc01_locals.pitch & 0x40 ? votraxsc01_locals.cur_noise : 0) ? 1 : -1);
-	n = n * votraxsc01_locals.filt_fa * (1.0/15.0);
+	// 5. Pick up the noise pitch.  Amplitude is linear.  Base intensity should be checked w.r.t the voice
+#if VOTRAX_CLOSURE_FIX
+	// Checked against line-in SC-01-A recordings: with the second insertion below corrected, half the previous level
+	n = 5e3;
+#else
+	n = 1e4;
+#endif
+	n *= ((votraxsc01_locals.pitch & 0x40) && votraxsc01_locals.cur_noise ? 1./15. : -1./15.) * votraxsc01_locals.filt_fa;
 	shift_hist(n, votraxsc01_locals.noise_1, 3);
 
 	// 6. Apply the noise shaper
@@ -1149,7 +1181,16 @@ static float analog_calc()
 	shift_hist(vn, votraxsc01_locals.vn_2, 4);
 
 	// 11. Second noise insertion
+#if VOTRAX_CLOSURE_FIX
+	// Complementary to the f2 injection (step 7): fc=15 phones (P, SH,
+	// CH) send their noise through f2 only, fc=0 phones (S, Z, T)
+	// through here.  The previous (5 + (15^fc))/20 put a quarter of
+	// every phone's noise here, which made a P's release as loud and
+	// bright as a T's.
+	vn += n * (15 ^ votraxsc01_locals.filt_fc) * (1.0/15.0);
+#else
 	vn += n * (5 + (15 ^ votraxsc01_locals.filt_fc)) * (1.0/20.0);
+#endif
 	shift_hist(vn, votraxsc01_locals.vn_3, 4);
 
 	// 12. Apply the f4 filter
@@ -1179,7 +1220,7 @@ static float analog_calc()
 
 
 // int sample_rate[4] = {22050, 22550, 23050, 23550};
-int sample_rate[4] = {22050, 22050, 22050, 22050};
+static const int sample_rate[4] = {22050, 22050, 22050, 22050};
 
 INLINE int time_to_samples(int ms)
 {

@@ -63,6 +63,10 @@ struct m68k_encryption_interface
 #define m68000_ICount                   m68k_ICount
 extern void m68000_init(void);
 extern void m68000_reset(void *param);
+/* Cycles of one pass of a DBcc loop (condition false, counter not expired) on the 68000/68306: 14 with the old cycle
+   counts, 10 with the data sheet ones (M68K_CYCLE_FIX). For drivers whose hardware timings were measured by ROM code
+   counting such passes (e.g. Capcom's U16 startup tests), so that they keep matching the core's timing */
+extern int m68000_dbcc_loop_cycles(void);
 extern void m68000_exit(void);
 extern int	m68000_execute(int cycles);
 extern unsigned m68000_get_context(void *dst);

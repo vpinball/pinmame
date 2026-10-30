@@ -62,6 +62,8 @@ char g_szGameName[256] = {}; // String containing requested game name (may be di
 // machine stop). The API only touches the emulation in state 1, under a shared lock of _stateMutex: the game thread
 // takes it exclusively to change the state, so it can't leave state 1 (and tear down) while an API call is in flight
 static std::atomic<int> _isRunning = 0;
+static char _recordName[256] = {};   // PinmameSetRecord()
+static char _playbackName[256] = {}; // PinmameSetPlayback()
 static std::shared_mutex _stateMutex;
 static inline bool IsEmulationRunning() { return _isRunning == 1; }
 static int _timeToQuit = 0;
@@ -448,6 +450,9 @@ static bool UpdatePinmameDisplayBitmap(PinmameDisplay* pDisplay, struct mame_bit
 	const int height = pDisplay->layout.height; // layout->start
 	const int width = pDisplay->layout.width; // layout->length
 	const int rotation = (pDisplay->layout.type & PINMAME_DISPLAY_TYPE_VIDEO_ROT90) ? 1 : 0;
+	/* where the layout puts the display on the screen: a video display need not be the only one
+	   (Stern SPIKE 1 draws its LCD insert below the DMD) */
+	const int top = pDisplay->layout.top, left = pDisplay->layout.left;
 	const int incr = (rotation == 0) ? 3 : ((rotation == 1) ? height*3 : -height*3);
 	/* A VIDEO_RGB_DIRECT screen holds packed colour, not palette indices - reading it through
 	   palette_get_color() gives nonsense, and for a 15 bpp bitmap the index runs up to 0x7fff,
@@ -464,7 +469,7 @@ static bool UpdatePinmameDisplayBitmap(PinmameDisplay* pDisplay, struct mame_bit
 		assert(direct && (depth == 15) && (rotation == 0));
 		unsigned int changed = 0; /* Accumulated bitwise so that the comparison stays branch free */
 		for (int y = 0; y < height; y++) {
-			const UINT16* __restrict const src = (const UINT16*)p_bitmap->line[y];
+			const UINT16* __restrict const src = (const UINT16*)p_bitmap->line[top + y] + left;
 			UINT16* __restrict const row = (UINT16*)dst + (size_t)y * width;
 			int x = 0;
 #if defined(SSE_DISPLAY_OPT)
@@ -496,13 +501,13 @@ static bool UpdatePinmameDisplayBitmap(PinmameDisplay* pDisplay, struct mame_bit
 		for (int x = 0; x < width; x++,pos+=incr) {
 			UINT8 r,g,b;
 			if (direct) {
-				const UINT32 c = p_bitmap->read(p_bitmap, x, y);
+				const UINT32 c = p_bitmap->read(p_bitmap, left + x, top + y);
 				if (depth == 32) { r = (c >> 16) & 0xff; g = (c >> 8) & 0xff; b = c & 0xff; } //!! b & r positions correct?
 				else if (depth == 16) { r = ExpandChannel5To8((c >> 11) & 0x1f); g = ExpandChannel6To8((c >> 5) & 0x3f); b = ExpandChannel5To8(c & 0x1f); } // RGB565
 				else                  { r = ExpandChannel5To8((c >> 10) & 0x1f); g = ExpandChannel5To8((c >> 5) & 0x1f); b = ExpandChannel5To8(c & 0x1f); } // RGB555
 			}
 			else
-				palette_get_color(p_bitmap->read(p_bitmap, /*cliprect->min_x +*/ x, /*cliprect->min_y +*/ y), &r, &g, &b);
+				palette_get_color(p_bitmap->read(p_bitmap, left + x, top + y), &r, &g, &b);
 			diff |= (dst[pos] != r || dst[pos + 1] != g || dst[pos + 2] != b);
 			dst[pos    ] = r;
 			dst[pos + 1] = g;
@@ -1165,7 +1170,7 @@ extern "C" void OnStateChange(const int state)
 			else if ((layout->type & CORE_SEGMASK) == CORE_DMD) {
 				pDisplay->layout.width = layout->length;
 				pDisplay->layout.height = layout->start;
-				const int shade_16_enabled = (core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG | GEN_ALVG_DMD2 | GEN_GTS3 | GEN_PINHECK)) != 0; // pinHeck: the raw DMD's 16 levels
+				const int shade_16_enabled = (core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG | GEN_ALVG_DMD2 | GEN_GTS3 | GEN_PINHECK | GEN_SPIKE1)) != 0; // pinHeck: the raw DMD's 16 levels
 				pDisplay->layout.depth = shade_16_enabled ? 4 : 2;
 				pDisplay->size = pDisplay->layout.width * pDisplay->layout.height;
 			}
@@ -1301,7 +1306,12 @@ static int StartGame(const int gameNum)
 
 	_gameThreadId = std::this_thread::get_id();
 
+	if (core_inputlog_open(gameNum, _recordName, _playbackName))
+		libpinmame_log_error("StartGame(): cannot open %s.inp", _playbackName[0] ? _playbackName : _recordName);
+
 	const int err = run_game(gameNum);
+
+	core_inputlog_close();
 
 	OnStateChange(0);
 
@@ -1373,6 +1383,169 @@ PINMAMEAPI PINMAME_STATUS PinmameGetGames(PinmameGameCallback callback, void* co
 	}
 
 	return PINMAME_STATUS_OK;
+}
+
+/******************************************************
+ * GetChecksumFromHash
+ *
+ * Extracts the CRC32 from a MAME hash data string
+ * ("c:<crc32>#s:<sha1>#m:<md5>#f:<flags>"), 0 when it
+ * doesn't hold one
+ ******************************************************/
+
+static uint32_t GetChecksumFromHash(const char* const p_hash)
+{
+	unsigned int checksum = 0;
+	if (p_hash && *p_hash)
+		sscanf(p_hash, "c:%x", &checksum);
+	return checksum;
+}
+
+/******************************************************
+ * FillExpectedRomData
+ *
+ * Fills a PinmameRom with the values a ROM file entry is
+ * expected to have, mirroring VPinMAME's CRom::Init
+ ******************************************************/
+
+static void FillExpectedRomData(PinmameRom* const p_rom, const struct RomModule* const region, const struct RomModule* const rom)
+{
+	p_rom->name = ROM_GETNAME(rom);
+	p_rom->flags = ROMREGION_GETFLAGS(region);
+	p_rom->expLength = 0;
+	for (const struct RomModule* chunk = rom_first_chunk(rom); chunk; chunk = rom_next_chunk(chunk))
+		p_rom->expLength += ROM_GETLENGTH(chunk);
+	p_rom->expChecksum = GetChecksumFromHash(ROM_GETHASHDATA(rom));
+}
+
+/******************************************************
+ * PinmameGetGameRoms
+ ******************************************************/
+
+PINMAMEAPI PINMAME_STATUS PinmameGetGameRoms(const char* const p_name, PinmameRomCallback callback, void* const p_userData)
+{
+	if (!_p_Config)
+		return PINMAME_STATUS_CONFIG_NOT_SET;
+
+	const int gameNum = GetGameNumFromString(p_name);
+
+	if (gameNum < 0)
+		return PINMAME_STATUS_GAME_NOT_FOUND;
+
+	for (const struct RomModule* region = rom_first_region(drivers[gameNum]); region; region = rom_next_region(region))
+		for (const struct RomModule* rom = rom_first_file(region); rom; rom = rom_next_file(rom))
+		{
+			PinmameRom romInfo;
+			memset(&romInfo, 0, sizeof(PinmameRom));
+			FillExpectedRomData(&romInfo, region, rom);
+
+			if (callback)
+				(*callback)(&romInfo, p_userData);
+		}
+
+	return PINMAME_STATUS_OK;
+}
+
+/******************************************************
+ * PinmameAuditGameRom
+ ******************************************************/
+
+PINMAMEAPI PINMAME_STATUS PinmameAuditGameRom(const char* const p_gameName, const char* const p_romName, const int strict, PinmameRom* const p_rom)
+{
+	if (!_p_Config)
+		return PINMAME_STATUS_CONFIG_NOT_SET;
+
+	if (!p_rom || !p_romName)
+		return PINMAME_STATUS_ROM_NOT_FOUND;
+
+	const int gameNum = GetGameNumFromString(p_gameName);
+
+	if (gameNum < 0)
+		return PINMAME_STATUS_GAME_NOT_FOUND;
+
+	const struct GameDriver* const gamedrv = drivers[gameNum];
+
+	const struct RomModule* region = nullptr;
+	const struct RomModule* rom = nullptr;
+	for (const struct RomModule* r = rom_first_region(gamedrv); r && !rom; r = rom_next_region(r))
+		for (const struct RomModule* file = rom_first_file(r); file; file = rom_next_file(file))
+			if (!strcasecmp(ROM_GETNAME(file), p_romName))
+			{
+				region = r;
+				rom = file;
+				break;
+			}
+
+	if (!rom)
+		return PINMAME_STATUS_ROM_NOT_FOUND;
+
+	// Keep the caller's checksum so it can be used to distinguish a never found ROM from a lost one
+	const uint32_t previousChecksum = p_rom->checksum;
+	FillExpectedRomData(p_rom, region, rom);
+
+	// Locate and checksum the file, falling back on the clone's romset (same as VPinMAME's CRom::Audit)
+	char hash[256];
+	strncpy(hash, strict ? "" : ROM_GETHASHDATA(rom), sizeof(hash) - 1);
+	hash[sizeof(hash) - 1] = 0;
+	const struct GameDriver* drv = gamedrv;
+	int err;
+	do
+	{
+		err = mame_fchecksum(drv->name, p_rom->name, &p_rom->length, hash);
+		drv = drv->clone_of;
+	} while (err && drv);
+
+	if (err)
+	{
+		/* not found, and it's not good anyway / not found while it was */
+		p_rom->state = !previousChecksum ? PINMAME_ROM_STATE_NOT_AVAILABLE : PINMAME_ROM_STATE_NOT_FOUND;
+	}
+	else
+	{
+		p_rom->checksum = GetChecksumFromHash(hash);
+
+		if (p_rom->expLength != p_rom->length)
+			p_rom->state = PINMAME_ROM_STATE_LENGTH_MISMATCH;
+		else if (p_rom->expChecksum != p_rom->checksum)
+		{
+			if (!p_rom->expChecksum)
+				p_rom->state = PINMAME_ROM_STATE_NEED_DUMP; // found but not known to be dumped
+			else if (p_rom->checksum == BADCRC(p_rom->expChecksum))
+				p_rom->state = PINMAME_ROM_STATE_NEED_REDUMP;
+			else
+				p_rom->state = PINMAME_ROM_STATE_BAD_CHECKSUM;
+		}
+		else
+			p_rom->state = PINMAME_ROM_STATE_OK;
+	}
+
+	return PINMAME_STATUS_OK;
+}
+
+/******************************************************
+ * PinmameIsGameRomsetAvailable
+ ******************************************************/
+
+PINMAMEAPI int PinmameIsGameRomsetAvailable(const char* const p_name)
+{
+	if (!_p_Config)
+		return 0;
+
+	const int gameNum = GetGameNumFromString(p_name);
+
+	if (gameNum < 0)
+		return 0;
+
+	const struct GameDriver* const gamedrv = drivers[gameNum];
+
+	if (!mame_faccess(gamedrv->name, FILETYPE_ROM))
+	{
+		/* if the game is a clone, check for parent */
+		if (!gamedrv->clone_of || !mame_faccess(gamedrv->clone_of->name, FILETYPE_ROM))
+			return 0;
+	}
+
+	return 1;
 }
 
 /******************************************************
@@ -1467,6 +1640,32 @@ PINMAMEAPI void PinmameSetCheat(const int cheat)
 }
 
 /******************************************************
+ * PinmameSetRecord
+ ******************************************************/
+
+PINMAMEAPI PINMAME_STATUS PinmameSetRecord(const char* const p_name)
+{
+	if (_isRunning)
+		return PINMAME_STATUS_GAME_ALREADY_RUNNING;
+
+	snprintf(_recordName, sizeof(_recordName), "%s", p_name ? p_name : "");
+	return PINMAME_STATUS_OK;
+}
+
+/******************************************************
+ * PinmameSetPlayback
+ ******************************************************/
+
+PINMAMEAPI PINMAME_STATUS PinmameSetPlayback(const char* const p_name)
+{
+	if (_isRunning)
+		return PINMAME_STATUS_GAME_ALREADY_RUNNING;
+
+	snprintf(_playbackName, sizeof(_playbackName), "%s", p_name ? p_name : "");
+	return PINMAME_STATUS_OK;
+}
+
+/******************************************************
  * PinmameGetHandleKeyboard
  ******************************************************/
 
@@ -1540,11 +1739,12 @@ PINMAMEAPI PINMAME_STATUS PinmameRun(const char* const p_name)
 	strncpy(g_szGameName, p_name, sizeof(g_szGameName) - 1);
 	g_szGameName[sizeof(g_szGameName) - 1] = '\0';
 
-   msgLocals.gameId = std::format("pinmame::{}", p_name);
+	msgLocals.gameId = std::format("pinmame::{}", p_name);
 
-   OnStateChange(2); // Starting state (in between stopped and started)
+	OnStateChange(2); // Starting state (in between stopped and started)
 
 	vp_init();
+	_nvramInit = 0; // like VPM on a game change: the first PinmameGetChangedNVRAM only takes the new baseline
 
 	_p_gameThread = new std::thread(StartGame, gameNum);
 
@@ -1752,13 +1952,8 @@ PINMAMEAPI int PinmameGetSolenoid(const int solNo)
 	if (!IsEmulationRunning() || solNo < 1 || solNo > CORE_MODOUT_SOL_MAX)
 		return 0;
 
-	if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) {
-		// core_getSol reads 29-48 from other outputs than solNo - 1
-		if (solNo >= 29 && solNo <= 48)
-			core_update_pwm_solenoids();
-		else
-			core_update_pwm_outputs(CORE_MODOUT_SOL0 + solNo - 1, 1);
-	}
+	// Like VPM: core_getSol may read other outputs than solNo - 1 (29-48, driver getSol like Tommy's blinder motor)
+	core_update_pwm_solenoids();
 
 	return vp_getSolenoid(solNo);
 }
@@ -1798,12 +1993,10 @@ PINMAMEAPI int PinmameGetMaxLamps()
 PINMAMEAPI int PinmameGetLamp(const int lampNo)
 {
 	const std::shared_lock lock(_stateMutex);
-	const int index = IsEmulationRunning() ? vp_getLampIndex(lampNo) : -1;
-	if (index < 0)
+	if (!IsEmulationRunning())
 		return 0;
 
-	if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_LAMPS))
-		core_update_pwm_outputs(CORE_MODOUT_LAMP0 + index, 1);
+	core_update_pwm_lamps();
 
 	return vp_getLamp(lampNo);
 }
@@ -1846,8 +2039,7 @@ PINMAMEAPI int PinmameGetGI(const int giNo)
 	if (!IsEmulationRunning())
 		return 0;
 
-	if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_GI))
-		core_update_pwm_outputs(CORE_MODOUT_GI0 + giNo - 1, 1);
+	core_update_pwm_gis();
 
 	return vp_getGI(giNo);
 }
@@ -2503,7 +2695,8 @@ static void SetSwitchState(void* callContext, const void* pResult)
 {
    assert(_isRunning == 1);
    const int srcId = static_cast<StateMapping*>(callContext)->srcId;
-   core_setSw(static_cast<int16_t>(srcId), *static_cast<const uint8_t*>(pResult) != 0);
+   // Like PinmameSetSwitch / VPinMAME: through the switch log, so it is recorded (and played back) like the other host switches
+   core_setHostSw(static_cast<int16_t>(srcId), *static_cast<const uint8_t*>(pResult) != 0);
 }
 static void GetDIPSwitchState(void* callContext, void* pResult)
 {
@@ -2645,8 +2838,8 @@ static void SetupMsgApiGameStates()
                addPhysSol(fmtString("GPIO #3 (WPC J111.3) overlayed with FastFlip Fake GameOn"), nullptr, nullptr, 31, GetSolenoid2State, GetSolenoid2VPMState, 0x0400, 30);
          }
          // 29..32, solenoid outputs from driver board
-         // Note: core_getSol only implement for S11 while core_getAllSol implements for all system (but is it used by other systems ?)
-         else // if (core_gameData->gen & GEN_ALLS11)
+         // Used by many systems (S11, GTS3 relays, SAM, Capcom, ...), core_getSol and core_getAllSol report them for all systems but WPC
+         else
          {
             for (uint16_t i = 29; i <= 32; i++)
                addPhysSol((core_gameData->gen & GEN_PINHECK) ? fmtString("pinHeck GI #%d", i - 25) : fmtString("Output #%02d", i),
@@ -2655,12 +2848,11 @@ static void SetupMsgApiGameStates()
       }
       // 33..36
       {
-         // 33, SAM: fake GameOn solenoid for fast flip
+         // 33, SAM, SPIKE 1: fake GameOn solenoid for fast flip (SPIKE 1: the flippers' reflexes armed on the node boards)
          // Note: core_getSol returns it replicated 4 times for 33..36 while core_getAllSol only returns it as 33 (34..36 are unused)
-         if (core_gameData->gen & GEN_SAM)
-            addPhysSol(fmtString("SAM Fake GameOn"), nullptr, nullptr, 33, GetSolenoid2State, GetSolenoid2VPMState, 0x00000010, 32);
+         if (core_gameData->gen & (GEN_SAM | GEN_SPIKE1))
+            addPhysSol(fmtString("%s Fake GameOn", (core_gameData->gen & GEN_SAM) ? "SAM" : "SPIKE 1"), nullptr, nullptr, 33, GetSolenoid2State, GetSolenoid2VPMState, 0x00000010, 32);
          // 33..36: Whitestar various extension boards (stored in 0x00F0 of solenoids2, which is upper flipper for other hardwares)
-         // Note: core_getSol does not implement this while core_getAllSol does
          else if (core_gameData->gen & GEN_ALLWS)
          {
             for (uint16_t i = 33; i <= 36; i++)
@@ -2729,7 +2921,7 @@ static void SetupMsgApiGameStates()
          {
             for (uint16_t i = 0; i < 8; i++)
                addPhysSol(fmtString("Output #%02d (WPC95 J110 LPDC)", 37 + (i & 3)),
-                  nullptr, nullptr, 37 + i, GetSolenoid1State, GetSolenoid1VPMState, 1 << (36 + (i & 3)), 36 + (i & 3));
+                  nullptr, nullptr, 37 + i, GetSolenoid1State, GetSolenoid1VPMState, 1u << (28 + (i & 3)), 36 + (i & 3));
          }
          // 37..44, S11, SAM, SPA: extension board with 8 outputs; pinHeck: GI 8..15 (stored in 0xFF00 of solenoids2)
          else if (core_gameData->gen & (GEN_ALLS11 | GEN_SAM | GEN_SPA | GEN_PINHECK))
@@ -3208,7 +3400,7 @@ static void SetupMsgApiVideoDisplays()
             //   Then, starting with Tranformers, the 520-5052-15 orange/red led matrix is used
             // - All US Stern games before AC/DC use a 128 x 32 neon plasma (520-5052-00), then LED (520-5052-15)
             def.srcId.hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN;
-         else if (core_gameData->gen == GEN_SPA)
+         else if (core_gameData->gen == GEN_SPA || core_gameData->gen == GEN_SPIKE1) // SPIKE 1: an LED panel, its type not established
             def.srcId.hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN;
          else
             def.srcId.hardware = CTLPI_DISPLAY_HARDWARE_NEON_PLASMA;
@@ -3220,7 +3412,7 @@ static void SetupMsgApiVideoDisplays()
          def.srcId.GetRenderFrame = &GetDisplayFrame;
          if ((layout->type & CORE_SEGMASK) != CORE_VIDEO)
          {
-            def.srcId.identifyFormat = ((core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2 | GEN_PINHECK)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0)) ? CTLPI_DISPLAY_ID_FORMAT_BITPLANE4 : CTLPI_DISPLAY_ID_FORMAT_BITPLANE2; // pinHeck: the raw DMD's 16 levels
+            def.srcId.identifyFormat = ((core_gameData->gen & (GEN_SAM | GEN_SPA | GEN_ALVG_DMD2 | GEN_PINHECK | GEN_SPIKE1)) || (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0)) ? CTLPI_DISPLAY_ID_FORMAT_BITPLANE4 : CTLPI_DISPLAY_ID_FORMAT_BITPLANE2; // pinHeck: the raw DMD's 16 levels
             def.srcId.GetIdentifyFrame = &GetDisplayIdFrame;
          }
          msgLocals.nDisplays++;

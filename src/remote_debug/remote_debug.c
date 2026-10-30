@@ -501,6 +501,17 @@ static UINT8 *banked_byte(int cpu, int bank, UINT32 addr, UINT32 start)
 	return cpu_bankbase[bank] + (addr - start);
 }
 
+/* The ROM page a WPC bank number selects. The hardware decodes only the
+ * bits the ROM size needs (wpc.c: data & pageMask) while games write the
+ * full bank number (0x20-0x3F with a 512K ROM), so the raw number must not
+ * index the ROM region: that lands past its end. */
+UINT32 remote_debug_wpc_rom_page(int bank)
+{
+	int romlen = memory_region_length(WPC_ROMREGION);
+	UINT32 pages = (romlen > 0) ? (UINT32)romlen / 0x4000 : 0;
+	return pages ? ((UINT32)bank & (pages - 1)) : (UINT32)bank;
+}
+
 UINT8 remote_debug_read_byte(int cpu, UINT32 addr, int bank)
 {
 	UINT32 start = 0;
@@ -508,7 +519,7 @@ UINT8 remote_debug_read_byte(int cpu, UINT32 addr, int bank)
 	if (bank >= 0 && cpu == 0 && wpc_ram && addr >= 0x4000 && addr < 0x8000) {
 		UINT8 *rom = memory_region(WPC_ROMREGION);
 		if (rom) {
-			UINT32 off = (UINT32)bank * 0x4000 + (addr - 0x4000);
+			UINT32 off = remote_debug_wpc_rom_page(bank) * 0x4000 + (addr - 0x4000);
 			if (off < (UINT32)memory_region_length(WPC_ROMREGION))
 				return rom[off];
 		}
@@ -996,7 +1007,7 @@ void remote_debug_breakpoint_delete(int index)
 static UINT32 coverage_index(UINT32 pc, int bank)
 {
 	if (bank >= 0 && pc >= 0x4000 && pc < 0x8000)
-		return 0x10000 + (UINT32)bank * 0x4000 + (pc - 0x4000);
+		return 0x10000 + remote_debug_wpc_rom_page(bank) * 0x4000 + (pc - 0x4000);
 	return pc & 0xFFFF;
 }
 

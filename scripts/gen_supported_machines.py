@@ -64,6 +64,7 @@ DISPLAY_FIXES = {
     "Jolly Joker": "alphanumeric",
     "Sisters": "alphanumeric",
     "Big Dryvers": "alphanumeric",
+    "Avengers the Pin": "alphanumeric",             # Stern/ELG SPIKE 1, 16 characters like Transformers The Pin
 }
 
 # Electromechanical machines that OPDB also carries as a solid state entry,
@@ -74,16 +75,17 @@ NOT_SOLID_STATE = {
     "Aztec",           # Williams, 1976; OPDB's "Aztec (SS)" is not a machine
     "Criterium 75",    # Recel, 1975
 }
-EOL_YEARS = 10                           # "end of life" cut-off, in years
+EOL_YEARS = 5                            # "end of life" cut-off, in years
 YEAR_SLACK = 3                           # how far PinMAME and OPDB may disagree
 
-# Game definition macro -> argument count, from src/wpc/core.h and
-# src/wpc/pinheck.h.  parse_drivers() raises on a mismatch; self_test() fails
-# on a wrapper macro missing from this table.
+# Game definition macro -> argument count, from src/wpc/core.h,
+# src/wpc/pinheck.h and src/wpc/spike1.c.  parse_drivers() raises on a
+# mismatch; self_test() fails on a wrapper macro missing from this table.
 ARITY = {"CORE_GAMEDEF": 7, "CORE_GAMEDEFNV": 6, "CORE_GAMEDEFNVR90": 6,
          "CORE_CLONEDEF": 8, "CORE_CLONEDEFNV": 7,
-                  # Clone of the `pinheck` BIOS, so no parent among these sets.
-         "PINHECK_GAMEDEF": 7}
+         # Clone of the `pinheck` BIOS, so no parent among these sets.
+         "PINHECK_GAMEDEF": 7,
+         "SPIKE1_CLONEDEF": 7}
 
 # Driver flags, from src/driver.h and src/wpc/vpintf.h.  resolve_flags() raises
 # on a flag not listed here.
@@ -266,6 +268,19 @@ DEFINE = re.compile(r"^[ \t]*#[ \t]*define[ \t]+([A-Za-z_]\w*)[ \t]+(\S.*?)[ \t]
 COND = re.compile(r"^[ \t]*#[ \t]*(ifdef|ifndef|if|else|elif|endif)\b[ \t]*(.*)$")
 
 
+def strip_directives(src):
+    """Blank out preprocessor lines (and their continuations), keeping newlines.
+
+    spike1.c defines SPIKE1_CLONEDEF itself: its #define is not a ROM set.
+    """
+    out, cont = [], False
+    for line in src.split("\n"):
+        directive = cont or line.lstrip().startswith("#")
+        cont = directive and line.rstrip().endswith("\\")
+        out.append("" if directive else line)
+    return "\n".join(out)
+
+
 def local_defines(src):
     """-> {macro: replacement} for the release build (MAME_DEBUG undefined).
 
@@ -397,6 +412,7 @@ def parse_drivers(wpc=WPC):
             sim = ("" if "/sims/" not in rel else
                    "full" if "/full/" in rel else
                    "preliminary" if "/prelim/" in rel else "yes")
+            src = strip_directives(src)
             for m in MACRO.finditer(src):
                 end = close_paren(src, m.end())
                 kind = m.group(1)
@@ -413,6 +429,12 @@ def parse_drivers(wpc=WPC):
                     parent, rest = "%s_%s" % (args[0], args[2]), args[3:]
                 elif kind == "CORE_CLONEDEFNV":
                     rom, parent, rest = args[0], args[1], args[2:]
+                elif kind == "SPIKE1_CLONEDEF":
+                    # (name, ver, parent, data, longname, year, machine): the
+                    # parent is a full set name, the manufacturer is always
+                    # Stern and the flags are always 0 (see src/wpc/spike1.c)
+                    rom, parent = "%s_%s" % (args[0], args[1]), args[2]
+                    rest = [args[4], args[5], '"Stern"', args[6], "0"]
                 else:
                     rom, parent, rest = args[0], None, args[1:]
                 title, year, manuf, _machine, flag = rest
@@ -582,9 +604,20 @@ def match(titles, sets):
     propose(1, lambda t: [s for k in t["_keys"] for s in keys.get(k, ())])
     propose(2, lambda t: [s for k in t["_keys"] | t["_vars"]
                           for s in list(varkeys.get(k, ())) + list(keys.get(k, ()))])
-    propose(3, lambda t: contained(t, free))
+    # The looser tiers leave alone a ROM family that an exact or variant match gave to another
+    # title: The Avengers' 2016 V1.7 revisions, outside its year window, went to ELG's 2013
+    # "Avengers the Pin". The family pass below places them
+    family_owners = defaultdict(set)
+    for t in titles:
+        for s in t["sets"]:
+            family_owners[root_of(s)].add(t["id"])
+
+    def not_elsewhere(t, cands):
+        return [s for s in cands if t["id"] in family_owners.get(root_of(s), {t["id"]})]
+
+    propose(3, lambda t: not_elsewhere(t, contained(t, free)))
     all_keys = list(keys)
-    propose(4, lambda t: fuzzy(t, keys, all_keys))
+    propose(4, lambda t: not_elsewhere(t, fuzzy(t, keys, all_keys)))
 
     # Revisions outside the year window that are the same machine: rfm_160 is
     # dated 2003 for a 1999 machine and the MODs run to 2024.  Restricted to a
@@ -804,7 +837,9 @@ def render(titles, orphans, other, stamp, cutoff, eol_years):
     w("Every solid state pinball machine known to the "
       "[Open Pinball Database](https://opdb.org/), matched against the drivers "
       "in `src/wpc`, so you can see at a glance what PinMAME emulates, what it "
-      "emulates imperfectly, and what it does not emulate at all.")
+      "emulates imperfectly, and what it does not emulate at all. Note that it may "
+      "not be complete, so use the builtin functionality to create a gamelist "
+      "that features the full list of games.")
     w("")
     w("## Scope: solid state, and end of life")
     w("")
@@ -986,6 +1021,15 @@ def self_test():
     # PinHeck is defined through a wrapper macro.
     assert {"amh_023", "dominos_006", "rzspook_026", "jetsons_004"} <= set(by_rom)
     assert by_rom["jetsons_004"]["title"] == "Jetsons, The"
+
+    # Spike 1 editions are defined through their own clone macro.
+    assert by_rom["got_137"]["parent"] == "got_137h"
+    assert by_rom["got_137"]["title"] == "Game of Thrones (1.37.0)"
+    assert by_rom["got_137"]["manufacturer"] == "Stern"
+    assert by_rom["got_137"]["year"] == 2015
+    # ... whose #define (in spike1.c) is not a ROM set
+    assert "name_ver" not in by_rom
+    assert strip_directives('#define A(x) \\\n  B(x)\nA(1)') == '\n\nA(1)'
 
     # No game definition macro may exist that ARITY does not know about.
     # WPC_GAMEDEF() is an undefined placeholder in sims/template, kept out by

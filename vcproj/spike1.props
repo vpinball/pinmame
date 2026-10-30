@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ============================================================================== -->
+<!-- spike1.props - build the Stern SPIKE 1 subsystem (src/spike1) into a project.  -->
+<!--                                                                                -->
+<!-- The counterpart of p2k.props (which explains the per-item metadata in full):   -->
+<!-- importing this compiles the subsystem, plus PinMAME's own half of it           -->
+<!-- (src/wpc/spike1.c), directly into that project using the project's OWN         -->
+<!-- PlatformToolset. The create_vc2017 and later conversion scripts import it,     -->
+<!-- like p2k.props, as the imported MAME 0.288 ARM7 core needs C++17 (v141+). As   -->
+<!-- in CMake (cmake/spike1.cmake), it goes into LibPinMAME, and into PinMAME and   -->
+<!-- VPinMAME on x64 only: a title's asset image is over 1 GB, and it is a ROM.     -->
+<!--                                                                                -->
+<!-- HAS_SPIKE1=1 is defined here, project-wide, for every ClCompile item: as       -->
+<!-- HAS_MEDIAGX for p2k.props, src/cpuintrf.c and src/wpc/driver.c test it to      -->
+<!-- register the CPU and list the games. It is defined here rather than by the     -->
+<!-- conversion scripts so that it follows the (platform conditional) import.       -->
+<!--                                                                                -->
+<!-- The metadata matches p2k.props: C++17, RTTI and exceptions for the imported    -->
+<!-- code, its include directories searched first, and a spike1_ prefix on the      -->
+<!-- object files, as the flat $(IntDir) already has PinMAME's own arm7.obj and     -->
+<!-- arm7dasm.obj (src/cpu/arm7).                                                   -->
+<!--                                                                                -->
+<!-- The MAME compatibility layer (src/p2k/shim) is shared with the Pinball 2000    -->
+<!-- subsystem: its two sources are only compiled here when p2k.props is not        -->
+<!-- imported too (it sets PinMAME_P2K), like the NOT TARGET p2k test in CMake.     -->
+<!--                                                                                -->
+<!-- The subsystem's logging is compiled in only with SPIKE1_DEBUG=1 in the        -->
+<!-- project's preprocessor definitions (src/spike1/spike1_debug.h).              -->
+<!--                                                                                -->
+<!-- Kept in step with cmake/spike1.cmake: a source added to one belongs in both.   -->
+<!-- ============================================================================== -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>HAS_SPIKE1=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/spike1/spike1_cpu.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)spike1_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/spike1;$(MSBuildThisFileDirectory)../src/spike1/mame/cpu/arm7;$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/spike1/spike1_devices.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)spike1_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/spike1;$(MSBuildThisFileDirectory)../src/spike1/mame/cpu/arm7;$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/spike1/spike1_linux.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)spike1_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/spike1;$(MSBuildThisFileDirectory)../src/spike1/mame/cpu/arm7;$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/spike1/spike1_memory.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)spike1_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/spike1;$(MSBuildThisFileDirectory)../src/spike1/mame/cpu/arm7;$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/spike1/spike1_vfs.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)spike1_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/spike1;$(MSBuildThisFileDirectory)../src/spike1/mame/cpu/arm7;$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/spike1/spike1_pinmame.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)spike1_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/spike1;$(MSBuildThisFileDirectory)../src/spike1/mame/cpu/arm7;$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/spike1/mame/cpu/arm7/arm7.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)spike1_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/spike1;$(MSBuildThisFileDirectory)../src/spike1/mame/cpu/arm7;$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/spike1/mame/cpu/arm7/arm7ops.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)spike1_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/spike1;$(MSBuildThisFileDirectory)../src/spike1/mame/cpu/arm7;$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/spike1/mame/cpu/arm7/arm7thmb.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)spike1_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/spike1;$(MSBuildThisFileDirectory)../src/spike1/mame/cpu/arm7;$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/spike1/mame/cpu/arm7/arm7dasm.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)spike1_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/spike1;$(MSBuildThisFileDirectory)../src/spike1/mame/cpu/arm7;$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/shim/emu.cpp" Condition="'$(PinMAME_P2K)' != 'true'">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)spike1_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/spike1;$(MSBuildThisFileDirectory)../src/spike1/mame/cpu/arm7;$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/p2k/mame/emu/attotime.cpp" Condition="'$(PinMAME_P2K)' != 'true'">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ObjectFileName>$(IntDir)spike1_%(Filename).obj</ObjectFileName>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../src/spike1;$(MSBuildThisFileDirectory)../src/spike1/mame/cpu/arm7;$(MSBuildThisFileDirectory)../src/p2k/shim;$(MSBuildThisFileDirectory)../src/p2k/mame;$(MSBuildThisFileDirectory)../src/p2k/mame/emu;$(MSBuildThisFileDirectory)../src/p2k/mame/osd;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)../src/wpc/spike1.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+</Project>

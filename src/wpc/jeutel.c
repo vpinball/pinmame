@@ -27,7 +27,7 @@ static struct {
   int dispBlank;
   int dipStrobe;
 
-  int busGranted;   /* CPU M is stalled and CPU E owns the shared bus */
+  int busGranted; /* CPU M is stalled and CPU E owns the shared bus */
 } locals;
 
 /* Bus arbitration.  CPU E's HALT asks CPU M for the bus and the grant arrives
@@ -238,15 +238,12 @@ static ppi8255_interface ppi8255_intf =
    display CPU strobes those bytes straight out to lampMatrix.
 
    The manual numbers the controlled lamps from 1, so manual lamp L is bit L-1:
-   column (L-1)/8, row (L-1)%8.  Papillon's lamp list agrees: its
-   gaps fall at 29-32, 37-40, 47 and 52, exactly on 8-lamp column boundaries,
-   and lamps stop at 56, which is why lampMatrix[7] is always zero.
+   column (L-1)/8, row (L-1)%8.  Papillon's lamp list agrees: its gaps 29-32 and
+   37-40 are the upper halves of columns 3 and 4, and it stops at 56, so
+   lampMatrix[7] stays zero.
 
-   Without this conversion the driver inherits core_swSeq2m from the base
-   PinMAME machine, which adds 7 -- that would put manual lamp 1 at
-   lampMatrix[1] bit 0 (i.e. report lamp 9) and leave lamps 1-7 unreachable. */
-static int jeutel_lamp2m(int no) { return no - 1; }
-static int jeutel_m2lamp(int col, int row) { return col * 8 + row + 1; }
+   The core's default conversion already gives these numbers (core_swSeq2m
+   adds 7, vp_getLamp() takes 8 off), so no lamp conversion is set. */
 
 static MACHINE_RESET(JEUTEL) {
   memset(&locals, 0x00, sizeof(locals));
@@ -281,7 +278,7 @@ static SWITCH_UPDATE(JEUTEL) {
    a command of its own, not something the sound board reaches by itself.  So a
    game left standing holds one sound: with a ball in play and no switch
    closing, sound 0x07 repeats its 194 ms sweep indefinitely, which is the
-   period the real machine's sound has on video too. */
+   period the real machine's sound has on video too */
 
 static struct {
   UINT8 sndCmd;
@@ -450,7 +447,7 @@ MACHINE_DRIVER_START(jeutel)
 
    Approximation: the bus grant is found by polling Z80_HALT from the jeutel_nmi
    timer rather than at the instant CPU E halts, so that timer has to stay fast.
-   A halt callback in the Z80 core would remove the need for it. */
+   A halt callback in the Z80 core would remove the need for it */
   MDRV_CPU_ADD_TAG("mcpue", Z80, 4000000) // the real rate, from the schematics and confirmed against a real machine
   MDRV_CPU_MEMORY(cpu_readmem1, cpu_writemem1)
 
@@ -464,7 +461,6 @@ MACHINE_DRIVER_START(jeutel)
   MDRV_CORE_INIT_RESET_STOP(NULL,JEUTEL,JEUTEL)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_SWITCH_UPDATE(JEUTEL)
-  MDRV_LAMP_CONV(jeutel_lamp2m,jeutel_m2lamp)
   MDRV_DIPS(32)
   MDRV_DIAGNOSTIC_LEDH(3)
 
@@ -498,7 +494,7 @@ MACHINE_DRIVER_END
 /  a credit on and C35 held closed the game pulses bit 8 every 0.96 s and never
 /  stops: it is retrying the ball-serve because the trough switch never clears.
 /  Clearing C35 on that pulse, which is what Papillon's simulator does, is what
-/  puts a ball into play.
+/  puts a ball into play
 /===========================================================================*/
 
 /*-- playfield switches (column 0: C00-C07) --*/
@@ -581,9 +577,9 @@ MACHINE_DRIVER_END
    HEART ladder up the middle, the PAPILLON ladder down the left, the L-O-V-E
    lanes on the right) rather than exact playfield geometry.
 
-   Lamp numbers are the manual's, which this driver maps with jeutel_lamp2m
-   above: lamp L is lampMatrix[(L-1)/8] bit (L-1)%8.  Unused numbers (29-32,
-   37-40, 47, 52) are left as {0}.
+   Lamp numbers are the manual's (lamp L is lampMatrix[(L-1)/8] bit (L-1)%8,
+   see "Lamp numbering" above).  Numbers missing from the parts list (29-32,
+   37-40, 47, 52) are left as {0}, although the ROM drives 29-32, 37-40 and 47.
 
    Two lamps drive more than one bulb, which core_tLampData handles with its
    lamppos array: 45 is "START HEART (2)" and 48 is "ETOILES HEART (5)".
@@ -593,7 +589,7 @@ MACHINE_DRIVER_END
    The source is a 1984 photocopy and a few circled numbers are soft.  The
    ladders, the lanes and the bottom-of-playfield lamps are legible; two are
    not certain -- the pair drawn near B70 at the top right, and the circle below
-   lamps 2/3/4, which reads as 47 although the parts list has no lamp 47. */
+   lamps 2/3/4, which reads as 47 although the parts list has no lamp 47 */
 static core_tLampDisplay papillon_lampPos = {
   { 0, 0 },    /* top left */
   {15, 19},    /* size */
@@ -717,13 +713,15 @@ static sim_tInportData papillon_inportData[] = {
 
 static void papillon_drawStatic(BMTYPE **line) {
   core_textOutf(30, 10, BLACK, "Help on this Simulator:");
-  core_textOutf(30, 20, BLACK, "L/R Ctrl+- = L/R Slingshot");
-  core_textOutf(30, 30, BLACK, "Q = Drain Ball, W/E = Outlanes");
-  core_textOutf(30, 40, BLACK, "R = Lower Lanes, T/Y/U = Bumpers");
-  core_textOutf(30, 50, BLACK, "A/S/D/F = Upper Targets A-D");
-  core_textOutf(30, 60, BLACK, "Z/X/C/V = Drop Targets A-D");
-  core_textOutf(30, 70, BLACK, "G/H = Stars, J = Upper Hole");
-  core_textOutf(30, 80, BLACK, "K/L = Capture Lane / Hole");
+  core_textOutf(30, 20, BLACK, "Q = Drain Ball, W/E = Outlanes");
+  core_textOutf(30, 30, BLACK, "R = Lower Lanes, T/Y/U = Bumpers");
+  core_textOutf(30, 40, BLACK, "I = Slingshot, O = Rotating Gate");
+  core_textOutf(30, 50, BLACK, "P = Upper Left, B = Right Contact");
+  core_textOutf(30, 60, BLACK, "J = Upper Hole, N = Distribution");
+  core_textOutf(30, 70, BLACK, "A/S/D/F = Upper Targets A-D");
+  core_textOutf(30, 80, BLACK, "G/H = Right/Left Star");
+  core_textOutf(30, 90, BLACK, "Z/X/C/V = Drop Targets A-D");
+  core_textOutf(30,100, BLACK, "K/L = Capture Lane / Hole");
 }
 
 static sim_tSimData papillonSimData = {
@@ -745,9 +743,8 @@ static sim_tSimData papillonSimData = {
 static core_tGameData name##GameData = {0,disp,{flip,0,0,0,SNDBRD_JEUTEL},simdata}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
-/* As INITGAME, but also hands the core a controlled-lamp layout.  The lampData
-   pointer is the 13th member of the hw struct, after the four custom-function
-   pointers, hence the NULLs. */
+/* As INITGAME, but also hands the core a controlled-lamp layout.  The lampData pointer is
+   the 13th member of the hw struct, after the four custom-function pointers, hence the NULLs */
 #define INITGAME_LAMPS(name, disp, flip, simdata, lamps) \
 static core_tGameData name##GameData = {0,disp,{flip,0,0,0,SNDBRD_JEUTEL,0,0,0,NULL,NULL,NULL,NULL,lamps},simdata}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
@@ -798,8 +795,7 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 
    Switches 10, 13, 14 and 23 are named below from the manual but have no effect
    in any of these ROMs, and are labelled so the menu does not offer a setting
-   that does nothing.  The manual flags 23 and 24 as "pas utilises sur tous les
-   modeles". */
+   that does nothing.  The manual flags 23 and 24 as "pas utilises sur tous les modeles" */
 #define JEUTEL_COMPORTS(game, balls) \
   INPUT_PORTS_START(game) \
   CORE_PORTS \
@@ -904,9 +900,9 @@ static void init_##name(void) { core_gameData = &name##GameData; }
       COREPORT_DIPSET(0x0002, "25" ) \
       COREPORT_DIPSET(0x0200, "15" ) \
       COREPORT_DIPSET(0x0202, "8" ) \
-  /* Simulator playfield ports.  These must be inports 5 and 6, which is where \
-     sim_run looks given CORE_COREINPORT(2) + (MDRV_DIPS(32)+31)/16 = 5. */ \
-  PORT_START /* 2 */ \
+  /* Simulator playfield ports, inports 5 and 6 after the two CORE_PORTS: \
+     sim_run reads from CORE_COREINPORT + (MDRV_DIPS(32)+31)/16 = 2 + 3 = 5 */ \
+  PORT_START /* 3 */ \
     COREPORT_BIT(   0x0001, "Left Outlane",    KEYCODE_W) \
     COREPORT_BIT(   0x0002, "Right Outlane",   KEYCODE_E) \
     COREPORT_BIT(   0x0004, "Lower Lanes",     KEYCODE_R) \
@@ -923,7 +919,7 @@ static void init_##name(void) { core_gameData = &name##GameData; }
     COREPORT_BIT(   0x2000, "Upper Target D",  KEYCODE_F) \
     COREPORT_BIT(   0x4000, "Right Star",      KEYCODE_G) \
     COREPORT_BIT(   0x8000, "Left Star",       KEYCODE_H) \
-  PORT_START /* 3 */ \
+  PORT_START /* 4 */ \
     COREPORT_BIT(   0x0001, "Drop Target A",   KEYCODE_Z) \
     COREPORT_BIT(   0x0002, "Drop Target B",   KEYCODE_X) \
     COREPORT_BIT(   0x0004, "Drop Target C",   KEYCODE_C) \
@@ -973,7 +969,7 @@ INITGAME(leking,dispAlpha,FLIP_SW(FLIP_L),NULL)
 // The only one of the four whose ROM tests the multiball DIP (switch 18 =
 // 0xC0A6 bit 1, at 0x1554), so the only multiball game here.  The manual calls
 // that mode "2 billes sur le plateau"; the machine's ball complement is not
-// documented for Le King, so the ball count is left as it was.
+// documented for Le King, so the ball count is left as it was
 JEUTEL_COMPORTS(leking, 3)
 CORE_GAMEDEFNV(leking, "Le King", 1983, "Jeutel", jeutel, 0)
 
@@ -1039,8 +1035,8 @@ CORE_GAMEDEFNV(jpapillon, "Papillon (Jeutel)", 1984, "Jeutel", jeutel, 0)
 // and every structural check passes, but it is not a single clean read.
 // The other three are byte-identical to ROMs already in this file: the display
 // ROM matches Olympic Games / Papillon, the sound CPU ROM matches Le King, and
-// the speech ROM is the one shared across the whole range.
-ROM_START(apocalypse_now)
+// the speech ROM is the one shared across the whole range
+ROM_START(apclpsnw)
   NORMALREGION(0x10000, REGION_CPU1)
     ROM_LOAD("a1-ic3_disp.bin",  0x0000, 0x1000, CRC(cd284a20) SHA1(94568e1247994c802266f9fbe4a6f6ed2b55a978))
   NORMALREGION(0x10000, REGION_CPU2)
@@ -1059,10 +1055,10 @@ ROM_START(apocalypse_now)
     ROM_RELOAD(0xe000, 0x2000)
 ROM_END
 
-INITGAME(apocalypse_now,dispAlpha,FLIP_SW(FLIP_L),NULL)
+INITGAME(apclpsnw,dispAlpha,FLIP_SW(FLIP_L),NULL)
 // One ball.  Switch 18, the multiball DIP, is 0xC0A6 bit 1 and this ROM never
 // tests it; nor do Olympic Games' or Papillon's.  The ball is served by SOL 9,
 // the receptacle B73; SOL 8, the B74 ejector the manual lists as fitted
-// "uniquement sur jeu multibilles", is never driven.
-JEUTEL_COMPORTS(apocalypse_now, 1)
-CORE_GAMEDEFNV(apocalypse_now, "Apocalypse Now", 1985, "Jeutel", jeutel, 0)
+// "uniquement sur jeu multibilles", is never driven
+JEUTEL_COMPORTS(apclpsnw, 1)
+CORE_GAMEDEFNV(apclpsnw, "Apocalypse Now", 1985, "Jeutel", jeutel, 0)
