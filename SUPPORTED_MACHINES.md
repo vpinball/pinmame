@@ -469,7 +469,6 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | A.G. Soccer-Ball / A.G. Football               | 1991 | Alvin G. & Co          | Alphanumeric | `agfoot07`, `agsocc07`, `usafoota` + 6 more          |             |       |
 | Atleta                                         | 1991 | Inder                  | Alphanumeric | `atleta`                                             |             |       |
 | Batman                                         | 1991 | Data East              | DMD          | `btmn_101`, `btmn_103`, `btmn_106` + 2 more          |             |       |
-| Bride of Pinbot                                | 1991 | Williams               | Alphanumeric | `bop_d2`, `bop_d3`, `bop_d4` + 11 more               | full        |       |
 | Cactus Jack's                                  | 1991 | Gottlieb               | Alphanumeric | `cactjack`                                           |             |       |
 | Car Hop                                        | 1991 | Gottlieb               | Alphanumeric | `carhop`                                             |             |       |
 | Checkpoint                                     | 1991 | Data East              | DMD          | `ckpt_a17`                                           |             |       |
@@ -482,6 +481,7 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | Surf 'n Safari                                 | 1991 | Gottlieb               | Alphanumeric | `surfnsaf`, `surfnsat`                               |             |       |
 | Teenage Mutant Ninja Turtles                   | 1991 | Data East              | DMD          | `tmnt_101`, `tmnt_103`, `tmnt_104` + 3 more          |             |       |
 | Terminator 2: Judgment Day                     | 1991 | Williams               | DMD          | `t2_d2`, `t2_d3`, `t2_d4` + 17 more                  | full        |       |
+| The Machine: Bride of Pinbot                   | 1991 | Williams               | Alphanumeric | `bop_d2`, `bop_d3`, `bop_d4` + 11 more               | full        |       |
 | The Party Zone                                 | 1991 | Bally                  | DMD          | `pz_d1`, `pz_d2`, `pz_d3` + 6 more                   | full        |       |
 | 250 cc                                         | 1992 | Inder                  | Alphanumeric | `ind250cc`                                           |             |       |
 | Al's Garage Band goes on a World Tour          | 1992 | Alvin G. & Co          | DMD          | `wrldtou2`, `wrldtou3`, `wrldtou4` + 1 more          |             |       |
@@ -1149,8 +1149,8 @@ scripts/gen_supported_machines.py
 
 The script reads a cached copy of OPDB and re-downloads only with `--refresh`; `--check`
 fails if this file is out of date. Machine data comes from the OPDB snapshot of
-**2026-10-27**; driver data from `src/wpc` at the commit this file was generated from, on
-**2026-10-27**.
+**2026-10-30**; driver data from `src/wpc` at the commit this file was generated from, on
+**2026-10-30**.
 
 A machine is one OPDB *group*, so a title and its remakes are one row, dated and credited
 to the original. Its status is that of the *worst* of its ROM sets, so "fully working"
