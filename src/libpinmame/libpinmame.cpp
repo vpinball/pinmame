@@ -982,12 +982,14 @@ extern "C" void OnSolenoid(const int solenoid, const int state)
 
 extern "C" void libpinmame_log_info(const char* format, ...)
 {
-	if (!_p_Config || !_p_Config->cb_OnLogMessage)
-		return;
-
 	va_list args;
 	va_start(args, format);
-	(*(_p_Config->cb_OnLogMessage))(PINMAME_LOG_LEVEL_INFO, format, args, _p_userData);
+	if (_p_Config && _p_Config->cb_OnLogMessage)
+		(*(_p_Config->cb_OnLogMessage))(PINMAME_LOG_LEVEL_INFO, format, args, _p_userData);
+#ifdef __EMSCRIPTEN__
+	/* Emscripten hosts have no log callback: mirror to the console instead. */
+	else { vprintf(format, args); printf("\n"); }
+#endif
 	va_end(args);
 }
 
@@ -997,12 +999,14 @@ extern "C" void libpinmame_log_info(const char* format, ...)
 
 extern "C" void libpinmame_log_error(const char* format, ...)
 {
-	if (!_p_Config || !_p_Config->cb_OnLogMessage)
-		return;
-
 	va_list args;
 	va_start(args, format);
-	(*(_p_Config->cb_OnLogMessage))(PINMAME_LOG_LEVEL_ERROR, format, args, _p_userData);
+	if (_p_Config && _p_Config->cb_OnLogMessage)
+		(*(_p_Config->cb_OnLogMessage))(PINMAME_LOG_LEVEL_ERROR, format, args, _p_userData);
+#ifdef __EMSCRIPTEN__
+	/* Emscripten hosts have no log callback: mirror to the console instead. */
+	else { vfprintf(stderr, format, args); fprintf(stderr, "\n"); }
+#endif
 	va_end(args);
 }
 
