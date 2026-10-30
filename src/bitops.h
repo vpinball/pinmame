@@ -40,7 +40,7 @@ BITOPS_INLINE unsigned long long rotl_64(const unsigned long long x, const unsig
 {
 #ifdef _MSC_VER
     return _rotl64(x, count);
-#elif !defined(__arm__) && !defined(__aarch64__) && (defined(__INTEL_COMPILER) || (defined(__GNUC__) && (__GNUC__ > 3)) || defined(__clang__))
+#elif !defined(__arm__) && !defined(__aarch64__) && !defined(__EMSCRIPTEN__) && (defined(__INTEL_COMPILER) || (defined(__GNUC__) && (__GNUC__ > 3)) || defined(__clang__))
     return __rolq(x, count);
 #else
     return (x<<count) | (x>>( (unsigned int)(-(int)count)&63 )); // -count&63 instead of 64-count to handle count==0
@@ -62,7 +62,7 @@ BITOPS_INLINE unsigned long long rotr_64(const unsigned long long x, const unsig
 {
 #ifdef _MSC_VER
     return _rotr64(x, count);
-#elif !defined(__arm__) && !defined(__aarch64__) && (defined(__INTEL_COMPILER) || (defined(__GNUC__) && (__GNUC__ > 3)) || defined(__clang__))
+#elif !defined(__arm__) && !defined(__aarch64__) && !defined(__EMSCRIPTEN__) && (defined(__INTEL_COMPILER) || (defined(__GNUC__) && (__GNUC__ > 3)) || defined(__clang__))
     return __rorq(x, count);
 #else
     return (x>>count) | (x<<( (unsigned int)(-(int)count)&63 )); // -count&63 instead of 64-count to handle count==0
