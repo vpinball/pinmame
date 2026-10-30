@@ -329,7 +329,9 @@ static char* ComposePath(const char* const path, const char* const file)
 	char* const newPath = (char*)malloc(pathLength + fileLength + 4);
 
 	strcpy(newPath, path);
-	strcpy(newPath + pathLength, file);
+	if (pathLength > 0 && path[pathLength - 1] != '/' && path[pathLength - 1] != '\\')
+		strcat(newPath, "/");
+	strcat(newPath, file);
 	return newPath;
 }
 
