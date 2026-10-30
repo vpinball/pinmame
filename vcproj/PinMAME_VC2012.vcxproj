@@ -526,6 +526,8 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile Include="..\ext\ymfm\ymfm_adpcm.cpp" />
     <ClCompile Include="..\ext\ymfm\ymfm_opl.cpp" />
     <ClCompile Include="..\ext\ymfm\ymfm_opm.cpp" />
+    <ClCompile Include="..\ext\ymfm\ymfm_opn.cpp" />
+    <ClCompile Include="..\ext\ymfm\ymfm_ssg.cpp" />
     <ClCompile Include="..\ext\ymfm\ymfm_pcm.cpp" />
     <ClCompile Include="..\ext\zlib\adler32.c" />
     <ClCompile Include="..\ext\zlib\compress.c" />
@@ -1370,6 +1372,8 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ext\ymfm\ymfm_opm.h" />
+    <ClInclude Include="..\ext\ymfm\ymfm_opn.h" />
+    <ClInclude Include="..\ext\ymfm\ymfm_ssg.h" />
     <ClInclude Include="..\ext\zlib\crc32.h" />
     <ClInclude Include="..\ext\zlib\deflate.h" />
     <ClInclude Include="..\ext\zlib\gzguts.h" />

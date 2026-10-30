@@ -1421,6 +1421,12 @@
     <ClCompile Include="..\ext\ymfm\ymfm_opl.cpp">
       <Filter>Source Files\external\ymfm</Filter>
     </ClCompile>
+    <ClCompile Include="..\ext\ymfm\ymfm_opn.cpp">
+      <Filter>Source Files\external\ymfm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext\ymfm\ymfm_ssg.cpp">
+      <Filter>Source Files\external\ymfm</Filter>
+    </ClCompile>
     <ClCompile Include="..\ext\ymfm\ymfm_adpcm.cpp">
       <Filter>Source Files\external\ymfm</Filter>
     </ClCompile>
@@ -2189,6 +2195,12 @@
       <Filter>Source Files\external\vgm</Filter>
     </ClInclude>
     <ClInclude Include="..\ext\ymfm\ymfm_opm.h">
+      <Filter>Source Files\external\ymfm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext\ymfm\ymfm_opn.h">
+      <Filter>Source Files\external\ymfm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext\ymfm\ymfm_ssg.h">
       <Filter>Source Files\external\ymfm</Filter>
     </ClInclude>
     <ClInclude Include="..\ext\zlib\crc32.h">
