@@ -749,6 +749,17 @@ typedef struct {
   UINT32* dmdFIRBuffer;       // Shaded frame computed from raw frames
   float*  luminanceFrame;     // linear luminance computed from PWM frames, for rendering (result may change and can't be considered as stable across PinMame builds)
   unsigned int lumFrameId;    // incresaed when the luminanceFrame is updated
+
+  // Published for a client thread by core_dmd_publish: per frame type a triple buffer (see core_dmd_update_pwm)
+  float*  pubLum[3];          // luminance frames
+  unsigned int pubLumId[3];   // their lumFrameId
+  UINT8*  pubRaw[3];          // bitplane frames
+  unsigned int pubRawId[3];   // their rawFrameId
+  volatile int pubLumState, pubRawState;   // index of the middle buffer, | 4 when the emulation thread left a new frame in it
+  int     pubLumBack, pubRawBack;          // the emulation thread's buffer
+  int     pubLumFront, pubRawFront;        // the client thread's buffer
+  volatile int pubLumWanted, pubRawWanted; // set by a client thread: publish this frame type from then on
+  unsigned int pubLumLast, pubRawLast;     // ids published last
 } core_tDMDPWMState;
 
 /*-------------------
@@ -769,6 +780,8 @@ static struct {
   int       lastGI[CORE_MAXGI];
   UINT64    lastSol;
   UINT32    lastSolHigh;   // solenoids 65 and up, see core_getAllSolHigh
+  double    lastPwmPublish;// emulated time of the last core_publish_pwm_outputs
+  volatile int pwmWanted;  // CORE_PWM_WANT_xxx: the output categories a client thread read, see core_want_pwm_outputs
   // DMD state for PWM integration
   core_tDMDPWMState* dmdStates[16]; // DMD: state structure where frames are pushed and kept to be processed for luminance/identify evaluation
   // Outputs whose value the driver writes itself (CORE_MODOUT_NONE, see core_set_pwm_output_driver_value)
@@ -2789,6 +2802,14 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bi
 }
 
 
+// Integration of the physical outputs runs on the emulation thread only, see core_publish_pwm_outputs
+#if defined(_MSC_VER)
+static __declspec(thread) int core_on_emulation_thread = 0;
+#else
+static __thread int core_on_emulation_thread = 0;
+#endif
+static void core_publish_pwm_outputs(int force);
+
 /*----------------------
 /  Initialize PinMAME
 /-----------------------*/
@@ -2801,6 +2822,9 @@ static MACHINE_INIT(core) {
     /*-- init variables --*/
     memset(&coreGlobals, 0, sizeof(coreGlobals));
     memset(&locals, 0, sizeof(locals));
+    /*-- this is the emulation thread, the one that integrates and publishes the physical outputs --*/
+    core_on_emulation_thread = 1;
+    cpu_publish_outputs = core_publish_pwm_outputs;
     coreData = (struct pinMachine *)&Machine->drv->pinmame;
     /*-- CORE_MODOUT_FORCE_ON is per driver: the game run before may have set it (SAM, Capcom, pinHeck) --*/
     options.usemodsol &= ~CORE_MODOUT_FORCE_ON;
@@ -3057,11 +3081,16 @@ static MACHINE_STOP(core) {
       free(locals.dmdStates[i]->dmdFIRBuffer);
       free(locals.dmdStates[i]->bitplaneFrame);
       free(locals.dmdStates[i]->luminanceFrame);
+      for (int j = 0; j < 3; j++) {
+        free(locals.dmdStates[i]->pubLum[j]);
+        free(locals.dmdStates[i]->pubRaw[j]);
+      }
       free(locals.dmdStates[i]);
       locals.dmdStates[i] = NULL;
     }
   }
 
+  cpu_publish_outputs = NULL;
   coreData = NULL; //!! FIXME this can still be in use when reading lamps via VPM / VPX-script
 }
 
@@ -3317,10 +3346,7 @@ void core_update_pwm_output_bulb(const double now, const int index, const int is
 {
   core_tPhysicOutput* const output = &coreGlobals.physicOutputState[index];
   const float U = (state ^ output->state.bulb.isReversed) ? output->state.bulb.U : 0.f;
-  // Clamp elapsed time to >= 0. On the consumer-driven ("on request") path, the
-  // stable step's now == global_offset (timer_starttime of a zeroed timer) can lag
-  // the emu-thread flip timestamps (timer_get_time), planting integrationTimestamp
-  // behind prevIntegrationTimestamp -> negative dt. No-op in normal operation.
+  // Clamp elapsed time to >= 0: a safety net, the flips and the integration taking the same clock (the emulation thread's timer_get_time)
   const float dt_diff = fmaxf(0.f, (float)(output->state.bulb.integrationTimestamp - output->state.bulb.prevIntegrationTimestamp));
 
   float countf;
@@ -3755,95 +3781,95 @@ static void core_replace_lost_pwm_flips(core_tPhysicOutput* const output, const 
    output->lastIntegrationFlipPos = first - 1;
 }
 
-// Integration runs on several threads at once: the client's (VPinMAME, libpinmame getters, possibly several of them) and the emulation
-// thread (core_updateSw, Capcom flipper power, pinHeck). The integrator state (lastIntegrationFlipPos, bulb state, ...) is not thread safe,
-// so integrations are serialized with this lock. It is only held for a short, non blocking computation and never taken recursively,
-// so a waiter spins on a plain read (the atomic would keep taking the cache line from the holder) with the CPU's spin-wait hint.
-// Should that take longer than an integration (the holder got preempted, e.g. more busy threads than cores), it yields to the OS
-#ifdef _WIN32
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <windows.h>
-#define PWM_OS_YIELD() SwitchToThread()
-#else
-#include <sched.h>
-#define PWM_OS_YIELD() sched_yield()
-#endif
-#define PWM_SPINS_BEFORE_YIELD 1024 // about 3..40us, depending on the CPU's pause/yield latency
-#if defined(_MSC_VER)
-#include <intrin.h>
-#if defined(_M_IX86) || defined(_M_X64)
-#define PWM_SPIN_WAIT() _mm_pause()
-#elif defined(_M_ARM) || defined(_M_ARM64)
-#define PWM_SPIN_WAIT() __yield()
-#else
-#define PWM_SPIN_WAIT()
-#endif
-static volatile long pwm_integration_lock = 0;
-#define PWM_INTEGRATION_LOCK()   while (_InterlockedCompareExchange(&pwm_integration_lock, 1, 0) != 0) { pwm_integration_wait(); }
-#define PWM_INTEGRATION_UNLOCK() _InterlockedExchange(&pwm_integration_lock, 0)
-#elif defined(__GNUC__) || defined(__clang__)
-#if defined(__i386__) || defined(__x86_64__)
-#define PWM_SPIN_WAIT() __builtin_ia32_pause()
-#elif defined(__aarch64__) || (defined(__ARM_ARCH) && __ARM_ARCH >= 7)
-#define PWM_SPIN_WAIT() __asm__ __volatile__("yield" ::: "memory")
-#else
-#define PWM_SPIN_WAIT()
-#endif
-static volatile int pwm_integration_lock = 0;
-#define PWM_INTEGRATION_LOCK()   while (__sync_lock_test_and_set(&pwm_integration_lock, 1)) { pwm_integration_wait(); }
-#define PWM_INTEGRATION_UNLOCK() __sync_lock_release(&pwm_integration_lock)
-#else
-#error "core_update_pwm_outputs needs an atomic exchange for this compiler"
-#endif
+static void core_integrate_pwm_outputs(const int startIndex, const int count);
+static void core_dmd_publish(const int force);
+static void core_sync_pwm_binary_outputs(const int startIndex, const int count);
 
-// Waits until the lock looks free (the caller then tries to take it again)
-static void pwm_integration_wait(void)
+// Perform emulation of the requested physical outputs from the stored PWM digital output states.
+// Integrating on every output write caused DMD animation stutters and sound buffer underflows, so it is done in batches instead.
+// Only the emulation thread integrates: it records the flips, so the integrator state, the flip records and the on/off bits FORCE_ON
+// derives have a single writer, and no lock is needed. It does so for its own needs (drivers, core_updateSw) and to publish the outputs
+// for the client threads (VPinMAME, the libpinmame API and plugin, possibly several of them, see core_publish_pwm_outputs). A call from
+// a client thread does not integrate: it marks the range's category wanted, so the publish integrates it from then on, and the client
+// reads what was published (single floats and bytes, each written whole)
+#define CORE_PWM_WANT_LAMPS    0x01
+#define CORE_PWM_WANT_SOLS     0x02
+#define CORE_PWM_WANT_GIS      0x04
+#define CORE_PWM_WANT_SEGMENTS 0x08
+static void core_want_pwm_outputs(const int startIndex, const int count)
 {
-   int spins = 0;
-   while (pwm_integration_lock) {
-      if (spins < PWM_SPINS_BEFORE_YIELD) {
-         spins++;
-         PWM_SPIN_WAIT();
-      }
-      else
-         PWM_OS_YIELD();
-   }
+   const int end = startIndex + count;
+   const int want = ((startIndex < CORE_MODOUT_SOL0 && end > CORE_MODOUT_LAMP0) ? CORE_PWM_WANT_LAMPS : 0)
+                  | ((startIndex < CORE_MODOUT_GI0 && end > CORE_MODOUT_SOL0) ? CORE_PWM_WANT_SOLS : 0)
+                  | ((startIndex < CORE_MODOUT_SEG0 && end > CORE_MODOUT_GI0) ? CORE_PWM_WANT_GIS : 0)
+                  | ((end > CORE_MODOUT_SEG0) ? CORE_PWM_WANT_SEGMENTS : 0);
+   if ((locals.pwmWanted & want) != want)
+      locals.pwmWanted |= want; // only ever set while a game runs, so a bit lost to a concurrent client is set again by its next call
 }
 
-static void core_update_pwm_outputs_locked(const int startIndex, const int count);
-
-// Perform emulation of the requested physical outputs from the stored PWM digital output states
-// Initial implementation was performing this task upon digital output writes causing DMD animation stutters and sound buffer underflow.
-// This is now performed on physic output reads, moving the CPU load to the caller thread. The client is responsible and has the ability
-// to manage this load according to its use. It also allows to limit the update to the requested outputs (physics should be updated 
-// according to physic engine constants while visual should be updated according to output display characteristics).
 void core_update_pwm_outputs(const int startIndex, const int count)
 {
-   PWM_INTEGRATION_LOCK();
-   core_update_pwm_outputs_locked(startIndex, count);
-   PWM_INTEGRATION_UNLOCK();
+   if (!core_on_emulation_thread) {
+      core_want_pwm_outputs(startIndex, count);
+      return;
+   }
+   core_integrate_pwm_outputs(startIndex, count);
+   core_sync_pwm_binary_outputs(startIndex, count);
 }
 
-static void core_update_pwm_outputs_locked(const int startIndex, const int count)
+// Publishes the outputs for the client threads, on the emulation thread: what the output types ask for (as core_update_pwm_lamps & co)
+// and what a client read (core_want_pwm_outputs), at least every CORE_PWM_PUBLISH_PERIOD of emulated time, and right before the
+// emulation waits (time fence, throttle, force = 1), so a client sees the outputs as they are when the emulation stops.
+// A DMD's luminance frame is only published at those waits: its filter costs more, and it blends frames anyway
+#define CORE_PWM_PUBLISH_PERIOD (1. / 1000.)
+static void core_publish_pwm_outputs(int force)
 {
-   // HACK timer_get_time is not thread safe and can only be called from emulation thread. Therefore we use a fake timer with timer_starttime which is thread safe as a workaround.
-   // const double now = timer_get_time();
-   mame_timer fake_timer = { 0 };
-   const double now = timer_starttime(&fake_timer);
+   if (!coreData)
+      return;
+   const double now = timer_get_time();
+   if (!force && now >= locals.lastPwmPublish && now - locals.lastPwmPublish < CORE_PWM_PUBLISH_PERIOD)
+      return;
+   locals.lastPwmPublish = now;
+   const int wanted = locals.pwmWanted;
+   if (coreGlobals.nLamps && ((options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_LAMPS)) || (wanted & CORE_PWM_WANT_LAMPS)))
+      core_update_pwm_outputs(CORE_MODOUT_LAMP0, coreGlobals.nLamps);
+   if (coreGlobals.nSolenoids && ((options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) || (wanted & CORE_PWM_WANT_SOLS)))
+      core_update_pwm_outputs(CORE_MODOUT_SOL0, coreGlobals.nSolenoids);
+   if (coreGlobals.nGI && ((options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_GI)) || (wanted & CORE_PWM_WANT_GIS)))
+      core_update_pwm_outputs(CORE_MODOUT_GI0, coreGlobals.nGI);
+   if (coreGlobals.nAlphaSegs && ((options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_ALPHASEGS)) || (wanted & CORE_PWM_WANT_SEGMENTS)))
+      core_update_pwm_outputs(CORE_MODOUT_SEG0, coreGlobals.nAlphaSegs);
+   core_dmd_publish(force);
+}
+
+// On/off state of an integrated output, for the FORCE_ON sync below: lamps are on from 0.1, 2 state outputs above 0 (their onValue may be below 1), the others from 0.5
+static int core_pwm_output_is_on(const int index)
+{
+   const core_tPhysicOutput* const output = &coreGlobals.physicOutputState[index];
+   if (index < CORE_MODOUT_LAMP0 + CORE_MODOUT_LAMP_MAX)
+      return output->value >= 0.1f;
+   return output->integrator == &core_update_pwm_output_sol_2_state ? output->value > 0.f : output->value >= 0.5f;
+}
+
+// One output's value: on the emulation thread integrated up to now (without the FORCE_ON sync), on a client thread the published one (see core_update_pwm_outputs)
+float core_get_pwm_output(const int index)
+{
+   if (core_on_emulation_thread)
+      core_integrate_pwm_outputs(index, 1);
+   else
+      core_want_pwm_outputs(index, 1);
+   return coreGlobals.physicOutputState[index].value;
+}
+
+static void core_integrate_pwm_outputs(const int startIndex, const int count)
+{
+   const double now = timer_get_time(); // on the emulation thread only, see core_update_pwm_outputs
    for (int i = 0; i < count; i++)
    {
       const unsigned int index = startIndex + i;
       core_tPhysicOutput* const output = &coreGlobals.physicOutputState[index];
-      // Consistent flip position and ON time, while the emulation thread may be recording a flip
-      unsigned int seq, pos;
-      double onTime;
-      do {
-         seq = *(volatile unsigned int*)&output->flipSeq;
-         pos = *(volatile unsigned int*)&output->flipBufferPos;
-         onTime = *(volatile double*)&output->onTime;
-      } while ((seq & 1) || seq != *(volatile unsigned int*)&output->flipSeq);
+      const unsigned int pos = output->flipBufferPos;
+      const double onTime = output->onTime;
       if (pos - output->lastIntegrationFlipPos > FLIP_BUFFER_SIZE / 2)
          core_replace_lost_pwm_flips(output, index, pos, onTime);
       // Perform integration of flip states that appended since last integration and before now if any
@@ -3859,7 +3885,11 @@ static void core_update_pwm_outputs_locked(const int startIndex, const int count
       output->readTime = now > lastFlip ? now : lastFlip;
       output->readOnTime = onTime + ((pos & 1) ? output->readTime - lastFlip : 0.);
    }
-   // Also update non PWM data structure if needed
+}
+
+// With FORCE_ON, the on/off bits (lampMatrix, solenoids) follow the integrated outputs: update them for the outputs just integrated
+static void core_sync_pwm_binary_outputs(const int startIndex, const int count)
+{
    if (options.usemodsol & CORE_MODOUT_FORCE_ON)
    {
       if (((options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS) == 0) && (startIndex < CORE_MODOUT_LAMP0 + CORE_MODOUT_LAMP_MAX) && (startIndex + count >= CORE_MODOUT_LAMP0))
@@ -3868,7 +3898,7 @@ static void core_update_pwm_outputs_locked(const int startIndex, const int count
          {
             UINT8 col = 0;
             for (int j = 0; j < 8; j++)
-               if (coreGlobals.physicOutputState[CORE_MODOUT_LAMP0 + i * 8 + j].value >= 0.1f)
+               if (core_pwm_output_is_on(CORE_MODOUT_LAMP0 + i * 8 + j))
                   col |= (UINT8)1 << j;
             coreGlobals.lampMatrix[i] = col;
          }
@@ -3878,27 +3908,22 @@ static void core_update_pwm_outputs_locked(const int startIndex, const int count
       if (((options.usemodsol & (CORE_MODOUT_ENABLE_MODSOL | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS)) == 0) && (startIndex < CORE_MODOUT_SOL0 + CORE_MODOUT_SOL_MAX) && (startIndex + count >= CORE_MODOUT_SOL0))
       {
          UINT32 sols = 0;
-         for (int i = 0; i < 32; i++) {
-            const core_tPhysicOutput* const output = &coreGlobals.physicOutputState[CORE_MODOUT_SOL0 + i];
-            // 2 state solenoids are on at any value above 0: their onValue may be below 1
-            if (output->integrator == &core_update_pwm_output_sol_2_state ? output->value > 0.f : output->value >= 0.5f)
+         for (int i = 0; i < 32; i++)
+            if (core_pwm_output_is_on(CORE_MODOUT_SOL0 + i))
                sols |= 1u << i;
-         }
          coreGlobals.solenoids = sols;
       }
    }
 }
 
-// Record a flip of an output and the ON time it ends; flipSeq lets the reader thread see both consistently
+// Record a flip of an output and the ON time it ends (on the emulation thread, as the integration that reads them)
 INLINE void core_flip_pwm_output(core_tPhysicOutput* const output, const double now)
 {
    const unsigned int pos = output->flipBufferPos;
-   *(volatile unsigned int*)&output->flipSeq = output->flipSeq + 1;
    if (pos & 1)
-      *(volatile double*)&output->onTime = output->onTime + (now - output->flipTimeStamps[pos % FLIP_BUFFER_SIZE]);
-   *(volatile double*)&output->flipTimeStamps[(pos + 1) % FLIP_BUFFER_SIZE] = now;
-   *(volatile unsigned int*)&output->flipBufferPos = pos + 1;
-   *(volatile unsigned int*)&output->flipSeq = output->flipSeq + 1;
+      output->onTime += now - output->flipTimeStamps[pos % FLIP_BUFFER_SIZE];
+   output->flipTimeStamps[(pos + 1) % FLIP_BUFFER_SIZE] = now;
+   output->flipBufferPos = pos + 1;
 }
 
 // Write binary state of outputs, taking care of PWM integration based on physical model of the connected device
@@ -4160,25 +4185,30 @@ void core_dmd_pwm_init(const core_tLCDLayout* layout, const int filter, const in
   memset(dmd_state->bitplaneFrame, 0, dmd_state->frameSize * sizeof(UINT8));
   memset(dmd_state->luminanceFrame, 0, dmd_state->frameSize * sizeof(float));
   dmd_state->nextFrame = 0;
+  for (int i = 0; i < 3; i++) {
+    dmd_state->pubLum[i] = (float*)calloc(dmd_state->frameSize, sizeof(float));
+    dmd_state->pubRaw[i] = (UINT8*)calloc(dmd_state->frameSize, sizeof(UINT8));
+    assert(dmd_state->pubLum[i] != NULL && dmd_state->pubRaw[i] != NULL);
+  }
+  dmd_state->pubLumFront = dmd_state->pubRawFront = 0;
+  dmd_state->pubLumState = dmd_state->pubRawState = 1;
+  dmd_state->pubLumBack  = dmd_state->pubRawBack  = 2;
+  dmd_state->pubLumLast  = dmd_state->pubRawLast  = ~0u;
 }
 
 void core_dmd_submit_frame(const core_tLCDLayout* layout, const UINT8* frame, const int ntimes) {
   core_tDMDPWMState* dmd_state = locals.dmdStates[layout->index];
   for (int i = 0; i < ntimes; i++) {
     memcpy(dmd_state->rawFrames + dmd_state->nextFrame * dmd_state->rawFrameSize, frame, dmd_state->rawFrameSize);
-    // Update circular buffer position after writing the frame to allow concurrent PWM update
-    // (if the compiler/CPU reorder this instruction we may have visual glitches)
+    // Update circular buffer position after writing the frame (the filters reading it run on this thread too, see core_dmd_update_pwm)
     int nf = (dmd_state->nextFrame + 1) % dmd_state->nFrames;
     atomic_exchange_int(&dmd_state->nextFrame, nf);
     atomic_increment((volatile int*)&dmd_state->frame_index);
   }
 }
 
-// PWM update must be done at the render frequency, therefore this function may be called concurrently from the 
-// frame submission by the emulated hardware. To avoid synchronization, a simple circular buffer with consumer
-// accessing data before barrier, and provider pushing data after the barrier is used and should be enough (we do
-// not use synchronization primitives, so this can fail if instructions are reordered).
-float* core_dmd_update_pwm(const core_tLCDLayout* layout, unsigned int * lumFrameId) {
+// Luminance of the frames submitted so far, on the emulation thread (as the submission): for its own display update, and for the clients through core_dmd_publish
+static float* core_dmd_compute_pwm(const core_tLCDLayout* layout, unsigned int * lumFrameId) {
    core_tDMDPWMState* const dmd_state = locals.dmdStates[layout->index];
 
    const volatile int nf = dmd_state->nextFrame;
@@ -4303,7 +4333,26 @@ float* core_dmd_update_pwm(const core_tLCDLayout* layout, unsigned int * lumFram
    return dmd_state->luminanceFrame;
 }
 
-UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * rawFrameId)
+// The DMD frames as a caller sees them. The filters run on the emulation thread only, so their state has a single writer. Its own
+// callers (display update, libpinmame display callbacks) get the frame computed now. A client thread (libpinmame plugin, remote debugger)
+// gets the frame core_dmd_publish published last, through a triple buffer: the emulation thread fills its back buffer and swaps it with
+// the middle one, the client swaps the middle one with its front buffer when there is a new frame, so the frame it holds is never written
+// until it asks again. That holds for one client thread per frame type and display: with several (VPX: renderer, DMDUtil, UpscaleDMD;
+// Serum or VNI with B2S) a held frame may still be overwritten, as any frame could be before. A frame copied into the caller's buffer
+// would fix that (plugin API change). The client marks the frame type wanted, so the filters only run for the clients once one reads
+float* core_dmd_update_pwm(const core_tLCDLayout* layout, unsigned int * lumFrameId) {
+   if (core_on_emulation_thread)
+      return core_dmd_compute_pwm(layout, lumFrameId);
+   core_tDMDPWMState* const dmd_state = locals.dmdStates[layout->index];
+   dmd_state->pubLumWanted = 1;
+   if (dmd_state->pubLumState & 4)
+      dmd_state->pubLumFront = atomic_exchange_int(&dmd_state->pubLumState, dmd_state->pubLumFront) & 3;
+   *lumFrameId = dmd_state->pubLumId[dmd_state->pubLumFront];
+   return dmd_state->pubLum[dmd_state->pubLumFront];
+}
+
+// Bitplane frame of the frames submitted so far, on the emulation thread (see core_dmd_compute_pwm)
+static UINT8* core_dmd_compute_identify(const core_tLCDLayout* layout, unsigned int * rawFrameId)
 {
   core_tDMDPWMState* const dmd_state = locals.dmdStates[layout->index];
 
@@ -4509,6 +4558,52 @@ UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * ra
   
   *rawFrameId = dmd_state->rawFrameId;
   return dmd_state->bitplaneFrame;
+}
+
+// The bitplane frame as a caller sees it (see core_dmd_update_pwm)
+UINT8* core_dmd_update_identify(const core_tLCDLayout* layout, unsigned int * rawFrameId)
+{
+   if (core_on_emulation_thread)
+      return core_dmd_compute_identify(layout, rawFrameId);
+   core_tDMDPWMState* const dmd_state = locals.dmdStates[layout->index];
+   dmd_state->pubRawWanted = 1;
+   if (dmd_state->pubRawState & 4)
+      dmd_state->pubRawFront = atomic_exchange_int(&dmd_state->pubRawState, dmd_state->pubRawFront) & 3;
+   *rawFrameId = dmd_state->pubRawId[dmd_state->pubRawFront];
+   return dmd_state->pubRaw[dmd_state->pubRawFront];
+}
+
+// Publishes the DMD frames a client thread reads (core_dmd_update_pwm), on the emulation thread with the outputs: the bitplane frames
+// at each publish, so that short frames (a ROM may show frames of 2..4 ms) reach the colorization, the luminance frames with force only
+static void core_dmd_publish(const int force)
+{
+   for (int i = 0; i < 16; i++) {
+      core_tDMDPWMState* const dmd_state = locals.dmdStates[i];
+      if (dmd_state == NULL)
+         continue;
+      if (force && dmd_state->pubLumWanted) {
+         unsigned int id;
+         const float* const frame = core_dmd_compute_pwm(dmd_state->layout, &id);
+         const int back = dmd_state->pubLumBack;
+         if (id != dmd_state->pubLumLast) {
+            dmd_state->pubLumLast = id;
+            memcpy(dmd_state->pubLum[back], frame, dmd_state->frameSize * sizeof(float));
+            dmd_state->pubLumId[back] = id;
+            dmd_state->pubLumBack = atomic_exchange_int(&dmd_state->pubLumState, back | 4) & 3;
+         }
+      }
+      if (dmd_state->pubRawWanted) {
+         unsigned int id;
+         const UINT8* const frame = core_dmd_compute_identify(dmd_state->layout, &id);
+         const int back = dmd_state->pubRawBack;
+         if (id != dmd_state->pubRawLast) {
+            dmd_state->pubRawLast = id;
+            memcpy(dmd_state->pubRaw[back], frame, dmd_state->frameSize);
+            dmd_state->pubRawId[back] = id;
+            dmd_state->pubRawBack = atomic_exchange_int(&dmd_state->pubRawState, back | 4) & 3;
+         }
+      }
+   }
 }
 
 

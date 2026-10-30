@@ -2322,44 +2322,35 @@ static void OnWriteMemory(const unsigned int eventId, void* userData, void* msgD
 
 INLINE uint8_t saturatedByte(float v) { return static_cast<uint8_t>(255.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v)); }
 
+// The on/off getters read the bits: the drivers write them, or with FORCE_ON the emulation thread derives them from the outputs it publishes (lampMatrix and solenoids, see core_publish_pwm_outputs)
 static void GetSolenoid1State(void* callContext, void* pResult)
 {
    assert(_isRunning == 1);
    const int srcId = static_cast<StateMapping*>(callContext)->srcId;
-   if (options.usemodsol & CORE_MODOUT_FORCE_ON)
-      core_update_pwm_outputs(CORE_MODOUT_SOL0 + core_BitColToNum(srcId), 1);
    *static_cast<float*>(pResult) = (coreGlobals.solenoids & srcId) != 0 ? 1.f : 0.f;
 }
 static void GetSolenoid1VPMState(void* callContext, void* pResult)
 {
    assert(_isRunning == 1);
    const int srcId = static_cast<StateMapping*>(callContext)->srcId;
-   if (options.usemodsol & CORE_MODOUT_FORCE_ON)
-      core_update_pwm_outputs(CORE_MODOUT_SOL0 + core_BitColToNum(srcId), 1);
    *static_cast<uint8_t*>(pResult) = (coreGlobals.solenoids & srcId) != 0 ? 1 : 0;
 }
 static void GetSolenoid2State(void* callContext, void* pResult)
 {
    assert(_isRunning == 1);
    const int srcId = static_cast<StateMapping*>(callContext)->srcId;
-   if (options.usemodsol & CORE_MODOUT_FORCE_ON)
-      core_update_pwm_outputs(CORE_MODOUT_SOL0 + core_BitColToNum(srcId) + 32, 1);
    *static_cast<float*>(pResult) = (coreGlobals.solenoids2 & srcId) != 0 ? 1.f : 0.f;
 }
 static void GetSolenoid2VPMState(void* callContext, void* pResult)
 {
    assert(_isRunning == 1);
    const int srcId = static_cast<StateMapping*>(callContext)->srcId;
-   if (options.usemodsol & CORE_MODOUT_FORCE_ON)
-      core_update_pwm_outputs(CORE_MODOUT_SOL0 + core_BitColToNum(srcId) + 32, 1);
    *static_cast<uint8_t*>(pResult) = (coreGlobals.solenoids2 & srcId) != 0 ? 1 : 0;
 }
 static void GetFlipperSolenoid2VPMState(void* callContext, void* pResult)
 {
    assert(_isRunning == 1);
    const int srcId = static_cast<StateMapping*>(callContext)->srcId;
-   if (options.usemodsol & CORE_MODOUT_FORCE_ON)
-      core_update_pwm_outputs(CORE_MODOUT_SOL0 + core_BitColToNum(srcId) + 32, 1);
    *static_cast<uint8_t*>(pResult) = (coreGlobals.solenoids2 & srcId) != 0 ? 0xFF : 0;
 }
 static void GetCustomSolenoidState(void* callContext, void* pResult)
@@ -2379,24 +2370,18 @@ static void GetLampState(void* callContext, void* pResult)
 {
    assert(_isRunning == 1);
    const int srcId = static_cast<StateMapping*>(callContext)->srcId;
-   if (options.usemodsol & CORE_MODOUT_FORCE_ON)
-      core_update_pwm_outputs(CORE_MODOUT_LAMP0 + srcId, 1);
    *static_cast<float*>(pResult) = ((coreGlobals.lampMatrix[srcId / 8] >> (srcId % 8)) & 0x01) != 0 ? 1.f : 0.f;
 }
 static void GetLampVPMState(void* callContext, void* pResult)
 {
    assert(_isRunning == 1);
    const int srcId = static_cast<StateMapping*>(callContext)->srcId;
-   if (options.usemodsol & CORE_MODOUT_FORCE_ON)
-      core_update_pwm_outputs(CORE_MODOUT_LAMP0 + srcId, 1);
    *static_cast<uint8_t*>(pResult) = ((coreGlobals.lampMatrix[srcId / 8] >> (srcId % 8)) & 0x01) != 0 ? 1 : 0;
 }
 static void GetGIState(void* callContext, void* pResult)
 {
    assert(_isRunning == 1);
    const int srcId = static_cast<StateMapping*>(callContext)->srcId;
-   if (options.usemodsol & CORE_MODOUT_FORCE_ON)
-      core_update_pwm_outputs(CORE_MODOUT_GI0 + srcId, 1);
    if (core_gameData->gen & GEN_ALLWPC) // WPC GI level is 0..8
       *static_cast<float*>(pResult) = static_cast<float>(coreGlobals.gi[srcId]) / 8.f;
    else // Whitestar and SAM GI levels are either 0 or 9
@@ -2406,23 +2391,19 @@ static void GetGIVPMState(void* callContext, void* pResult)
 {
    assert(_isRunning == 1);
    const int srcId = static_cast<StateMapping*>(callContext)->srcId;
-   if (options.usemodsol & CORE_MODOUT_FORCE_ON)
-      core_update_pwm_outputs(CORE_MODOUT_GI0 + srcId, 1);
    *static_cast<uint8_t*>(pResult) = static_cast<uint8_t>(coreGlobals.gi[srcId]);
 }
 static void GetPhysOutState(void* callContext, void* pResult)
 {
    assert(_isRunning == 1);
    const int srcId = static_cast<StateMapping*>(callContext)->srcId;
-   core_update_pwm_outputs(srcId, 1);
-   *static_cast<float*>(pResult) = coreGlobals.physicOutputState[srcId].value;
+   *static_cast<float*>(pResult) = core_get_pwm_output(srcId);
 }
 static void GetPhysOutVPMState(void* callContext, void* pResult)
 {
    assert(_isRunning == 1);
    const int srcId = static_cast<StateMapping*>(callContext)->srcId;
-   core_update_pwm_outputs(srcId, 1);
-   *static_cast<uint8_t*>(pResult) = saturatedByte(coreGlobals.physicOutputState[srcId].value);
+   *static_cast<uint8_t*>(pResult) = saturatedByte(core_get_pwm_output(srcId));
 }
 static void GetSwitchState(void* callContext, void* pResult)
 {

@@ -424,8 +424,8 @@ typedef int (*ptPinMAMEvidUpdate)(struct mame_bitmap *bitmap, const struct recta
 #define CORE_MODOUT_BULB_44_18V_DC_S11   203 /* Incandescent #44/555 Bulb connected to 18V, commonly used for lamp matrix with short strobing */
 #define CORE_MODOUT_BULB_44_18V_DC_SE    204 /* Incandescent #44/555 Bulb connected to 18V, commonly used for lamp matrix with short strobing */
 #define CORE_MODOUT_BULB_44_20V_DC_CC    205 /* Incandescent #44/555 Bulb connected to 20V, commonly used for lamp matrix with short strobing */
-#define CORE_MODOUT_BULB_44_10V_AC_POS_BY 206/* Incandescent #44/555 Bulb connected to AC 20.5V with a diode for positive half (Bally 6803) */
-#define CORE_MODOUT_BULB_44_10V_AC_NEG_BY 207/* Incandescent #44/555 Bulb connected to AC 20.5V with a diode for negative half (Bally 6803) */
+#define CORE_MODOUT_BULB_44_10V_AC_POS_BY 206/* Incandescent #44/555 Bulb connected to AC 10.25V with a diode for positive half (Bally 6803) */
+#define CORE_MODOUT_BULB_44_10V_AC_NEG_BY 207/* Incandescent #44/555 Bulb connected to AC 10.25V with a diode for negative half (Bally 6803) */
 #define CORE_MODOUT_BULB_89_20V_DC_WPC   301 /* Incandescent #89 Bulb connected to 20V, commonly used for flashers */
 #define CORE_MODOUT_BULB_89_20V_DC_GTS3  302 /* Incandescent #89 Bulb connected to 20V, commonly used for flashers */
 #define CORE_MODOUT_BULB_89_32V_DC_S11   303 /* Incandescent #89 Bulb connected to 32V, used for flashers on S11 with output strobing */
@@ -491,7 +491,6 @@ typedef struct {
    } state;
    double flipTimeStamps[FLIP_BUFFER_SIZE];
    unsigned int flipBufferPos;            /* Writer: free running flip count; parity is the binary state, % FLIP_BUFFER_SIZE the buffer index */
-   unsigned int flipSeq;                  /* Writer: odd while a flip is being recorded */
    double onTime;                         /* Writer: total ON time up to the last flip */
    unsigned int lastIntegrationFlipPos;   /* Reader: last integrated flip */
    double readTime;                       /* Reader: time of the last integration */
@@ -622,6 +621,7 @@ extern void core_getAllPhysicSols(float* const state);
 
 /*-- AC sync and PWM integration --*/
 extern void core_update_pwm_outputs(const int startIndex, const int count);
+extern float core_get_pwm_output(const int index); // one output's value: integrated up to now on the emulation thread, the published one elsewhere
 extern void core_update_pwm_output_sol_2_state(const double now, const int index, const int isFlip, const int state);
 INLINE void core_update_pwm_gis(void) { if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_GI)) core_update_pwm_outputs(CORE_MODOUT_GI0, coreGlobals.nGI); }
 INLINE void core_update_pwm_solenoids(void) { if (options.usemodsol & (CORE_MODOUT_FORCE_ON | CORE_MODOUT_ENABLE_PHYSOUT_SOLENOIDS | CORE_MODOUT_ENABLE_MODSOL)) core_update_pwm_outputs(CORE_MODOUT_SOL0, coreGlobals.nSolenoids); }
