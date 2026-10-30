@@ -735,39 +735,36 @@ extern "C" int libpinmame_time_to_quit(void)
  * libpinmame_update_display
  ******************************************************/
 
-extern "C" int libpinmame_needs_update_display() { return _p_Config->cb_OnDisplayUpdated != nullptr; }
+extern "C" int libpinmame_needs_update_display() { return _p_Config != nullptr; }
 
 extern "C" void libpinmame_update_display(const struct core_dispLayout* layout, void* p_data)
 {
-	// If layout is null, update the custom DMD generated from alphanumeric segment displays
 	int index = layout == nullptr ? ((int)_displays.size() - 1) : layout->index;
+	if (index < 0 || index >= (int)_displays.size()) return;
 	PinmameDisplay* pDisplay = _displays[index];
+	if (!pDisplay) return;
 	if ((pDisplay->layout.type & CORE_SEGMASK) == CORE_VIDEO) {
 		const bool changed = UpdatePinmameDisplayBitmap(pDisplay, (mame_bitmap*)p_data);
-		if (changed)
-			pDisplay->frameId++;
-		if (_p_Config->cb_OnDisplayUpdated)
+		if (changed) pDisplay->frameId++;
+		if (_p_Config && _p_Config->cb_OnDisplayUpdated)
 			(*(_p_Config->cb_OnDisplayUpdated))(index, changed ? pDisplay->pData : nullptr, &pDisplay->layout, _p_userData);
-	}
-	else if (_p_Config->cb_OnDisplayUpdated) {
-		if ((pDisplay->layout.type & CORE_SEGMASK) == CORE_DMD) {
-			if (memcmp(pDisplay->pData, p_data, pDisplay->size)) {
-				memcpy(pDisplay->pData, p_data, pDisplay->size);
-				pDisplay->frameId++;
+	} else if ((pDisplay->layout.type & CORE_SEGMASK) == CORE_DMD) {
+		if (memcmp(pDisplay->pData, p_data, pDisplay->size)) {
+			memcpy(pDisplay->pData, p_data, pDisplay->size);
+			pDisplay->frameId++;
+			if (_p_Config && _p_Config->cb_OnDisplayUpdated)
 				(*(_p_Config->cb_OnDisplayUpdated))(index, pDisplay->pData, &pDisplay->layout, _p_userData);
-			}
-			else
-				(*(_p_Config->cb_OnDisplayUpdated))(index, nullptr, &pDisplay->layout, _p_userData);
+		} else if (_p_Config && _p_Config->cb_OnDisplayUpdated) {
+			(*(_p_Config->cb_OnDisplayUpdated))(index, nullptr, &pDisplay->layout, _p_userData);
 		}
-		else
-		{
-			if (memcmp(pDisplay->pData, p_data, pDisplay->size)) {
-				memcpy(pDisplay->pData, p_data, pDisplay->size);
-				pDisplay->frameId++;
+	} else {
+		if (memcmp(pDisplay->pData, p_data, pDisplay->size)) {
+			memcpy(pDisplay->pData, p_data, pDisplay->size);
+			pDisplay->frameId++;
+			if (_p_Config && _p_Config->cb_OnDisplayUpdated)
 				(*(_p_Config->cb_OnDisplayUpdated))(index, pDisplay->pData, &pDisplay->layout, _p_userData);
-			}
-			else
-				(*(_p_Config->cb_OnDisplayUpdated))(index, nullptr, &pDisplay->layout, _p_userData);
+		} else if (_p_Config && _p_Config->cb_OnDisplayUpdated) {
+			(*(_p_Config->cb_OnDisplayUpdated))(index, nullptr, &pDisplay->layout, _p_userData);
 		}
 	}
 }
