@@ -158,6 +158,8 @@ CAPCOMS_SOUNDROM3a("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e
 CC_ROMEND
 CORE_CLONEDEFNV(pmv112r,pmv112,"Pinball Magic (Redemption 1.0.12)",1995,"Capcom",cc2,0)
 
+//Version 1.0.9 exists (see IPDB prototype #2 pics)
+
 /*-------------------------------------------------------------------
 / Airborne (03/96)
 /-------------------------------------------------------------------*/

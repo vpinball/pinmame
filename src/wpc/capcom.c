@@ -1128,11 +1128,11 @@ static void cc_dmd_rasterizer_sync(int param) {
          *pwm2++ = lum0 & lum1;
       }
    }
-   // U16 rasterizer decodes and produces 4 frames with the following order: 0,1,2,1 leading to 0 / 25 / 50 / 100 luminance levels as the PWM patterns are the followings:
-   // (see recordings on real hardware https://github.com/PPUC/dmdreader/tree/ppuc/logicanalyzer)
+   // U16 rasterizer produces 4 frames per cycle; submitted in the order PWM0, PWM2, PWM1, PWM2 they give 0 / 25 / 50 / 100% luminance
+   // (see recordings on real hardware https://github.com/PPUC/dmdreader/tree/ppuc/logicanalyzer):
    // 0 => 0 / 0 / 0 / 0 - PWM0 = 0 / PWM1 = 0 / PWM2 = 0
    // 1 => 1 / 0 / 0 / 0 - PWM0 = 1 / PWM1 = 0 / PWM2 = 0
-   // 2 => 0 / 1 / 0 / 1 - PWM0 = 1 / PWM1 = 1 / PWM2 = 0
+   // 2 => 1 / 0 / 1 / 0 - PWM0 = 1 / PWM1 = 1 / PWM2 = 0 (the recordings show 0 / 1 / 0 / 1: the same 50%, the other phase)
    // 3 => 1 / 1 / 1 / 1 - PWM0 = 1 / PWM1 = 1 / PWM2 = 1
    core_dmd_submit_frame(core_gameData->lcdLayout, &locals.pwmDmdFrames[0 * 256 * 8], 1); // PWM0
    core_dmd_submit_frame(core_gameData->lcdLayout, &locals.pwmDmdFrames[2 * 256 * 8], 1); // PWM2
@@ -1217,7 +1217,8 @@ static WRITE16_HANDLER(vol_w) {
 }
 
 static WRITE16_HANDLER(disp_w) {
-  if (!offset) locals.dmdRasterizerAddress = 0x00070000 | data;
+  // visible page: 4 KB (one 256x64 frame of 2 bit dots) each, the 16 of them at the top of RAM from 0x70000
+  if (!offset) locals.dmdRasterizerAddress = (UINT32)((0x70 | data) & 0xFF) << 12;
 }
 
 static WRITE16_HANDLER(sol_w) {
