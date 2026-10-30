@@ -47,6 +47,7 @@ static struct {
   UINT32 solenoids;
   UINT8  dispSeg[7];
   UINT8  swCol[5];
+  UINT8  pioSwCol; // switch column selected on the 8255 games (swCol[] is rewritten by SWITCH_UPDATE)
   UINT8  sndCmd;
 } locals;
 
@@ -182,10 +183,10 @@ static READ_HANDLER(ci20_porta_r) { logerror("UNDOCUMENTED: ci20_porta_r\n"); re
 static READ_HANDLER(ci20_portb_r) { logerror("UNDOCUMENTED: ci20_portb_r\n"); return 0; }
 // switch & dip reading
 static READ_HANDLER(ci20_portc_r) {
-	if (locals.swCol[0] > 2)
-		return coreGlobals.swMatrix[locals.swCol[0]-2];
+	if (locals.pioSwCol > 2)
+		return coreGlobals.swMatrix[locals.pioSwCol-2];
 	else
-		return core_getDip(locals.swCol[0]);
+		return core_getDip(locals.pioSwCol);
 }
 
 static READ_HANDLER(ci21_porta_r) { logerror("UNDOCUMENTED: ci21_porta_r\n"); return 0; }
@@ -203,9 +204,9 @@ static READ_HANDLER(ci23_portc_r) { logerror("UNDOCUMENTED: ci23_portc_r\n"); re
 // define switch column
 static WRITE_HANDLER(ci20_porta_w) {
 	if (data < 0xff)
-		locals.swCol[0] = core_BitColToNum(data);
+		locals.pioSwCol = core_BitColToNum(data);
 	else
-		locals.swCol[0] = 6;
+		locals.pioSwCol = 6;
 }
 // (always 00?)
 static WRITE_HANDLER(ci20_portb_w) {
