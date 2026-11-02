@@ -254,7 +254,7 @@ typedef enum {
 
 
 #define PINMAME_VIDEO_UPDATE(name) void (name)(struct mame_bitmap *bitmap, const struct rectangle *cliprect, core_tLCDLayout *layout)
-typedef int (*ptPinMAMEvidUpdate)(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const core_tLCDLayout *layout);
+typedef void (*ptPinMAMEvidUpdate)(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const core_tLCDLayout *layout);
 
 /*---------------------------------------
 / WPC driver constants
