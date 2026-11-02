@@ -265,6 +265,7 @@ static struct pokey_chip {
 static struct {
   int    channel;
   double acc;           /* chip clocks owed to the current output sample */
+  double dcx, dcy;      /* DC blocker state, see pokey_update */
 } pkmix;
 
 /*-- What this game asks of a POKEY.
@@ -368,8 +369,19 @@ static void pokey_update(int num, INT16 *buffer, int length) {
         /   which is how POKEY plays sampled sound --*/
         if ((pk[n].audc[ch] & 0x10) || pk[n].ff[ch]) sample += vol;
       }
-    /*-- eight channels at volume 15 is 120; both chips feed one amplifier --*/
-    buffer[i] = (INT16)(sample * 240);
+    /*-- Eight channels at volume 15 is 120, and both chips feed the one
+    /   amplifier.  POKEY sums current, so its output only ever swings one
+    /   way; on the board a coupling capacitor sits between it and the
+    /   amplifier, and the speaker never sees the offset.  Without the same
+    /   thing here the stream carries a standing DC term -- measured at +342
+    /   against an AC level of 397 -- which wastes headroom and steps every
+    /   time a voice starts or stops.  One pole at about 3 Hz removes it and
+    /   leaves everything audible untouched. --*/
+    { const double in = sample * 240.0;
+      pkmix.dcy = in - pkmix.dcx + 0.9995 * pkmix.dcy;
+      pkmix.dcx = in;
+      buffer[i] = (INT16)(pkmix.dcy < -32768.0 ? -32768.0
+                        : pkmix.dcy >  32767.0 ?  32767.0 : pkmix.dcy); }
   }
 }
 
