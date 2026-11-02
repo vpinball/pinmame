@@ -137,8 +137,8 @@ circulation, so the simulator is preliminary.  Three balls.  The keys are:
   TYUI  Lanes 1-4 (switches $18-$1B), along the bottom of the left grid
   GJ    Left / right side standing targets (switches $25, $26)
   BNM   Coil targets (switches $05-$07), each firing its own coil
-  KLP   Right grid row (switches $20-$22)
-  H     Kick-out hole
+  KLP   Right grid row (switches $20-$22); H is the fourth, $23
+  H     Right grid 4 (switch $23)
   O     Outhole
   1-8   (keypad) the eight-switch group at $0C-$13
 

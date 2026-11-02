@@ -21,7 +21,6 @@
 #include "driver.h"
 #include "cpu/m6800/m6800.h"
 #include "core.h"
-#include "cpu/m6502/m6502.h"
 #include "sndbrd.h"
 #include "atari.h"
 
@@ -43,7 +42,6 @@ static struct {
 
   UINT8  dmaCount;
   UINT8  toggle;
-  UINT8  enable_irq;
 } locals;
 
 static UINT8 latch[] = {
@@ -136,7 +134,6 @@ static INTERRUPT_GEN(ATARI2_vblank) {
 /   sharing it wiped every output just before it reached the screen. --*/
 static INTERRUPT_GEN(ATARI4_vblank) {
   locals.vblankCount++;
-  coreGlobals.diagnosticLed = locals.diagnosticLed;
   core_updateSw(TRUE);
 }
 
@@ -487,7 +484,6 @@ MEMORY_END
 
 static void init_common(void) {
   memset(&locals, 0, sizeof locals);
-  locals.enable_irq = 1;
   sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_SOUND1), NULL, NULL);
 }
 
@@ -802,7 +798,7 @@ static void slice_write(int dev, int offset, UINT8 data) {
   /   The lamp column is the blit index, so a PinMAME lamp number and the ROM's
   /   own output number are the same value:
   /
-  /     col  2  $230F   bits 0-3 only; 4-6 are the task bank, see slice_write
+  /     col  2  $230F   bits 0-3 and 7; 4-6 are the task bank, see slice_write
   /     col  3  $210A   col  8  $220B   col 13  $2301
   /     col  4  $210B   col  9  $2200   col 14  $230A
   /     col  5  $2100   col 10  $2201   col 15  $240A
@@ -859,7 +855,7 @@ static void slice_write(int dev, int offset, UINT8 data) {
       if (lampport[i].dev == dev && lampport[i].reg == reg) {
         /* image byte 2 shares $230F with the task bank in bits 4-6 */
         coreGlobals.lampMatrix[lampport[i].col] =
-          (lampport[i].col == 2) ? (data & 0x0f) : data;
+          (lampport[i].col == 2) ? (data & 0x8f) : data;
         break;
       }
   }
@@ -881,10 +877,6 @@ static WRITE_HANDLER(slice_w)  { slice_write(offset >> 8, offset, data); }
 static READ_HANDLER(slice2_r)  { return slice_read(5 + (offset >> 8), offset); }
 static WRITE_HANDLER(slice2_w) { slice_write(5 + (offset >> 8), offset, data); }
 
-/*-- 4x4 stores scores and audits in a 256x4 CMOS at $2500.  Every read site in
-/   the ROM normalises with ORA #$F0 and masks back with AND #$0F, which is the
-/   idiom for a nibble-wide part whose upper bits float high; the arithmetic on
-/   it runs in decimal mode.  Only the low nibble is real, so only it is kept. --*/
 /*-- The Forth task records sit at $1nE9-$1nFF within the mirrored RAM.  Their
 /   dispatch stubs ($1nEF-$1nFF) are never written by any instruction in the
 /   ROM, yet the task
@@ -893,11 +885,11 @@ static WRITE_HANDLER(slice2_w) { slice_write(5 + (offset >> 8), offset, data); }
 /   the live zero page, so a switch into a task that has not run yet inherits
 /   the current interpreter state instead of zeroing it.
 /
-/   Only the stub region behaves this way; the rest of $1000-$17FF is the plain
-/   2K mirror, which is what the power-up RAM test at $DD80 walks for adjacency.
-/   A read/write handler is enough here because the stub region is copied as
-/   data and never executed -- unlike $1000-$1041, which the test at $DF10 runs
-/   from, and which is why the mirror itself has to be a bank. --*/
+/   Only the task pages are aliased.  $0000-$01FF is banked onto the current
+/   task's page inside $1000-$17FF, so the stub region and the live zero page
+/   are the same bytes.  $0200-$07FF is mapped as its own RAM rather than as a
+/   second window onto $1200-$17FF; nothing the game does has been seen to
+/   depend on those two being the same chip. --*/
 /*-- Zero page $E0-$FF is the current task's working context, banked.
 /
 /   Each task owns a 23-byte record at TASK-SLOT(i) = $1iE9:
@@ -939,11 +931,6 @@ static void atari4_setbank(int bank) {
   cpu_setbank(3, atari4_taskram + (bank << 8));   /* $0100-$01FF, the same page */
 }
 
-/*-- 4x4 stores scores and audits in a 256x4 CMOS at $2500.  Every read site in
-/   the ROM normalises with ORA #$F0 and masks back with AND #$0F, which is the
-/   idiom for a nibble-wide part whose upper bits float high, and the arithmetic
-/   on it runs in decimal mode.  Only the low nibble is real, so only it is
-/   kept. --*/
 static NVRAM_HANDLER(ATARI4) {
   core_nvram(file, read_or_write, atari4_CMOS, 0x100, 0x00);
 }
@@ -1020,10 +1007,10 @@ static MACHINE_INIT(ATARI4) {
   memset(&locals, 0, sizeof locals);
   memset(&slice, 0, sizeof slice);
   memset(memory_region(ATARI_MEMREG_CPU), 0, 0x2000);
-  /*-- $1000-$17FF is the $0000-$07FF chip again, because the board does not
-  /   decode A12.  It has to be a bank rather than a read/write handler: the
-  /   power-up RAM test at $DF10 copies self-modifying code into $1000 and
-  /   does JMP $1000, and an opcode fetch bypasses memory handlers. --*/
+  /*-- $1000-$17FF holds the eight task pages.  It is mapped as plain RAM
+  /   rather than through a read/write handler because the power-up RAM test
+  /   at $DF10 copies self-modifying code into $1000 and does JMP $1000, and
+  /   an opcode fetch bypasses memory handlers. --*/
   atari4_taskram = memory_region(ATARI_MEMREG_CPU) + 0x1000;
   atari4_setbank(0);
 }
@@ -1033,10 +1020,11 @@ static MACHINE_INIT(ATARI4) {
 /   column 6, not column 1.  Generation 2's update, which this was copied from,
 /   writes column 1; under the 4x4 switch map that column is SW00-SW07, real
 /   playfield switches, and the 0x62 mask forced five of them open every frame.
-/   Tilt has no key assigned, so bit 1 is preserved along with SW2D-SW2F. --*/
+/   SW2D-SW2F have no handler in the ROM, so their bits are left alone. --*/
 static SWITCH_UPDATE(ATARI4) {
 	if (inports) {
-		coreGlobals.swMatrix[6] = (coreGlobals.swMatrix[6] & 0xe2)
+		coreGlobals.swMatrix[6] = (coreGlobals.swMatrix[6] & 0xe0)
+			| ((inports[ATARI_COMINPORT] & 0x0002) ? 0x02 : 0)   /* Tilt       -> SW29 */
 			| ((inports[ATARI_COMINPORT] & 0x0004) ? 0x01 : 0)   /* Game       -> SW28 */
 			| ((inports[ATARI_COMINPORT] & 0x0008) ? 0x04 : 0)   /* Left coin  -> SW2A */
 			| ((inports[ATARI_COMINPORT] & 0x0010) ? 0x08 : 0)   /* Right coin -> SW2B */
@@ -1061,7 +1049,6 @@ MACHINE_DRIVER_START(ATARI4)
   MDRV_NVRAM_HANDLER(ATARI4)
   MDRV_DIPS(16)
   MDRV_SWITCH_UPDATE(ATARI4)
-  MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_SWITCH_CONV(ATARI_sw2m,ATARI_m2sw)
   MDRV_IMPORT_FROM(atari4s)
 MACHINE_DRIVER_END

@@ -15,9 +15,10 @@
  Both flipper buttons are gated in hardware rather than pulsed by the CPU:
  holding either produces no coil write.
 
- Fourteen switches have a handler in the table at $8B06 but no name: $05, $06,
- $08-$0B, $20-$22, $24 and $30-$33.  The rollunder spinner, the inlanes and the
- outlanes are among them.  Ten have no handler at all -- $00 and $04, the
+ Eight switches have a handler in the table at $8B06 but still no name: $08,
+ $0A, $0B, $24 and $30-$33.  The rollunder spinner, the inlanes and the
+ outlanes are among them.  ($05-$07 and $20-$23 were named from what they
+ drive; see the table below the switch defines.)  Ten have no handler at all -- $00 and $04, the
  flipper buttons, $27, the volume pot, and $2D-$2F and $34-$37.
 
  Lamp numbers are the ROM's own output numbers, blitIndex*8 + bit; atari.c
@@ -51,7 +52,7 @@
     GJ   Left / right side standing targets
    BNM   Coil targets, switches $05-$07
    KLP   Right grid row, switches $20-$22
-    H    Kick-out hole
+    H    Right grid 4, switch $23
     O    Outhole
   1-8    (keypad) the eight-switch group at $0C-$13
 ------------------------------------------------------------------------------*/
@@ -83,7 +84,7 @@ ATARI4_INPUT_PORTS_START(fourx4,3)
     COREPORT_BIT(0x0100,"Right Drop 2",       KEYCODE_X)
     COREPORT_BIT(0x0200,"Right Drop 3",       KEYCODE_C)
     COREPORT_BIT(0x0400,"Right Drop 4",       KEYCODE_V)
-    COREPORT_BIT(0x0800,"Kick-out Hole",      KEYCODE_H)
+    COREPORT_BIT(0x0800,"Right Grid 4",       KEYCODE_H)
     COREPORT_BIT(0x1000,"Outhole",            KEYCODE_O)
     COREPORT_BIT(0x4000,"Drain",              KEYCODE_Q)
   PORT_START /* 1 */
@@ -197,7 +198,8 @@ ATARI_INPUT_PORTS_END
                            second row, lamps $25-$27 */
 #define swRGrid2     33
 #define swRGrid3     34
-#define swHole       35   /* $23; scores 100 but fires no coil */
+#define swRGrid4     35   /* $23, the fourth of the $20-$23 group; like the
+                           other three it scores 100 and fires no coil */
 #define swLStand     37   /* $25, "LEFT SIDE STANDING TARGETS" in the diagram's
                            own legend */
 #define swRStand     38   /* $26, "RIGHT SIDE STANDING TARGETS" */
@@ -267,7 +269,7 @@ ATARI_INPUT_PORTS_END
 enum {stTrough=SIM_FIRSTSTATE, stShooter, stDrain, stOuthole,
       stUpperPop, stMidPop, stLowerPop,
       stLDrop1, stLDrop2, stLDrop3, stLDrop4,
-      stRDrop1, stRDrop2, stRDrop3, stRDrop4, stHole,
+      stRDrop1, stRDrop2, stRDrop3, stRDrop4, stRGrid4,
       stLane1, stLane2, stLane3, stLane4, stLStand, stRStand,
       stCoilTgt5, stCoilTgt6, stCoilTgt7, stRGrid1, stRGrid2, stRGrid3,
       stMsgr1, stMsgr2, stMsgr3, stMsgr4, stMsgr5, stMsgr6, stMsgr7, stMsgr8
@@ -298,7 +300,7 @@ static sim_tState fourx4_stateDef[] = {
   {"Right Drop 3",    1,swRDrop3,  0,          stFree,    1},
   {"Right Drop 4",    1,swRDrop4,  0,          stFree,    1},
 
-  {"Kick-out Hole",   1,swHole,    sHoleKick,  stFree,    3},
+  {"Right Grid 4",    1,swRGrid4,  0,          stFree,    1},
 
   {"Lane 1",          1,swLane1,   0,          stFree,    1},
   {"Lane 2",          1,swLane2,   0,          stFree,    1},
@@ -342,7 +344,7 @@ static sim_tInportData fourx4_inportData[] = {
   {0, 0x0100, stRDrop2},
   {0, 0x0200, stRDrop3},
   {0, 0x0400, stRDrop4},
-  {0, 0x0800, stHole},
+  {0, 0x0800, stRGrid4},
   {0, 0x1000, stOuthole},
   {0, 0x4000, stDrain},
   {1, 0x0001, stMsgr1},
@@ -376,7 +378,7 @@ static void fourx4_drawStatic(BMTYPE **line) {
   core_textOutf(30, 70,BLACK,"W/E/R = Upper/Mid/Lower pop bumper");
   core_textOutf(30, 80,BLACK,"A/S/D/F = Left drop target bank");
   core_textOutf(30, 90,BLACK,"Z/X/C/V = Right drop target bank");
-  core_textOutf(30,100,BLACK,"H = Kick-out hole, O = Outhole, Q = Drain");
+  core_textOutf(30,100,BLACK,"H = Right grid 4, O = Outhole, Q = Drain");
   core_textOutf(30,110,BLACK,"Keypad 1-8 = the eight-switch group");
   core_textOutf(30,120,BLACK,"T/Y/U/I = Lanes 1-4, G/J = Standing tgts");
   core_textOutf(30,130,BLACK,"B/N/M = Coil targets, K/L/P = Right grid");
@@ -400,7 +402,7 @@ static sim_tSimData fourx4SimData = {
   3,                    /* 3 game specific input ports */
   fourx4_stateDef,      /* Definition of all states */
   fourx4_inportData,    /* Keyboard Entries */
-  { stTrough, stTrough, stTrough, stDrain, stDrain, stDrain, stDrain },
+  { stTrough, stDrain, stDrain, stDrain, stDrain, stDrain, stDrain },
   NULL,                 /* no init */
   NULL,                 /* no ball state handler */
   fourx4_drawStatic,
@@ -439,7 +441,8 @@ static core_tLCDLayout fourx4_disp[] = {
 
 static core_tGameData fourx4GameData = {
   0, fourx4_disp,
-  { FLIP_SWNO(swLFlipper,swRFlipper), 0, 0, 0, SNDBRD_NONE, 0 },
+  { FLIP_SWNO(swLFlipper,swRFlipper), /*swCol*/0, /*lampCol*/11, /*custSol*/0,
+    SNDBRD_NONE, 0 },
   &fourx4SimData
 };
 
