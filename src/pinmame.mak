@@ -312,6 +312,8 @@ OBJDIRS += $(PINOBJ)/sims/se
 OBJDIRS += $(PINOBJ)/sims/se/prelim
 OBJDIRS += $(PINOBJ)/sims/sleic
 OBJDIRS += $(PINOBJ)/sims/pinheck
+OBJDIRS += $(PINOBJ)/sims/atari
+OBJDIRS += $(PINOBJ)/sims/atari/prelim
 
 $(OBJ)/allgames.a: $(PINGAMES)
 #
