@@ -2806,7 +2806,11 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bi
 #if defined(_MSC_VER)
 static __declspec(thread) int core_on_emulation_thread = 0;
 #else
+#if defined(__thread)
 static __thread int core_on_emulation_thread = 0;
+#else
+static int core_on_emulation_thread = 0;
+#endif
 #endif
 static void core_publish_pwm_outputs(int force);
 
