@@ -15,11 +15,11 @@
  Both flipper buttons are gated in hardware rather than pulsed by the CPU:
  holding either produces no coil write.
 
- Eight switches have a handler in the table at $8B06 but still no name: $08,
- $0A, $0B, $24 and $30-$33.  The rollunder spinner, the inlanes and the
- outlanes are among them.  ($05-$07 and $20-$23 were named from what they
- drive; see the table below the switch defines.)  Ten have no handler at all -- $00 and $04, the
- flipper buttons, $27, the volume pot, and $2D-$2F and $34-$37.
+ Eight switches have a handler in the table at $8B06 but no name: $08, $0A,
+ $0B, $24 and $30-$33.  The rollunder spinner, the inlanes and the outlanes
+ are among them.  $05-$07 and $20-$23 are named from what they drive; see the
+ table below the switch defines.  Ten switches have no handler at all: $00 and
+ $04, the flipper buttons, $27, the volume pot, and $2D-$2F and $34-$37.
 
  Lamp numbers are the ROM's own output numbers, blitIndex*8 + bit; atari.c
  carries the derivation and the port-to-column table.  The playfield diagram
@@ -30,15 +30,14 @@
  LAP (HEAT) on SEG1 and PLAYER 2 and CREDIT on SEG2, and the playfield diagram
  marks the middle-of-playfield display as ANTE.  The wiring sheet draws three
  displays on the playfield, of one, six and two digits, and device 1 feeds both
- of its buses, so ANTE is one of those three rather than the whole of SEG3.
- Which one is not established.
+ of its buses with six digits each, so ANTE is one of those three rather than a
+ whole bus.  Which one is not established.
 
  The sound is two POKEYs at $2600 and $2700, driven through the same
- sixteen-slot ramp engine that fades the lamps.  They are emulated well enough
- to hear, not well enough to be right -- the high-pass filters and two-tone
- mode are unreachable in this game and are not modelled -- hence
- GAME_IMPERFECT_SOUND.  The 82S130 PROM that circulates with this ROM set is
- not 4x4's: it was dumped from a Superman, as the note in atarigames.c says.
+ sixteen-slot ramp engine that fades the lamps.  The game needs no sound PROM:
+ the waveforms are made inside the chips.  AUDCTL's high-pass filters and
+ SKCTL's two-tone mode are unreachable in this game and are not modelled; see
+ atarisnd.c.
  ******************************************************************************/
 
 /*------------------------------------------------------------------------------
@@ -427,15 +426,17 @@ static sim_tSimData fourx4SimData = {
 /   In a one-player game the SEG1 bus reads a score plus a heat of 01, and the
 /   SEG2 bus a blank score -- player 2 is not playing -- plus a credit count.
 /
-/   Device 1 feeds SEG3 and SEG4.  Its high nibble is the six-digit playfield
-/   display and its low nibble a separate two-digit one.  Which of the three
-/   displays the wiring sheet draws on the playfield is the one-digit one is
-/   not established. --*/
+/   Device 1 feeds SEG3 and SEG4 from its registers 2-7; registers 0 and 1 are
+/   lamps, so each of those two buses has six digits rather than eight.  The
+/   wiring sheet draws three displays on the playfield, of one, six and two
+/   digits, and which of them sits on which bus is not established, so both
+/   buses are shown in full.  In a one-player game the SEG4 digits take
+/   independent counting values and the SEG3 digits stay at 0. --*/
 static core_tLCDLayout fourx4_disp[] = {
   { 0, 0, 0, 6, CORE_SEG7 }, { 0,16, 6, 2, CORE_SEG7 },   /* SEG1: player 1, lap (heat) */
   { 2, 0, 8, 6, CORE_SEG7 }, { 2,16,14, 2, CORE_SEG7 },   /* SEG2: player 2, credit */
-  { 5, 0,16, 6, CORE_SEG7 },                              /* SEG3: six-digit playfield display */
-  { 5,16,24, 2, CORE_SEG7 },                              /* SEG4: two-digit playfield display */
+  { 5, 0,16, 6, CORE_SEG7 },                              /* SEG3: playfield, device 1 high nibble */
+  { 7, 0,24, 6, CORE_SEG7 },                              /* SEG4: playfield, device 1 low nibble */
   { 0 }
 };
 
@@ -453,4 +454,4 @@ static void init_fourx4(void) {
   core_gameData = &fourx4GameData;
 }
 
-CORE_GAMEDEFNV(fourx4,"4x4 (Prototype)",1982,"Atari",gl_mATARI4,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(fourx4,"4x4 (Prototype)",1982,"Atari",gl_mATARI4,0)

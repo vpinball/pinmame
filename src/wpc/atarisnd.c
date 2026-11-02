@@ -235,9 +235,9 @@ static WRITE_HANDLER(atari_data_w) {
 /
 /  The CPU board carries an Atari CO12294 -- POKEY -- at position C, date code
 /  8151, and the game writes its first eight registers at $2600-$2607 through
-/  the same sixteen-channel ramp engine that fades the lamps.  That is why the
-/  sound looked like a lamp to a pulse-width test: the CPU writes a divisor and
-/  a volume a few times a second, and the audio itself is made inside the chip.
+/  the same sixteen-channel ramp engine that fades the lamps: the CPU writes a
+/  divisor and a volume a few times a second, and the audio itself is made
+/  inside the chip.
 /
 /  Only the audio half of POKEY is modelled -- four channels, the frequency and
 /  control registers and AUDCTL.  The potentiometer, keyboard and serial halves
@@ -372,11 +372,8 @@ static void pokey_update(int num, INT16 *buffer, int length) {
     /*-- Eight channels at volume 15 is 120, and both chips feed the one
     /   amplifier.  POKEY sums current, so its output only ever swings one
     /   way; on the board a coupling capacitor sits between it and the
-    /   amplifier, and the speaker never sees the offset.  Without the same
-    /   thing here the stream carries a standing DC term -- measured at +342
-    /   against an AC level of 397 -- which wastes headroom and steps every
-    /   time a voice starts or stops.  One pole at about 3 Hz removes it and
-    /   leaves everything audible untouched. --*/
+    /   amplifier and the speaker never sees the offset.  The one-pole
+    /   high-pass here does the same, at about 3 Hz. --*/
     { const double in = sample * 240.0;
       pkmix.dcy = in - pkmix.dcx + 0.9995 * pkmix.dcy;
       pkmix.dcx = in;

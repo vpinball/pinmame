@@ -564,8 +564,8 @@ MACHINE_DRIVER_END
 /  Each is a 40-pin part with a 4-bit data bus, A0-A3 selecting 16 registers,
 /  8 switch inputs and 16 outputs in four groups; two of them share a chip
 /  select and split the byte, one driving D0-D3 and the other D4-D7.  Five such
-/  pairs sit at $2000-$2400 and two further 16-register devices at $2600/$2700
-/  whose identity is not yet established.
+/  pairs sit at $2000-$2400; the two 16-register devices at $2600/$2700 are
+/  POKEYs.
 /
 /  Only the register roles the game code proves are decoded here.  Everything
 /  else is stored and logged, because no datasheet for this part is known to
@@ -579,19 +579,14 @@ MACHINE_DRIVER_END
 /   IRQ: 60 Hz, the AC line frequency.  A mains zero-crossing interrupt is the
 /   usual arrangement for a pinball of this period, and this is a US 60 Hz
 /   machine (the wiring diagram's transformer has 120 V and 100 V primaries).
-/   It is also what the game demands: the interrupt handler costs a
-/   near-constant 3328 cycles, so at 369 Hz it consumed 81% of the CPU and the
-/   Forth layer managed under 5000 words in a minute of emulated time.  At
-/   60 Hz the handler takes 13% and the game executes 1.1 million words in the
-/   same minute. --*/
+/   The interrupt handler costs a near-constant 3328 cycles, 13% of the CPU at
+/   this rate. --*/
 #define ATARI4_CPUFREQ 1500000
 #define ATARI4_IRQFREQ 60
 
 /*-- The game kicks $230C on every interrupt and inside its power-up busy-wait,
 /   so a gap of a second means it has stopped running and the real board would
-/   have reset.  Modelling that matters while both clocks above are guesses: a
-/   stalled machine has to announce itself rather than sit there looking idle.
-/   logerror is compiled out of release builds, so the reset is the signal. --*/
+/   have reset. --*/
 #define ATARI4_WDOG_IRQS (ATARI4_IRQFREQ)  /* ~1 s without a kick */
 #define ATARI4_TEST_HOOKS 0  /* 1 = log every slice access */
 
@@ -640,10 +635,7 @@ static UINT8 slice_read(int dev, int offset) {
   /   -- register F before register E within each device, and a seventh column
   /   on device 3.  Seven ports of eight give the 56 switches SW00-SW37, and
   /   the switch number the game dispatches on is col*8+bit (the identity table
-  /   at $875F).  Deriving the column arithmetically from dev and reg gets the
-  /   order wrong and loses $230E altogether, which leaves column 6 returning
-  /   an output latch: the debounce inverts it with EOR #$FF and every switch in
-  /   that column reads permanently closed.
+  /   at $875F).
   /
   /   The inputs have 470R pull-ups to +5V and the switches pull to switch
   /   ground, so a closed switch reads low and $9248 inverts before storing. --*/
@@ -708,30 +700,23 @@ static void slice_write(int dev, int offset, UINT8 data) {
     if (dev == 2) cpu_set_irq_line(ATARI_CPU, 0, CLEAR_LINE);  /* $220C: IRQ ack */
     if (dev == 3) { slice.wdog = 0; SLICE_LOG("4x4 watchdog kick\n"); }  /* $230C */
   }
-  /*-- $91B9 blits all 33 output ports every second interrupt, so logging every
-  /   write floods the trace.  Only transitions carry information. --*/
-  /*-- Registers 0-7 of the first two devices are the score displays: sixteen
-  /   BCD digits, decoded to segments in hardware (the schematic runs the
-  /   slice's OUT2x/OUT3x lines straight into a ULN2803 and on to SEG1/SEG2, and
-  /   there is no font table anywhere in the ROM).  $F in a digit blanks it,
-  /   which is what an unused player's display is filled with. --*/
-  /*-- Displays.  Registers 0-7 of the first two devices hold BCD, decoded to
-  /   segments inside the slice -- there is no font table anywhere in the ROM.
-  /   Each device is a nibble-paired slice: 12E takes BD4-BD7 and drives SEG1
-  /   through ULN2803A 12D/A, 13E takes BD0-BD3 and drives SEG2 through 13D.
-  /   So one register byte carries two digits, one per segment bus, and the
-  /   register index is the digit position: four buses of eight. --*/
-  /*-- The register index is the digit position, counting up from the least
-  /   significant: a six-digit score reads $2005 down to $2000.  $2000 is the
-  /   units digit and holds 0 whenever a score shows, since nothing in the
-  /   game scores less than ten.  The display layout puts the most significant
-  /   digit first, so the index is reversed here.
+  /*-- Displays.  Registers 0-7 of the first two devices hold BCD digits,
+  /   decoded to segments inside the slice -- there is no font table anywhere
+  /   in the ROM.  Each device is a nibble-paired slice: 12E takes BD4-BD7 and
+  /   drives SEG1 through ULN2803A 12D/A, 13E takes BD0-BD3 and drives SEG2
+  /   through 13D.  So one register byte carries two digits, one per segment
+  /   bus, and the register index is the digit position: four buses of eight.
+  /   $F in a digit blanks it, which is what an unused player's display holds.
+  /
+  /   The index counts up from the least significant digit: a six-digit score
+  /   reads $2005 down to $2000, and $2000 is the units digit, always 0 since
+  /   nothing in the game scores less than ten.  The display layout puts the
+  /   most significant digit first, so the index is reversed here.
   /
   /   Device 0 carries the two-digit heat and credit displays in registers 6
   /   and 7, past the end of the six-digit score, so only the first six turn
-  /   around there.  Those two keep register order: on ball 1 the pair reads
-  /   01 and the credit pair 02, which are the values they should hold.
-  /   Reversing them as well would show 10 and 20.  Device 1 has no such pair -- its registers 0 and 1 are
+  /   around there.  Those two keep register order, and on ball 1 they read
+  /   01 and 02.  Device 1 has no such pair -- its registers 0 and 1 are
   /   lamps -- and its six digits are registers 2 to 7. --*/
   if (dev <= 1 && reg <= 7 && !(dev == 1 && reg <= 1)) {
     int pos = (dev == 0) ? ((reg <= 5) ? 5 - reg : reg) : (7 - reg);
@@ -763,25 +748,12 @@ static void slice_write(int dev, int offset, UINT8 data) {
   /*-- $2600 and $2700 are two POKEYs.  The CPU board carries a CO12294 at
   /   position C and a second one the photograph does not show; the game drives
   /   their frequency and control registers through the same ramp engine that
-  /   fades the lamps, sixteen slots onto sixteen registers. --*/
+  /   fades the lamps, sixteen slots onto sixteen registers: the game programs
+  /   a value, a delta and a count into three parallel arrays at $31A6, $31B6
+  /   and $31C6, $9588 steps them every tick into an image at $31D6, and $961E
+  /   blits that image to $2600-$2607 and $2700-$2707.  atarisnd.c carries the
+  /   chip model. --*/
   if (dev >= 5) { atari4snd_w(dev - 5, offset & 0x0f, data); return; }
-
-  /*-- $2604 is the tone.  It is slot 4 of a sixteen-channel ramp engine: the
-  /   game programs a value, a delta and a count into three parallel arrays at
-  /   $31A6, $31B6 and $31C6, $9588 steps them every tick into an image at
-  /   $31D6, and $961E blits that image to $2600-$2607 and $2700-$2707.
-  /
-  /   Of all 33 ports it is the only one that behaves like a frequency rather
-  /   than a lamp: 148 writes in one game took 142 distinct values.  During
-  /   attract its low nibble stays 0 and only the high nibble moves; when a
-  /   sound plays, the low nibble sweeps -- F, D, B, 9, 7, 5, 3, 1 -- every two
-  /   frames while the high nibble ramps slowly underneath, which is the
-  /   nibble pairing doing its usual job of putting one slice's four tone bits
-  /   and the other slice's four lamp bits in one byte.
-  /
-  /   It is not emulated.  Turning that four-bit value into a pitch needs the
-  /   divider's clock, and the sheet carrying it is one of the ones missing
-  /   from the schematic set -- the slice pages we have are sheet 4 of 7. --*/
 
   /*-- Lamps.
   /
@@ -879,20 +851,11 @@ static WRITE_HANDLER(slice_w)  { slice_write(offset >> 8, offset, data); }
 static READ_HANDLER(slice2_r)  { return slice_read(5 + (offset >> 8), offset); }
 static WRITE_HANDLER(slice2_w) { slice_write(5 + (offset >> 8), offset, data); }
 
-/*-- The Forth task records sit at $1nE9-$1nFF within the mirrored RAM.  Their
-/   dispatch stubs ($1nEF-$1nFF) are never written by any instruction in the
-/   ROM, yet the task
-/   switcher copies a stub out of them on every switch.  The only arrangement
-/   under which that can work is one where every task's stub region reads back
-/   the live zero page, so a switch into a task that has not run yet inherits
-/   the current interpreter state instead of zeroing it.
-/
-/   Only the task pages are aliased.  $0000-$01FF is banked onto the current
-/   task's page inside $1000-$17FF, so the stub region and the live zero page
-/   are the same bytes.  $0200-$07FF is mapped as its own RAM rather than as a
-/   second window onto $1200-$17FF; nothing the game does has been seen to
-/   depend on those two being the same chip. --*/
-/*-- Zero page $E0-$FF is the current task's working context, banked.
+/*-- Zero page $E0-$FF is the current task's working context, banked.  Only
+/   the task pages are aliased: $0000-$01FF is banked onto the current task's
+/   page inside $1000-$17FF, so a task's record and the live zero page are the
+/   same bytes.  $0200-$07FF is mapped as its own RAM rather than as a second
+/   window onto $1200-$17FF.
 /
 /   Each task owns a 23-byte record at TASK-SLOT(i) = $1iE9:
 /
@@ -903,11 +866,11 @@ static WRITE_HANDLER(slice2_w) { slice_write(5 + (offset >> 8), offset, data); }
 /       +$04  $1iED  sleep timer, 2 bytes, decremented by 8 per tick at $9541
 /       +$06  $1iEF  17-byte interpreter context: IP at $F8/$F9, and $FA-$FC
 /
-/   No instruction anywhere in the ROM writes that context.  There is no save
-/   step to find: zero page IS the current task's record.  Simply running a
-/   task writes that task's state, and $96B9 (the variant START-TASK uses) reads
-/   $E9 and $EB to start the incoming task on its own stack bases -- reads that
-/   only make sense through the bank.
+/   No instruction anywhere in the ROM writes that context: zero page IS the
+/   current task's record, so running a task writes that task's state, and the
+/   dispatch stubs at $1nEF-$1nFF read back the live zero page.  $96B9 (the
+/   variant START-TASK uses) reads $E9 and $EB to start the incoming task on
+/   its own stack bases -- reads that only make sense through the bank.
 /
 /   The task number is latched from $230F bits 4-6.  The switcher computes
 /   task*16 | (image & $8F) and stores it there immediately before it touches
@@ -968,7 +931,7 @@ static MEMORY_READ_START(ATARI4_readmem)
   {0x1000,0x17ff,	MRA_RAM},	/* the eight task pages, addressed directly */
   {0x2000,0x24ff,	slice_r},	/* five Pinball Slice pairs */
   {0x2500,0x25ff,	nvram4_r},	/* 256x4 CMOS */
-  {0x2600,0x27ff,	slice2_r},	/* two further 16-register devices */
+  {0x2600,0x27ff,	slice2_r},	/* two POKEYs */
   {0x3000,0x37ff,	MRA_RAM},
   {0x8000,0xffff,	MRA_ROM},
 MEMORY_END
@@ -1000,9 +963,8 @@ static INTERRUPT_GEN(ATARI4_irq) {
     logerror("4x4 watchdog timeout: $230C not kicked for %d interrupts\n", slice.wdog);
     slice.wdog = 0;
     /*-- A reset-line pulse does not re-run MACHINE_INIT, so the latched
-    /   outputs would survive it.  On the board the reset clears the driver
-    /   latches, and a coil left energised by whatever wedged the game would
-    /   otherwise be reported as permanently on. --*/
+    /   outputs are cleared here; on the board the reset clears the driver
+    /   latches. --*/
     cpu_set_irq_line(ATARI_CPU, 0, CLEAR_LINE);
     memset(&slice.reg, 0, sizeof slice.reg);
     coreGlobals.solenoids = 0;
@@ -1026,11 +988,9 @@ static MACHINE_INIT(ATARI4) {
 }
 
 /*-- The cabinet switches are SW28 start, SW29 tilt, SW2A left coin, SW2B right
-/   coin and SW2C test, per the playfield diagram's legend -- so they live in
-/   column 6, not column 1.  Generation 2's update, which this was copied from,
-/   writes column 1; under the 4x4 switch map that column is SW00-SW07, real
-/   playfield switches, and the 0x62 mask forced five of them open every frame.
-/   SW2D-SW2F have no handler in the ROM, so their bits are left alone. --*/
+/   coin and SW2C test, per the playfield diagram's legend, so they live in
+/   switch column 6.  SW2D-SW2F have no handler in the ROM, so their bits are
+/   left alone. --*/
 static SWITCH_UPDATE(ATARI4) {
 	if (inports) {
 		coreGlobals.swMatrix[6] = (coreGlobals.swMatrix[6] & 0xe0)
@@ -1040,11 +1000,10 @@ static SWITCH_UPDATE(ATARI4) {
 			| ((inports[ATARI_COMINPORT] & 0x0010) ? 0x08 : 0)   /* Right coin -> SW2B */
 			| ((inports[ATARI_COMINPORT] & 0x0081) ? 0x10 : 0);  /* Test       -> SW2C */
 		/*-- The right flipper button is switch $00.  core_updateSw wires the
-		/   flipper buttons from FLIP_SWNO, but it does so with
-		/   "if (FLIP_SWR(flip))", and FLIP_SWR of switch $00 is zero, which
-		/   it cannot tell from "this game has no right flipper switch".  So
-		/   it is set here instead; the left one, switch $04, goes through
-		/   FLIP_SWNO as usual. --*/
+		/   flipper buttons from FLIP_SWNO with "if (FLIP_SWR(flip))", and
+		/   FLIP_SWR of switch $00 is zero, which it cannot tell from "this
+		/   game has no right flipper switch", so it is set here instead.  The
+		/   left one, switch $04, goes through FLIP_SWNO as usual. --*/
 		core_setSw(0x00, inports[CORE_FLIPINPORT] & CORE_LRFLIPKEY);
 	}
 }
