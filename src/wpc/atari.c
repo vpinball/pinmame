@@ -657,14 +657,26 @@ static UINT8 slice_read(int dev, int offset) {
   /   register $0B, then read ALLPOT at $08.  A closed switch pulls its line
   /   down so the conversion finishes at once and its ALLPOT bit is already
   /   clear by the time the read happens; an open one leaves the bit set.  So
-  /   ALLPOT reads back as the complement of the switches.  $93D6 wants only
-  /   bits 2, 3 and 4 of the first pack; $992D and $9938 take whole bytes.
+  /   ALLPOT reads back as the complement of the switches.
   /
-  /   Bits 6 and 7 of the first pack must read 0 or the game never leaves its
-  /   power-up state -- displays stay blank and no task starts.
-  /   Bits 0, 1, 2, 3, 4 and 5 can be anything.  So switches 7 and 8 of the
-  /   first CTS 206-8 have to be closed, which the stock dip default already
-  /   does; what they select is not known. --*/
+  /   There are only three reads of ALLPOT in the whole ROM, and between them
+  /   they account for every dip the game uses:
+  /
+  /     $93D6   first pack, AND #$1C -- bits 2, 3 and 4.  A three-bit level
+  /             that sets a lamp duty cycle: the tick routine at $93DE adds it
+  /             to the free-running counter $300E and turns lamp layer $3148
+  /             on at $20 and off again at $40, so a larger value is a shorter
+  /             on-time.
+  /     $992D   first pack, whole byte.  Its one caller, $9F4D, masks #$C0 and
+  /             decrements the BCD credit counter at $07C5 when either bit is
+  /             set.  Both clear is free play.
+  /     $993D   second pack, whole byte -- and nothing calls it.  No JSR
+  /             reaches it and its address appears nowhere as a cell, so the
+  /             second CTS 206-8 is not read by this ROM at all.
+  /
+  /   Bits 0, 1 and 5 of the first pack are never masked out of either read,
+  /   so eight of the sixteen dips do nothing.  The game runs in any
+  /   combination; with the stock defaults it is on free play. --*/
   if (dev >= 5 && reg == 0x08) {
     data = ~core_getDip(dev - 5);
     SLICE_LOG("4x4 ALLPOT pokey%d -> %02X\n", dev - 5, data);
@@ -1029,6 +1041,13 @@ static SWITCH_UPDATE(ATARI4) {
 			| ((inports[ATARI_COMINPORT] & 0x0008) ? 0x04 : 0)   /* Left coin  -> SW2A */
 			| ((inports[ATARI_COMINPORT] & 0x0010) ? 0x08 : 0)   /* Right coin -> SW2B */
 			| ((inports[ATARI_COMINPORT] & 0x0081) ? 0x10 : 0);  /* Test       -> SW2C */
+		/*-- The right flipper button is switch $00.  core_updateSw wires the
+		/   flipper buttons from FLIP_SWNO, but it does so with
+		/   "if (FLIP_SWR(flip))", and FLIP_SWR of switch $00 is zero, which
+		/   it cannot tell from "this game has no right flipper switch".  So
+		/   it is set here instead; the left one, switch $04, goes through
+		/   FLIP_SWNO as usual. --*/
+		core_setSw(0x00, inports[CORE_FLIPINPORT] & CORE_LRFLIPKEY);
 	}
 }
 

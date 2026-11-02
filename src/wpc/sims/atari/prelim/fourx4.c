@@ -116,7 +116,7 @@ ATARI_INPUT_PORTS_END
    The rest group by handler size:
 
      $01-$03   three pop bumpers, upper, mid and lower
-     $05-$07   three of a kind
+     $05-$07   three of a kind, each firing its own coil for one point
      $0C-$13   eight of a kind; IPDB lists eight messenger balls
      $14-$17   four of a kind, and $17 fires reset-left-bank
      $18-$1B   four of a kind
@@ -124,13 +124,36 @@ ATARI_INPUT_PORTS_END
      $20-$23   four of a kind, the same sizes as $18-$1B
      $28-$2C   the cabinet, named by P9 and P10
      $30-$33   four on column 6
+
+   Holding each switch in turn with a ball in play gives what it drives.  The
+   coil column is the solenoid number this file uses, which is the playfield
+   diagram's SOL number plus one:
+
+     switch   coil              score
+     $01      2  upper pop      10     diagram's L55 / SOL 1 / SW 1
+     $02      3  mid pop        10     L54 / SOL 2 / SW 2
+     $03      4  lower pop      10     L53 / SOL 3 / SW 3
+     $05      6  SOL 5           1
+     $06      7  SOL 6           1
+     $07      8  SOL 7           1     the diagram pairs SW 7 with SOL 7
+     $09     10  ball feed       0     so $09 is the outhole
+     $0D-$13  -                100
+     $14-$16  -                 50
+     $17     11  reset L bank    -     the end of the left drop bank
+     $1B     10  ball feed       0
+     $1C-$1E  -                 50
+     $1F     12  reset R bank    -     the end of the right drop bank
+     $20-$23  -                100
+     $24      -                 10
+     $25-$26  -                  1     the two side standing target banks
+     $30     10  ball feed       0
 */
 #define swRFlipper    0   /* P11 pin 13, RT FLIPPER; no handler */
 #define swUpperPop    1
 #define swMidPop      2
 #define swLowerPop    3
 #define swLFlipper    4   /* P11 pin 5, LT FLIPPER; no handler */
-#define swOuthole     7   /* works the ball feed */
+#define swOuthole     9   /* $09 fires the ball feed, solenoid 10 */
 #define swMsgr1      12   /* $0C-$13, the group of eight */
 #define swMsgr2      13
 #define swMsgr3      14

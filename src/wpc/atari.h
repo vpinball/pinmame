@@ -209,54 +209,54 @@
     COREPORT_BIT(     0x0010, "Right Coin", KEYCODE_5)  \
     COREPORT_BIT(     0x0081, "Test", KEYCODE_7)  \
   PORT_START /* 1 */ \
-    COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "S1 (not read)") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0001, "1" ) \
-    COREPORT_DIPNAME( 0x0002, 0x0000, "S2") \
+    COREPORT_DIPNAME( 0x0002, 0x0000, "S2 (not read)") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0002, "1" ) \
-    COREPORT_DIPNAME( 0x0004, 0x0000, "S3") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0004, "1" ) \
-    COREPORT_DIPNAME( 0x0008, 0x0008, "S4") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0008, "1" ) \
-    COREPORT_DIPNAME( 0x0010, 0x0010, "S5") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0010, "1" ) \
-    COREPORT_DIPNAME( 0x0020, 0x0020, "S6") \
+    COREPORT_DIPNAME( 0x0004, 0x0000, "S3 lamp level bit 0") \
+      COREPORT_DIPSET(0x0000, "1" ) \
+      COREPORT_DIPSET(0x0004, "0" ) \
+    COREPORT_DIPNAME( 0x0008, 0x0008, "S4 lamp level bit 1") \
+      COREPORT_DIPSET(0x0000, "1" ) \
+      COREPORT_DIPSET(0x0008, "0" ) \
+    COREPORT_DIPNAME( 0x0010, 0x0010, "S5 lamp level bit 2") \
+      COREPORT_DIPSET(0x0000, "1" ) \
+      COREPORT_DIPSET(0x0010, "0" ) \
+    COREPORT_DIPNAME( 0x0020, 0x0020, "S6 (not read)") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0020, "1" ) \
-    COREPORT_DIPNAME( 0x0040, 0x0040, "S7") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0040, "1" ) \
-    COREPORT_DIPNAME( 0x0080, 0x0080, "S8") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0080, "1" ) \
-    COREPORT_DIPNAME( 0x0100, 0x0000, "S9") \
+    COREPORT_DIPNAME( 0x0040, 0x0040, "S7 credits") \
+      COREPORT_DIPSET(0x0000, "consume" ) \
+      COREPORT_DIPSET(0x0040, DEF_STR( Free_Play ) ) \
+    COREPORT_DIPNAME( 0x0080, 0x0080, "S8 credits") \
+      COREPORT_DIPSET(0x0000, "consume" ) \
+      COREPORT_DIPSET(0x0080, DEF_STR( Free_Play ) ) \
+    COREPORT_DIPNAME( 0x0100, 0x0000, "S9 (second pack, not read)") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0100, "1" ) \
-    COREPORT_DIPNAME( 0x0200, 0x0000, "S10") \
+    COREPORT_DIPNAME( 0x0200, 0x0000, "S10 (second pack, not read)") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0200, "1" ) \
-    COREPORT_DIPNAME( 0x0400, 0x0000, "S11") \
+    COREPORT_DIPNAME( 0x0400, 0x0000, "S11 (second pack, not read)") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0400, "1" ) \
-    COREPORT_DIPNAME( 0x0800, 0x0000, "S12") \
+    COREPORT_DIPNAME( 0x0800, 0x0000, "S12 (second pack, not read)") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0800, "1" ) \
-    COREPORT_DIPNAME( 0x1000, 0x0000, "S13") \
+    COREPORT_DIPNAME( 0x1000, 0x0000, "S13 (second pack, not read)") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x1000, "1" ) \
-    COREPORT_DIPNAME( 0x2000, 0x2000, "S14") \
+    COREPORT_DIPNAME( 0x2000, 0x2000, "S14 (second pack, not read)") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x2000, "1" ) \
-    COREPORT_DIPNAME( 0x4000, 0x4000, "S15") \
+    COREPORT_DIPNAME( 0x4000, 0x4000, "S15 (second pack, not read)") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x4000, "1" ) \
-    COREPORT_DIPNAME( 0x8000, 0x0000, "S16") \
+    COREPORT_DIPNAME( 0x8000, 0x0000, "S16 (second pack, not read)") \
       COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x8000, "1" ) \
+      COREPORT_DIPSET(0x8000, "1" )
 
 #define ATARI4_INPUT_PORTS_START(name,balls) \
   INPUT_PORTS_START(name) \
