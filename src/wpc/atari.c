@@ -729,7 +729,9 @@ static void slice_write(int dev, int offset, UINT8 data) {
   /
   /   Device 0 carries the two-digit heat and credit displays in registers 6
   /   and 7, past the end of the six-digit score, so only the first six turn
-  /   around there.  Device 1 has no such pair -- its registers 0 and 1 are
+  /   around there.  Those two keep register order: on ball 1 the pair reads
+  /   01 and the credit pair 02, which are the values they should hold.
+  /   Reversing them as well would show 10 and 20.  Device 1 has no such pair -- its registers 0 and 1 are
   /   lamps -- and its six digits are registers 2 to 7. --*/
   if (dev <= 1 && reg <= 7 && !(dev == 1 && reg <= 1)) {
     int pos = (dev == 0) ? ((reg <= 5) ? 5 - reg : reg) : (7 - reg);
@@ -997,6 +999,14 @@ static INTERRUPT_GEN(ATARI4_irq) {
   if (++slice.wdog > ATARI4_WDOG_IRQS) {
     logerror("4x4 watchdog timeout: $230C not kicked for %d interrupts\n", slice.wdog);
     slice.wdog = 0;
+    /*-- A reset-line pulse does not re-run MACHINE_INIT, so the latched
+    /   outputs would survive it.  On the board the reset clears the driver
+    /   latches, and a coil left energised by whatever wedged the game would
+    /   otherwise be reported as permanently on. --*/
+    cpu_set_irq_line(ATARI_CPU, 0, CLEAR_LINE);
+    memset(&slice.reg, 0, sizeof slice.reg);
+    coreGlobals.solenoids = 0;
+    memset((void *)coreGlobals.lampMatrix, 0, sizeof coreGlobals.lampMatrix);
     cpu_set_reset_line(ATARI_CPU, PULSE_LINE);
     return;
   }
