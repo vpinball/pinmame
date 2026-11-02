@@ -49,6 +49,8 @@
    ZXCV  Right drop target bank 1-4
    TYUI  Lanes 1-4, along the bottom edge of the left grid
     GJ   Left / right side standing targets
+   BNM   Coil targets, switches $05-$07
+   KLP   Right grid row, switches $20-$22
     H    Kick-out hole
     O    Outhole
   1-8    (keypad) the eight-switch group at $0C-$13
@@ -99,6 +101,13 @@ ATARI4_INPUT_PORTS_START(fourx4,3)
     COREPORT_BIT(0x0800,"Lane 4",             KEYCODE_I)
     COREPORT_BIT(0x1000,"Left Standing Tgts", KEYCODE_G)
     COREPORT_BIT(0x2000,"Right Standing Tgts",KEYCODE_J)
+  PORT_START /* 2 */
+    COREPORT_BIT(0x0001,"Coil Target 5",      KEYCODE_B)
+    COREPORT_BIT(0x0002,"Coil Target 6",      KEYCODE_N)
+    COREPORT_BIT(0x0004,"Coil Target 7",      KEYCODE_M)
+    COREPORT_BIT(0x0008,"Right Grid 1",       KEYCODE_K)
+    COREPORT_BIT(0x0010,"Right Grid 2",       KEYCODE_L)
+    COREPORT_BIT(0x0020,"Right Grid 3",       KEYCODE_P)
 ATARI_INPUT_PORTS_END
 
 /*-------------------
@@ -153,6 +162,10 @@ ATARI_INPUT_PORTS_END
 #define swMidPop      2
 #define swLowerPop    3
 #define swLFlipper    4   /* P11 pin 5, LT FLIPPER; no handler */
+#define swCoilTgt5    5   /* $05-$07 each fire their own coil for one point;
+                           the diagram pairs SW 7 with SOL 7 */
+#define swCoilTgt6    6
+#define swCoilTgt7    7
 #define swOuthole     9   /* $09 fires the ball feed, solenoid 10 */
 #define swMsgr1      12   /* $0C-$13, the group of eight */
 #define swMsgr2      13
@@ -180,7 +193,11 @@ ATARI_INPUT_PORTS_END
 #define swRDrop2     29
 #define swRDrop3     30
 #define swRDrop4     31   /* $1F - resets the right bank */
-#define swHole       35   /* $23 */
+#define swRGrid1     32   /* $20-$22 score 100 and light the right grid's
+                           second row, lamps $25-$27 */
+#define swRGrid2     33
+#define swRGrid3     34
+#define swHole       35   /* $23; scores 100 but fires no coil */
 #define swLStand     37   /* $25, "LEFT SIDE STANDING TARGETS" in the diagram's
                            own legend */
 #define swRStand     38   /* $26, "RIGHT SIDE STANDING TARGETS" */
@@ -252,6 +269,7 @@ enum {stTrough=SIM_FIRSTSTATE, stShooter, stDrain, stOuthole,
       stLDrop1, stLDrop2, stLDrop3, stLDrop4,
       stRDrop1, stRDrop2, stRDrop3, stRDrop4, stHole,
       stLane1, stLane2, stLane3, stLane4, stLStand, stRStand,
+      stCoilTgt5, stCoilTgt6, stCoilTgt7, stRGrid1, stRGrid2, stRGrid3,
       stMsgr1, stMsgr2, stMsgr3, stMsgr4, stMsgr5, stMsgr6, stMsgr7, stMsgr8
 };
 
@@ -289,6 +307,14 @@ static sim_tState fourx4_stateDef[] = {
 
   {"L Standing Tgt",  1,swLStand,  0,          stFree,    1},
   {"R Standing Tgt",  1,swRStand,  0,          stFree,    1},
+
+  {"Coil Target 5",   1,swCoilTgt5,0,          stFree,    1},
+  {"Coil Target 6",   1,swCoilTgt6,0,          stFree,    1},
+  {"Coil Target 7",   1,swCoilTgt7,0,          stFree,    1},
+
+  {"Right Grid 1",    1,swRGrid1,  0,          stFree,    1},
+  {"Right Grid 2",    1,swRGrid2,  0,          stFree,    1},
+  {"Right Grid 3",    1,swRGrid3,  0,          stFree,    1},
 
   {"Messenger 1",     1,swMsgr1,   0,          stFree,    1},
   {"Messenger 2",     1,swMsgr2,   0,          stFree,    1},
@@ -333,6 +359,12 @@ static sim_tInportData fourx4_inportData[] = {
   {1, 0x0800, stLane4},
   {1, 0x1000, stLStand},
   {1, 0x2000, stRStand},
+  {2, 0x0001, stCoilTgt5},
+  {2, 0x0002, stCoilTgt6},
+  {2, 0x0004, stCoilTgt7},
+  {2, 0x0008, stRGrid1},
+  {2, 0x0010, stRGrid2},
+  {2, 0x0020, stRGrid3},
   {0}
 };
 
@@ -347,10 +379,10 @@ static void fourx4_drawStatic(BMTYPE **line) {
   core_textOutf(30,100,BLACK,"H = Kick-out hole, O = Outhole, Q = Drain");
   core_textOutf(30,110,BLACK,"Keypad 1-8 = the eight-switch group");
   core_textOutf(30,120,BLACK,"T/Y/U/I = Lanes 1-4, G/J = Standing tgts");
-  core_textOutf(30,130,BLACK,"Prototype: two machines were built, and");
-  core_textOutf(30,140,BLACK,"the playfield is only partly known.");
-  core_textOutf(30,150,BLACK,"      *** PRELIMINARY ***");
-  core_textOutf(30,160,BLACK,"");
+  core_textOutf(30,130,BLACK,"B/N/M = Coil targets, K/L/P = Right grid");
+  core_textOutf(30,140,BLACK,"Prototype: two machines were built, and");
+  core_textOutf(30,150,BLACK,"the playfield is only partly known.");
+  core_textOutf(30,160,BLACK,"      *** PRELIMINARY ***");
 }
 
 /*-----------------
@@ -365,7 +397,7 @@ ATARI_ROMEND
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData fourx4SimData = {
-  2,                    /* 2 game specific input ports */
+  3,                    /* 3 game specific input ports */
   fourx4_stateDef,      /* Definition of all states */
   fourx4_inportData,    /* Keyboard Entries */
   { stTrough, stTrough, stTrough, stDrain, stDrain, stDrain, stDrain },

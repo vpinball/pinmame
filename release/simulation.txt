@@ -136,6 +136,8 @@ circulation, so the simulator is preliminary.  Three balls.  The keys are:
   ZXCV  Right drop target bank 1-4 (switches $1C-$1F)
   TYUI  Lanes 1-4 (switches $18-$1B), along the bottom of the left grid
   GJ    Left / right side standing targets (switches $25, $26)
+  BNM   Coil targets (switches $05-$07), each firing its own coil
+  KLP   Right grid row (switches $20-$22)
   H     Kick-out hole
   O     Outhole
   1-8   (keypad) the eight-switch group at $0C-$13
