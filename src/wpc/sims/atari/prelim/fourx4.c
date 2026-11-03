@@ -1,0 +1,457 @@
+// license:BSD-3-Clause
+
+/*******************************************************************************
+ Preliminary Atari 4x4 Pinball Simulator
+
+ 4x4 is a 1982-83 Atari prototype; two machines were built.  Everything named
+ here comes from the ROM and the surviving schematics rather than from a
+ machine, and the playfield is only partly known -- hence preliminary.
+
+ Switch and solenoid numbers are the ones the game dispatches on, and they are
+ the numbers the playfield diagram and the wiring sheets print.  The diagram's
+ legend names the cabinet switches: $27 VOLUME, $28 START, $29 TILT, $2A LCOIN,
+ $2B RCOIN, $2C TEST, and $25 and $26 the two side standing target banks.  P11
+ marks RT FLIPPER at pin 13, which is SW $00, and LT FLIPPER at pin 5, SW $04.
+ Both flipper buttons are gated in hardware rather than pulsed by the CPU:
+ holding either produces no coil write.
+
+ Eight switches have a handler in the table at $8B06 but no name: $08, $0A,
+ $0B, $24 and $30-$33.  The rollunder spinner, the inlanes and the outlanes
+ are among them.  $05-$07 and $20-$23 are named from what they drive; see the
+ table below the switch defines.  Ten switches have no handler at all: $00 and
+ $04, the flipper buttons, $27, the volume pot, and $2D-$2F and $34-$37.
+
+ Lamp numbers are the ROM's own output numbers, blitIndex*8 + bit; atari.c
+ carries the derivation and the port-to-column table.  The playfield diagram
+ draws two four-by-four lamp grids, L11-L20 on the left and L21-L30 on the
+ right, numbered in hex and running straight through.
+
+ The displays are named by the schematics: the backbox sheet puts PLAYER 1 and
+ LAP (HEAT) on SEG1 and PLAYER 2 and CREDIT on SEG2, and the playfield diagram
+ marks the middle-of-playfield display as ANTE.  The wiring sheet draws three
+ displays on the playfield, of one, six and two digits, and device 1 feeds both
+ of its buses with six digits each, so ANTE is one of those three rather than a
+ whole bus.  Which one is not established.
+
+ The sound is two POKEYs at $2600 and $2700, driven through the same
+ sixteen-slot ramp engine that fades the lamps.  The game needs no sound PROM:
+ the waveforms are made inside the chips.  AUDCTL's high-pass filters and
+ SKCTL's two-tone mode are unreachable in this game and are not modelled; see
+ atarisnd.c.
+ ******************************************************************************/
+
+/*------------------------------------------------------------------------------
+  Keys for the 4x4 Simulator:
+  ---------------------------
+    Q    Drain ball
+   WER   Upper / Mid / Lower pop bumper
+   ASDF  Left drop target bank 1-4
+   ZXCV  Right drop target bank 1-4
+   TYUI  Lanes 1-4, along the bottom edge of the left grid
+    GJ   Left / right side standing targets
+   BNM   Coil targets, switches $05-$07
+   KLP   Right grid row, switches $20-$22
+    H    Right grid 4, switch $23
+    O    Outhole
+  1-8    (keypad) the eight-switch group at $0C-$13
+------------------------------------------------------------------------------*/
+
+#include "driver.h"
+#include "core.h"
+#include "sim.h"
+#include "atari.h"
+
+/*------------------
+/  Local functions
+/-------------------*/
+static void init_fourx4(void);
+static void fourx4_drawStatic(BMTYPE **line);
+
+/*--------------------------
+/ Game specific input ports
+/---------------------------*/
+ATARI4_INPUT_PORTS_START(fourx4,3)
+  PORT_START /* 0 */
+    COREPORT_BIT(0x0001,"Upper Pop Bumper",   KEYCODE_W)
+    COREPORT_BIT(0x0002,"Mid Pop Bumper",     KEYCODE_E)
+    COREPORT_BIT(0x0004,"Lower Pop Bumper",   KEYCODE_R)
+    COREPORT_BIT(0x0008,"Left Drop 1",        KEYCODE_A)
+    COREPORT_BIT(0x0010,"Left Drop 2",        KEYCODE_S)
+    COREPORT_BIT(0x0020,"Left Drop 3",        KEYCODE_D)
+    COREPORT_BIT(0x0040,"Left Drop 4",        KEYCODE_F)
+    COREPORT_BIT(0x0080,"Right Drop 1",       KEYCODE_Z)
+    COREPORT_BIT(0x0100,"Right Drop 2",       KEYCODE_X)
+    COREPORT_BIT(0x0200,"Right Drop 3",       KEYCODE_C)
+    COREPORT_BIT(0x0400,"Right Drop 4",       KEYCODE_V)
+    COREPORT_BIT(0x0800,"Right Grid 4",       KEYCODE_H)
+    COREPORT_BIT(0x1000,"Outhole",            KEYCODE_O)
+    COREPORT_BIT(0x4000,"Drain",              KEYCODE_Q)
+  PORT_START /* 1 */
+    COREPORT_BIT(0x0001,"Messenger 1",        KEYCODE_1_PAD)
+    COREPORT_BIT(0x0002,"Messenger 2",        KEYCODE_2_PAD)
+    COREPORT_BIT(0x0004,"Messenger 3",        KEYCODE_3_PAD)
+    COREPORT_BIT(0x0008,"Messenger 4",        KEYCODE_4_PAD)
+    COREPORT_BIT(0x0010,"Messenger 5",        KEYCODE_5_PAD)
+    COREPORT_BIT(0x0020,"Messenger 6",        KEYCODE_6_PAD)
+    COREPORT_BIT(0x0040,"Messenger 7",        KEYCODE_7_PAD)
+    COREPORT_BIT(0x0080,"Messenger 8",        KEYCODE_8_PAD)
+    COREPORT_BIT(0x0100,"Lane 1",             KEYCODE_T)
+    COREPORT_BIT(0x0200,"Lane 2",             KEYCODE_Y)
+    COREPORT_BIT(0x0400,"Lane 3",             KEYCODE_U)
+    COREPORT_BIT(0x0800,"Lane 4",             KEYCODE_I)
+    COREPORT_BIT(0x1000,"Left Standing Tgts", KEYCODE_G)
+    COREPORT_BIT(0x2000,"Right Standing Tgts",KEYCODE_J)
+  PORT_START /* 2 */
+    COREPORT_BIT(0x0001,"Coil Target 5",      KEYCODE_B)
+    COREPORT_BIT(0x0002,"Coil Target 6",      KEYCODE_N)
+    COREPORT_BIT(0x0004,"Coil Target 7",      KEYCODE_M)
+    COREPORT_BIT(0x0008,"Right Grid 1",       KEYCODE_K)
+    COREPORT_BIT(0x0010,"Right Grid 2",       KEYCODE_L)
+    COREPORT_BIT(0x0020,"Right Grid 3",       KEYCODE_P)
+ATARI_INPUT_PORTS_END
+
+/*-------------------
+/ Switch definitions
+/--------------------*/
+/* The game dispatches on col*8+bit and ATARI_sw2m maps a switch number
+   straight onto that, so these numbers are the game's own event codes, and
+   the same hex numbers the wiring sheets print against the connector pins.
+
+   The handler table at $8B06 holds one thread per switch.  Ten point at the
+   do-nothing stub $8A9C: $00, $04, $27, $2D-$2F and $34-$37.  $00 and $04 are
+   the flipper buttons, gated in hardware rather than pulsed by the CPU, and
+   $27 is the volume pot.
+
+   The rest group by handler size:
+
+     $01-$03   three pop bumpers, upper, mid and lower
+     $05-$07   three of a kind, each firing its own coil for one point
+     $0C-$13   eight of a kind; IPDB lists eight messenger balls
+     $14-$17   four of a kind, and $17 fires reset-left-bank
+     $18-$1B   four of a kind
+     $1C-$1F   four of a kind, and $1F fires reset-right-bank
+     $20-$23   four of a kind, the same sizes as $18-$1B
+     $28-$2C   the cabinet, named by P9 and P10
+     $30-$33   four on column 6
+
+   Holding each switch in turn with a ball in play gives what it drives.  The
+   coil column is the solenoid number this file uses, which is the playfield
+   diagram's SOL number plus one:
+
+     switch   coil              score
+     $01      2  upper pop      10     diagram's L55 / SOL 1 / SW 1
+     $02      3  mid pop        10     L54 / SOL 2 / SW 2
+     $03      4  lower pop      10     L53 / SOL 3 / SW 3
+     $05      6  SOL 5           1
+     $06      7  SOL 6           1
+     $07      8  SOL 7           1     the diagram pairs SW 7 with SOL 7
+     $09     10  ball feed       0     so $09 is the outhole
+     $0D-$13  -                100
+     $14-$16  -                 50
+     $17     11  reset L bank    -     the end of the left drop bank
+     $1B     10  ball feed       0
+     $1C-$1E  -                 50
+     $1F     12  reset R bank    -     the end of the right drop bank
+     $20-$23  -                100
+     $24      -                 10
+     $25-$26  -                  1     the two side standing target banks
+     $30     10  ball feed       0
+*/
+#define swRFlipper    0   /* P11 pin 13, RT FLIPPER; no handler */
+#define swUpperPop    1
+#define swMidPop      2
+#define swLowerPop    3
+#define swLFlipper    4   /* P11 pin 5, LT FLIPPER; no handler */
+#define swCoilTgt5    5   /* $05-$07 each fire their own coil for one point;
+                           the diagram pairs SW 7 with SOL 7 */
+#define swCoilTgt6    6
+#define swCoilTgt7    7
+#define swOuthole     9   /* $09 fires the ball feed, solenoid 10 */
+#define swMsgr1      12   /* $0C-$13, the group of eight */
+#define swMsgr2      13
+#define swMsgr3      14
+#define swMsgr4      15
+#define swMsgr5      16
+#define swMsgr6      17
+#define swMsgr7      18
+#define swMsgr8      19
+#define swLDrop1     20   /* $14-$17; the diagram draws these four along the
+                           top edge of the left four-by-four grid; they light
+                           lamps $45-$48.  Four lanes by four levels is what
+                           the machine is named after */
+#define swLDrop2     21
+#define swLDrop3     22
+#define swLDrop4     23   /* $17 - resets the left bank */
+#define swLane1      24   /* $18-$1B, the four the diagram draws along the
+                           bottom edge of the left grid; they light $2D, $2E,
+                           $2F and $34 */
+#define swLane2      25
+#define swLane3      26
+#define swLane4      27
+#define swRDrop1     28   /* $1C-$1F, the matching set on the right; they
+                           light lamps $55-$58 */
+#define swRDrop2     29
+#define swRDrop3     30
+#define swRDrop4     31   /* $1F - resets the right bank */
+#define swRGrid1     32   /* $20-$22 score 100 and light the right grid's
+                           second row, lamps $25-$27 */
+#define swRGrid2     33
+#define swRGrid3     34
+#define swRGrid4     35   /* $23, the fourth of the $20-$23 group; like the
+                           other three it scores 100 and fires no coil */
+#define swLStand     37   /* $25, "LEFT SIDE STANDING TARGETS" in the diagram's
+                           own legend */
+#define swRStand     38   /* $26, "RIGHT SIDE STANDING TARGETS" */
+#define swVolume     39   /* $27, a cabinet volume control - no game handler */
+/* The playfield diagram's legend and P9 pins 20, 19, 18, 17 and P10 pin 11
+   name these:
+       SW 25 = left side standing targets    SW 26 = right side
+       SW 27 = volume   SW 28 = start   SW 29 = tilt
+       SW 2A = left coin   SW 2B = right coin   SW 2C = test */
+#define swStart      40   /* $28 */
+#define swTilt       41   /* $29 */
+#define swLCoin      42   /* $2A */
+#define swRCoin      43   /* $2B */
+#define swTest       44   /* $2C */
+
+/*---------------------
+/ Solenoid definitions
+/----------------------*/
+/* $200A and $200B, low nibble to slice 13E and high nibble to 12E, each into
+   a UDN2981.  The names are the schematic's own. */
+#define sRFlipper     1   /* $200A bit 0 */
+#define sUpperPop     2
+#define sMidPop       3
+#define sLowerPop     4
+#define sLFlipper     5   /* $200A bit 4 */
+#define sSol5         6
+#define sSol6         7
+#define sSol7         8
+#define sHoleKick     9   /* $200B bit 0 */
+#define sBallFeed    10
+#define sResetLBank  11
+#define sResetRBank  12
+#define sExtraGame   13   /* knocker */
+#define sSolD        14
+#define sSolE        15
+#define sSolF        16
+
+/*-------------------
+/ Lamps
+/--------------------*/
+/* Lamp numbers here are the ROM's own output numbers, blitIndex*8 + bit --
+   the same scheme as the solenoids.  atari.c carries the derivation and the
+   port-to-column table; the short version is that the lamp column is the
+   port's slot in the blit list at $8844, and the playfield diagram's L**
+   labels land on those numbers with no offset.
+
+   What the diagram names:
+
+     L11-L20   the left four-by-four grid, the feature the machine is named
+               after, with switches $14-$17 along its top edge and $18-$1B
+               along its bottom
+     L21-L30   the right four-by-four grid
+     L35-L38   a run of lane lamps, lit by switches $10-$13
+     L45-L48   lit by switches $14-$17, the top edge of the left grid
+     L53-L55   the three pop bumper lamps; the diagram writes each as a
+               triplet with its solenoid and switch, L53/SOL 3/SW 3 and so on,
+               and those solenoid and switch numbers match this file
+     L55-L58   the cluster above the pops, lit by switches $1C-$1F
+
+   L11-L17 are the exception: they would be image byte 2 bits 1-7, and bits
+   4-6 of that byte are the task bank, so three lamps of the left grid have no
+   position under this numbering. */
+
+/*---------------------
+/  Ball state handling
+/----------------------*/
+enum {stTrough=SIM_FIRSTSTATE, stShooter, stDrain, stOuthole,
+      stUpperPop, stMidPop, stLowerPop,
+      stLDrop1, stLDrop2, stLDrop3, stLDrop4,
+      stRDrop1, stRDrop2, stRDrop3, stRDrop4, stRGrid4,
+      stLane1, stLane2, stLane3, stLane4, stLStand, stRStand,
+      stCoilTgt5, stCoilTgt6, stCoilTgt7, stRGrid1, stRGrid2, stRGrid3,
+      stMsgr1, stMsgr2, stMsgr3, stMsgr4, stMsgr5, stMsgr6, stMsgr7, stMsgr8
+};
+
+static sim_tState fourx4_stateDef[] = {
+  {"Not Installed",   0,0,         0,          stDrain,   0,0,0, SIM_STNOTEXCL},
+  {"Moving"},
+  {"Playfield",       0,0,         0,          0,         0,0,0, SIM_STNOTEXCL},
+
+  {"Trough",          1,0,         sBallFeed,  stShooter, 1},
+  {"Shooter",         1,0,         0,          stFree,    0,0,0, SIM_STNOTEXCL|SIM_STSHOOT},
+
+  {"Drain",           1,0,         0,          stOuthole, 0,0,0, SIM_STNOTEXCL},
+  {"Outhole",         1,swOuthole, sBallFeed,  stTrough,  1},
+
+  {"Upper Bumper",    1,swUpperPop,0,          stFree,    1},
+  {"Mid Bumper",      1,swMidPop,  0,          stFree,    1},
+  {"Lower Bumper",    1,swLowerPop,0,          stFree,    1},
+
+  {"Left Drop 1",     1,swLDrop1,  0,          stFree,    1},
+  {"Left Drop 2",     1,swLDrop2,  0,          stFree,    1},
+  {"Left Drop 3",     1,swLDrop3,  0,          stFree,    1},
+  {"Left Drop 4",     1,swLDrop4,  0,          stFree,    1},
+
+  {"Right Drop 1",    1,swRDrop1,  0,          stFree,    1},
+  {"Right Drop 2",    1,swRDrop2,  0,          stFree,    1},
+  {"Right Drop 3",    1,swRDrop3,  0,          stFree,    1},
+  {"Right Drop 4",    1,swRDrop4,  0,          stFree,    1},
+
+  {"Right Grid 4",    1,swRGrid4,  0,          stFree,    1},
+
+  {"Lane 1",          1,swLane1,   0,          stFree,    1},
+  {"Lane 2",          1,swLane2,   0,          stFree,    1},
+  {"Lane 3",          1,swLane3,   0,          stFree,    1},
+  {"Lane 4",          1,swLane4,   0,          stFree,    1},
+
+  {"L Standing Tgt",  1,swLStand,  0,          stFree,    1},
+  {"R Standing Tgt",  1,swRStand,  0,          stFree,    1},
+
+  {"Coil Target 5",   1,swCoilTgt5,0,          stFree,    1},
+  {"Coil Target 6",   1,swCoilTgt6,0,          stFree,    1},
+  {"Coil Target 7",   1,swCoilTgt7,0,          stFree,    1},
+
+  {"Right Grid 1",    1,swRGrid1,  0,          stFree,    1},
+  {"Right Grid 2",    1,swRGrid2,  0,          stFree,    1},
+  {"Right Grid 3",    1,swRGrid3,  0,          stFree,    1},
+
+  {"Messenger 1",     1,swMsgr1,   0,          stFree,    1},
+  {"Messenger 2",     1,swMsgr2,   0,          stFree,    1},
+  {"Messenger 3",     1,swMsgr3,   0,          stFree,    1},
+  {"Messenger 4",     1,swMsgr4,   0,          stFree,    1},
+  {"Messenger 5",     1,swMsgr5,   0,          stFree,    1},
+  {"Messenger 6",     1,swMsgr6,   0,          stFree,    1},
+  {"Messenger 7",     1,swMsgr7,   0,          stFree,    1},
+  {"Messenger 8",     1,swMsgr8,   0,          stFree,    1},
+  {0}
+};
+
+/*---------------------------
+/  Keyboard conversion table
+/----------------------------*/
+static sim_tInportData fourx4_inportData[] = {
+  {0, 0x0001, stUpperPop},
+  {0, 0x0002, stMidPop},
+  {0, 0x0004, stLowerPop},
+  {0, 0x0008, stLDrop1},
+  {0, 0x0010, stLDrop2},
+  {0, 0x0020, stLDrop3},
+  {0, 0x0040, stLDrop4},
+  {0, 0x0080, stRDrop1},
+  {0, 0x0100, stRDrop2},
+  {0, 0x0200, stRDrop3},
+  {0, 0x0400, stRDrop4},
+  {0, 0x0800, stRGrid4},
+  {0, 0x1000, stOuthole},
+  {0, 0x4000, stDrain},
+  {1, 0x0001, stMsgr1},
+  {1, 0x0002, stMsgr2},
+  {1, 0x0004, stMsgr3},
+  {1, 0x0008, stMsgr4},
+  {1, 0x0010, stMsgr5},
+  {1, 0x0020, stMsgr6},
+  {1, 0x0040, stMsgr7},
+  {1, 0x0080, stMsgr8},
+  {1, 0x0100, stLane1},
+  {1, 0x0200, stLane2},
+  {1, 0x0400, stLane3},
+  {1, 0x0800, stLane4},
+  {1, 0x1000, stLStand},
+  {1, 0x2000, stRStand},
+  {2, 0x0001, stCoilTgt5},
+  {2, 0x0002, stCoilTgt6},
+  {2, 0x0004, stCoilTgt7},
+  {2, 0x0008, stRGrid1},
+  {2, 0x0010, stRGrid2},
+  {2, 0x0020, stRGrid3},
+  {0}
+};
+
+/*--------------------
+  Drawing information
+  --------------------*/
+static void fourx4_drawStatic(BMTYPE **line) {
+  core_textOutf(30, 60,BLACK,"Help on this Simulator:");
+  core_textOutf(30, 70,BLACK,"W/E/R = Upper/Mid/Lower pop bumper");
+  core_textOutf(30, 80,BLACK,"A/S/D/F = Left drop target bank");
+  core_textOutf(30, 90,BLACK,"Z/X/C/V = Right drop target bank");
+  core_textOutf(30,100,BLACK,"H = Right grid 4, O = Outhole, Q = Drain");
+  core_textOutf(30,110,BLACK,"Keypad 1-8 = the eight-switch group");
+  core_textOutf(30,120,BLACK,"T/Y/U/I = Lanes 1-4, G/J = Standing tgts");
+  core_textOutf(30,130,BLACK,"B/N/M = Coil targets, K/L/P = Right grid");
+  core_textOutf(30,140,BLACK,"Prototype: two machines were built, and");
+  core_textOutf(30,150,BLACK,"the playfield is only partly known.");
+  core_textOutf(30,160,BLACK,"      *** PRELIMINARY ***");
+}
+
+/*-----------------
+/  ROM definitions
+/------------------*/
+ATARI_4x4_ROMSTART(fourx4, "8000ce65.bin", CRC(27341155) SHA1(c0da1fbf64f93ab163b2ea6bfbfc7b778cea819f),
+                           "a0004c37.bin", CRC(6f93102f) SHA1(d6520987ed5805b0e6b5da5653fc7cb063e86dda),
+                           "c000a70c.bin", CRC(c31ca8d3) SHA1(53f20eff0084771dc61d19db7ddae52e4423e75e))
+ATARI_ROMEND
+
+/*-----------------------
+/ Simulation Definitions
+/-----------------------*/
+static sim_tSimData fourx4SimData = {
+  3,                    /* 3 game specific input ports */
+  fourx4_stateDef,      /* Definition of all states */
+  fourx4_inportData,    /* Keyboard Entries */
+  { stTrough, stDrain, stDrain, stDrain, stDrain, stDrain, stDrain },
+  NULL,                 /* no init */
+  NULL,                 /* no ball state handler */
+  fourx4_drawStatic,
+  TRUE,                 /* Simulate manual shooter? */
+  NULL                  /* no custom key conditions */
+};
+
+/*----------------------
+/ Game Data Information
+/----------------------*/
+/*-- The schematics name every bus.  On the backbox sheet PLAYER 1 and LAP
+/   (HEAT) both hang off segments 1A-1G and PLAYER 2 and CREDIT both off
+/   2A-2G, so each bus carries a six-digit score and a two-character display --
+/   eight digits, which is exactly the eight registers.  The playfield diagram
+/   marks the display in the middle of the playfield as ANTE.
+/
+/   The slices are nibble-paired: 12E takes BD4-BD7 and drives SEG1 (sheet
+/   4936), 13E takes BD0-BD3 and drives SEG2 (sheet 4933).  So the high nibble
+/   of each register byte is SEG1 and the low nibble SEG2, and the same for
+/   SEG3/SEG4 on the second device.
+/
+/   In a one-player game the SEG1 bus reads a score plus a heat of 01, and the
+/   SEG2 bus a blank score -- player 2 is not playing -- plus a credit count.
+/
+/   Device 1 feeds SEG3 and SEG4 from its registers 2-7; registers 0 and 1 are
+/   lamps, so each of those two buses has six digits rather than eight.  The
+/   wiring sheet draws three displays on the playfield, of one, six and two
+/   digits, and which of them sits on which bus is not established, so both
+/   buses are shown in full.  In a one-player game the SEG4 digits take
+/   independent counting values and the SEG3 digits stay at 0. --*/
+static core_tLCDLayout fourx4_disp[] = {
+  { 0, 0, 0, 6, CORE_SEG7 }, { 0,16, 6, 2, CORE_SEG7 },   /* SEG1: player 1, lap (heat) */
+  { 2, 0, 8, 6, CORE_SEG7 }, { 2,16,14, 2, CORE_SEG7 },   /* SEG2: player 2, credit */
+  { 5, 0,16, 6, CORE_SEG7 },                              /* SEG3: playfield, device 1 high nibble */
+  { 7, 0,24, 6, CORE_SEG7 },                              /* SEG4: playfield, device 1 low nibble */
+  { 0 }
+};
+
+static core_tGameData fourx4GameData = {
+  0, fourx4_disp,
+  { FLIP_SWNO(swLFlipper,swRFlipper), /*swCol*/0, /*lampCol*/11, /*custSol*/0,
+    SNDBRD_NONE, 0 },
+  &fourx4SimData
+};
+
+/*---------------
+/  Game handling
+/----------------*/
+static void init_fourx4(void) {
+  core_gameData = &fourx4GameData;
+}
+
+CORE_GAMEDEFNV(fourx4,"4x4 (Prototype)",1982,"Atari",gl_mATARI4,0)

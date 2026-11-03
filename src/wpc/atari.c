@@ -42,7 +42,6 @@ static struct {
 
   UINT8  dmaCount;
   UINT8  toggle;
-  UINT8  enable_irq;
 } locals;
 
 static UINT8 latch[] = {
@@ -122,6 +121,22 @@ static INTERRUPT_GEN(ATARI2_vblank) {
 
   core_updateSw(core_getSol(16));
 }
+
+/*-- 4x4 does not multiplex anything that needs integrating here.  The game
+/   blits all 33 output ports every second interrupt and slice_write puts the
+/   digits, lamps and solenoids straight into coreGlobals as they arrive, so
+/   this only has to advance the flipper state and read the cabinet.
+/
+/   It cannot share ATARI2_vblank: that one copies coreGlobals.lampMatrix from
+/   tmpLampMatrix, copies coreGlobals.segments from locals.segments and then
+/   zeroes locals.segments, and copies coreGlobals.solenoids from
+/   locals.solenoids.  None of those three are written by this generation, so
+/   sharing it wiped every output just before it reached the screen. --*/
+static INTERRUPT_GEN(ATARI4_vblank) {
+  locals.vblankCount++;
+  core_updateSw(TRUE);
+}
+
 
 static SWITCH_UPDATE(ATARI0) {
 	if (inports) {
@@ -469,7 +484,6 @@ MEMORY_END
 
 static void init_common(void) {
   memset(&locals, 0, sizeof locals);
-  locals.enable_irq = 1;
   sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_SOUND1), NULL, NULL);
 }
 
@@ -543,59 +557,467 @@ MACHINE_DRIVER_START(ATARI3)
 MACHINE_DRIVER_END
 
 /*-----------------------------------------
+/  4x4 custom I/O -- the Atari "Pinball Slice"
+/
+/  4x4 shares no I/O with generations 1-3.  It uses Atari custom gate arrays
+/  silkscreened PINBALL SLICE (schematic 039032-01, designators 12E and 13E).
+/  Each is a 40-pin part with a 4-bit data bus, A0-A3 selecting 16 registers,
+/  8 switch inputs and 16 outputs in four groups; two of them share a chip
+/  select and split the byte, one driving D0-D3 and the other D4-D7.  Five such
+/  pairs sit at $2000-$2400; the two 16-register devices at $2600/$2700 are
+/  POKEYs.
+/
+/  Only the register roles the game code proves are decoded here.  Everything
+/  else is stored and logged, because no datasheet for this part is known to
+/  exist and the CPU-board sheet of the schematic has never surfaced.
+/------------------------------------------*/
+#define ATARI4_SLICE_DEVS 7  /* $2000,$2100,$2200,$2300,$2400,$2600,$2700 */
+
+/*-- CPU: 1.5 MHz, given by one of the two owners.  Atari's other 6502 boards
+/   of the era run 12.096 MHz / 8 = 1.512 MHz, within a percent of it.
+/
+/   IRQ: 60 Hz, the AC line frequency.  A mains zero-crossing interrupt is the
+/   usual arrangement for a pinball of this period, and this is a US 60 Hz
+/   machine (the wiring diagram's transformer has 120 V and 100 V primaries).
+/   The interrupt handler costs a near-constant 3328 cycles, 13% of the CPU at
+/   this rate. --*/
+#define ATARI4_CPUFREQ 1500000
+#define ATARI4_IRQFREQ 60
+
+/*-- The game kicks $230C on every interrupt and inside its power-up busy-wait,
+/   so a gap of a second means it has stopped running and the real board would
+/   have reset. --*/
+#define ATARI4_WDOG_IRQS (ATARI4_IRQFREQ)  /* ~1 s without a kick */
+#define ATARI4_TEST_HOOKS 0  /* 1 = log every slice access */
+
+#if ATARI4_TEST_HOOKS
+#define SLICE_LOG logerror
+#else
+#define SLICE_LOG(...) ((void)0)
+#endif
+
+static UINT8 *atari4_taskram;   /* $1000-$17FF: eight 256-byte task pages */
+static UINT8 *atari4_CMOS;
+static int atari4_taskbank;
+static void atari4_setbank(int bank);
+
+/*-- [dev][reg-0x0e] -> switch matrix column, or 0 for "not a switch port".
+/   Matrix columns are 1-based, so column n here is the game's column n-1. --*/
+static const UINT8 atari4_swcol[ATARI4_SLICE_DEVS][2] = {
+  /* $200E, $200F */ { 2, 1 },
+  /* $210E, $210F */ { 4, 3 },
+  /* $220E, $220F */ { 6, 5 },
+  /* $230E, $230F */ { 7, 0 },
+  /* $240E, $240F */ { 0, 0 },
+  /* $260E, $260F */ { 0, 0 },
+  /* $270E, $270F */ { 0, 0 },
+};
+
+static struct {
+  UINT8 reg[ATARI4_SLICE_DEVS][16];
+  int   wdog;   /* interrupts since the last $230C kick */
+} slice;
+
+static UINT8 slice_read(int dev, int offset) {
+  int reg = offset & 0x0f;
+  UINT8 data;
+  if (offset & 0xf0)
+    SLICE_LOG("4x4 slice R dev=%d OFFPAGE off=%02X\n", dev, offset & 0xff);
+  /*-- The debounce routine at $9248 does not scan the switch columns in device
+  /   order.  It reads their addresses from a pointer table at $8834, and that
+  /   table is
+  /
+  /       col 0  $200F    col 1  $200E
+  /       col 2  $210F    col 3  $210E
+  /       col 4  $220F    col 5  $220E
+  /       col 6  $230E
+  /
+  /   -- register F before register E within each device, and a seventh column
+  /   on device 3.  Seven ports of eight give the 56 switches SW00-SW37, and
+  /   the switch number the game dispatches on is col*8+bit (the identity table
+  /   at $875F).
+  /
+  /   The inputs have 470R pull-ups to +5V and the switches pull to switch
+  /   ground, so a closed switch reads low and $9248 inverts before storing. --*/
+  /*-- The two POKEYs carry the game's sixteen DIP switches on their pot
+  /   inputs.  The board has two CTS 206-8 packs, each switch in series with a
+  /   resistor, and the game reads them the canonical way: write POTGO at
+  /   register $0B, then read ALLPOT at $08.  A closed switch pulls its line
+  /   down so the conversion finishes at once and its ALLPOT bit is already
+  /   clear by the time the read happens; an open one leaves the bit set.  So
+  /   ALLPOT reads back as the complement of the switches.
+  /
+  /   There are only three reads of ALLPOT in the whole ROM, and between them
+  /   they account for every dip the game uses:
+  /
+  /     $93D6   first pack, AND #$1C -- bits 2, 3 and 4.  A three-bit level
+  /             that sets a lamp duty cycle: the tick routine at $93DE adds it
+  /             to the free-running counter $300E and turns lamp layer $3148
+  /             on at $20 and off again at $40, so a larger value is a shorter
+  /             on-time.
+  /     $992D   first pack, whole byte.  Its one caller, $9F4D, masks #$C0 and
+  /             decrements the BCD credit counter at $07C5 when either bit is
+  /             set.  Both clear is free play.
+  /     $993D   second pack, whole byte -- and nothing calls it.  No JSR
+  /             reaches it and its address appears nowhere as a cell, so the
+  /             second CTS 206-8 is not read by this ROM at all.
+  /
+  /   Bits 0, 1 and 5 of the first pack are never masked out of either read,
+  /   so eight of the sixteen dips do nothing.  The game runs in any
+  /   combination; with the stock defaults it is on free play. --*/
+  if (dev >= 5 && reg == 0x08) {
+    data = ~core_getDip(dev - 5);
+    SLICE_LOG("4x4 ALLPOT pokey%d -> %02X\n", dev - 5, data);
+    return data;
+  }
+
+  if (reg >= 0x0e && atari4_swcol[dev][reg - 0x0e]) {
+    int col = atari4_swcol[dev][reg - 0x0e];
+    data = ~coreGlobals.swMatrix[col];
+    SLICE_LOG("4x4 switchmap dev=%d reg=%X -> col=%d matrix=%02X data=%02X\n",
+              dev, reg, col, coreGlobals.swMatrix[col], data);
+  }
+  else
+    data = slice.reg[dev][reg];
+  SLICE_LOG("4x4 slice R dev=%d reg=%X data=%02X\n", dev, reg, data);
+  return data;
+}
+
+static void slice_write(int dev, int offset, UINT8 data) {
+  int reg = offset & 0x0f;
+  if (offset & 0xf0)
+    SLICE_LOG("4x4 slice W dev=%d OFFPAGE off=%02X data=%02X\n", dev, offset & 0xff, data);
+  if (dev == 3 && reg == 0x0f && ((data >> 4) & 7) != 7
+      && ((data >> 4) & 7) != atari4_taskbank)
+    atari4_setbank((data >> 4) & 7);     /* all ones = hold */
+  /*-- Registers 8 and 9 of the five slice devices are configuration, written
+  /   once at power up -- $DD to $2008, $4B to $2108, zero to the rest, and
+  /   register 9 from cold start.  Nothing in the ROM ever reads them back, so
+  /   whatever they set up inside the part cannot be observed from the bus and
+  /   nothing here needs to model it.  (Devices 0 and 1 are the display pair,
+  /   so the two non-zero values are most likely the multiplex divider.) --*/
+  if (reg == 0x0c) {
+    if (dev == 2) cpu_set_irq_line(ATARI_CPU, 0, CLEAR_LINE);  /* $220C: IRQ ack */
+    if (dev == 3) { slice.wdog = 0; SLICE_LOG("4x4 watchdog kick\n"); }  /* $230C */
+  }
+  /*-- Displays.  Registers 0-7 of the first two devices hold BCD digits,
+  /   decoded to segments inside the slice -- there is no font table anywhere
+  /   in the ROM.  Each device is a nibble-paired slice: 12E takes BD4-BD7 and
+  /   drives SEG1 through ULN2803A 12D/A, 13E takes BD0-BD3 and drives SEG2
+  /   through 13D.  So one register byte carries two digits, one per segment
+  /   bus, and the register index is the digit position: four buses of eight.
+  /   $F in a digit blanks it, which is what an unused player's display holds.
+  /
+  /   The index counts up from the least significant digit: a six-digit score
+  /   reads $2005 down to $2000, and $2000 is the units digit, always 0 since
+  /   nothing in the game scores less than ten.  The display layout puts the
+  /   most significant digit first, so the index is reversed here.
+  /
+  /   Device 0 carries the two-digit heat and credit displays in registers 6
+  /   and 7, past the end of the six-digit score, so only the first six turn
+  /   around there.  Those two keep register order, and on ball 1 they read
+  /   01 and 02.  Device 1 has no such pair -- its registers 0 and 1 are
+  /   lamps -- and its six digits are registers 2 to 7. --*/
+  if (dev <= 1 && reg <= 7 && !(dev == 1 && reg <= 1)) {
+    int pos = (dev == 0) ? ((reg <= 5) ? 5 - reg : reg) : (7 - reg);
+    coreGlobals.segments[dev * 16 + pos].w     = core_bcd2seg7a[data >> 4];
+    coreGlobals.segments[dev * 16 + 8 + pos].w = core_bcd2seg7a[data & 0x0f];
+  }
+
+  /*-- Registers $0A and $0B of device 0 are the solenoids.  The slices are
+  /   nibble-paired: two four-bit parts share each address, one wired to
+  /   BD0-BD3 and the other to BD4-BD7, so one byte drives both.  Each part
+  /   sends OUT00-OUT03 and OUT10-OUT13 into a UDN2981, and the schematic
+  /   names all sixteen drivers:
+  /
+  /     $200A low  OUT00-03 (13E -> 13EA)  right flipper, upper/mid/lower pop
+  /     $200A high OUT00-03 (12E -> 12E/A) left flipper, SOL 5, SOL 6, SOL 7
+  /     $200B low  OUT10-13 (13E -> 13EA)  hole, ball feed, reset L/R bank
+  /     $200B high OUT10-13 (12E -> 12E/A) extra game, SOL D, SOL E, SOL F
+  /
+  /   Of all 33 ports only $200A, $200B and $210A go high for under a dozen
+  /   frames, and $200B bit 1 -- the ball feed -- fires once, at the start of
+  /   a game.
+  /
+  /   The pulse engine at $9286 pops the next queued solenoid, sets its image
+  /   bit and loads a countdown from the table at $8802; when that expires it
+  /   ANDs the two solenoid bytes with $8817, which holds 11 00.  Every
+  /   solenoid is dropped on expiry except $200A bits 0 and 4, whose timing
+  /   bytes are FF rather than a pulse length: they are the two flipper
+  /   enables, held for as long as the button is in. --*/
+  /*-- $2600 and $2700 are two POKEYs.  The CPU board carries a CO12294 at
+  /   position C and a second one the photograph does not show; the game drives
+  /   their frequency and control registers through the same ramp engine that
+  /   fades the lamps, sixteen slots onto sixteen registers: the game programs
+  /   a value, a delta and a count into three parallel arrays at $31A6, $31B6
+  /   and $31C6, $9588 steps them every tick into an image at $31D6, and $961E
+  /   blits that image to $2600-$2607 and $2700-$2707.  atarisnd.c carries the
+  /   chip model. --*/
+  if (dev >= 5) { atari4snd_w(dev - 5, offset & 0x0f, data); return; }
+
+  /*-- Lamps.
+  /
+  /   The ROM numbers every output as blitIndex*8 + bit, where blitIndex is the
+  /   port's slot in the 33-entry list at $8844 that $91B9 blits from the image
+  /   at $3082.  The solenoid pulse engine at $92BE builds that number -- TYA,
+  /   three ASLs, ADC the bit index -- to index the per-solenoid timing table
+  /   at $8802, and the solenoid numbering in this driver is the same scheme.
+  /
+  /   The four lamp-layer routines at $9344, $936B, $938D and $93AF each take
+  /   an on/off flag and OR or AND a 33-byte RAM mask ($30E5, $3106, $3127,
+  /   $3148) into the output image, looping the image index from $12 down to 2.
+  /   Image bytes 2-18 are the lamp range; 0 and 1 are the solenoids and 19-32
+  /   the score digits.
+  /
+  /   The lamp column is the blit index, so a PinMAME lamp number and the ROM's
+  /   own output number are the same value:
+  /
+  /     col  2  $230F   bits 0-3 and 7; 4-6 are the task bank, see slice_write
+  /     col  3  $210A   col  8  $220B   col 13  $2301
+  /     col  4  $210B   col  9  $2200   col 14  $230A
+  /     col  5  $2100   col 10  $2201   col 15  $240A
+  /     col  6  $2101   col 11  $230B   col 16  $240B
+  /     col  7  $220A   col 12  $2300   col 17  $2400
+  /                                     col 18  $2401
+  /
+  /   Which switch lights which bit.  Each bit latches and stays latched, and a
+  /   second hit of the same switch does nothing; $210A walks 10, 30, 70, F0 as
+  /   $0C, $0D and $0E are hit in turn, a four-target bank showing how many are
+  /   down:
+  /
+  /     sw $0C $0D $0E -> $210A.5 .6 .7      sw $0F -> $210B.4
+  /     sw $10 $11 $12 -> $2101.5 .6 .7      sw $13 -> $220A.0
+  /     sw $14 $15 $16 -> $220B.5 .6 .7      sw $17 -> $2200.0
+  /     sw $18 $19 $1A -> $2100.5 .6 .7      sw $1B -> $2101.4
+  /     sw $1C $1D $1E -> $2201.5 .6 .7      sw $1F -> $230B.0
+  /     sw $20 $21 $22 -> $210B.5 .6 .7      sw $23 -> $2100.4
+  /
+  /   Those are switch numbers, not swMatrix indices: ATARI_m2sw is
+  /   col*8 + row - 8, so the matrix index is eight higher than the number.
+  /
+  /   $2301, $230A, $240A and $240B move constantly in attract and settle when
+  /   a ball is in play: general illumination.  $2300, $2400 and $2401 stay at
+  /   00 in attract, in play and on tilt.
+  /
+  /   The playfield diagram labels its lamps L11 upwards in hex, and those
+  /   labels land on these numbers with no offset:
+  /
+  /     $2101.5 .6 .7, $220A.0  = 53, 54, 55, 56 = L35 L36 L37 L38, one run of
+  /                               lane lamps on the diagram
+  /     $220B.5 .6 .7, $2200.0  = 69, 70, 71, 72 = L45 L46 L47 L48
+  /     $2201.5 .6 .7, $230B.0  = 85, 86, 87, 88 = L55 L56 L57 L58, the cluster
+  /                               the diagram draws above the pops
+  /     $210A.5 .6 .7           = 29, 30, 31     = L1D L1E L1F, the bottom row
+  /                               of the left four by four grid (L11-L20)
+  /     $210B.5 .6 .7           = 37, 38, 39     = L25 L26 L27, row two of the
+  /                               right grid (L21-L30)
+  /     $2100.5 .6 .7           = 45, 46, 47     = L2D L2E L2F, row four of it
+  /
+  /   L11-L17 are the exception: they would be image byte 2 bits 1-7, and bits
+  /   4-6 of that byte are the task bank, so three lamps of the left grid have
+  /   no position under this numbering.  The main PCB schematic would settle
+  /   it; the set available is sheet 4 of 7. --*/
+  {
+    static const struct { UINT8 dev, reg, col; } lampport[] = {
+      {3,0x0f, 2}, {1,0x0a, 3}, {1,0x0b, 4}, {1,0x00, 5}, {1,0x01, 6},
+      {2,0x0a, 7}, {2,0x0b, 8}, {2,0x00, 9}, {2,0x01,10}, {3,0x0b,11},
+      {3,0x00,12}, {3,0x01,13}, {3,0x0a,14}, {4,0x0a,15}, {4,0x0b,16},
+      {4,0x00,17}, {4,0x01,18}
+    };
+    int i;
+    for (i = 0; i < sizeof(lampport)/sizeof(lampport[0]); i++)
+      if (lampport[i].dev == dev && lampport[i].reg == reg) {
+        /* image byte 2 shares $230F with the task bank in bits 4-6 */
+        coreGlobals.lampMatrix[lampport[i].col] =
+          (lampport[i].col == 2) ? (data & 0x8f) : data;
+        break;
+      }
+  }
+
+  if (dev == 0 && (reg == 0x0a || reg == 0x0b)) {
+    int shift = (reg == 0x0a) ? 0 : 8;
+    coreGlobals.solenoids = (coreGlobals.solenoids & ~(0xff << shift))
+                          | ((UINT32)data << shift);
+  }
+
+  if (slice.reg[dev][reg] != data)
+    SLICE_LOG("4x4 out dev=%d reg=%X %02X -> %02X\n", dev, reg, slice.reg[dev][reg], data);
+  slice.reg[dev][reg] = data;
+  SLICE_LOG("4x4 slice W dev=%d reg=%X data=%02X\n", dev, reg, data);
+}
+
+static READ_HANDLER(slice_r)   { return slice_read(offset >> 8, offset); }
+static WRITE_HANDLER(slice_w)  { slice_write(offset >> 8, offset, data); }
+static READ_HANDLER(slice2_r)  { return slice_read(5 + (offset >> 8), offset); }
+static WRITE_HANDLER(slice2_w) { slice_write(5 + (offset >> 8), offset, data); }
+
+/*-- Zero page $E0-$FF is the current task's working context, banked.  Only
+/   the task pages are aliased: $0000-$01FF is banked onto the current task's
+/   page inside $1000-$17FF, so a task's record and the live zero page are the
+/   same bytes.  $0200-$07FF is mapped as its own RAM rather than as a second
+/   window onto $1200-$17FF.
+/
+/   Each task owns a 23-byte record at TASK-SLOT(i) = $1iE9:
+/
+/       +$00  $1iE9  parameter stack base      (S0 = $DE)
+/       +$01  $1iEA  parameter stack pointer   (the stack itself is in zero page, indexed by X)
+/       +$02  $1iEB  return stack base         (R0 = $6F, the 6502 hardware stack)
+/       +$03  $1iEC  return stack pointer
+/       +$04  $1iED  sleep timer, 2 bytes, decremented by 8 per tick at $9541
+/       +$06  $1iEF  17-byte interpreter context: IP at $F8/$F9, and $FA-$FC
+/
+/   No instruction anywhere in the ROM writes that context: zero page IS the
+/   current task's record, so running a task writes that task's state, and the
+/   dispatch stubs at $1nEF-$1nFF read back the live zero page.  $96B9 (the
+/   variant START-TASK uses) reads $E9 and $EB to start the incoming task on
+/   its own stack bases -- reads that only make sense through the bank.
+/
+/   The task number is latched from $230F bits 4-6.  The switcher computes
+/   task*16 | (image & $8F) and stores it there immediately before it touches
+/   the record, which is the only reason that store sits at that point in the
+/   routine.  All ones means "hold", which is why the display refresh at $8FDC
+/   writes (image & $0F) | $70 instead of the image: it has to drive the low
+/   nibble without disturbing the task selection.  The other two writers, $9064
+/   and $91DF, write the image back unchanged and so preserve it.
+/
+/   This has to be a bank rather than a read/write handler.  NEXT ends with
+/   "jmp $00FA", and $00FA-$00FC hold a self-modifying JMP (cfa) whose operand
+/   bytes ARE the code field address the inner interpreter just fetched.  MAME
+/   reads those operand bytes with cpu_readop_arg, which bypasses memory
+/   handlers, so a handler-based window would run every task through whatever
+/   code field page zero happened to hold.
+/
+/   The eight pages live in the 2K at $1000-$17FF, which the ROM also addresses
+/   directly: that is how the scheduler reads another task's sleep timer at
+/   $1iED and how the switcher reads the outgoing task's context at $1iEF. --*/
+static void atari4_setbank(int bank) {
+  atari4_taskbank = bank;
+  cpu_setbank(2, atari4_taskram + (bank << 8));   /* $0000-$00FF */
+  cpu_setbank(3, atari4_taskram + (bank << 8));   /* $0100-$01FF, the same page */
+}
+
+static NVRAM_HANDLER(ATARI4) {
+  core_nvram(file, read_or_write, atari4_CMOS, 0x100, 0x00);
+}
+/*-- $2500 is a 256 by 4 CMOS, so only the low nibble of each byte exists.
+/   The write handler masks it off; every read of it in the ROM is followed
+/   immediately by ORA #$F0 or AND #$0F.
+/
+/   The only 6502 code that touches it is the record routine at $8EF8 -- the
+/   three other apparent references are thread cells whose bytes happen to
+/   decode as absolute addressing.  It takes a record number in A, doubles it
+/   for the index, and works on an eight-byte record: six BCD digits, one per
+/   nibble, and a checksum.  It does three passes.  First it sums the eight
+/   nibbles and folds the result back into the record, which is the verify.
+/   Then it decrements the six-digit value in decimal mode and, if that
+/   borrows past the top, fills all six with 9.  Then it sums the first seven
+/   nibbles again, negates, and stores that as the eighth -- so the checksum
+/   is the two's complement of the nibble sum, and a record reads back
+/   consistent only if its nibbles sum to zero.
+/
+/   That is why a blank NVRAM is safe to boot on: the routine rewrites the
+/   checksum from whatever it finds, so the zero fill below heals on first
+/   use rather than wedging the game. --*/
+static READ_HANDLER(nvram4_r)  { return atari4_CMOS[offset]; }
+static WRITE_HANDLER(nvram4_w) { atari4_CMOS[offset] = data & 0x0f; }
+
+/*-----------------------------------------
 /  Memory map for 4x4
 /------------------------------------------*/
 static MEMORY_READ_START(ATARI4_readmem)
-  {0x0000,0x07ff,	MRA_RAM},
-  {0x1000,0x17ff,	MRA_RAM},
-  {0x2000,0x27ff,	MRA_RAM},
+  {0x0000,0x00ff,	MRA_BANK2},	/* the current task's page */
+  {0x0100,0x01ff,	MRA_BANK3},	/* the same page again: A8 is not decoded */
+  {0x0200,0x07ff,	MRA_RAM},
+  {0x1000,0x17ff,	MRA_RAM},	/* the eight task pages, addressed directly */
+  {0x2000,0x24ff,	slice_r},	/* five Pinball Slice pairs */
+  {0x2500,0x25ff,	nvram4_r},	/* 256x4 CMOS */
+  {0x2600,0x27ff,	slice2_r},	/* two POKEYs */
   {0x3000,0x37ff,	MRA_RAM},
   {0x8000,0xffff,	MRA_ROM},
 MEMORY_END
 
 static MEMORY_WRITE_START(ATARI4_writemem)
-  {0x0000,0x07ff,	MWA_RAM},
-  {0x1000,0x17ff,	MWA_RAM},
-  {0x2000,0x27ff,	MWA_RAM, &generic_nvram, &generic_nvram_size},
+  {0x0000,0x00ff,	MWA_BANK2},
+  {0x0100,0x01ff,	MWA_BANK3},
+  {0x0200,0x07ff,	MWA_RAM},
+  {0x1000,0x17ff,	MWA_RAM, &atari4_taskram},
+  {0x2000,0x24ff,	slice_w},
+  {0x2500,0x25ff,	nvram4_w, &atari4_CMOS},
+  {0x2600,0x27ff,	slice2_w},
   {0x3000,0x37ff,	MWA_RAM},
+  /*-- Writes above $8000 hit ROM and do nothing on the real board.  They must
+  /   be mapped: MAME's unmapped-write handler stores into the region for a
+  /   16-bit address bus, so a stray write would silently patch the loaded ROM
+  /   image.  The game does make two, through a generic pointer-store routine
+  /   at $836D/$8377 that lands on $FFF8.  ATARI1_writemem has the same guard. --*/
+  {0x8000,0xffff,	MWA_NOP},
 MEMORY_END
 
-static int irq_callback(int line) {
-  cpu_set_irq_line(0, 0, CLEAR_LINE);
-  locals.enable_irq = 1;
-  return 0;
-}
-
+/*-- The IRQ handler at $9665 acknowledges by writing $01 to $220C as its very
+/   first act, and kicks $230C with $10 on the way out.  $230C is also poked
+/   twice inside the power-up self-test's busy-wait at $DFD1/$DFDD, where
+/   nothing else happens at all -- a register written inside a delay loop is a
+/   watchdog, not an interrupt control. --*/
 static INTERRUPT_GEN(ATARI4_irq) {
-  if (locals.enable_irq) {
-    cpu_set_irq_line(0, 0, ASSERT_LINE);
-    locals.enable_irq = 0;
+  if (++slice.wdog > ATARI4_WDOG_IRQS) {
+    logerror("4x4 watchdog timeout: $230C not kicked for %d interrupts\n", slice.wdog);
+    slice.wdog = 0;
+    /*-- A reset-line pulse does not re-run MACHINE_INIT, so the latched
+    /   outputs are cleared here; on the board the reset clears the driver
+    /   latches. --*/
+    cpu_set_irq_line(ATARI_CPU, 0, CLEAR_LINE);
+    memset(&slice.reg, 0, sizeof slice.reg);
+    coreGlobals.solenoids = 0;
+    memset((void *)coreGlobals.lampMatrix, 0, sizeof coreGlobals.lampMatrix);
+    cpu_set_reset_line(ATARI_CPU, PULSE_LINE);
+    return;
   }
+  cpu_set_irq_line(ATARI_CPU, 0, ASSERT_LINE);
 }
 
 static MACHINE_INIT(ATARI4) {
   memset(&locals, 0, sizeof locals);
-  locals.enable_irq = 1;
+  memset(&slice, 0, sizeof slice);
   memset(memory_region(ATARI_MEMREG_CPU), 0, 0x2000);
-  cpu_set_irq_callback(0, irq_callback);
+  /*-- $1000-$17FF holds the eight task pages.  It is mapped as plain RAM
+  /   rather than through a read/write handler because the power-up RAM test
+  /   at $DF10 copies self-modifying code into $1000 and does JMP $1000, and
+  /   an opcode fetch bypasses memory handlers. --*/
+  atari4_taskram = memory_region(ATARI_MEMREG_CPU) + 0x1000;
+  atari4_setbank(0);
 }
 
+/*-- The cabinet switches are SW28 start, SW29 tilt, SW2A left coin, SW2B right
+/   coin and SW2C test, per the playfield diagram's legend, so they live in
+/   switch column 6.  SW2D-SW2F have no handler in the ROM, so their bits are
+/   left alone. --*/
 static SWITCH_UPDATE(ATARI4) {
 	if (inports) {
-		coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x62) | (inports[ATARI_COMINPORT] & 0x9d);
+		coreGlobals.swMatrix[6] = (coreGlobals.swMatrix[6] & 0xe0)
+			| ((inports[ATARI_COMINPORT] & 0x0002) ? 0x02 : 0)   /* Tilt       -> SW29 */
+			| ((inports[ATARI_COMINPORT] & 0x0004) ? 0x01 : 0)   /* Game       -> SW28 */
+			| ((inports[ATARI_COMINPORT] & 0x0008) ? 0x04 : 0)   /* Left coin  -> SW2A */
+			| ((inports[ATARI_COMINPORT] & 0x0010) ? 0x08 : 0)   /* Right coin -> SW2B */
+			| ((inports[ATARI_COMINPORT] & 0x0081) ? 0x10 : 0);  /* Test       -> SW2C */
+		/*-- The right flipper button is switch $00.  core_updateSw wires the
+		/   flipper buttons from FLIP_SWNO with "if (FLIP_SWR(flip))", and
+		/   FLIP_SWR of switch $00 is zero, which it cannot tell from "this
+		/   game has no right flipper switch", so it is set here instead.  The
+		/   left one, switch $04, goes through FLIP_SWNO as usual. --*/
+		core_setSw(0x00, inports[CORE_FLIPINPORT] & CORE_LRFLIPKEY);
 	}
 }
 
 MACHINE_DRIVER_START(ATARI4)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD_TAG("mcpu", M6502, 575000)
+  MDRV_CPU_ADD_TAG("mcpu", M6502, ATARI4_CPUFREQ)
   MDRV_CPU_MEMORY(ATARI4_readmem, ATARI4_writemem)
-  MDRV_CPU_VBLANK_INT(ATARI2_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(ATARI4_irq, 500)
+  MDRV_CPU_VBLANK_INT(ATARI4_vblank, 1)
+  MDRV_CPU_PERIODIC_INT(ATARI4_irq, ATARI4_IRQFREQ)
   MDRV_CORE_INIT_RESET_STOP(ATARI4,NULL,ATARI)
-  MDRV_NVRAM_HANDLER(generic_0fill)
-  MDRV_DIPS(32)
+  MDRV_NVRAM_HANDLER(ATARI4)
+  MDRV_DIPS(16)
   MDRV_SWITCH_UPDATE(ATARI4)
-  MDRV_DIAGNOSTIC_LEDH(1)
-//  MDRV_SWITCH_CONV(ATARI_sw2m,ATARI_m2sw)
+  MDRV_SWITCH_CONV(ATARI_sw2m,ATARI_m2sw)
+  MDRV_IMPORT_FROM(atari4s)
 MACHINE_DRIVER_END

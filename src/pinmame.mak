@@ -155,6 +155,7 @@ PINGAMES += $(PINOBJ)/playgames.o
 #
 # Simulators
 #
+PINGAMES += $(PINOBJ)/sims/atari/prelim/fourx4.o
 PINGAMES += $(PINOBJ)/sims/s7/full/bk.o
 PINGAMES += $(PINOBJ)/sims/s7/full/tmfnt.o
 PINGAMES += $(PINOBJ)/sims/s11/prelim/eatpm.o
@@ -311,6 +312,8 @@ OBJDIRS += $(PINOBJ)/sims/se
 OBJDIRS += $(PINOBJ)/sims/se/prelim
 OBJDIRS += $(PINOBJ)/sims/sleic
 OBJDIRS += $(PINOBJ)/sims/pinheck
+OBJDIRS += $(PINOBJ)/sims/atari
+OBJDIRS += $(PINOBJ)/sims/atari/prelim
 
 $(OBJ)/allgames.a: $(PINGAMES)
 #
