@@ -2805,12 +2805,10 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT16 seg_bi
 // Integration of the physical outputs runs on the emulation thread only, see core_publish_pwm_outputs
 #if defined(_MSC_VER)
 static __declspec(thread) int core_on_emulation_thread = 0;
+#elif defined(__MINGW32__) && defined(__GNUC__) && !defined(__clang__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 3))
+static int core_on_emulation_thread = 0; // no TLS on MinGW before GCC 4.3: only standalone PinMAME is built there, without client threads
 #else
-#if defined(__thread)
-static __thread int core_on_emulation_thread = 0;
-#else
-static int core_on_emulation_thread = 0;
-#endif
+static __thread int core_on_emulation_thread = 0; // a keyword, not a macro: #if defined(__thread) is always false
 #endif
 static void core_publish_pwm_outputs(int force);
 
@@ -4553,13 +4551,13 @@ static UINT8* core_dmd_compute_identify(const core_tLCDLayout* layout, unsigned 
   default:
     assert(0); // Unsupported combiner
   }
-  
+
   // Evaluate change index
   if (memcmp(dmd_state->bitplaneFrame, dmd_state->tempRawFrame, dmd_state->frameSize) != 0) {
      memcpy(dmd_state->bitplaneFrame, dmd_state->tempRawFrame, dmd_state->frameSize);
      dmd_state->rawFrameId++;
   }
-  
+
   *rawFrameId = dmd_state->rawFrameId;
   return dmd_state->bitplaneFrame;
 }
