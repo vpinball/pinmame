@@ -311,7 +311,10 @@ bool AltsoundProcessor::loadSamples()
 	if (format == "altsound") {
 		AltsoundCsvParser csv_parser(altsound_path);
 
-		if (!csv_parser.parse(samples)) {
+		const bool parsed = csv_parser.parse(samples);
+		detectPairedIds(samples);
+
+		if (!parsed) {
 			ALT_ERROR(0, "FAILED AltsoundCsvParser::parse()");
 
 			OUTDENT;
@@ -322,7 +325,10 @@ bool AltsoundProcessor::loadSamples()
 	}
 	else if (format == "legacy") {
 		AltsoundFileParser file_parser(altsound_path);
-		if (!file_parser.parse(samples)) {
+		const bool parsed = file_parser.parse(samples);
+		detectPairedIds(samples);
+
+		if (!parsed) {
 			ALT_ERROR(0, "FAILED AltsoundFileParser::parse()");
 			
 			OUTDENT;
@@ -331,8 +337,6 @@ bool AltsoundProcessor::loadSamples()
 		}
 		ALT_INFO(0, "SUCCESS AltsoundFileParser::parse()");
 	}
-
-	detectPairedIds(samples);
 
 	OUTDENT;
 	ALT_DEBUG(0, "END AltsoundProcessor::loadSamples");
