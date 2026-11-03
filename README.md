@@ -114,7 +114,7 @@ See [SUPPORTED_MACHINES.md](SUPPORTED_MACHINES.md) for a more complete, machine-
 - *Gottlieb System 3* - All games from Lights,Camera,Action (1989) to Barb Wire (1996)
 - *Hankin Pinball* - All games from FJ Holden (1978) to Orbit 1 (1981)
 - *Game Plan Pinball* - All games from Rio (1978) to Cyclopes (1985)
-- *Atari Pinball* - All games from Atarians (1976) to Road Runner (1979)
+- *Atari Pinball* - All games from Atarians (1976) to 4x4 (1983)
 - *Zaccaria Pinball* - All games from Winter Sports (1978) to New Star's Phoenix (1987)
 - *Taito Pinball* - All that's available... games between 1980 and 1985
 - *Midway Pinball* - Rotation VIII (1978)
