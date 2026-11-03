@@ -89,10 +89,6 @@ BOOL altsound_stable = TRUE;
 // Processing instance to specialize command handling
 AltsoundProcessorBase *processor = nullptr;
 
-// G-Sound packs are keyed by commands assembled two bytes at a time, on every
-// generation, so they keep the pairing the single byte machines opt out of
-bool gsound_format = false;
-
 // Use ROM control commands to control master volume
 bool use_rom_ctrl = true;
 
@@ -265,8 +261,6 @@ BOOL alt_sound_init(CmdData* cmds_out)
 	const string format = ini_proc.getAltsoundFormat();
 
 	const std::string game_name(g_szGameName);
-
-	gsound_format = (format == "g-sound");
 
 	if (format == "g-sound") {
 		// G-Sound only supports new CSV format. No need to specify format
@@ -683,8 +677,8 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 	}
 
 	// Bally MPU-17 and MPU-35, and every generation without a case above: PinMAME logs one byte per sound command
-	// (G-Sound packs were made with the byte pairs, so they are left alone)
-	if (!gsound_format && !(hardware_gen & (GEN_ALLWPC | GEN_S11 | GEN_S11X | GEN_S11B2 | GEN_S11C |
+	// (a pack made with the byte pairs, one holding an id above 0xFF, keeps them)
+	if (!(processor && processor->usesPairedIds()) && !(hardware_gen & (GEN_ALLWPC | GEN_S11 | GEN_S11X | GEN_S11B2 | GEN_S11C |
 		GEN_DE | GEN_DEDMD16 | GEN_DEDMD32 | GEN_DEDMD64 | GEN_ALLWS | GEN_GTS80A)))
 	{
 		ALT_DEBUG(0, "Hardware Generation: GEN_BY17, GEN_BY35 or other (one byte per command)");

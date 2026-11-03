@@ -424,6 +424,8 @@ bool GSoundProcessor::loadSamples()
 	}
 	ALT_INFO(1, "SUCCESS GSoundCsvParser::parse()");
 
+	detectPairedIds(samples);
+
 	OUTDENT;
 	ALT_DEBUG(0, "END GSoundProcessor::init()");
 	return true;

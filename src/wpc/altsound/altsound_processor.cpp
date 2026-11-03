@@ -332,6 +332,8 @@ bool AltsoundProcessor::loadSamples()
 		ALT_INFO(0, "SUCCESS AltsoundFileParser::parse()");
 	}
 
+	detectPairedIds(samples);
+
 	OUTDENT;
 	ALT_DEBUG(0, "END AltsoundProcessor::loadSamples");
 	return true;
