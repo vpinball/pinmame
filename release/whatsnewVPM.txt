@@ -10,6 +10,7 @@ Version 3.7 (XX XXth, 2026) - ""
 - AltSound:
   - Properly handle Bally MPU-17/MPU-35 machines (these send just one byte per sound command)
   - Same for all the other machines without a handling of their own (e.g. Williams System 3-9, Bally 6803, Stern MPU-100/200, Gottlieb System 1/80B/3, Zaccaria, Hankin, Alvin G., Mr. Game, Taito, Atari, ...)
+  - Only for packs with new_sound_commands = 1 in the [system] section of their altsound.ini (new key, 0 if missing): packs made before keep getting their sound command bytes paired two by two
 
 - Fix script dialog API/UI for non-standard DPI values
 
