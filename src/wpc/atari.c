@@ -22,6 +22,7 @@
 #include "cpu/m6800/m6800.h"
 #include "core.h"
 #include "sndbrd.h"
+#include "snd_cmd.h"
 #include "atari.h"
 
 #define ATARI_VBLANKFREQ      60 /* VBLANK frequency in HZ*/
@@ -230,8 +231,127 @@ static READ_HANDLER(dip2_r)  {
 // Gen 1
 static UINT8 *ram;
 
+/* The Atari boards have no sound command either: the game CPU writes the tone registers of the
+   board one step at a time (the latches below), and those writes are what sndbrd_data_w() logs.
+   What the game asks its sound routine for is a value in RAM, which the routine then plays one
+   step per call. Generation 1 (The Atarians, Time 2000, Airborne Avenger) keeps one down-counter
+   per sound, and the game starts a sound by storing its length there ("LDAA #1F; STAA $A5"); the
+   routine only decrements. The sound command is the counter's address and that length (0xA51F).
+   The routine and the stores are read from the program: the routine is the only code that tests a
+   counter and decrements it, and the stores are the STAA/STAB of an immediate length to one of the
+   counters. (The other two generation 1 programs and generation 2 are handled below.) */
+#define ATARI1_MAX_COUNTERS 8
+#define ATARI1_MAX_STARTS   128
+#define ATARI1_MAX_PENDING  32
+static struct {
+	int numCounters, counter[ATARI1_MAX_COUNTERS];
+	int numStarts, pc[ATARI1_MAX_STARTS], addr[ATARI1_MAX_STARTS];
+	/* the other layouts: a pending count per sound that the game raises, and the sound routine's code */
+	int numPending, pending[ATARI1_MAX_PENDING], id[ATARI1_MAX_PENDING], routineLo, routineHi;
+} atari1cmd;
+
+/* Space Riders: 13 slots of a step byte and a pending count (LDX #base ... LDAA 0,X; BNE; LDAA 1,X;
+   BEQ; DEC 1,X), the game asks for slot n by adding to its pending count; Middle Earth: sound
+   descriptors (LDX #descriptor; BSR routine) that point at their own step and pending bytes. The
+   sound command is the slot number, or the address of the descriptor. The game's request is a
+   rise of the pending count by code outside of the sound routine. */
+static void atari1_findPending(const UINT8 *rom) {
+	int a, k;
+	for (a = 0x7000; a < 0x8000 - 24; a++) {
+		/* CE 00 base DF ?? 7F 00 ?? DE ?? A6 00 26 ?? A6 01 27 ?? 6A 01 */
+		if (rom[a] == 0xce && rom[a+1] == 0x00 && rom[a+3] == 0xdf && rom[a+5] == 0x7f && rom[a+6] == 0x00 &&
+		    rom[a+8] == 0xde && rom[a+10] == 0xa6 && rom[a+11] == 0x00 && rom[a+12] == 0x26 && rom[a+14] == 0xa6 &&
+		    rom[a+15] == 0x01 && rom[a+16] == 0x27 && rom[a+18] == 0x6a && rom[a+19] == 0x01) {
+			int base = rom[a+2], end = 0;
+			for (k = a; k < a + 0x60; k++)
+				if (rom[k] == 0x8c && rom[k+1] == 0x00 && rom[k+2] > base) {
+					end = rom[k+2];
+					break;
+				}
+			for (k = 0; k < (end - base) / 2 && k < ATARI1_MAX_PENDING; k++) {
+				atari1cmd.pending[k] = base + 2 * k + 1;
+				atari1cmd.id[k] = k;
+				atari1cmd.numPending++;
+			}
+			atari1cmd.routineLo = a;
+			atari1cmd.routineHi = a + 0x40;
+			return;
+		}
+		/* DF ?? DF ?? EE 01 A6 00 26 ?? A6 01 26: the descriptor routine at r, called by LDX #d; BSR r */
+		if (rom[a] == 0xdf && rom[a+2] == 0xdf && rom[a+4] == 0xee && rom[a+5] == 0x01 && rom[a+6] == 0xa6 &&
+		    rom[a+7] == 0x00 && rom[a+8] == 0x26 && rom[a+10] == 0xa6 && rom[a+11] == 0x01 && rom[a+12] == 0x26) {
+			for (k = 0x7000; k < 0x8000 - 6; k++)
+				if (rom[k] == 0xce && rom[k+3] == 0x8d && k + 5 + (signed char)rom[k+4] == a) {
+					int d = (rom[k+1] << 8) | rom[k+2], i, known = 0;
+					if (d < 0x7000 || d >= 0x8000)
+						continue;
+					for (i = 0; i < atari1cmd.numPending; i++)
+						known |= (atari1cmd.id[i] == d);
+					if (!known && atari1cmd.numPending < ATARI1_MAX_PENDING) {
+						int state = (rom[d+1] << 8) | rom[d+2]; // the pending byte follows the step byte
+						atari1cmd.pending[atari1cmd.numPending] = (state >= 0x1000 ? state - 0x1000 : state) + 1; // (RAM mirror)
+						atari1cmd.id[atari1cmd.numPending++] = d;
+					}
+				}
+			atari1cmd.routineLo = a;
+			atari1cmd.routineHi = a + 0x40;
+			return;
+		}
+	}
+}
+
+static void atari1_findCounters(void) {
+	const UINT8 *rom = memory_region(REGION_CPU1);
+	int a, i;
+	memset(&atari1cmd, 0, sizeof(atari1cmd));
+	/* LDAA c; BEQ; LDX #table; JSR index; LDAB wave; DEC c */
+	for (a = 0x7000; a < 0x8000 - 16; a++)
+		if (rom[a] == 0x96 && rom[a+2] == 0x27 && rom[a+4] == 0xce && rom[a+7] == 0xbd && rom[a+10] == 0xf6 &&
+		    rom[a+13] == 0x7a && rom[a+14] == 0x00 && rom[a+15] == rom[a+1] && atari1cmd.numCounters < ATARI1_MAX_COUNTERS)
+			atari1cmd.counter[atari1cmd.numCounters++] = rom[a+1];
+	if (atari1cmd.numCounters < 2) { // not this kind of program
+		atari1cmd.numCounters = 0;
+		atari1_findPending(rom);
+		return;
+	}
+	/* STAA/STAB c, with the LDAA/LDAB # of its length a few bytes before */
+	for (a = 0x7000 + 2; a < 0x8000 - 1; a++) {
+		int reg = (rom[a] == 0x97) ? 0x86 : (rom[a] == 0xd7) ? 0xc6 : 0, k;
+		if (!reg)
+			continue;
+		for (i = 0; i < atari1cmd.numCounters; i++)
+			if (rom[a+1] == atari1cmd.counter[i]) {
+				for (k = a - 2; k >= a - 10 && k >= 0x7000; k--)
+					if (rom[k] == reg) {
+						if (rom[k+1] && atari1cmd.numStarts < ATARI1_MAX_STARTS) {
+							atari1cmd.pc[atari1cmd.numStarts] = a;
+							atari1cmd.addr[atari1cmd.numStarts++] = rom[a+1];
+						}
+						break;
+					}
+			}
+	}
+}
+
+static void atari1_logStart(int offset, int data, int old) {
+	int i, pc = activecpu_get_previouspc();
+	for (i = 0; i < atari1cmd.numStarts; i++)
+		if (atari1cmd.pc[i] == pc && atari1cmd.addr[i] == offset) {
+			snd_cmd_log(0, (offset << 8) | data);
+			return;
+		}
+	for (i = 0; i < atari1cmd.numPending; i++)
+		if (atari1cmd.pending[i] == offset && data > old && (pc < atari1cmd.routineLo || pc >= atari1cmd.routineHi)) {
+			snd_cmd_log(0, atari1cmd.id[i]);
+			return;
+		}
+}
+
 static WRITE_HANDLER(ram_w) {
+	int old = ram[offset];
 	ram[offset] = data;
+	if (atari1cmd.numStarts || atari1cmd.numPending)
+		atari1_logStart(offset, data, old);
 	if (offset < 0x10) {
 		if (offset % 4 == 3) {
 			/* 1up to 4up lights */
@@ -264,16 +384,28 @@ static WRITE_HANDLER(ram_w) {
 	}
 }
 static WRITE_HANDLER(ram_w1) {
+	int old = ram[offset+0x81];
 	ram[offset+0x81] = data;
+	if (atari1cmd.numPending)
+		atari1_logStart(offset+0x81, data, old);
 }
 static WRITE_HANDLER(ram_w2) {
+	int old = ram[offset+0x85];
 	ram[offset+0x85] = data;
+	if (atari1cmd.numPending)
+		atari1_logStart(offset+0x85, data, old);
 }
 static WRITE_HANDLER(ram_w3) {
+	int old = ram[offset+0x89];
 	ram[offset+0x89] = data;
+	if (atari1cmd.numPending)
+		atari1_logStart(offset+0x89, data, old);
 }
 static WRITE_HANDLER(ram_w4) {
+	int old = ram[offset+0x8d];
 	ram[offset+0x8d] = data;
+	if (atari1cmd.numPending)
+		atari1_logStart(offset+0x8d, data, old);
 }
 
 static READ_HANDLER(ram_r) {
@@ -448,7 +580,37 @@ static NVRAM_HANDLER(ATARI) {
   core_nvram(file, read_or_write, atari_CMOS, 0x100, 0x00);
 }
 static READ_HANDLER(ram2_r) { return atari_RAM[offset]; }
-static WRITE_HANDLER(ram2_w) { atari_RAM[offset] = data; }
+/* Generation 2 (Superman, Hercules, Road Runner): the system program keeps one pending count per
+   sound number, and the game's sound instruction (the same routine in every game, "PSHA; LDX #base;
+   ANDA #1F; JSR add; ...; INC 0,X") raises it. The driver in the interrupt plays the pending sounds
+   and takes the counts down itself. The sound command is the sound number. The INC is in a loop
+   (the high bits of the operand are a repeat count), only the first one is a command: the next
+   ones are not preceded by another RAM write. */
+static struct { int base, incPc, inLoop; } atari2cmd;
+
+static void atari2_findInstruction(void) {
+	const UINT8 *rom = memory_region(REGION_CPU1);
+	int a, k;
+	memset(&atari2cmd, 0, sizeof(atari2cmd));
+	for (a = 0x2800; a < 0x4000 - 48; a++)
+		if (rom[a] == 0x36 && rom[a+1] == 0xce && rom[a+2] == 0x00 && rom[a+4] == 0x84 && rom[a+5] == 0x1f && rom[a+6] == 0xbd)
+			for (k = a + 7; k < a + 40; k++)
+				if (rom[k] == 0x6c && rom[k+1] == 0x00) { // INC 0,X
+					atari2cmd.base = rom[a+3];
+					atari2cmd.incPc = k;
+					return;
+				}
+}
+
+static WRITE_HANDLER(ram2_w) {
+	atari_RAM[offset] = data;
+	if (atari2cmd.incPc) {
+		int inc = (activecpu_get_previouspc() == atari2cmd.incPc);
+		if (inc && !atari2cmd.inLoop)
+			snd_cmd_log(0, (offset & 0xff) - atari2cmd.base);
+		atari2cmd.inLoop = inc;
+	}
+}
 // NVRAM only uses bottom nybble
 static READ_HANDLER(nvram_r) { return atari_CMOS[offset]; }
 static WRITE_HANDLER(nvram_w) { atari_CMOS[offset] = data & 0x0f; }
@@ -491,20 +653,31 @@ static void init_common(void) {
   sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_SOUND1), NULL, NULL);
 }
 
+static void atari1_initCmd(void) {
+  atari1_findCounters();
+  if (atari1cmd.numStarts || atari1cmd.numPending)
+    sndbrd_logData(0, 0); // ram_w logs the sound commands
+}
+
 static MACHINE_INIT(ATARI1) {
   init_common();
+  atari1_initCmd();
   locals.snd1Enable = 0;
 }
 
 /* Middle Earth uses an unusual way of polling the test switch. */
 static MACHINE_INIT(ATARI1A) {
   init_common();
+  atari1_initCmd();
   locals.testSwBits = 0x0f;
   locals.snd1Enable = 0;
 }
 
 static MACHINE_INIT(ATARI2) {
   init_common();
+  atari2_findInstruction();
+  if (atari2cmd.incPc)
+    sndbrd_logData(0, 0); // ram2_w logs the sound commands
 }
 
 static MACHINE_STOP(ATARI) {
