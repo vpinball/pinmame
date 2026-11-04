@@ -11,6 +11,8 @@ Version 3.7 (XX XXth, 2026) - ""
   - Properly handle Bally MPU-17/MPU-35 machines (these send just one byte per sound command)
   - Same for all the other machines without a handling of their own (e.g. Williams System 3-9, Bally 6803, Stern MPU-100/200, Gottlieb System 1/80B/3, Zaccaria, Hankin, Alvin G., Mr. Game, Taito, Atari, ...)
 
+- AltSound: Add the libPinMAME option PinmameSetLegacySoundCommandLog() to log every write of the solenoid/sound lines of the Bally MPU-17/MPU-35 machines as a sound command again, for old packs made before the commands were cleaned up (off by default)
+
 - Fix script dialog API/UI for non-standard DPI values
 
 - Fix some longstanding issues with the DMD/Segment/Video output window (output window should now be less buggy/blurry in some cases, and potentially a bit faster)
