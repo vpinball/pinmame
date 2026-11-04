@@ -131,9 +131,13 @@ static INTERRUPT_GEN(ATARI2_vblank) {
 /   tmpLampMatrix, copies coreGlobals.segments from locals.segments and then
 /   zeroes locals.segments, and copies coreGlobals.solenoids from
 /   locals.solenoids.  None of those three are written by this generation, so
-/   sharing it wiped every output just before it reached the screen. --*/
+/   sharing it wiped every output just before it reached the screen --*/
 static INTERRUPT_GEN(ATARI4_vblank) {
   locals.vblankCount++;
+  /*-- TODO: The flippers are always enabled here, in attract and on tilt too: the
+  /   switch or relay that gates them on the board is not identified (yet).  $200A
+  /   bits 0 and 4 hold rather than pulse, but no flipper button has a
+  /   handler, so the ROM does not show they follow the button or the game --*/
   core_updateSw(TRUE);
 }
 
@@ -593,7 +597,7 @@ MACHINE_DRIVER_END
 #if ATARI4_TEST_HOOKS
 #define SLICE_LOG logerror
 #else
-#define SLICE_LOG(...) ((void)0)
+#define SLICE_LOG 1 ? (void)0 : (void)logerror  /* not variadic, for compilers before C99 */
 #endif
 
 static UINT8 *atari4_taskram;   /* $1000-$17FF: eight 256-byte task pages */
@@ -664,10 +668,20 @@ static UINT8 slice_read(int dev, int offset) {
   /
   /   Bits 0, 1 and 5 of the first pack are never masked out of either read,
   /   so eight of the sixteen dips do nothing.  The game runs in any
-  /   combination; with the stock defaults it is on free play. --*/
-  if (dev >= 5 && reg == 0x08) {
-    data = ~core_getDip(dev - 5);
-    SLICE_LOG("4x4 ALLPOT pokey%d -> %02X\n", dev - 5, data);
+  /   combination; with the stock defaults it is on free play.
+  /
+  /   POT0-7 read the same switches as counts: 0 for a closed switch, whose
+  /   conversion ends at once, and 228, the end of the scan, for an open one.
+  /   The other POKEY registers are answered by atarisnd.c --*/
+  if (dev >= 5) {
+    if (reg == 0x08) {
+      data = ~core_getDip(dev - 5);
+      SLICE_LOG("4x4 ALLPOT pokey%d -> %02X\n", dev - 5, data);
+    }
+    else if (reg <= 0x07)
+      data = (core_getDip(dev - 5) & (1 << reg)) ? 0 : 228;
+    else
+      data = (UINT8)atari4snd_r(dev - 5, reg);
     return data;
   }
 
@@ -963,12 +977,15 @@ static INTERRUPT_GEN(ATARI4_irq) {
     logerror("4x4 watchdog timeout: $230C not kicked for %d interrupts\n", slice.wdog);
     slice.wdog = 0;
     /*-- A reset-line pulse does not re-run MACHINE_INIT, so the latched
-    /   outputs are cleared here; on the board the reset clears the driver
-    /   latches. --*/
+    /   outputs are cleared here, as MACHINE_INIT leaves them; on the board the
+    /   reset clears the driver latches, the task bank latch at $230F with
+    /   them.  POKEY has no reset input: the boot code silences both at $DF8B --*/
     cpu_set_irq_line(ATARI_CPU, 0, CLEAR_LINE);
     memset(&slice.reg, 0, sizeof slice.reg);
+    atari4_setbank(0);
     coreGlobals.solenoids = 0;
     memset((void *)coreGlobals.lampMatrix, 0, sizeof coreGlobals.lampMatrix);
+    memset((void *)coreGlobals.segments, 0, sizeof coreGlobals.segments);
     cpu_set_reset_line(ATARI_CPU, PULSE_LINE);
     return;
   }
