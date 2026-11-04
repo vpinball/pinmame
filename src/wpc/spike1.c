@@ -1686,6 +1686,25 @@ ROM_START(wwe_135h)
 ROM_END
 CORE_GAMEDEF(wwe, 135h, "Legends of Wrestlemania Limited Edition (1.35.0)", 2015, "Stern", spike1_lcd, 0)
 
+/* Same asset image and node firmware as the Limited Edition, its own game program (folder WWE,
+   from WWE-1_35.iso.zip or WWE-1_35.spk). No playfield LCD, so no clips and no video key, and no
+   upper flipper: 18 coils, 85 switches, 101 LED channels. The flipper buttons still have their
+   upper leaf (74, 75) in the game's switch table, so the flipper keys close it as on the LE */
+SPIKE1_INIT_EX(wwep, "WWE", spike1_dmd, 101, FLIP_L | FLIP_U, SPIKE1_SWITCHES_UPPER(10, 11, 65, 66, 74, 75, 67, 68, 69, 70, 72, 77), SPIKE1_NOHOMES, SPIKE1_NOLIMIT)
+ROM_START(wwe_135)
+  ROM_REGION(0x54cfc000, SPIKE1_REGION, ROMREGION_MAPPED)
+    ROM_LOAD("game", 0x00000000, 0x0055ed21, CRC(8f107d29) SHA1(5ea284cb6f03f5fbe1daa7a5973cdc83562e888c))
+    ROM_LOAD("image.bin", 0x0055f000, 0x547598dc, CRC(aa528057) SHA1(f513c5afd07cee4bba97b38822f98943857dc824))
+    ROM_LOAD("coil4node-LPC1112_101-0_18_4.hex", 0x54cb9000, 0x000086b3, CRC(0db5fef9) SHA1(a1d1be1ab95c07ffa1bde5295047b1e184b358e8))
+    ROM_LOAD("coil4node-LPC1112_201-0_18_4.hex", 0x54cc2000, 0x000086b3, CRC(0d97d36b) SHA1(63d1740e475faf5b1a6edd082713f71797d8518f))
+    ROM_LOAD("coil4node-LPC1313-0_18_4.hex", 0x54ccb000, 0x00009910, CRC(eda97e7a) SHA1(c25649ea0a0d832f259c97a0cace84d22668eabe))
+    ROM_LOAD("lcdnode-LPC1113_302-0_18_4.hex", 0x54cd5000, 0x00009783, CRC(b9e6387e) SHA1(cc5b609d967d2b587a2fe297b2409c368696e7f0))
+    ROM_LOAD("pinnode-LPC1112_101-0_18_4.hex", 0x54cdf000, 0x00008005, CRC(72dd8621) SHA1(66e6693e1bdd570db5eee4218f36a9153da760ff))
+    ROM_LOAD("pinnode-LPC1112_201-0_18_4.hex", 0x54ce8000, 0x0000802a, CRC(8a0e089c) SHA1(e41ade3256e4cc7cfcaece06a5e1035c7ff2d026))
+    ROM_LOAD("pinnode-LPC1313-0_18_4.hex", 0x54cf1000, 0x0000a082, CRC(0e9790a7) SHA1(9bafcdde92f5eecccd18e43f4eaf0a20a813a611))
+ROM_END
+SPIKE1_CLONEDEF(wwe, 135, wwe_135h, wwep, "Wrestlemania (1.35.0)", 2015, spike1)
+
 /*-------------------------------------------------------------------
 / Whoa Nellie! Big Juicy Melons
 /-------------------------------------------------------------------*/
@@ -1713,6 +1732,24 @@ CORE_GAMEDEF(wnbjm, 155, "Whoa Nellie! Big Juicy Melons (1.55.0)", 2015, "Stern"
 /-------------------------------------------------------------------*/
 /* Same as Whoa Nellie's hardware - the apron LCD, the score and credit reels as mechs 0-4, the bells - and its switch numbers */
 SPIKE1_INIT(pabst, "can_crusher", spike1_dmd, 76, SPIKE1_SWITCHES(3, 4, 1, 2, 53, 54, 55, 56, 58, 60))
+/* 1.02.0 is on a newer SDK (node firmware 0.65.0, with node4 firmware for an LPC1124 board) and has
+   its own asset image; its switch, coil and LED tables are 1.01.0's */
+ROM_START(pabst_102)
+  ROM_REGION(0x5e436000, SPIKE1_REGION, ROMREGION_MAPPED)
+    ROM_LOAD("game", 0x00000000, 0x0031cf21, CRC(585a5aa6) SHA1(541135853236502e3f9c1f50b66e64cf0d4e53f5))
+    ROM_LOAD("image.bin", 0x0031d000, 0x5e0b7a80, CRC(8f789f02) SHA1(8ec787e569b7d30d5c5703f68d26c66d987e1ec7))
+    ROM_LOAD("coil4node-LPC1112_101-0_65_0.hex", 0x5e3d5000, 0x00008784, CRC(9c383348) SHA1(2a6b1cbe37247d064ffbebd22f1db85ee1240de2))
+    ROM_LOAD("coil4node-LPC1112_201-0_65_0.hex", 0x5e3de000, 0x00008784, CRC(7163c0ca) SHA1(f283fae4d4f8a3841038fa848c864a7ca9c4924e))
+    ROM_LOAD("coil4node-LPC1313-0_65_0.hex", 0x5e3e7000, 0x0000ecf5, CRC(1272e04c) SHA1(62cd3ef5397dcb8c760e021f45918f69efbac61d))
+    ROM_LOAD("lcdnode-LPC1113_302-0_65_0.hex", 0x5e3f6000, 0x0000b494, CRC(cd35475a) SHA1(90e6583cc162dc2bfa6bd6ba8ca04634ed67cba9))
+    ROM_LOAD("node4-LPC1124_303-0_65_0.hex", 0x5e402000, 0x00009e0c, CRC(21eeaef9) SHA1(39c86ed01634e53a09b35800a81555b7317683a1))
+    ROM_LOAD("pinnode-LPC1112_101-0_65_0.hex", 0x5e40c000, 0x00008784, CRC(26ebd38b) SHA1(280eadff18c6826249bbcdf2bcb7b5f3dbdde42c))
+    ROM_LOAD("pinnode-LPC1112_201-0_65_0.hex", 0x5e415000, 0x00008784, CRC(d4480ab6) SHA1(bbe3e12c4de236f8da2cb165de471a6d17ee5334))
+    ROM_LOAD("pinnode-LPC1313-0_65_0.hex", 0x5e41e000, 0x0000f839, CRC(8a61f24d) SHA1(56a8cb97fbc90607c4defe60ba0c39f229f155ad))
+    ROM_LOAD("ws2812node-LPC1313-0_65_0.hex", 0x5e42e000, 0x00007c40, CRC(766afd83) SHA1(cd77d84b9bc1562bc51831703c0f75bcc72d4ab4))
+ROM_END
+CORE_GAMEDEF(pabst, 102, "Pabst Can Crusher, The (1.02.0)", 2016, "Stern", spike1, 0)
+
 ROM_START(pabst_101)
   ROM_REGION(0x39d5f000, SPIKE1_REGION, ROMREGION_MAPPED)
     ROM_LOAD("game", 0x00000000, 0x004122e1, CRC(0a114c42) SHA1(f1179042ab49190e506d93d66028bd5404ba19f8))
@@ -1726,13 +1763,31 @@ ROM_START(pabst_101)
     ROM_LOAD("pinnode-LPC1313-0_28_0.hex", 0x39d4c000, 0x0000c859, CRC(18c17d1d) SHA1(6b2f232c0b6c2389c59f998d0487081491e9d177))
     ROM_LOAD("ws2812node-LPC1313-0_28_0.hex", 0x39d59000, 0x00005590, CRC(921dc0f7) SHA1(2c49842bb5163b75a19ebac37f0379ef72c64d4a))
 ROM_END
-CORE_GAMEDEF(pabst, 101, "Pabst Can Crusher, The (1.01.0)", 2016, "Stern", spike1, 0)
+CORE_CLONEDEF(pabst, 101, 102, "Pabst Can Crusher, The (1.01.0)", 2016, "Stern", spike1, 0)
 
 /*-------------------------------------------------------------------
 / Primus
 /-------------------------------------------------------------------*/
 /* Same as Whoa Nellie's hardware - the apron LCD, the score and credit reels as mechs 0-4, the bells - and its switch numbers */
 SPIKE1_INIT(primus, "primus", spike1_dmd, 76, SPIKE1_SWITCHES(3, 4, 1, 2, 53, 54, 55, 56, 58, 60))
+/* 1.04.0 is on a newer SDK (node firmware 0.65.0, with node4 firmware for an LPC1124 board) and has
+   its own asset image; its switch, coil and LED tables are 1.03.0's */
+ROM_START(primus_104)
+  ROM_REGION(0x52284000, SPIKE1_REGION, ROMREGION_MAPPED)
+    ROM_LOAD("game", 0x00000000, 0x0031d639, CRC(1b2c923f) SHA1(f80a3c487f9d7cc26185b86ab07ac97ee5f24092))
+    ROM_LOAD("image.bin", 0x0031e000, 0x51f04419, CRC(9624fe73) SHA1(b9c4aa394a17377ac5b06eac05b94f4be21fb62f))
+    ROM_LOAD("coil4node-LPC1112_101-0_65_0.hex", 0x52223000, 0x00008784, CRC(5cf26603) SHA1(3c55e16a673d7ad9559b5e494226ce9034a560eb))
+    ROM_LOAD("coil4node-LPC1112_201-0_65_0.hex", 0x5222c000, 0x00008784, CRC(01df5e4e) SHA1(9b9fa333f393abc61f6245d71a7bf42888037d31))
+    ROM_LOAD("coil4node-LPC1313-0_65_0.hex", 0x52235000, 0x0000ecf5, CRC(b3cdd9dd) SHA1(c7b144d1bd6c45e28024572747855f1145ead815))
+    ROM_LOAD("lcdnode-LPC1113_302-0_65_0.hex", 0x52244000, 0x0000b494, CRC(942bfb68) SHA1(d16eb5482754071220a9f47cb5c5d85ccd039463))
+    ROM_LOAD("node4-LPC1124_303-0_65_0.hex", 0x52250000, 0x00009e0c, CRC(c2b65552) SHA1(7cdbcfca90578e9b6e5404b770da24b27f2a4749))
+    ROM_LOAD("pinnode-LPC1112_101-0_65_0.hex", 0x5225a000, 0x00008784, CRC(7a6e95cb) SHA1(66ae1a473bfd78e1aca596c816ee55c8c3b55156))
+    ROM_LOAD("pinnode-LPC1112_201-0_65_0.hex", 0x52263000, 0x00008784, CRC(2750e06e) SHA1(7af089cc60302743f57b2e1bbad65bd0c4fee166))
+    ROM_LOAD("pinnode-LPC1313-0_65_0.hex", 0x5226c000, 0x0000f839, CRC(e2a0e340) SHA1(6c7d4d8b2fcb38e6ec9ecd0b41f81a25ce3b834a))
+    ROM_LOAD("ws2812node-LPC1313-0_65_0.hex", 0x5227c000, 0x00007c40, CRC(bd35e05d) SHA1(60d02ac2aa0b500b0b06c75d01fc17887df2006e))
+ROM_END
+CORE_GAMEDEF(primus, 104, "Primus (1.04.0)", 2018, "Stern", spike1, 0)
+
 ROM_START(primus_103)
   ROM_REGION(0x2a4d2000, SPIKE1_REGION, ROMREGION_MAPPED)
     ROM_LOAD("game", 0x00000000, 0x0041372a, CRC(017178e5) SHA1(eae72f6251af2f4c7381c93c3ee1d48388c37967))
@@ -1746,7 +1801,7 @@ ROM_START(primus_103)
     ROM_LOAD("pinnode-LPC1313-0_28_0.hex", 0x2a4bf000, 0x0000c859, CRC(18c17d1d) SHA1(6b2f232c0b6c2389c59f998d0487081491e9d177))
     ROM_LOAD("ws2812node-LPC1313-0_28_0.hex", 0x2a4cc000, 0x00005590, CRC(921dc0f7) SHA1(2c49842bb5163b75a19ebac37f0379ef72c64d4a))
 ROM_END
-CORE_GAMEDEF(primus, 103, "Primus (1.03.0)", 2018, "Stern", spike1, 0)
+CORE_CLONEDEF(primus, 103, 104, "Primus (1.03.0)", 2018, "Stern", spike1, 0)
 
 /*-------------------------------------------------------------------
 / KISS

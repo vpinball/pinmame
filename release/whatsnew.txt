@@ -195,11 +195,12 @@ Stern SPIKE 1: Avengers The Pin 1.0.3
                KISS 1.41.0
                KISS 1.41.0 Limited Edition
                Spider-Man The Pin 1.01
-               Pabst Can Crusher, The 1.01.0
-               Primus 1.03.0
+               Pabst Can Crusher, The 1.01.0, 1.02.0
+               Primus 1.03.0, 1.04.0
                Supreme 1.01.0
                Transformers The Pin 1.0.18
                Whoa Nellie! Big Juicy Melons 1.55.0
+               Wrestlemania 1.35.0
                (Legends of) Wrestlemania 1.35.0 Limited Edition
          NOTE: keep the SPIKE 1 sets within an uncompressed zip file, to be able to map the files as-is (lower RAM usage)
 WMS:  Revenge From Mars 1.60, 1.50, 1.40, 1.30, 1.20 (official updates)

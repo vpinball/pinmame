@@ -7,7 +7,8 @@
   for some titles (Heavy Metal) only as an update package, <title>-<version>.spk. The image holds
   an MBR with an extended partition; one of its ext3 partitions carries the game folder (the
   program, image.bin, lcdinsert.bin when the title has an LCD insert, and the node board
-  firmware). The package holds the same folder as one of its groups. PinMAME's ROM set is that
+  firmware). The package holds the same folder as one of its groups (WWE's, an older one, behind
+  its installer). PinMAME's ROM set is that
   folder as a zip, named after the set. The two titles on Stern's earlier ELG framework
   (Transformers The Pin, Avengers The Pin) keep theirs in the root file system instead,
   /usr/local/games/<name>-elg: the programs and their sounds folder, which the set holds as the
@@ -112,6 +113,18 @@ namespace Spike1Rom
 				new KnownFile("pinnode-LPC1112_201-0_28_0.hex", 0x00007f66, 0xcee92fdc),
 				new KnownFile("pinnode-LPC1313-0_28_0.hex", 0x0000c859, 0x18c17d1d),
 				new KnownFile("ws2812node-LPC1313-0_28_0.hex", 0x00005590, 0x921dc0f7) } },
+			new KnownSet { Set = "primus_104", Folder = "primus", Title = "Primus 1.04.0", Files = new KnownFile[] {
+				new KnownFile("game", 0x0031d639, 0x1b2c923f),
+				new KnownFile("image.bin", 0x51f04419, 0x9624fe73),
+				new KnownFile("coil4node-LPC1112_101-0_65_0.hex", 0x00008784, 0x5cf26603),
+				new KnownFile("coil4node-LPC1112_201-0_65_0.hex", 0x00008784, 0x01df5e4e),
+				new KnownFile("coil4node-LPC1313-0_65_0.hex", 0x0000ecf5, 0xb3cdd9dd),
+				new KnownFile("lcdnode-LPC1113_302-0_65_0.hex", 0x0000b494, 0x942bfb68),
+				new KnownFile("node4-LPC1124_303-0_65_0.hex", 0x00009e0c, 0xc2b65552),
+				new KnownFile("pinnode-LPC1112_101-0_65_0.hex", 0x00008784, 0x7a6e95cb),
+				new KnownFile("pinnode-LPC1112_201-0_65_0.hex", 0x00008784, 0x2750e06e),
+				new KnownFile("pinnode-LPC1313-0_65_0.hex", 0x0000f839, 0xe2a0e340),
+				new KnownFile("ws2812node-LPC1313-0_65_0.hex", 0x00007c40, 0xbd35e05d) } },
 			new KnownSet { Set = "primus_103", Folder = "primus", Title = "Primus 1.03.0", Files = new KnownFile[] {
 				new KnownFile("game", 0x0041372a, 0x017178e5),
 				new KnownFile("image.bin", 0x2a06f114, 0xcb499566),
@@ -123,6 +136,18 @@ namespace Spike1Rom
 				new KnownFile("pinnode-LPC1112_201-0_28_0.hex", 0x00007f66, 0xcee92fdc),
 				new KnownFile("pinnode-LPC1313-0_28_0.hex", 0x0000c859, 0x18c17d1d),
 				new KnownFile("ws2812node-LPC1313-0_28_0.hex", 0x00005590, 0x921dc0f7) } },
+			new KnownSet { Set = "pabst_102", Folder = "can_crusher", Title = "Pabst Can Crusher 1.02.0", Files = new KnownFile[] {
+				new KnownFile("game", 0x0031cf21, 0x585a5aa6),
+				new KnownFile("image.bin", 0x5e0b7a80, 0x8f789f02),
+				new KnownFile("coil4node-LPC1112_101-0_65_0.hex", 0x00008784, 0x9c383348),
+				new KnownFile("coil4node-LPC1112_201-0_65_0.hex", 0x00008784, 0x7163c0ca),
+				new KnownFile("coil4node-LPC1313-0_65_0.hex", 0x0000ecf5, 0x1272e04c),
+				new KnownFile("lcdnode-LPC1113_302-0_65_0.hex", 0x0000b494, 0xcd35475a),
+				new KnownFile("node4-LPC1124_303-0_65_0.hex", 0x00009e0c, 0x21eeaef9),
+				new KnownFile("pinnode-LPC1112_101-0_65_0.hex", 0x00008784, 0x26ebd38b),
+				new KnownFile("pinnode-LPC1112_201-0_65_0.hex", 0x00008784, 0xd4480ab6),
+				new KnownFile("pinnode-LPC1313-0_65_0.hex", 0x0000f839, 0x8a61f24d),
+				new KnownFile("ws2812node-LPC1313-0_65_0.hex", 0x00007c40, 0x766afd83) } },
 			new KnownSet { Set = "pabst_101", Folder = "can_crusher", Title = "Pabst Can Crusher 1.01.0", Files = new KnownFile[] {
 				new KnownFile("game", 0x004122e1, 0x0a114c42),
 				new KnownFile("image.bin", 0x398fd2c4, 0x424bb457),
@@ -227,6 +252,16 @@ namespace Spike1Rom
 				new KnownFile("WRESTLEMANIALOGO.spv", 0x00d2f2ec, 0xe387938a),
 				new KnownFile("WWE_SHATTERLOGO_FPS20.spv", 0x015f94cc, 0x8be9e928),
 				new KnownFile("WWELOGO_FPS20.spv", 0x008efa04, 0x0b72c2aa) } },
+			new KnownSet { Set = "wwe_135", Folder = "WWE", Title = "WWE WrestleMania Pro 1.35.0", Files = new KnownFile[] {
+				new KnownFile("game", 0x0055ed21, 0x8f107d29),
+				new KnownFile("image.bin", 0x547598dc, 0xaa528057),
+				new KnownFile("coil4node-LPC1112_101-0_18_4.hex", 0x000086b3, 0x0db5fef9),
+				new KnownFile("coil4node-LPC1112_201-0_18_4.hex", 0x000086b3, 0x0d97d36b),
+				new KnownFile("coil4node-LPC1313-0_18_4.hex", 0x00009910, 0xeda97e7a),
+				new KnownFile("lcdnode-LPC1113_302-0_18_4.hex", 0x00009783, 0xb9e6387e),
+				new KnownFile("pinnode-LPC1112_101-0_18_4.hex", 0x00008005, 0x72dd8621),
+				new KnownFile("pinnode-LPC1112_201-0_18_4.hex", 0x0000802a, 0x8a0e089c),
+				new KnownFile("pinnode-LPC1313-0_18_4.hex", 0x0000a082, 0x0e9790a7) } },
 			new KnownSet { Set = "heavym20_102", Folder = "heavy_metal", Title = "Heavy Metal 1.02.0", Files = new KnownFile[] {
 				new KnownFile("game", 0x00364e7c, 0x89dcf06c),
 				new KnownFile("image.bin", 0x71c08cbc, 0x378ea9e2),
@@ -1436,17 +1471,30 @@ namespace Spike1Rom
 		// size: the group's name in 16 bytes, at 0x28 the file count, at 0x30 'STRS', its size and
 		// the path table, then per file 'FINF', the record's size, and the path's offset, the size,
 		// the data offset, the stored size and the mode), then 'SDAT', a size and the files' bytes.
-		// The game's group is the one holding <name>/game and <name>/image.bin
+		// The game's group is the one holding <name>/game and <name>/image.bin. An older package (WWE's)
+		// starts with its installer, a gzipped tar, and the package proper follows it
 		static void ReadFull(Stream s, byte[] b) { for (int o = 0; o < b.Length; ) { int n = s.Read(b, o, b.Length - o); if (n <= 0) throw new EndOfStreamException("The package ends early"); o += n; } }
+
+		// Where 'SPKS' and its first group's 'SPK0' are, within the first 16 MB; -1 if nowhere
+		static long FindSpks(Stream s)
+		{
+			var head = new byte[(int)Math.Min(s.Length, 16 << 20)];
+			ReadFull(s, head);
+			for (int i = 0; i + 16 <= head.Length; i++)
+				if (head[i] == 'S' && head[i + 1] == 'P' && head[i + 2] == 'K' && head[i + 3] == 'S'
+					&& head[i + 12] == 'S' && head[i + 13] == 'P' && head[i + 14] == 'K' && head[i + 15] == '0')
+					return i;
+			return -1;
+		}
 
 		void ReadSpk(string path)
 		{
 			using (var s = File.OpenRead(path))
 			{
-				var head = new byte[12];
-				ReadFull(s, head);
-				if (Encoding.ASCII.GetString(head, 0, 4) != "SPKS") throw new Exception("This is not a Stern .spk package.");
-				for (long pos = 12; pos + 16 <= s.Length && m_folder == null; )
+				long at = FindSpks(s);
+				if (at < 0) throw new Exception("This is not a Stern .spk package.");
+				if (at > 0) Log("Package: at " + at + ", past its installer");
+				for (long pos = at + 12; pos + 16 <= s.Length && m_folder == null; )
 				{
 					s.Seek(pos, SeekOrigin.Begin);
 					var g = new byte[16];
@@ -1538,7 +1586,7 @@ namespace Spike1Rom
 			var files = new List<FoundFile>();
 			if (set != null) foreach (var kf in set.Files) files.Add(m_files.Find(delegate(FoundFile x) { return x.Name == kf.Name; }));
 			else { files.AddRange(m_files); files.Sort(delegate(FoundFile a, FoundFile b) { return string.CompareOrdinal(a.Name, b.Name); }); }
-			Log(set != null ? "Set: " + set.Set + " - " + set.Title : "This code version has no PinMAME set yet; the zip is named after its folder.");
+			Log(set != null ? "Set: " + set.Set + " - " + set.Title : "This code version has no PinMAME set yet; the zip is named after its folder. Make-Spike1RomDef.ps1 writes the source lines for a new set from it.");
 
 			// Lay the zip out, then copy every file's blocks to their place in one pass
 			Directory.CreateDirectory(outDir);

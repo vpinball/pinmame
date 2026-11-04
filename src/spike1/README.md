@@ -430,10 +430,19 @@ model takes it for a program with `node_query_t()` and `nodemap_init()` (`elg_*`
   image's ext3 partitions, reads it straight out of the zip in a few forward passes (its own zip
   reader: .NET's refuses Supreme's zip, whose ZIP64 extra field carries fields its header does not
   call for), writes `<set>.zip` stored, and checks every file against the
-  set's CRCs - a new set needs its files added to the script's `KnownSet` table. It reads Stern's
+  set's CRCs - a new set needs its files added to the script's `KnownSet` table.
+  `scripts/spike1/Make-Spike1RomDef.ps1 <zip or folder> -Set <name>_<version> -LongName "<name>
+  (<version>)" -Year <year>` writes those lines from the zip the builder makes for an unknown
+  version (or a game folder): the set's `ROM_START` block for `spike1.c`, laid out as the sets
+  there are, its `CORE_GAMEDEF` (`-Parent` an older version's `CORE_CLONEDEF`, with `-Data`
+  another edition's `SPIKE1_CLONEDEF`), its `driver.c` line and its `KnownSet` entry. The game data
+  (`SPIKE1_INIT*`) is the title's own: `spike1boot --list-switches` prints its tables. It reads Stern's
   `.spk` update package too (Heavy Metal comes only as one): `SPKS`, then groups (`SPK0`), each an
   index (`SIDX`: the group's name, a path table `STRS` and a `FINF` record per file) and the files'
   bytes (`SDAT`), stored; the game folder is the group holding `<name>/game` and `<name>/image.bin`.
+  An older package (WWE's) starts with its installer, a gzipped tar (`install` and `bin/spk`, which
+  the machine runs from a USB stick), and the package proper follows it: the builder looks for
+  `SPKS` in the first 16 MB.
   An ELG title's game folder is `/usr/local/games/<name>-elg` on the root file system, with no
   `image.bin` and its sounds in a `sounds` directory, whose WAV files the set holds under their own
   names: Transformers' from Stern's `transformers_pin-1.0.18.iso`, Avengers' from the raw dump of
@@ -443,10 +452,11 @@ model takes it for a program with `node_query_t()` and `nodemap_init()` (`elg_*`
   more than that: about 10 s for the set.
 - **Editions**: Stern's Pro is a lesser-featured edition of a title. Its set is a clone of the
   Limited Edition's, named as PinMAME names Stern's SAM sets (`got_137` beside `got_137h`,
-  `kiss15_141` beside `kiss15_141h`, `gbust_117` beside `gbust_117h`), with its own game data
-  (`SPIKE1_CLONEDEF`: its folder, display layout, switch numbers, lamps, steppers and motors). The
-  files it shares with the parent - the Game of Thrones, KISS and Ghostbusters Pros share all but
-  the game program, and the Ghostbusters Pro has no `lcdinsert.bin` - can come from the parent's
+  `kiss15_141` beside `kiss15_141h`, `gbust_117` beside `gbust_117h`, `wwe_135` beside `wwe_135h`),
+  with its own game data (`SPIKE1_CLONEDEF`: its folder, display layout, switch numbers, lamps,
+  steppers and motors). The files it shares with the parent - the Game of Thrones, KISS,
+  Ghostbusters and WWE Pros share all but the game program, the Ghostbusters Pro has no
+  `lcdinsert.bin` and the WWE Pro no LCD clips - can come from the parent's
   ROM set, so a Pro set's zip can hold its game program alone; the builder writes the whole folder.
 - **A program without a symbol table** (Heavy Metal): the set's `SPIKE1_INIT_SYMBOLS` lists the
   addresses of the tables and functions the subsystem reads by name, which `spike1_pinmame_start()`
@@ -606,6 +616,20 @@ starts a game. It needed `syncfs` (system call 373), 8-byte switch reads, its ow
 positions, each service button acts as the next one), the framebuffer, views for its clips and the
 attract video nudge above. BACK in attract mode adds a service credit, as the game intends. Stern's `WWE_LE-1_35.iso.zip` copy here had an unreadable area on its disk; the
 `.iso` inside it builds the same set.
+
+Wrestlemania 1.35.0, the Pro (set `wwe_135`, folder `WWE`, from `WWE-1_35.iso.zip` or
+`WWE-1_35.spk`, which give the same files), shares the LE's asset image and node firmware. It has
+no playfield LCD (it never opens the framebuffer) and no upper flipper: 18 coils, 85 switches and
+101 LED channels, its cabinet switches the LE's, the flipper buttons' upper leaf (74, 75) still in
+its switch table. It takes coins and starts a game through libpinmame.
+
+Primus 1.04.0 and Pabst Can Crusher 1.02.0 (sets `primus_104` and `pabst_102`, the parents of
+`primus_103` and `pabst_101`; from Stern's `primus-1_04_0.spk` and `can_crusher-1_02_0.spk`) moved
+to a newer SDK than their first versions: node firmware 0.65.0 with a node4 (LPC1124) image beside
+the others, and their own asset images; their programs keep their symbols. Their switch, coil and
+LED tables are the earlier versions' (85 switches, 19 coils, 79 LED channels), so each version
+pair shares its game data. Both boot to attract mode, take coins and start a game through
+libpinmame.
 
 Heavy Metal 1.02.0 (the newest SDK, node firmware 0.67.0, four node boards - one a TMC2590 stepper
 driver - and four balls; set `heavym20_102`, as `heavymtl` and `hvymetal` are taken) boots to attract mode, takes
