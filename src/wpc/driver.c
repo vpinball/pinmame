@@ -591,6 +591,11 @@ DRIVERNV(detest)        //Data East MPU: ??/?? DE Test Chip
 DRIVERNV(deleontest4)   //Data East MPU: ??/0? DE Leon Test Chip (version 4)
 
 // --------------------
+// ELBOS
+// --------------------
+DRIVERNV(elgenesi)      //BY35      ??/82 Genesis
+
+// --------------------
 // FASCINATION INTERNATIONAL, INC.
 // --------------------
 DRIVERNV(royclark)      // 09/77 Roy Clark - The Entertainer
