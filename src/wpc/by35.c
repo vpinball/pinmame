@@ -64,6 +64,77 @@ static WRITE_HANDLER(snd300_wex) {
   sndbrd_0_ctrl_w(0,data);
 }
 
+/* The SB-300 has no sound command: the game CPU writes the sound chip's timer registers over
+   time, and those writes are what sndbrd_data_w() would log. What the game does hand its
+   sound routine is a sound script: every program has an interpreter in its interrupt handler
+   that reads a script from a pointer in RAM, and the game starts a sound by storing the
+   script's address in that pointer and clearing the delay byte (STX ptr; CLR delay; RTS).
+   That address is the sound command, the interpreter advancing the pointer is not.
+   The two RAM addresses differ between programs (Meteor, Galaxy and Ali use $6D/$4C, the
+   later ones $74/$53), so they are read from the program, where this start routine is the
+   only code of that shape. */
+#define ST300_MAX_STARTS 16
+static struct {
+  int ptr, delay;                // RAM addresses of the script pointer and of the delay byte, 0 = none
+  int numStarts;
+  int start[ST300_MAX_STARTS];   // the STX of each copy of the start routine...
+  int clear[ST300_MAX_STARTS];   // ...and the CLR that follows it
+  int pending, addr;             // a script address stored by the game, waiting for the delay clear
+} st300cmd;
+
+/* Looks for "STX ptr; CLR delay; RTS" in the program (STX in direct or extended mode: DF pp or FF 00 pp,
+   then 7F 00 dd 39). Flight 2000, Gamatron and the games with speech have a CLI before the RTS (the
+   SEI is before the store). */
+static void st300_findStart(void) {
+  const UINT8 *rom = memory_region(BY35_CPUREGION);
+  int a;
+  memset(&st300cmd, 0, sizeof(st300cmd));
+  for (a = 0x1000; a < 0xfff0; a++) {
+    int len = (rom[a] == 0xdf) ? 2 : (rom[a] == 0xff && rom[a+1] == 0x00) ? 3 : 0;
+    const UINT8 *c = rom + a + len;
+    if (len && c[0] == 0x7f && c[1] == 0x00 && (c[3] == 0x39 || (c[3] == 0x0e && c[4] == 0x39)) &&
+        rom[a+len-1] < 0x7e && c[2] < 0x80) {
+      int ptr = rom[a+len-1], delay = c[2];
+      if (st300cmd.ptr && (st300cmd.ptr != ptr || st300cmd.delay != delay ||
+                           st300cmd.numStarts == ST300_MAX_STARTS)) {
+        memset(&st300cmd, 0, sizeof(st300cmd)); // not the same everywhere, don't guess
+        return;
+      }
+      st300cmd.ptr = ptr;
+      st300cmd.delay = delay;
+      st300cmd.start[st300cmd.numStarts] = a;
+      st300cmd.clear[st300cmd.numStarts++] = a + len;
+    }
+  }
+}
+
+/* The game's store of the script pointer is a 16 bit store (high byte first), done by one of the
+   copies of the start routine, and it clears the delay with the very next instruction. The
+   interrupt handler stores the pointer too, while it reads a script, but never from there. */
+static WRITE_HANDLER(st300_ptr_w) {
+  int i, pc = activecpu_get_previouspc();
+  memory_region(BY35_CPUREGION)[st300cmd.ptr + offset] = data;
+  for (i = 0; i < st300cmd.numStarts; i++)
+    if (st300cmd.start[i] == pc) {
+      if (offset == 0)
+        st300cmd.addr = data << 8;
+      else {
+        st300cmd.addr |= data;
+        st300cmd.pending = st300cmd.clear[i];
+      }
+      return;
+    }
+}
+
+static WRITE_HANDLER(st300_delay_w) {
+  memory_region(BY35_CPUREGION)[st300cmd.delay] = data;
+  if (st300cmd.pending && activecpu_get_previouspc() == st300cmd.pending) { // the CLR after the store
+    st300cmd.pending = 0;
+    if (data == 0)
+      snd_cmd_log(0, st300cmd.addr);
+  }
+}
+
 static struct {
   int a0, a1, b0, b1, /*ca10,*/ ca11, ca20, ca21, cb10, /*cb11,*/ cb20, cb21;
   //int swData;
@@ -624,6 +695,12 @@ static MACHINE_INIT(by35) {
     install_mem_write_handler(0,0x00a0, 0x00a7, snd300_w);  // ok
     install_mem_read_handler (0,0x00a0, 0x00a7, snd300_r);  // ok
     install_mem_write_handler(0,0x00c0, 0x00c0, snd300_wex);// ok
+    st300_findStart();
+    if (st300cmd.ptr) {
+      install_mem_write_handler(0,st300cmd.ptr, st300cmd.ptr+1, st300_ptr_w);
+      install_mem_write_handler(0,st300cmd.delay, st300cmd.delay, st300_delay_w);
+      sndbrd_logData(0, 0); // st300_delay_w logs the sound commands
+    }
   } else if (sb == SNDBRD_ST100) {
     install_mem_write_handler(0,0x00a0, 0x00a0, stern100_snd_w); // sounds on (DIP 23 = 1)
     install_mem_write_handler(0,0x00c0, 0x00c0, stern100_chm_w); // chimes on (DIP 23 = 0)
