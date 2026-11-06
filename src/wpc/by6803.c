@@ -120,6 +120,7 @@ static struct {
   int old_lampadr;
   UINT16 lampCol; // latched lamp column (0..14)
   int sndData, sndStb;   // last port 1 byte and sound strobe (port 2 bit 4), see port2_w
+  UINT8 lastKeySw[5];    // keyboard image of switch columns 0..4 at the previous switch update
 } locals;
 
 static NVRAM_HANDLER(by6803);
@@ -367,18 +368,21 @@ static WRITE_HANDLER(pia1cb2_w) {
 static SWITCH_UPDATE(by6803) {
   int ext = (core_gameData->gen & GEN_BY6803A) ? 0 : 1;
   if (inports) {
-    coreGlobals.swMatrix[0] = (inports[BY6803_COMINPORT]>>13) & 0x03;
-    coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & (ext?0xd0:0xdf)) |
-                              ((inports[BY6803_COMINPORT]) & 0x20) |
-                              (ext?(inports[BY6803_COMINPORT+1] & 0x0f):0);
-    coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & (ext?0x90:0x98)) |
-                              ((inports[BY6803_COMINPORT]>>6) & 0x67) |
-                              (ext?((inports[BY6803_COMINPORT+1]>>4) & 0x0f):0);
-    if (ext) {
-        coreGlobals.swMatrix[3] = (coreGlobals.swMatrix[3] & 0xf0) |
-                                  ((inports[BY6803_COMINPORT+1]>>8) & 0x0f);
-        coreGlobals.swMatrix[4] = (coreGlobals.swMatrix[4] & 0xf0) |
-                                  ((inports[BY6803_COMINPORT+1]>>12) & 0x0f);
+    // Keyboard image of the cabinet/keypad switches, and which bits of each column it drives
+    const UINT8 keySw[5] = {
+      (inports[BY6803_COMINPORT]>>13) & 0x03,
+      ((inports[BY6803_COMINPORT]) & 0x20) | (ext?(inports[BY6803_COMINPORT+1] & 0x0f):0),
+      ((inports[BY6803_COMINPORT]>>6) & 0x67) | (ext?((inports[BY6803_COMINPORT+1]>>4) & 0x0f):0),
+      ext ? ((inports[BY6803_COMINPORT+1]>>8) & 0x0f) : 0,
+      ext ? ((inports[BY6803_COMINPORT+1]>>12) & 0x0f) : 0 };
+    const UINT8 keyMask[5] = { 0xff, ext?0x2f:0x20, ext?0x6f:0x67, ext?0x0f:0x00, ext?0x0f:0x00 };
+    int ii;
+    // Only apply the keys that changed: rewriting the whole columns on every update cleared
+    // switches set through the controller (e.g. the script's coin pulse) before the game read them
+    for (ii = 0; ii < 5; ii++) {
+      const UINT8 changed = (keySw[ii] ^ locals.lastKeySw[ii]) & keyMask[ii];
+      coreGlobals.swMatrix[ii] = (coreGlobals.swMatrix[ii] & ~changed) | (keySw[ii] & changed);
+      locals.lastKeySw[ii] = keySw[ii];
     }
   }
 
