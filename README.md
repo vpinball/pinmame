@@ -26,7 +26,7 @@ Williams/Bally WPC, Williams/Bally System 11, Williams System 9, Williams System
 Williams System 6, Williams System 4, Williams System 3, Pinball 2000,
 Data East AlphaNumeric System, Data East 128x16 DMD, Data East 128x32 DMD,
 Data East/Sega 192x64 DMD, Sega/Stern Whitestar System, Stern S.A.M., Stern SPIKE 1, Stern MPU-100, Stern MPU-200,
-Bally MPU-17 & MPU-35, Bally Video/Pinball, Bally 6803,
+Bally MPU-17 & MPU-35, Bally Video/Pinball, Bally 6803, Elbos,
 Gottlieb System 1, 80, 80a, 80b, System 3, Hankin, Gameplan MPU-1 & MPU-2, Atari,
 Zaccaria, Taito of Brazil, Midway, Capcom, Alvin G. and Co., Technoplay, Mr.Game, Spinball,
 Nuova Bell, Inder, Juegos Populares, LTD, Peyper, Sonic, Allied Leisure, Fascination, Int.,
@@ -158,6 +158,7 @@ See [SUPPORTED_MACHINES.md](SUPPORTED_MACHINES.md) for a more complete, machine-
 - *Mirco*
 - *Sport Matic*
 - *Regama* - Trebol
+- *Elbos* - Genesis (1982)
 - *Spooky Pinball (PinHeck)* - America's Most Haunted (2014), Domino's Spectacular Pinball Adventure (2016), Rob Zombie's Spookshow International (2016), The Jetsons (2017)
 - **Prototype games and modifications**
   - Dave Nutting's Flicker (Sep 1974)
