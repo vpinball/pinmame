@@ -122,6 +122,7 @@ int CLIB_DECL mame_fprintf(mame_file *f, const char *fmt, ...);
 #ifdef LIBPINMAME
 void setPath(int type, const char* path); 
 const char* getPath(int type);
+int libpinmame_write_file_atomically(int filetype, const char *filename, const void *data, size_t size);
 #endif
 
 #ifdef __cplusplus
