@@ -165,6 +165,7 @@ Fixed the RollerCoaster Tycoon 7.02, Spanish set not working
 
 *** ROM SUPPORT *** Thanks to Tom Collins/Scorbit, Paul Swan, Dieter Werner, Victor Fernandez, Jordi Beltran, ipdb.org, Billc479, Scott Charles, inkochnito, frisbez, Chad Hendrickson, idealjoker, ingo333, RedBall, Quench, slochar, Jesus Carballo, Rockman i uri666arcade de l'associació ARCADE (Recreativas.org), myPinballs, hemtoni
 New:
+Elbos: Genesis
 IDSA: Fantastic Car
 Inder: Hot & Cold
        Screech

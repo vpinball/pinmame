@@ -1862,6 +1862,19 @@ BY35_ROMEND
 CORE_CLONEDEFNV(sexygirl,playboy,"Sexy Girl",1980,"Arkon (Germany)",by35_mBY35_32S,0)
 
 /*--------------------------------
+/ Genesis (Elbos, 1982)
+/-------------------------------*/
+INITGAME2(elgenesi,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY61,0)
+BY35_ROMSTARTx00(elgenesi,"gen_u2.732",    CRC(83b47bba) SHA1(3756c60e6dff371ebb870c629d2f82bc1a87e0a9),
+                          "gen_u6.732",    CRC(8aae9395) SHA1(c68eb3422c438e60136fcb4d2fac56ccb8fd47da))
+BY61_SOUNDROM0x00(        "gen_snd_u2.532",CRC(d5e5b5ee) SHA1(0ecd23dd323f827738af8bef33a1fe9f405e06a5),
+                          "gen_snd_u4.532",CRC(912d7b40) SHA1(35e22a0441a94ceca12985d358d60ebdcbf70c2a),
+                          "gen_snd_u5.532",CRC(769be8dc) SHA1(711d3338ef4096c6b196355de20e65d916d81942))
+BY35_ROMEND
+#define input_ports_elgenesi input_ports_by35
+CORE_GAMEDEFNV(elgenesi,"Genesis (Elbos)",1982,"Elbos (Italy)",by35_mBY35_61S,0)
+
+/*--------------------------------
 / Mystic Star (Zaccaria game, 1984)
 /-------------------------------*/
 INITGAME(myststar,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY50,0)
