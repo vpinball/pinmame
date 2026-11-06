@@ -530,6 +530,11 @@ PINMAMEAPI void PinmameSetCheat(const int cheat);
 // starts at the time of the recording in both runs. A playback ignores PinmameSetSwitch(). NULL or "" turns it off
 PINMAMEAPI PINMAME_STATUS PinmameSetRecord(const char* const p_name);
 PINMAMEAPI PINMAME_STATUS PinmameSetPlayback(const char* const p_name);
+// Nonzero logs every write of the lines Bally MPU-17/MPU-35 machines share between solenoids and sound board as a sound
+// command, as PinMAME did before 3.7, instead of just the commands sent after the sound strobe. For AltSound packs made
+// for that older command stream. Applies to the next PinmameRun()
+PINMAMEAPI int PinmameGetLegacySoundCommandLog();
+PINMAMEAPI void PinmameSetLegacySoundCommandLog(const int legacy);
 PINMAMEAPI int PinmameGetHandleKeyboard();
 PINMAMEAPI void PinmameSetHandleKeyboard(const int handleKeyboard);
 PINMAMEAPI int PinmameGetHandleMechanics();

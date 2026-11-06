@@ -9,6 +9,9 @@ int manual_sound_commands(struct mame_bitmap *bitmap);
 void snd_cmd_init(void);
 void snd_cmd_exit(void);
 void snd_cmd_log(int boardNo, int cmd);
+/* Nonzero logs every write of the solenoid-shared lines of the Bally MPU-17/MPU-35 as a sound command (the pre-3.7
+   behavior some old AltSound packs are keyed on), instead of just the commands. Set before the game starts. */
+extern int snd_cmd_legacy_log;
 int snd_get_cmd_log(int *last, int *buffer);
 
 void reinit_pinSound(void);

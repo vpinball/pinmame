@@ -689,6 +689,7 @@ static MACHINE_INIT(by35) {
     case SNDBRD_NUOVA:
       locals.sndCmdMode = BY35_SNDCMD_HILO; break;
   }
+  if (snd_cmd_legacy_log) locals.sndCmdMode = 0; // keep logging every data write
   if (locals.sndCmdMode) sndbrd_logData(0, 0);
 
   if ((sb & 0xff00) == SNDBRD_ST300 || sb == SNDBRD_ASTRO) {
