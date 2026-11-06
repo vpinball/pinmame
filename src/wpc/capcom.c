@@ -1149,7 +1149,9 @@ static void romstar_irq1(int data) {
   cpu_set_irq_line(0, MC68306_IRQ_1, PULSE_LINE);
 }
 
-/* Goofy Hoops has no sound board or command either: the 68306 drives the QSound chip with a sequencer
+// Track Sound Commands:
+
+/* Goofy Hoops has no explicit sound board or commands: the 68306 drives the QSound chip with a sequencer
    of its own. The game plays an effect with play_sfx(sequence, pan, channel) and a song with
    play_song(song); both keep what they play in RAM for the sequencer's interrupt, which advances it
    itself:
@@ -1157,7 +1159,7 @@ static void romstar_irq1(int data) {
      from its start (channels at $99C, 18 bytes each);
    - play_song stores the song's address in $B16.
    The address of the sequence or song is the sound command. The two stores (a move.l from A0) are
-   found in the program, so that only these instructions count. */
+   found in the program, so that only these instructions count */
 #define ROMSTAR_CMD_START 0x0990
 #define ROMSTAR_CMD_END   0x0b3f
 static struct { UINT32 sfxPc, songPc; } romstarCmd;

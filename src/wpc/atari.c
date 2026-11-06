@@ -231,7 +231,9 @@ static READ_HANDLER(dip2_r)  {
 // Gen 1
 static UINT8 *ram;
 
-/* The Atari boards have no sound command either: the game CPU writes the tone registers of the
+// Track Sound Commands:
+
+/* The Atari boards have no sound command: the game CPU writes the tone registers of the
    board one step at a time (the latches below), and those writes are what sndbrd_data_w() logs.
    What the game asks its sound routine for is a value in RAM, which the routine then plays one
    step per call. Generation 1 (The Atarians, Time 2000, Airborne Avenger) keeps one down-counter
@@ -239,7 +241,7 @@ static UINT8 *ram;
    routine only decrements. The sound command is the counter's address and that length (0xA51F).
    The routine and the stores are read from the program: the routine is the only code that tests a
    counter and decrements it, and the stores are the STAA/STAB of an immediate length to one of the
-   counters. (The other two generation 1 programs and generation 2 are handled below.) */
+   counters (The other two generation 1 programs and generation 2 are handled below) */
 #define ATARI1_MAX_COUNTERS 8
 #define ATARI1_MAX_STARTS   128
 #define ATARI1_MAX_PENDING  32
@@ -254,7 +256,7 @@ static struct {
    BEQ; DEC 1,X), the game asks for slot n by adding to its pending count; Middle Earth: sound
    descriptors (LDX #descriptor; BSR routine) that point at their own step and pending bytes. The
    sound command is the slot number, or the address of the descriptor. The game's request is a
-   rise of the pending count by code outside of the sound routine. */
+   rise of the pending count by code outside of the sound routine */
 static void atari1_findPending(const UINT8 *rom) {
 	int a, k;
 	for (a = 0x7000; a < 0x8000 - 24; a++) {
@@ -580,12 +582,15 @@ static NVRAM_HANDLER(ATARI) {
   core_nvram(file, read_or_write, atari_CMOS, 0x100, 0x00);
 }
 static READ_HANDLER(ram2_r) { return atari_RAM[offset]; }
+
+// Track Sound Commands:
+
 /* Generation 2 (Superman, Hercules, Road Runner): the system program keeps one pending count per
    sound number, and the game's sound instruction (the same routine in every game, "PSHA; LDX #base;
    ANDA #1F; JSR add; ...; INC 0,X") raises it. The driver in the interrupt plays the pending sounds
    and takes the counts down itself. The sound command is the sound number. The INC is in a loop
    (the high bits of the operand are a repeat count), only the first one is a command: the next
-   ones are not preceded by another RAM write. */
+   ones are not preceded by another RAM write */
 static struct { int base, incPc, inLoop; } atari2cmd;
 
 static void atari2_findInstruction(void) {

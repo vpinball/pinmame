@@ -327,6 +327,8 @@ static MACHINE_DRIVER_START(INDER)
   MDRV_DIAGNOSTIC_LEDH(1)
 MACHINE_DRIVER_END
 
+// Track Sound Commands:
+
 /* Inder's first two machines, Brave Team (INDER0) and Canasta '86 (INDER1), have no sound board or
    command: the game's Z80 writes the sound chip itself, from a sound layer in its own program.
    The game starts a sound by calling a routine with HL = the address of what to play, and the routine
@@ -338,7 +340,7 @@ MACHINE_DRIVER_END
    - Canasta '86 (AY-8910): an effect routine and a music routine, each of which stores HL as the
      pointer of its script.
    The routines are found in the program by their code; the writes of the pointer by code that lies
-   inside them are the commands, the interrupt advancing it is not. */
+   inside them are the commands, the interrupt advancing it is not */
 #define INDER_MAX_CMDS 2
 static struct { int ptr, lo, hi, delta; } indercmd[INDER_MAX_CMDS];
 static int inderNumCmds;
@@ -386,8 +388,7 @@ static void inder_findSounds(void) {
   const UINT8 *rom = memory_region(INDER_MEMREG_CPU);
   int at;
   inderNumCmds = 0;
-  /* Brave Team: PUSH HL; PUSH BC; CALL silence; POP BC; LD E,(HL); INC HL; LD D,(HL); DEC DE;
-     LD (voice 0 pointer),DE ... */
+  /* Brave Team: PUSH HL; PUSH BC; CALL silence; POP BC; LD E,(HL); INC HL; LD D,(HL); DEC DE; LD (voice 0 pointer),DE ... */
   at = inder_find(rom, "E5 C5 CD ?? ?? C1 5E 23 56 1B ED 53 ?? ?? 23 5E 23 56 1B ED 53 ?? ?? 23 5E 23 56 1B "
                        "ED 53 ?? ?? 23 5E 23 56 ED 53 ?? ?? 23 5E 23 56 ED 53 ?? ?? 23 5E 23 56 ED 53 ?? ?? "
                        "3E 01 32", 0, 0x2000);
@@ -406,7 +407,7 @@ static void inder_findSounds(void) {
 }
 
 static MACHINE_INIT(INDER01) {
-  memset(&locals, 0, sizeof locals);
+  memset(&locals, 0, sizeof(locals));
   inder_findSounds();
 }
 
