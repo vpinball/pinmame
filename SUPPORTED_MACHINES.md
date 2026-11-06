@@ -31,10 +31,10 @@ onwards** is listed separately below as not expected rather than as missing.
 
 | Status                           | Machines | Share |
 | -------------------------------- | -------: | ----: |
-| Fully working                    |      583 | 69.9% |
+| Fully working                    |      584 | 70.0% |
 | Partially working                |       31 |  3.7% |
 | Emulated but not working         |        0 |  0.0% |
-| Not emulated                     |      142 | 17.0% |
+| Not emulated                     |      141 | 16.9% |
 | Not emulated — released recently |       78 |  9.4% |
 | **Total**                        |  **834** |       |
 
@@ -43,13 +43,13 @@ onwards** is listed separately below as not expected rather than as missing.
 | Decade | Total | Fully working | Partial | Not working | Not emulated |
 | ------ | ----: | ------------: | ------: | ----------: | -----------: |
 | 1970s  |   170 |           111 |       5 |           0 |           54 |
-| 1980s  |   328 |           281 |      23 |           0 |           24 |
+| 1980s  |   328 |           282 |      23 |           0 |           23 |
 | 1990s  |   148 |           142 |       3 |           0 |            3 |
 | 2000s  |    25 |            24 |       0 |           0 |            1 |
 | 2010s  |    73 |            24 |       0 |           0 |           49 |
 | 2020s  |    90 |             1 |       0 |           0 |           89 |
 
-## Fully working (583)
+## Fully working (584)
 
 Every known ROM set runs, and the driver flags nothing wrong with any of them.
 
@@ -245,6 +245,7 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | Devil's Dare                                   | 1982 | Gottlieb               | Alphanumeric | `dvlsdre`, `dvlsdre2`, `dvlsdrea`                    |             |       |
 | Dragonfist                                     | 1982 | Stern Electronics      | Alphanumeric | `dragfib2`, `dragfifp`, `dragfisb` + 7 more          |             |       |
 | Eclipse                                        | 1982 | Gottlieb               | Alphanumeric | `eclipse`, `eclipse7`                                |             |       |
+| Genesis                                        | 1982 | Elbos                  | Alphanumeric | `elgenesi`                                           |             |       |
 | Gork                                           | 1982 | Taito                  | Alphanumeric | `gork`                                               |             |       |
 | Haunted House                                  | 1982 | Gottlieb               | Alphanumeric | `hh`, `hh_1`, `hh_3` + 6 more                        |             |       |
 | Mr. & Mrs. Pac-Man                             | 1982 | Bally                  | Alphanumeric | `m_mpac`, `m_mpaca`, `m_mpacb`                       |             |       |
@@ -687,7 +688,7 @@ does not boot or does not play.
 
 _None._
 
-## Not emulated (142)
+## Not emulated (141)
 
 No driver. These machines are old enough to be in scope, so they are the candidates for
 future work.
@@ -760,7 +761,6 @@ future work.
 | White Shark                                 | 1980 | Bell Coin Matic           | Alphanumeric |
 | Neutron Star                                | 1981 | Atari                     | Alphanumeric |
 | Diana                                       | 1982 | Rowamet                   | Alphanumeric |
-| Genesis                                     | 1982 | Elbos                     | Alphanumeric |
 | Tiger Woman                                 | 1982 | I.D.I.                    | Alphanumeric |
 | Valkyrie                                    | 1982 | Jeutel                    | Alphanumeric |
 | Vulcan IV                                   | 1982 | Rowamet                   | Alphanumeric |
@@ -1150,8 +1150,8 @@ scripts/gen_supported_machines.py
 
 The script reads a cached copy of OPDB and re-downloads only with `--refresh`; `--check`
 fails if this file is out of date. Machine data comes from the OPDB snapshot of
-**2026-11-04**; driver data from `src/wpc` at the commit this file was generated from, on
-**2026-11-04**.
+**2026-11-06**; driver data from `src/wpc` at the commit this file was generated from, on
+**2026-11-06**.
 
 A machine is one OPDB *group*, so a title and its remakes are one row, dated and credited
 to the original. Its status is that of the *worst* of its ROM sets, so "fully working"
