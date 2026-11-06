@@ -1176,6 +1176,12 @@ void hc55516_set_mixing_level(int num, double gain)
 	hc55516[num].filter.intg.gain = gain; // for hc55516_use_chip_logic == 1
 }
 
+// Get the current mixer level (0-100) of the chip's output stream.
+int hc55516_get_mixing_level(int num)
+{
+	return mixer_get_mixing_level(hc55516[num].channel);
+}
+
 // Set the data bit input.  This just latches the bit for later processing,
 // on the next rising clock edge.
 void hc55516_digit_w(int num, int data)
