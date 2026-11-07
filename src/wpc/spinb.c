@@ -163,6 +163,7 @@ SND CPU #2 8255 PPI
 #include "sound/msm5205.h"
 #include "core.h"
 #include "sndbrd.h"
+#include "snd_cmd.h"
 #include "spinb.h"
 
 //#define VERBOSE
@@ -810,6 +811,11 @@ WRITE_HANDLER(snd2_portc_w)
 static WRITE_HANDLER(soundbd_w)
 {
 	LOG(("SOUND WRITE = %x\n",data));
+	// The sound CPUs poll this latch and only take a byte while its bit 7 is set. The game rewrites
+	// the latch every pass, so log a command once, when the latch changes to a value with bit 7 set
+	// (what the game writes is the sound command AltSound packs are keyed by). 00 releases the latch.
+	if ((data & 0x80) && data != SPINBlocals.SoundCmd)
+		snd_cmd_log(0, data);
 	SPINBlocals.SoundCmd = data;
 }
 
