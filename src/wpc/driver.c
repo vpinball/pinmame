@@ -2476,14 +2476,73 @@ DRIVER(smanve,101c)     // pinball browser colorized using extend memory
 #if HAS_SPIKE1
 DRIVER(tfcp,1018)       //SPIKE 1: ??/12 Transformers The Pin - 1.0.18
 DRIVER(avscp,103)       //SPIKE 1: ??/13 Avengers The Pin - 1.0.3
-DRIVER(wwe,135)         //SPIKE 1: ??/15 Wrestlemania - 1.35.0
+DRIVER(wwe,117)         //SPIKE 1: ??/15 Wrestlemania - 1.17.0
+DRIVER(wwe,119)         //         ??/15 Wrestlemania - 1.19.0
+DRIVER(wwe,119h)        //         ??/15 Legends of Wrestlemania - 1.19.0 Limited Edition
+DRIVER(wwe,120)         //         ??/15 Wrestlemania - 1.20.0
+DRIVER(wwe,120h)        //         ??/15 Legends of Wrestlemania - 1.20.0 Limited Edition
+DRIVER(wwe,125)         //         ??/15 Wrestlemania - 1.25.0
+DRIVER(wwe,133)         //         ??/15 Wrestlemania - 1.33.0
+DRIVER(wwe,133h)        //         ??/15 Legends of Wrestlemania - 1.33.0 Limited Edition
+DRIVER(wwe,135)         //         ??/15 Wrestlemania - 1.35.0
 DRIVER(wwe,135h)        //         ??/15 Legends of Wrestlemania - 1.35.0 Limited Edition
-DRIVER(wnbjm,155)       //SPIKE 1: ??/15 Whoa Nellie! Big Juicy Melons - 1.55.0
-DRIVER(kiss15,141)      //SPIKE 1: ??/15 KISS - 1.41.0
+DRIVER(wnbjm,151)       //SPIKE 1: ??/15 Whoa Nellie! Big Juicy Melons - 1.51.0
+DRIVER(wnbjm,152)       //         ??/15 Whoa Nellie! Big Juicy Melons - 1.52.0
+DRIVER(wnbjm,155)       //         ??/15 Whoa Nellie! Big Juicy Melons - 1.55.0
+DRIVER(kiss15,102)      //SPIKE 1: ??/15 KISS - 1.02.0
+DRIVER(kiss15,102h)     //         ??/15 KISS - 1.02.0 Limited Edition
+DRIVER(kiss15,103)      //         ??/15 KISS - 1.03.0
+DRIVER(kiss15,103h)     //         ??/15 KISS - 1.03.0 Limited Edition
+DRIVER(kiss15,104)      //         ??/15 KISS - 1.04.0
+DRIVER(kiss15,104h)     //         ??/15 KISS - 1.04.0 Limited Edition
+DRIVER(kiss15,105)      //         ??/15 KISS - 1.05.0
+DRIVER(kiss15,105h)     //         ??/15 KISS - 1.05.0 Limited Edition
+DRIVER(kiss15,128)      //         ??/15 KISS - 1.28.0
+DRIVER(kiss15,128h)     //         ??/15 KISS - 1.28.0 Limited Edition
+DRIVER(kiss15,130)      //         ??/15 KISS - 1.30.0
+DRIVER(kiss15,130h)     //         ??/15 KISS - 1.30.0 Limited Edition
+DRIVER(kiss15,140)      //         ??/15 KISS - 1.40.0
+DRIVER(kiss15,140h)     //         ??/15 KISS - 1.40.0 Limited Edition
+DRIVER(kiss15,141)      //         ??/15 KISS - 1.41.0
 DRIVER(kiss15,141h)     //         ??/15 KISS - 1.41.0 Limited Edition
-DRIVER(got,137)         //SPIKE 1: ??/15 Game of Thrones - 1.37.0
+DRIVER(got,100h)        //SPIKE 1: ??/15 Game of Thrones - 1.00.0 Limited Edition
+DRIVER(got,101h)        //         ??/15 Game of Thrones - 1.01.0 Limited Edition
+DRIVER(got,102h)        //         ??/15 Game of Thrones - 1.02.0 Limited Edition
+DRIVER(got,103h)        //         ??/15 Game of Thrones - 1.03.0 Limited Edition
+DRIVER(got,110)         //         ??/15 Game of Thrones - 1.10.0
+DRIVER(got,115)         //         ??/15 Game of Thrones - 1.15.0
+DRIVER(got,117)         //         ??/15 Game of Thrones - 1.17.0
+DRIVER(got,118)         //         ??/15 Game of Thrones - 1.18.0
+DRIVER(got,119)         //         ??/15 Game of Thrones - 1.19.0
+DRIVER(got,120)         //         ??/15 Game of Thrones - 1.20.0
+DRIVER(got,120h)        //         ??/15 Game of Thrones - 1.20.0 Limited Edition
+DRIVER(got,121)         //         ??/15 Game of Thrones - 1.21.0
+DRIVER(got,121h)        //         ??/15 Game of Thrones - 1.21.0 Limited Edition
+DRIVER(got,122)         //         ??/15 Game of Thrones - 1.22.0
+DRIVER(got,122h)        //         ??/15 Game of Thrones - 1.22.0 Limited Edition
+DRIVER(got,123)         //         ??/15 Game of Thrones - 1.23.0
+DRIVER(got,123h)        //         ??/15 Game of Thrones - 1.23.0 Limited Edition
+DRIVER(got,126)         //         ??/15 Game of Thrones - 1.26.0
+DRIVER(got,126h)        //         ??/15 Game of Thrones - 1.26.0 Limited Edition
+DRIVER(got,129)         //         ??/15 Game of Thrones - 1.29.0
+DRIVER(got,129h)        //         ??/15 Game of Thrones - 1.29.0 Limited Edition
+DRIVER(got,134)         //         ??/15 Game of Thrones - 1.34.0
+DRIVER(got,134h)        //         ??/15 Game of Thrones - 1.34.0 Limited Edition
+DRIVER(got,137)         //         ??/15 Game of Thrones - 1.37.0
 DRIVER(got,137h)        //         ??/15 Game of Thrones - 1.37.0 Limited Edition
-DRIVER(gbust,117)       //SPIKE 1: ??/16 Ghostbusters - 1.17.0
+DRIVER(gbust,104)       //SPIKE 1: ??/16 Ghostbusters - 1.04.0
+DRIVER(gbust,105)       //         ??/16 Ghostbusters - 1.05.0
+DRIVER(gbust,105h)      //         ??/16 Ghostbusters - 1.05.0 Limited Edition
+DRIVER(gbust,107)       //         ??/16 Ghostbusters - 1.07.0
+DRIVER(gbust,110)       //         ??/16 Ghostbusters - 1.10.0
+DRIVER(gbust,110h)      //         ??/16 Ghostbusters - 1.10.0 Limited Edition
+DRIVER(gbust,111)       //         ??/16 Ghostbusters - 1.11.0
+DRIVER(gbust,111h)      //         ??/16 Ghostbusters - 1.11.0 Limited Edition
+DRIVER(gbust,112)       //         ??/16 Ghostbusters - 1.12.0
+DRIVER(gbust,112h)      //         ??/16 Ghostbusters - 1.12.0 Limited Edition
+DRIVER(gbust,113)       //         ??/16 Ghostbusters - 1.13.0
+DRIVER(gbust,113h)      //         ??/16 Ghostbusters - 1.13.0 Limited Edition
+DRIVER(gbust,117)       //         ??/16 Ghostbusters - 1.17.0
 DRIVER(gbust,117h)      //         ??/16 Ghostbusters - 1.17.0 Limited Edition
 DRIVER(pabst,101)       //SPIKE 1: ??/16 Pabst Can Crusher, The - 1.01.0
 DRIVER(pabst,102)       //         ??/16 Pabst Can Crusher, The - 1.02.0
