@@ -55,6 +55,7 @@ The IOS board common to all games provides sound effects through the CDP1863.
 #include "core.h"
 #include "play.h"
 #include "sndbrd.h"
+#include "snd_cmd.h"
 #include "cpu/cdp1802/cdp1802.h"
 
 //#define VERBOSE_OUTPUT
@@ -79,6 +80,9 @@ static struct {
   int    panelSel;
   int    cpuType;
   int    resetDone;
+  int    sndLines;    // Zira board command lines (bits 4-6 of the lamp port) as last written
+  int    sndLevel;    // sound board command lines (3 bits) as last written, see play3_sndCmd
+  int    sndCmdFirst; // first value of the command in progress, or -1 if none
 
   UINT8  n2data;
 } locals;
@@ -280,6 +284,13 @@ static WRITE_HANDLER(out2_n) {
         }
       }
       if (core_gameData->hw.soundBoard == SNDBRD_PLAYZ) {
+        /* The Zira board has no data write: its COP420 reads bits 4-6 of this port as a level
+           (inverted, 0 = idle). Log the command each time the level changes to a non-idle value;
+           this is the byte (10, 20 .. 70) the AltSound packs are keyed on. The board still gets
+           every write, so the audio is unchanged. */
+        if ((data & 0x70) != locals.sndLines && (data & 0x70))
+          snd_cmd_log(0, data & 0x70);
+        locals.sndLines = data & 0x70;
         sndbrd_0_ctrl_w(0, data & 0x70);
       } else if (core_gameData->hw.soundBoard == SNDBRD_PLAY3) {
         if (locals.cpuType < 2) {
