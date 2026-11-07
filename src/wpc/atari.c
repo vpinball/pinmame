@@ -250,6 +250,7 @@ static struct {
 	int numStarts, pc[ATARI1_MAX_STARTS], addr[ATARI1_MAX_STARTS];
 	/* the other layouts: a pending count per sound that the game raises, and the sound routine's code */
 	int numPending, pending[ATARI1_MAX_PENDING], id[ATARI1_MAX_PENDING], routineLo, routineHi;
+	UINT8 watch[0x200]; /* the RAM addresses above, by the handlers' offset: a write to any other returns at once */
 } atari1cmd;
 
 /* Space Riders: 13 slots of a step byte and a pending count (LDX #base ... LDAA 0,X; BNE; LDAA 1,X;
@@ -336,7 +337,10 @@ static void atari1_findCounters(void) {
 }
 
 static void atari1_logStart(int offset, int data, int old) {
-	int i, pc = activecpu_get_previouspc();
+	int i, pc;
+	if (offset >= 0x200 || !atari1cmd.watch[offset])
+		return;
+	pc = activecpu_get_previouspc();
 	for (i = 0; i < atari1cmd.numStarts; i++)
 		if (atari1cmd.pc[i] == pc && atari1cmd.addr[i] == offset) {
 			snd_cmd_log(0, (offset << 8) | data);
@@ -659,7 +663,13 @@ static void init_common(void) {
 }
 
 static void atari1_initCmd(void) {
+  int i;
   atari1_findCounters();
+  for (i = 0; i < atari1cmd.numStarts; i++)
+    atari1cmd.watch[atari1cmd.addr[i]] = 1;
+  for (i = 0; i < atari1cmd.numPending; i++)
+    if (atari1cmd.pending[i] < 0x200)
+      atari1cmd.watch[atari1cmd.pending[i]] = 1;
   if (atari1cmd.numStarts || atari1cmd.numPending)
     sndbrd_logData(0, 0); // ram_w logs the sound commands
 }
