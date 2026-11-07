@@ -133,7 +133,7 @@ private:
 	std::string m_stop_reason;
 	uint64_t m_cycles = 0;          // cycles of emulated time so far
 	uint64_t m_idle_cycles = 0;     // of those, the ones that passed with every thread blocked
-	uint64_t m_wall_base_ns = 0;    // host wall clock at start, for CLOCK_REALTIME
+	uint64_t m_wall_base_ns = 0;    // CLOCK_REALTIME at emulated time 0: the host's clock at start, until the game sets its own
 	uint64_t m_syscalls = 0;
 	uint32_t m_syncs = 0;           // sync() calls: the game ends an NVRAM commit with one
 	uint64_t m_restart_ns = 0;      // the program has exited: when game_monitor starts it again

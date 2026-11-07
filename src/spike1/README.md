@@ -44,7 +44,11 @@ system-call level instead.
   ELG titles' `sys_time_init()` asserts that the clock is above 0. They count all their time from
   its value then (`sys_time_get_usec()` and `sys_time_get_msec()` subtract it, and no other code
   calls `clock_gettime`; their date comes from `gettimeofday`), so any value from 1 ms on runs them
-  alike; the cards hold no log of the real one. When the program exits, the board's `game_monitor`
+  alike; the cards hold no log of the real one. The wall clock (`CLOCK_REALTIME`, `gettimeofday`,
+  `time`) starts at the host's time. The game sets it with `settimeofday` (glibc's `stime` calls it)
+  from the service menu's date and time and when a tournament starts, then writes the board's RTC
+  (`/dev/rtc`, `RTC_SET_TIME`, taken without a model); the time it sets holds until the machine
+  stops, and the next start takes the host's time again. When the program exits, the board's `game_monitor`
   (`/etc/init.d/game_monitor`: run the game, print `RESTARTING GAME`, sleep 1, run it again)
   starts it a second later as a new process: new memory, threads and open files, and the program
   loaded again. The files it wrote, the CPU board's devices, the node boards, the EEPROMs and the
