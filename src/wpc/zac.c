@@ -10,6 +10,7 @@
 #include "sound/discrete.h"
 #include "core.h"
 #include "sndbrd.h"
+#include "snd_cmd.h"
 #include "zac.h"
 #include "zacsnd.h"
 #include "wmssnd.h"
@@ -21,7 +22,10 @@
 
 static void ZAC_soundInit(void) {
   if (core_gameData->hw.soundBoard == SNDBRD_TECHNO)
+  {
     sndbrd_0_init(core_gameData->hw.soundBoard, ZACSND_CPUA, memory_region(ZACSND_CPUCREGION), NULL, NULL);
+    sndbrd_logData(0, 0); // data_port_w logs the Tecnoplay sound commands, see there
+  }
   else
     sndbrd_0_init(core_gameData->hw.soundBoard, ZACSND_CPUA, memory_region(ZACSND_CPUAREGION), NULL, NULL);
 }
@@ -49,6 +53,11 @@ static struct {
 
   UINT8 write_bitno;
   UINT8 write_startbit;
+
+  // Tecnoplay sound board: the game writes each command as a pair of bytes
+  double sndTime;
+  UINT8 sndData;
+  UINT8 sndPair; // the last write opened a pair, its partner is still to come
 } locals;
 
 static INTERRUPT_GEN(ZAC_vblank_old) {
@@ -325,6 +334,19 @@ static WRITE_HANDLER(ctrl_port_w)
 /*   DATA PORT : WRITE = Sound Data 0-7 */
 static WRITE_HANDLER(data_port_w)
 {
+  if (core_gameData->hw.soundBoard == SNDBRD_TECHNO) {
+    // The Tecnoplay program sends every command as two writes about 0.1 ms apart, with the same low five
+    // bits (28 A8; FE BE for a TMS7000 sample), and the board takes both. Log the pair once, as its first
+    // byte (it is the one that interrupts the TMS7000); a repeat of a command is a new pair. 3F BF is the
+    // idle pair the game sends between commands.
+    const double now = timer_get_time();
+    const int second = locals.sndPair && now - locals.sndTime < 0.0025 && !((data ^ locals.sndData) & 0x1F);
+    locals.sndTime = now;
+    locals.sndData = data;
+    locals.sndPair = !second;
+    if (!second && data != 0x3F && data != 0xBF)
+      snd_cmd_log(0, data);
+  }
   sndbrd_0_data_w(ZACSND_CPUA, data);
   //logerror("%x: Sound Data Write=%x\n",activecpu_get_previouspc(),data);
 }
