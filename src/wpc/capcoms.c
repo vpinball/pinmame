@@ -21,6 +21,7 @@
 #include "capcom.h"
 #include "capcoms.h"
 #include "sndbrd.h"
+#include "snd_cmd.h"
 
 //#define VERBOSE
 //#define DEBUGGING
@@ -139,8 +140,28 @@ int get_rts_line_from_8752(void)
 	return locals.rts;
 }
 
+/* The game talks to the board in messages: DA, the number of bytes that follow, then those bytes.
+   A sound is played by DA 04 07 vv nnnn (06 instead of 07 loops it), nnnn being the sample number.
+   The bytes never go through sndbrd_data_w, so the sound command log (AltSound) saw nothing: log the
+   sample number once per sound, whoever sends the bytes (the game's DUART, or the manual handler).
+   Only the log changes; the board receives the same bytes. */
+static void capcoms_log_sound(int data)
+{
+	static int pos, len, msg[4];
+	data &= 0xff;
+	if (pos == 0) { pos = (data == 0xDA) ? 1 : 0; return; }
+	if (pos == 1) { len = data; pos = (len >= 1 && len <= 4) ? 2 : 0; return; }
+	msg[pos++ - 2] = data;
+	if (pos - 2 == len) {
+		pos = 0;
+		if (len == 4 && (msg[0] == 0x06 || msg[0] == 0x07))
+			snd_cmd_log(0, (msg[2] << 8) | msg[3]);
+	}
+}
+
 void send_data_to_8752(int data)
 {
+	capcoms_log_sound(data);
 	locals.to_8752 = data;
 	PRINTF(("Data TO 8752 Write = %x\n",data));
 
