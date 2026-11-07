@@ -8,6 +8,7 @@
 #include "sound/hc55516.h"
 #include "sound/dac.h"
 #include "core.h"
+#include "snd_cmd.h"
 #include "sndbrd.h"
 #include "s11.h"
 #include "wpc.h"
@@ -339,6 +340,7 @@ static struct {
   struct sndbrdData brdData;
   UINT8 sndCmd;
   UINT8 sndBitsA;
+  UINT8 cb1; // World Cup, Disco Fever: CB1 as last driven, to find its rising edges
 } s67slocals;
 
 static READ_HANDLER(snd_r) {
@@ -361,12 +363,78 @@ static const struct pia6821_interface s67s_pia = {
 
 static void s67s_init(struct sndbrdData *brdData) {
   s67slocals.brdData = *brdData;
+  s67slocals.cb1 = 0;
+  // World Cup and Disco Fever: the sounds the program plays are logged as they start (see
+  // s67s_logSound), not the raw writes of the data lines.
+  if (brdData->subType & (16 | 8))
+    sndbrd_logData(brdData->boardNo, 0);
   pia_config(S67S_PIA0, PIA_STANDARD_ORDERING, &s67s_pia);
 
   // Note that the speech board games featured a potentiometer on the separate speech board to mix speech and sound (so it could be tweaked by the operator!).
   // For the moment, the mixing sounds okay as-is.
 
   // If ever passing in per-game mixing levels via hw.gameSpecific2 (like done for Sys9/11/WPC), then note that we use that for Defender already, for its muxed solenoids.
+}
+
+/* World Cup and Disco Fever (sub-types 8 and 16): the sound program starts on each rising edge of
+   CB1, whether the data lines or the control line caused it, and decides from the byte it reads
+   what to play (the programs are read in rom2altsound's docs/families/williams-system3-7.md).
+   Log what it plays as one number, the id of the sound's pack row, so the value follows neither
+   the Sound Dip 2 setting nor the bits the program ignores. The byte (sndCmd): bits 0-3 the data
+   nibble, 4 data bit 6, 6 Sound Dip 2 off, and the control line in bit 5 (World Cup, with data
+   bit 4 in bit 7) or bit 7 (Disco Fever); a line is asserted when low. The program's flag is read
+   from its RAM, as it stands when the byte arrives (the program clears it at reset).
+   World Cup (program at 7F15, flag $0B):
+     bit 7 low        a prefix: toggles the flag, plays nothing
+     bit 4 low        0x10
+     control line     0x80
+     else, with the flag set or Sound Dip 2 on, a pitch: 0x4050 | n, the pitches that share a
+                      table entry (8 9 A C, 1 5, 2 4) as one of them
+     else a routine: 0x50 | n for n = E, D, B, 7 (8 9 A C play E's; 0-6 jump into nothing)
+   Disco Fever (program at 7F45, flag $09):
+     control line     sets the flag, plays nothing
+     no flag, bit 4 high, Sound Dip 2 off: a numbered sound, 0x40 | n
+     else the priority decoder, the lowest low bit of the nibble (none, with bit 4 low: F): 0x0E,
+                      0x0D, 0x0B, 0x07, 0x0F, plus 0x8000 after the control line (and F then:
+                      the table entry is the word 0000, nothing to log). The sound clears the flag. */
+static void s67s_logSound(void) {
+  static const UINT8 pitch[16] = { 0x0, 0x5, 0x4, 0x3, 0x4, 0x5, 0x6, 0x7, 0xc, 0xc, 0xc, 0xb, 0xc, 0xd, 0xe, 0xf };
+  const UINT8 cmd = s67slocals.sndCmd;
+  const UINT8 cb1 = ((cmd & 0xbf) != 0xbf);
+  const UINT8 rising = cb1 && !s67slocals.cb1;
+  const int n = cmd & 0x0f;
+  int id = -1;
+  s67slocals.cb1 = cb1;
+  if (!rising)
+    return;
+  if (s67slocals.brdData.subType & 8) {
+    const int flag = cpunum_read_byte(s67slocals.brdData.cpuNo, 0x000b) != 0;
+    if (!(cmd & 0x80)) { // a prefix: the program only sets or clears its flag
+    } else if (!(cmd & 0x10))
+      id = 0x10;
+    else if (!(cmd & 0x20))
+      id = 0x80;
+    else if (!(cmd & 0x40) || flag)
+      id = 0x4050 | pitch[n];
+    else if (n == 0x0d || n == 0x0b || n == 0x07)
+      id = 0x50 | n;
+    else if (n >= 0x08 && n <= 0x0e)
+      id = 0x5e;
+  } else if (cmd & 0x80) { // else the control line only sets the flag
+    const int flag = cpunum_read_byte(s67slocals.brdData.cpuNo, 0x0009) != 0;
+    if (!flag && (cmd & 0x50) == 0x50)
+      id = 0x40 | n;
+    else {
+      int bit;
+      id = 0x0f;
+      for (bit = 0; bit < 4; bit++)
+        if (!(n & (1 << bit))) { id = 0x0f & ~(1 << bit); break; }
+      if (flag)
+        id = (id == 0x0f) ? -1 : (id | 0x8000);
+    }
+  }
+  if (id >= 0)
+    snd_cmd_log(s67slocals.brdData.boardNo, id);
 }
 
 static WRITE_HANDLER(s67s_ctrl_w) {
@@ -381,6 +449,7 @@ static WRITE_HANDLER(s67s_ctrl_w) {
     }
     pia_set_input_b(S67S_PIA0, s67slocals.sndCmd);
     pia_set_input_cb1(S67S_PIA0, !((s67slocals.sndCmd & 0xbf) == 0xbf));
+    s67s_logSound();
   } else {
     s67slocals.sndBitsA = data;
   }
@@ -406,6 +475,8 @@ static WRITE_HANDLER(s67s_cmd_w) {
     pia_set_input_cb1(S67S_PIA0, !((s67slocals.sndCmd & 0x7f) == 0x7f));
   } else if (s67slocals.brdData.subType & 2) {
     pia_set_input_cb1(S67S_PIA0, !((s67slocals.sndCmd & 0xbf) == 0xbf));
+    if (s67slocals.brdData.subType & (16 | 8))
+      s67s_logSound();
   } else {
     pia_set_input_cb1(S67S_PIA0, !((s67slocals.sndCmd & 0x1f) == 0x1f));
   }
