@@ -1750,7 +1750,7 @@ ROM_START(wwe_133h)
     ROM_LOAD("pinnode-LPC1112_201-0_18_2.hex", 0xaae2e000, 0x00007dd1, CRC(c6c75408) SHA1(31efd310ff2b9790d7acb03d6f1bc422ba80bdbc))
     ROM_LOAD("pinnode-LPC1313-0_18_2.hex", 0xaae36000, 0x00009e29, CRC(f4fd14e6) SHA1(5f6b228741dd35a6a48dcbed1d6147bda8eef673))
 ROM_END
-SPIKE1_CLONEDEF(wwe, 133h, wwe_135h, wwep, "Legends of Wrestlemania Limited Edition (1.33.0)", 2015, spike1)
+SPIKE1_CLONEDEF(wwe, 133h, wwe_135h, wwe, "Legends of Wrestlemania Limited Edition (1.33.0)", 2015, spike1)
 
 ROM_START(wwe_133)
   ROM_REGION(0x54cf5000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -1815,7 +1815,7 @@ ROM_START(wwe_120h)
     ROM_LOAD("image.bin", 0x565c4000, 0x2512b5d0, CRC(ba0fc9c5) SHA1(7475085b50c82f4fe79f7989b8652fe319d48562))
     ROM_LOAD("pinnode-0_15_11.hex", 0x7b6f0000, 0x0000802a, CRC(9530d62d) SHA1(a368fc6fcfdd92439a3993951c97549fbb2f0fbd))
 ROM_END
-SPIKE1_CLONEDEF(wwe, 120h, wwe_135h, wwep, "Legends of Wrestlemania Limited Edition (1.20.0)", 2015, spike1)
+SPIKE1_CLONEDEF(wwe, 120h, wwe_135h, wwe, "Legends of Wrestlemania Limited Edition (1.20.0)", 2015, spike1)
 
 ROM_START(wwe_120)
   ROM_REGION(0x255af000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -1864,7 +1864,7 @@ ROM_START(wwe_119h)
     ROM_LOAD("image.bin", 0x565aa000, 0x2512b5d0, CRC(d39341b0) SHA1(5f02e69a73cbf4e7b7caf6498e2885d868de106a))
     ROM_LOAD("pinnode-0_15_7.hex", 0x7b6d6000, 0x00007dd9, CRC(6873c641) SHA1(16719e683ec70c6b2a616745b5978e54254d8177))
 ROM_END
-SPIKE1_CLONEDEF(wwe, 119h, wwe_135h, wwep, "Legends of Wrestlemania Limited Edition (1.19.0)", 2015, spike1)
+SPIKE1_CLONEDEF(wwe, 119h, wwe_135h, wwe, "Legends of Wrestlemania Limited Edition (1.19.0)", 2015, spike1)
 
 ROM_START(wwe_119)
   ROM_REGION(0x25595000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -1910,7 +1910,7 @@ ROM_START(wnbjm_152)
     ROM_LOAD("image.bin", 0x00404000, 0x04307740, CRC(392c49af) SHA1(0839c3e3247352f2f1dfdadfe5930a6a2e535e71))
     ROM_LOAD("pinnode-0_15_7.hex", 0x0470c000, 0x00007dd9, CRC(6873c641) SHA1(16719e683ec70c6b2a616745b5978e54254d8177))
 ROM_END
-SPIKE1_CLONEDEF(wnbjm, 152, wnbjm_155, wnbjmp, "Whoa Nellie! Big Juicy Melons (1.52.0)", 2015, spike1)
+SPIKE1_CLONEDEF(wnbjm, 152, wnbjm_155, wnbjm, "Whoa Nellie! Big Juicy Melons (1.52.0)", 2015, spike1)
 
 ROM_START(wnbjm_151)
   ROM_REGION(0x04712000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -1918,7 +1918,7 @@ ROM_START(wnbjm_151)
     ROM_LOAD("image.bin", 0x00402000, 0x04307740, CRC(dd6c4698) SHA1(06ebc3667d8cfd793b37a7f328ebe3df8621ff66))
     ROM_LOAD("pinnode-0_15_7.hex", 0x0470a000, 0x00007dd9, CRC(6873c641) SHA1(16719e683ec70c6b2a616745b5978e54254d8177))
 ROM_END
-SPIKE1_CLONEDEF(wnbjm, 151, wnbjm_155, wnbjmp, "Whoa Nellie! Big Juicy Melons (1.51.0)", 2015, spike1)
+SPIKE1_CLONEDEF(wnbjm, 151, wnbjm_155, wnbjm, "Whoa Nellie! Big Juicy Melons (1.51.0)", 2015, spike1)
 
 /*-------------------------------------------------------------------
 / Pabst Can Crusher, The
@@ -2052,7 +2052,7 @@ ROM_START(kiss15_140h)
     ROM_LOAD("pinnode-LPC1313-0_28_0.hex", 0x3ee1a000, 0x0000c859, CRC(18c17d1d) SHA1(6b2f232c0b6c2389c59f998d0487081491e9d177))
     ROM_LOAD("ws2812node-LPC1313-0_28_0.hex", 0x3ee27000, 0x00005590, CRC(921dc0f7) SHA1(2c49842bb5163b75a19ebac37f0379ef72c64d4a))
 ROM_END
-SPIKE1_CLONEDEF(kiss15, 140h, kiss15_141h, kiss15p, "KISS Limited Edition (1.40.0)", 2015, spike1)
+SPIKE1_CLONEDEF(kiss15, 140h, kiss15_141h, kiss15, "KISS Limited Edition (1.40.0)", 2015, spike1)
 
 ROM_START(kiss15_140)
   ROM_REGION(0x3ee22000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -2081,7 +2081,7 @@ ROM_START(kiss15_130h)
     ROM_LOAD("pinnode-LPC1112_201-0_20_4.hex", 0x3e917000, 0x000081bf, CRC(1043ac6c) SHA1(3d9544cd1a50fc2aec8f31aca3d58239583aa2df))
     ROM_LOAD("pinnode-LPC1313-0_20_4.hex", 0x3e920000, 0x0000b5ec, CRC(ee0c5bc1) SHA1(fc91dc0d57ba5425516de4ed583ea3d5e9f8cf60))
 ROM_END
-SPIKE1_CLONEDEF(kiss15, 130h, kiss15_141h, kiss15p, "KISS Limited Edition (1.30.0)", 2015, spike1)
+SPIKE1_CLONEDEF(kiss15, 130h, kiss15_141h, kiss15, "KISS Limited Edition (1.30.0)", 2015, spike1)
 
 ROM_START(kiss15_130)
   ROM_REGION(0x3e921000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -2109,7 +2109,7 @@ ROM_START(kiss15_128h)
     ROM_LOAD("pinnode-LPC1112_201-0_18_2.hex", 0x3e8fd000, 0x00007dd1, CRC(c6c75408) SHA1(31efd310ff2b9790d7acb03d6f1bc422ba80bdbc))
     ROM_LOAD("pinnode-LPC1313-0_18_2.hex", 0x3e905000, 0x00009e29, CRC(f4fd14e6) SHA1(5f6b228741dd35a6a48dcbed1d6147bda8eef673))
 ROM_END
-SPIKE1_CLONEDEF(kiss15, 128h, kiss15_141h, kiss15p, "KISS Limited Edition (1.28.0)", 2015, spike1)
+SPIKE1_CLONEDEF(kiss15, 128h, kiss15_141h, kiss15, "KISS Limited Edition (1.28.0)", 2015, spike1)
 
 ROM_START(kiss15_128)
   ROM_REGION(0x3e906000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -2131,7 +2131,7 @@ ROM_START(kiss15_105h)
     ROM_LOAD("image.bin", 0x004a3000, 0x3b8b1b10, CRC(e49526a8) SHA1(7ce80bdd76b6cf249a969b7dd870e82d1f43beee))
     ROM_LOAD("pinnode-0_15_11.hex", 0x3bd55000, 0x0000802a, CRC(9530d62d) SHA1(a368fc6fcfdd92439a3993951c97549fbb2f0fbd))
 ROM_END
-SPIKE1_CLONEDEF(kiss15, 105h, kiss15_141h, kiss15p, "KISS Limited Edition (1.05.0)", 2015, spike1)
+SPIKE1_CLONEDEF(kiss15, 105h, kiss15_141h, kiss15, "KISS Limited Edition (1.05.0)", 2015, spike1)
 
 ROM_START(kiss15_105)
   ROM_REGION(0x3bd50000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -2147,7 +2147,7 @@ ROM_START(kiss15_104h)
     ROM_LOAD("image.bin", 0x0048e000, 0x3b8b1b10, CRC(d00c4d2c) SHA1(1d01de2ab01ef1ea0880aa045a25d0aa7d03057a))
     ROM_LOAD("pinnode-0_15_10.hex", 0x3bd40000, 0x00007eb2, CRC(2398d072) SHA1(c7432be41137f1be9d532db87a7e0e37e647db7e))
 ROM_END
-SPIKE1_CLONEDEF(kiss15, 104h, kiss15_141h, kiss15p, "KISS Limited Edition (1.04.0)", 2015, spike1)
+SPIKE1_CLONEDEF(kiss15, 104h, kiss15_141h, kiss15, "KISS Limited Edition (1.04.0)", 2015, spike1)
 
 ROM_START(kiss15_104)
   ROM_REGION(0x3bd3b000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -2163,7 +2163,7 @@ ROM_START(kiss15_103h)
     ROM_LOAD("image.bin", 0x00487000, 0x3b336e60, CRC(d3edab9b) SHA1(441378052d3a944f8f146795b4a358cfadb54fa5))
     ROM_LOAD("pinnode-0_15_7.hex", 0x3b7be000, 0x00007dd9, CRC(6873c641) SHA1(16719e683ec70c6b2a616745b5978e54254d8177))
 ROM_END
-SPIKE1_CLONEDEF(kiss15, 103h, kiss15_141h, kiss15p, "KISS Limited Edition (1.03.0)", 2015, spike1)
+SPIKE1_CLONEDEF(kiss15, 103h, kiss15_141h, kiss15, "KISS Limited Edition (1.03.0)", 2015, spike1)
 
 ROM_START(kiss15_103)
   ROM_REGION(0x3b7b9000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -2179,7 +2179,7 @@ ROM_START(kiss15_102h)
     ROM_LOAD("image.bin", 0x00487000, 0x3b336e60, CRC(2ddc143e) SHA1(055e8e015bfab4b3a66eba3825a64906e21625d4))
     ROM_LOAD("pinnode-0_15_6.hex", 0x3b7be000, 0x00007bea, CRC(ced5414a) SHA1(37cfe475c927997fb812057771d70acf31847360))
 ROM_END
-SPIKE1_CLONEDEF(kiss15, 102h, kiss15_141h, kiss15p, "KISS Limited Edition (1.02.0)", 2015, spike1)
+SPIKE1_CLONEDEF(kiss15, 102h, kiss15_141h, kiss15, "KISS Limited Edition (1.02.0)", 2015, spike1)
 
 ROM_START(kiss15_102)
   ROM_REGION(0x3b7b8000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -2249,7 +2249,7 @@ ROM_START(got_134h)
     ROM_LOAD("pinnode-LPC1112_201-0_19_1.hex", 0x2ee83000, 0x0000807c, CRC(2769520c) SHA1(380f4755b683b69e59af172000c9300350bfab41))
     ROM_LOAD("pinnode-LPC1313-0_19_1.hex", 0x2ee8c000, 0x0000a188, CRC(feb117d1) SHA1(453a0de75a62aef43bfaa1edea1634eada328190))
 ROM_END
-SPIKE1_CLONEDEF(got, 134h, got_137h, gotp, "Game of Thrones Limited Edition (1.34.0)", 2015, spike1)
+SPIKE1_CLONEDEF(got, 134h, got_137h, got, "Game of Thrones Limited Edition (1.34.0)", 2015, spike1)
 
 ROM_START(got_134)
   ROM_REGION(0x2ee84000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -2277,7 +2277,7 @@ ROM_START(got_129h)
     ROM_LOAD("pinnode-LPC1112_201-0_18_2.hex", 0x2ee6f000, 0x00007dd1, CRC(c6c75408) SHA1(31efd310ff2b9790d7acb03d6f1bc422ba80bdbc))
     ROM_LOAD("pinnode-LPC1313-0_18_2.hex", 0x2ee77000, 0x00009e29, CRC(f4fd14e6) SHA1(5f6b228741dd35a6a48dcbed1d6147bda8eef673))
 ROM_END
-SPIKE1_CLONEDEF(got, 129h, got_137h, gotp, "Game of Thrones Limited Edition (1.29.0)", 2015, spike1)
+SPIKE1_CLONEDEF(got, 129h, got_137h, got, "Game of Thrones Limited Edition (1.29.0)", 2015, spike1)
 
 ROM_START(got_129)
   ROM_REGION(0x2ee6d000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -2305,7 +2305,7 @@ ROM_START(got_126h)
     ROM_LOAD("pinnode-LPC1112_201-0_17_2.hex", 0x2ee28000, 0x00007c79, CRC(518e1d9e) SHA1(8e53a12c8fa8cb84205b6c85633bbfd1fd3a8804))
     ROM_LOAD("pinnode-LPC1313-0_17_2.hex", 0x2ee30000, 0x00009cc1, CRC(6ffa8f24) SHA1(0cf33a87e81f1789da870cd9ed7566e821c3c4fc))
 ROM_END
-SPIKE1_CLONEDEF(got, 126h, got_137h, gotp, "Game of Thrones Limited Edition (1.26.0)", 2015, spike1)
+SPIKE1_CLONEDEF(got, 126h, got_137h, got, "Game of Thrones Limited Edition (1.26.0)", 2015, spike1)
 
 ROM_START(got_126)
   ROM_REGION(0x2ee27000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -2330,7 +2330,7 @@ ROM_START(got_123h)
     ROM_LOAD("pinnode-LPC1112_201-0_16_6.hex", 0x2edf8000, 0x000085f7, CRC(4b9450d8) SHA1(1406dbb3c9039a3f9a4641d26f44dde96172741f))
     ROM_LOAD("pinnode-LPC1313-0_16_6.hex", 0x2ee01000, 0x000095f6, CRC(83f5df85) SHA1(5e5e78046f4e1dd55297b539b547a45cf3dc8692))
 ROM_END
-SPIKE1_CLONEDEF(got, 123h, got_137h, gotp, "Game of Thrones Limited Edition (1.23.0)", 2015, spike1)
+SPIKE1_CLONEDEF(got, 123h, got_137h, got, "Game of Thrones Limited Edition (1.23.0)", 2015, spike1)
 
 ROM_START(got_123)
   ROM_REGION(0x2edf6000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -2352,7 +2352,7 @@ ROM_START(got_122h)
     ROM_LOAD("pinnode-LPC1112_201-0_16_5.hex", 0x2edf8000, 0x0000861c, CRC(37fb3f91) SHA1(802f4fe5e0a52c6a92e6356738c38b036d9c40c4))
     ROM_LOAD("pinnode-LPC1313-0_16_5.hex", 0x2ee01000, 0x0000961b, CRC(6d55c2ba) SHA1(4fc6785c14eb54a0d1a3db12010fd8870c86ac99))
 ROM_END
-SPIKE1_CLONEDEF(got, 122h, got_137h, gotp, "Game of Thrones Limited Edition (1.22.0)", 2015, spike1)
+SPIKE1_CLONEDEF(got, 122h, got_137h, got, "Game of Thrones Limited Edition (1.22.0)", 2015, spike1)
 
 ROM_START(got_122)
   ROM_REGION(0x2edf6000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -2374,7 +2374,7 @@ ROM_START(got_121h)
     ROM_LOAD("pinnode-LPC1112_201-0_16_4.hex", 0x2edf7000, 0x000086e0, CRC(44c40db9) SHA1(b6ddad51209de85334605387b5b378ca1698753b))
     ROM_LOAD("pinnode-LPC1313-0_16_4.hex", 0x2ee00000, 0x000096df, CRC(3bcb5d7a) SHA1(3a734b20931b444b8cc2e0bb27364cce853eb151))
 ROM_END
-SPIKE1_CLONEDEF(got, 121h, got_137h, gotp, "Game of Thrones Limited Edition (1.21.0)", 2015, spike1)
+SPIKE1_CLONEDEF(got, 121h, got_137h, got, "Game of Thrones Limited Edition (1.21.0)", 2015, spike1)
 
 ROM_START(got_121)
   ROM_REGION(0x2edf6000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -2396,7 +2396,7 @@ ROM_START(got_120h)
     ROM_LOAD("pinnode-LPC1112_201-0_16_4.hex", 0x2edf7000, 0x000086e0, CRC(44c40db9) SHA1(b6ddad51209de85334605387b5b378ca1698753b))
     ROM_LOAD("pinnode-LPC1313-0_16_4.hex", 0x2ee00000, 0x000096df, CRC(3bcb5d7a) SHA1(3a734b20931b444b8cc2e0bb27364cce853eb151))
 ROM_END
-SPIKE1_CLONEDEF(got, 120h, got_137h, gotp, "Game of Thrones Limited Edition (1.20.0)", 2015, spike1)
+SPIKE1_CLONEDEF(got, 120h, got_137h, got, "Game of Thrones Limited Edition (1.20.0)", 2015, spike1)
 
 ROM_START(got_120)
   ROM_REGION(0x2edf6000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -2464,7 +2464,7 @@ ROM_START(got_103h)
     ROM_LOAD("pinnode-LPC1112_201-0_16_3.hex", 0x2edf5000, 0x000085d2, CRC(170b05c1) SHA1(dab33f6bca7d2af5f0922a6cf59259fba2aa6a32))
     ROM_LOAD("pinnode-LPC1313-0_16_3.hex", 0x2edfe000, 0x000095e6, CRC(60eda032) SHA1(aa5819fc06fc8510d080a2f5360f0958a5ba23a0))
 ROM_END
-SPIKE1_CLONEDEF(got, 103h, got_137h, gotp, "Game of Thrones Limited Edition (1.03.0)", 2015, spike1)
+SPIKE1_CLONEDEF(got, 103h, got_137h, got, "Game of Thrones Limited Edition (1.03.0)", 2015, spike1)
 
 ROM_START(got_102h)
   ROM_REGION(0x2ee06000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -2475,7 +2475,7 @@ ROM_START(got_102h)
     ROM_LOAD("pinnode-LPC1112_201-0_16_3.hex", 0x2edf3000, 0x000085d2, CRC(170b05c1) SHA1(dab33f6bca7d2af5f0922a6cf59259fba2aa6a32))
     ROM_LOAD("pinnode-LPC1313-0_16_3.hex", 0x2edfc000, 0x000095e6, CRC(60eda032) SHA1(aa5819fc06fc8510d080a2f5360f0958a5ba23a0))
 ROM_END
-SPIKE1_CLONEDEF(got, 102h, got_137h, gotp, "Game of Thrones Limited Edition (1.02.0)", 2015, spike1)
+SPIKE1_CLONEDEF(got, 102h, got_137h, got, "Game of Thrones Limited Edition (1.02.0)", 2015, spike1)
 
 ROM_START(got_101h)
   ROM_REGION(0x2ec9e000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -2483,7 +2483,7 @@ ROM_START(got_101h)
     ROM_LOAD("image.bin", 0x00498000, 0x2e7fca4c, CRC(775be3cd) SHA1(cb32ec062c070683493299cfba52992cae4803dc))
     ROM_LOAD("pinnode-0_15_11.hex", 0x2ec95000, 0x0000802a, CRC(9530d62d) SHA1(a368fc6fcfdd92439a3993951c97549fbb2f0fbd))
 ROM_END
-SPIKE1_CLONEDEF(got, 101h, got_137h, gotp, "Game of Thrones Limited Edition (1.01.0)", 2015, spike1)
+SPIKE1_CLONEDEF(got, 101h, got_137h, got, "Game of Thrones Limited Edition (1.01.0)", 2015, spike1)
 
 ROM_START(got_100h)
   ROM_REGION(0x2ec95000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -2491,7 +2491,7 @@ ROM_START(got_100h)
     ROM_LOAD("image.bin", 0x00496000, 0x2e7f5ae4, CRC(770d877b) SHA1(3cf7d391de11cc631231c6a6ebeb166ad1ae59a4))
     ROM_LOAD("pinnode-0_15_11.hex", 0x2ec8c000, 0x0000802a, CRC(9530d62d) SHA1(a368fc6fcfdd92439a3993951c97549fbb2f0fbd))
 ROM_END
-SPIKE1_CLONEDEF(got, 100h, got_137h, gotp, "Game of Thrones Limited Edition (1.00.0)", 2015, spike1)
+SPIKE1_CLONEDEF(got, 100h, got_137h, got, "Game of Thrones Limited Edition (1.00.0)", 2015, spike1)
 
 /*-------------------------------------------------------------------
 / Ghostbusters
@@ -2562,7 +2562,7 @@ ROM_START(gbust_113h)
     ROM_LOAD("pinnode-LPC1112_201-0_20_0.hex", 0x3ceba000, 0x0000819a, CRC(075e4f94) SHA1(a41fecba152b2bcd4b8e7b1a6e2a00bad42e4e9d))
     ROM_LOAD("pinnode-LPC1313-0_20_0.hex", 0x3cec3000, 0x0000b5c7, CRC(f127e2ab) SHA1(8dfa980281e93e5bfe97d07c670153991d991d65))
 ROM_END
-SPIKE1_CLONEDEF(gbust, 113h, gbust_117h, gbustp, "Ghostbusters Limited Edition (1.13.0)", 2016, spike1)
+SPIKE1_CLONEDEF(gbust, 113h, gbust_117h, gbust, "Ghostbusters Limited Edition (1.13.0)", 2016, spike1)
 
 ROM_START(gbust_113)
   ROM_REGION(0x3bc9c000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -2591,7 +2591,7 @@ ROM_START(gbust_112h)
     ROM_LOAD("pinnode-LPC1112_201-0_20_0.hex", 0x3ceb8000, 0x0000819a, CRC(075e4f94) SHA1(a41fecba152b2bcd4b8e7b1a6e2a00bad42e4e9d))
     ROM_LOAD("pinnode-LPC1313-0_20_0.hex", 0x3cec1000, 0x0000b5c7, CRC(f127e2ab) SHA1(8dfa980281e93e5bfe97d07c670153991d991d65))
 ROM_END
-SPIKE1_CLONEDEF(gbust, 112h, gbust_117h, gbustp, "Ghostbusters Limited Edition (1.12.0)", 2016, spike1)
+SPIKE1_CLONEDEF(gbust, 112h, gbust_117h, gbust, "Ghostbusters Limited Edition (1.12.0)", 2016, spike1)
 
 ROM_START(gbust_112)
   ROM_REGION(0x3bc9a000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -2620,7 +2620,7 @@ ROM_START(gbust_111h)
     ROM_LOAD("pinnode-LPC1112_201-0_19_7.hex", 0x3ceb7000, 0x0000818a, CRC(37554cda) SHA1(2e78a44a853fae83a34cc61ec210d1e981cb65f8))
     ROM_LOAD("pinnode-LPC1313-0_19_7.hex", 0x3cec0000, 0x0000af90, CRC(4af79b7b) SHA1(19c7ce07a813b3d17c5423a22308cb6c74489b45))
 ROM_END
-SPIKE1_CLONEDEF(gbust, 111h, gbust_117h, gbustp, "Ghostbusters Limited Edition (1.11.0)", 2016, spike1)
+SPIKE1_CLONEDEF(gbust, 111h, gbust_117h, gbust, "Ghostbusters Limited Edition (1.11.0)", 2016, spike1)
 
 ROM_START(gbust_111)
   ROM_REGION(0x3bc98000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -2649,7 +2649,7 @@ ROM_START(gbust_110h)
     ROM_LOAD("pinnode-LPC1112_201-0_19_1.hex", 0x3ceb0000, 0x0000807c, CRC(2769520c) SHA1(380f4755b683b69e59af172000c9300350bfab41))
     ROM_LOAD("pinnode-LPC1313-0_19_1.hex", 0x3ceb9000, 0x0000a188, CRC(feb117d1) SHA1(453a0de75a62aef43bfaa1edea1634eada328190))
 ROM_END
-SPIKE1_CLONEDEF(gbust, 110h, gbust_117h, gbustp, "Ghostbusters Limited Edition (1.10.0)", 2016, spike1)
+SPIKE1_CLONEDEF(gbust, 110h, gbust_117h, gbust, "Ghostbusters Limited Edition (1.10.0)", 2016, spike1)
 
 ROM_START(gbust_110)
   ROM_REGION(0x3bc92000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -2692,7 +2692,7 @@ ROM_START(gbust_105h)
     ROM_LOAD("pinnode-LPC1112_201-0_18_4.hex", 0x39d76000, 0x0000802a, CRC(8a0e089c) SHA1(e41ade3256e4cc7cfcaece06a5e1035c7ff2d026))
     ROM_LOAD("pinnode-LPC1313-0_18_4.hex", 0x39d7f000, 0x0000a082, CRC(0e9790a7) SHA1(9bafcdde92f5eecccd18e43f4eaf0a20a813a611))
 ROM_END
-SPIKE1_CLONEDEF(gbust, 105h, gbust_117h, gbustp, "Ghostbusters Limited Edition (1.05.0)", 2016, spike1)
+SPIKE1_CLONEDEF(gbust, 105h, gbust_117h, gbust, "Ghostbusters Limited Edition (1.05.0)", 2016, spike1)
 
 ROM_START(gbust_105)
   ROM_REGION(0x38b56000, SPIKE1_REGION, ROMREGION_MAPPED)
