@@ -86,6 +86,7 @@ extern void at91_set_ram_pointers(data32_t *reset_ram_ptr, data32_t *page0_ram_p
 extern void at91_init_jit(int min_addr, int max_addr);
 extern void at91_clear_jit_exclude(void);          /* debug: clear the JIT exclusion list */
 extern void at91_add_jit_exclude(int lo, int hi);  /* debug: interpret [lo,hi) even inside the JIT range */
+extern void at91_set_pc_hook(unsigned int pc, void (*callback)(unsigned int r0)); /* call back when the CPU is about to run the instruction at pc (0: off), with R0 */
 extern void at91_cs_callback_r(offs_t start, offs_t end, READ32_HANDLER((*callback)));
 extern void at91_cs_callback_w(offs_t start, offs_t end, WRITE32_HANDLER((*callback)));
 extern void at91_ready_irq_callback_w(WRITE32_HANDLER((*callback)));
