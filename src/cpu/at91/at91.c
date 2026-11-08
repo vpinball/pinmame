@@ -140,11 +140,16 @@ static void timer_trigger_event(int timer_num);
 #define CAPTURE_NUM_CYCLES	at91.prev_cycles = cycles - ARM7_ICOUNT - at91.tot_prev_cycles;\
 							at91.tot_prev_cycles += at91.prev_cycles;
 
+// One address the driver wants to know about (see at91_set_pc_hook)
+static UINT32 at91_hook_pc;
+static void (*at91_hook_callback)(unsigned int r0);
+#define AT91_PC_HOOK	if (ARMREG(15) == at91_hook_pc && at91_hook_pc) at91_hook_callback(ARMREG(0));
+
 #if !USE_MAME_TIMERS
-	#define BEFORE_OPCODE_EXEC_HOOK	BeforeOpCodeHook();
+	#define BEFORE_OPCODE_EXEC_HOOK	AT91_PC_HOOK BeforeOpCodeHook();
 	#define AFTER_OPCODE_EXEC_HOOK
 #else
-	#define BEFORE_OPCODE_EXEC_HOOK
+	#define BEFORE_OPCODE_EXEC_HOOK	AT91_PC_HOOK
 	#define AFTER_OPCODE_EXEC_HOOK
 #endif
 
@@ -302,6 +307,15 @@ void at91_init_jit(int min_addr, int max_addr)
 	// not the throwaway / self-modifying boot+copy+remap code
 	arm7_aj_set_enabled((ArmAsmjitCtl *)at91.ajit, 0);
 #endif
+}
+
+// Call `callback` with R0 each time the CPU is about to run the instruction at `pc`, before it
+// runs. With the JIT on, the driver has to exclude that address from translation
+// (at91_add_jit_exclude) so the interpreter sees it.
+void at91_set_pc_hook(unsigned int pc, void (*callback)(unsigned int r0))
+{
+	at91_hook_pc = pc;
+	at91_hook_callback = callback;
 }
 
 // DEBUG: asmjit JIT exclusion list -- interpret the added [lo, hi) regions even
