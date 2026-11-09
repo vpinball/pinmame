@@ -30,6 +30,7 @@
 #include "sound/ay8910.h"
 #include "sound/msm5205.h"
 #include "sndbrd.h"
+#include "snd_cmd.h"
 #include "machine/8255ppi.h"
 
 static READ_HANDLER(snd_porta_r);
@@ -326,6 +327,90 @@ static MACHINE_DRIVER_START(INDER)
   MDRV_DIAGNOSTIC_LEDH(1)
 MACHINE_DRIVER_END
 
+// Track Sound Commands:
+
+/* Inder's first two machines, Brave Team (INDER0) and Canasta '86 (INDER1), have no sound board or
+   command: the game's Z80 writes the sound chip itself, from a sound layer in its own program.
+   The game starts a sound by calling a routine with HL = the address of what to play, and the routine
+   stores it in RAM for the timer interrupt, which then steps through it and advances the pointer by
+   itself. That address is the sound command:
+   - Brave Team (SN76489): a 12-byte descriptor of three note lists. The start routine silences the
+     chip, then stores the three list pointers (the first is the descriptor + 11 as the interrupt reads
+     it, one before its first byte).
+   - Canasta '86 (AY-8910): an effect routine and a music routine, each of which stores HL as the
+     pointer of its script.
+   The routines are found in the program by their code; the writes of the pointer by code that lies
+   inside them are the commands, the interrupt advancing it is not */
+#define INDER_MAX_CMDS 2
+static struct { int ptr, lo, hi, delta; } indercmd[INDER_MAX_CMDS];
+static int inderNumCmds;
+
+/* pattern bytes in hex, "??" for any */
+static int inder_find(const UINT8 *rom, const char *pat, int from, int to) {
+  int len = (int)strlen(pat);
+  int a, i;
+  for (a = from; a < to; a++) {
+    int ok = 1;
+    for (i = 0; i < len && ok; i += 3) {
+      if (pat[i] != '?') {
+        char h[3] = { pat[i], pat[i+1], 0 };
+        if (rom[a + i / 3] != (UINT8)strtol(h, NULL, 16)) ok = 0;
+      }
+    }
+    if (ok) return a;
+  }
+  return -1;
+}
+
+static void inder_cmdWrite(int n, int offset, int data) {
+  UINT8 *ram = memory_region(INDER_MEMREG_CPU);
+  int pc = activecpu_get_previouspc();
+  ram[indercmd[n].ptr + offset] = data;
+  if (offset == 1 && pc >= indercmd[n].lo && pc < indercmd[n].hi) // the high byte of LD (ptr),DE/HL
+    snd_cmd_log(0, (ram[indercmd[n].ptr] | (ram[indercmd[n].ptr + 1] << 8)) - indercmd[n].delta);
+}
+static WRITE_HANDLER(inder_cmd0_w) { inder_cmdWrite(0, offset, data); }
+static WRITE_HANDLER(inder_cmd1_w) { inder_cmdWrite(1, offset, data); }
+
+static void inder_addCmd(const UINT8 *rom, int at, int ptrOffset, int size, int delta) {
+  int ptr = rom[at + ptrOffset] | (rom[at + ptrOffset + 1] << 8);
+  if (inderNumCmds == INDER_MAX_CMDS || ptr < 0x4000 || ptr > 0x43fe)
+    return;
+  indercmd[inderNumCmds].ptr = ptr;
+  indercmd[inderNumCmds].lo = at;
+  indercmd[inderNumCmds].hi = at + size;
+  indercmd[inderNumCmds].delta = delta;
+  install_mem_write_handler(0, ptr, ptr + 1, inderNumCmds ? inder_cmd1_w : inder_cmd0_w);
+  inderNumCmds++;
+}
+
+static void inder_findSounds(void) {
+  const UINT8 *rom = memory_region(INDER_MEMREG_CPU);
+  int at;
+  inderNumCmds = 0;
+  /* Brave Team: PUSH HL; PUSH BC; CALL silence; POP BC; LD E,(HL); INC HL; LD D,(HL); DEC DE; LD (voice 0 pointer),DE ... */
+  at = inder_find(rom, "E5 C5 CD ?? ?? C1 5E 23 56 1B ED 53 ?? ?? 23 5E 23 56 1B ED 53 ?? ?? 23 5E 23 56 1B "
+                       "ED 53 ?? ?? 23 5E 23 56 ED 53 ?? ?? 23 5E 23 56 ED 53 ?? ?? 23 5E 23 56 ED 53 ?? ?? "
+                       "3E 01 32", 0, 0x2000);
+  if (at >= 0)
+    inder_addCmd(rom, at, 12, 0x50, 11);
+  /* Canasta '86: the effect routine (PUSH AF,BC,DE,HL,IX,IY; LD A,(music on); AND A; JR NZ ...; LD
+     (script pointer),HL) and the music routine, which end with the store of HL */
+  at = inder_find(rom, "F5 C5 D5 E5 DD E5 FD E5 3A ?? ?? A7 20 28 1E 02 06 05 7B 32 ?? ?? 3E 00 32 ?? ?? "
+                       "1C 10 F4 1E 08 06 06 7B 32 ?? ?? 3E 00 32 ?? ?? 1C 10 F4 22 ?? ?? 3E FF 32", 0, 0x2000);
+  if (at >= 0)
+    inder_addCmd(rom, at, 47, 0x40, 0);
+  at = inder_find(rom, "F5 C5 E5 D5 DD E5 FD E5 3E 07 32 ?? ?? 3E FF 32 ?? ?? 1E 08 06 04 7B 32 ?? ?? "
+                       "3E FF 32 ?? ?? 1C 10 F4 7B 32 ?? ?? 3E 0A 32 ?? ?? 22 ?? ?? 3E FF 32 ?? ?? 3E 01 32", 0, 0x2000);
+  if (at >= 0)
+    inder_addCmd(rom, at, 44, 0x50, 0);
+}
+
+static MACHINE_INIT(INDER01) {
+  memset(&locals, 0, sizeof(locals));
+  inder_findSounds();
+}
+
 static MEMORY_READ_START(INDER0_readmem)
   {0x0000,0x1fff, MRA_ROM},
   {0x4000,0x43ff, MRA_RAM},
@@ -347,6 +432,7 @@ MEMORY_END
 
 MACHINE_DRIVER_START(INDER0)
   MDRV_IMPORT_FROM(INDER)
+  MDRV_CORE_INIT_RESET_STOP(INDER01,NULL,NULL)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_MEMORY(INDER0_readmem, INDER0_writemem)
   MDRV_SOUND_ADD(SN76489, INDER_ti76489Int)
@@ -375,6 +461,7 @@ MEMORY_END
 
 MACHINE_DRIVER_START(INDER1)
   MDRV_IMPORT_FROM(INDER)
+  MDRV_CORE_INIT_RESET_STOP(INDER01,NULL,NULL)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_MEMORY(INDER1_readmem, INDER1_writemem)
   MDRV_SOUND_ADD(AY8910, INDER_ay8910Int)

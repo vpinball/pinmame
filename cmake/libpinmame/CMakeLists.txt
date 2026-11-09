@@ -680,6 +680,7 @@ set(PINMAME_SOURCES
    src/wpc/sims/se/prelim/monopoly.c
    src/wpc/sims/se/prelim/elvis.c
    src/wpc/sims/se/prelim/harley.c
+   src/wpc/sims/atari/prelim/fourx4.c
    src/wpc/sims/s11/full/dd.c
    src/wpc/sims/s11/full/milln.c
    src/wpc/sims/s11/prelim/eatpm.c

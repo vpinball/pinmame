@@ -92,6 +92,12 @@
     <Filter Include="Source Files\PinMAME\sims">
       <UniqueIdentifier>{aa3808c6-0afc-49c3-847b-b5b6e31c8761}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\PinMAME\sims\atari">
+      <UniqueIdentifier>{7a4f1c80-6d2b-4e09-9f3a-21c6b5e84d17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PinMAME\sims\atari\prelim_atari">
+      <UniqueIdentifier>{b35e9d42-8c17-4a6f-93d5-0e7418aa52c9}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files\PinMAME\sims\s11">
       <UniqueIdentifier>{148bd585-f166-4254-ae57-93fce8901fb2}</UniqueIdentifier>
     </Filter>
@@ -958,6 +964,9 @@
     </ClCompile>
     <ClCompile Include="..\src\wpc\pinheck\board.c">
       <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\wpc\sims\atari\prelim\fourx4.c">
+      <Filter>Source Files\PinMAME\sims\atari\prelim_atari</Filter>
     </ClCompile>
     <ClCompile Include="..\src\wpc\sims\pinheck\dominos.c">
       <Filter>Source Files\PinMAME</Filter>

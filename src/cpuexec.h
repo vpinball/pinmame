@@ -347,6 +347,10 @@ typedef struct
 
 #define Z80_VECTOR(device,state) (((device)<<8)|(state))
 
+/* publish the PWM/physical outputs for the client threads, on the emulation thread (core_publish_pwm_outputs): with force,
+   right before the emulation waits, else rate limited. Set by the core while a game runs */
+extern void (*cpu_publish_outputs)(int force);
+
 
 #ifdef __cplusplus
 }

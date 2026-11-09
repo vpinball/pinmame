@@ -55,6 +55,7 @@ Get rid of BASS external dependency (used for internal AltSound mode 1 support) 
 Added Pinball 2000 emulation. It works in principle, but the CPU is clocked way too low (0.33x) for performance reasons (for now)! Still, it seems to work reasonably well, most likely as the graphics/video part is not emulated cycle-accurate and thus much faster than the clock rate implies
 Added Spooky Pinball Pinheck emulation
 Added Stern SPIKE 1 emulation (not fully emulated low level, also employs higher level system call emulation; also exclusively featured in 64bit builds, due to the asset size (for now))
+Added Atari 4x4 emulation (incl. both POKEYs for sound, displays, lamps, solenoids and a preliminary simulator). The playfield is only partly known, so switch and lamp names come from the pencilled factory diagram and the ROM
 Added Recreativos Franco emulation (Super Star), including improved i8085 emulation
 Added Recel System III emulation, every known game: Poker Plus, Fair Fight, Mr. Evil, Alaska (Interflip), Hot & Cold and Screech (both Inder), Mr. Doom, Cavalier, SwashBuckler, Don Quijote and Torneo on the 256-byte PROM,
                                   plus Crazy Race, The Flipper Game, Black Magic and Black Magic 4 on the 2 KB hardware version 2
@@ -128,6 +129,7 @@ Added manual sound commands (sound commander) for the Bally Cheap Squeak and Tur
 Fixed the sound command logging and altsound handling for Bally MPU-17/MPU-35 machines: it now filters only the commands the game sends to the -32/-50, -51, -56, Squawk & Talk and Cheap Squeak boards, and to Nuova Bell's -51N, -61N and own sound boards
 Fixed the sound command logging and altsound handling for Whirlwind: the bytes that drive the solenoid overlay board are no longer also logged as sound commands
 Fixed the sound command logging and altsound handling for the Bally 6803 machines: one byte per command (the one the sound strobe goes out with), not every write of port 1
+Added sound command logging for Stern SB-300, Atari Gen1/2, Early Inder & Romstar's Goofy Hoops
 Slightly improved Williams System 3-7, 9/11 and WPC89 sound boards output (some loud sounds did clip (e.g. Addams Family))
 Improved BSMT2000 sound emulation speed a bit
 Fixed the BSMT2000 logo attract mode jingle on Data East/Sega/Stern games
@@ -164,6 +166,7 @@ Fixed the RollerCoaster Tycoon 7.02, Spanish set not working
 
 *** ROM SUPPORT *** Thanks to Tom Collins/Scorbit, Paul Swan, Dieter Werner, Victor Fernandez, Jordi Beltran, ipdb.org, Billc479, Scott Charles, inkochnito, frisbez, Chad Hendrickson, idealjoker, ingo333, RedBall, Quench, slochar, Jesus Carballo, Rockman i uri666arcade de l'associació ARCADE (Recreativas.org), myPinballs, hemtoni
 New:
+Elbos: Genesis
 IDSA: Fantastic Car
 Inder: Hot & Cold
        Screech
@@ -186,20 +189,21 @@ Spooky Pinball: America's Most Haunted V22, V23
                 Jetsons, The V4
                 Rob Zombie's Spookshow International V19, V26
 Stern SPIKE 1: Avengers The Pin 1.0.3
-               Game of Thrones 1.37.0
-               Game of Thrones 1.37.0 Limited Edition
-               Ghostbusters 1.17.0
-               Ghostbusters 1.17.0 Limited Edition
+               Game of Thrones 1.10.0, 1.15.0, 1.17.0, 1.18.0, 1.19.0, 1.20.0, 1.21.0, 1.22.0, 1.23.0, 1.26.0, 1.29.0, 1.34.0, 1.37.0
+               Game of Thrones 1.00.0, 1.01.0, 1.02.0, 1.03.0, 1.20.0, 1.21.0, 1.22.0, 1.23.0, 1.26.0, 1.29.0, 1.34.0, 1.37.0 Limited Edition
+               Ghostbusters 1.04.0, 1.05.0, 1.07.0, 1.10.0, 1.11.0, 1.12.0, 1.13.0, 1.17.0
+               Ghostbusters 1.05.0, 1.10.0, 1.11.0, 1.12.0, 1.13.0, 1.17.0 Limited Edition
                Heavy Metal 1.02.0
-               KISS 1.41.0
-               KISS 1.41.0 Limited Edition
+               KISS 1.02.0, 1.03.0, 1.04.0, 1.05.0, 1.28.0, 1.30.0, 1.40.0, 1.41.0
+               KISS 1.02.0, 1.03.0, 1.04.0, 1.05.0, 1.28.0, 1.30.0, 1.40.0, 1.41.0 Limited Edition
                Spider-Man The Pin 1.01
-               Pabst Can Crusher, The 1.01.0
-               Primus 1.03.0
+               Pabst Can Crusher, The 1.01.0, 1.02.0
+               Primus 1.03.0, 1.04.0
                Supreme 1.01.0
                Transformers The Pin 1.0.18
-               Whoa Nellie! Big Juicy Melons 1.55.0
-               (Legends of) Wrestlemania 1.35.0 Limited Edition
+               Whoa Nellie! Big Juicy Melons 1.51.0, 1.52.0, 1.55.0
+               Wrestlemania 1.17.0, 1.19.0, 1.20.0, 1.25.0, 1.33.0, 1.35.0
+               (Legends of) Wrestlemania 1.19.0, 1.20.0, 1.33.0, 1.35.0 Limited Edition
          NOTE: keep the SPIKE 1 sets within an uncompressed zip file, to be able to map the files as-is (lower RAM usage)
 WMS:  Revenge From Mars 1.60, 1.50, 1.40, 1.30, 1.20 (official updates)
                         0.87, 0.86, 0.85, 0.84, 0.71, 0.70 (prototype updates)

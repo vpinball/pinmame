@@ -85,6 +85,7 @@
 #include "core.h"
 #include "capcoms.h"
 #include "sndbrd.h"
+#include "snd_cmd.h"
 
 //Turn off when not testing mpg audio
 #define TEST_MPGAUDIO      0
@@ -1128,11 +1129,11 @@ static void cc_dmd_rasterizer_sync(int param) {
          *pwm2++ = lum0 & lum1;
       }
    }
-   // U16 rasterizer decodes and produces 4 frames with the following order: 0,1,2,1 leading to 0 / 25 / 50 / 100 luminance levels as the PWM patterns are the followings:
-   // (see recordings on real hardware https://github.com/PPUC/dmdreader/tree/ppuc/logicanalyzer)
+   // U16 rasterizer produces 4 frames per cycle; submitted in the order PWM0, PWM2, PWM1, PWM2 they give 0 / 25 / 50 / 100% luminance
+   // (see recordings on real hardware https://github.com/PPUC/dmdreader/tree/ppuc/logicanalyzer):
    // 0 => 0 / 0 / 0 / 0 - PWM0 = 0 / PWM1 = 0 / PWM2 = 0
    // 1 => 1 / 0 / 0 / 0 - PWM0 = 1 / PWM1 = 0 / PWM2 = 0
-   // 2 => 0 / 1 / 0 / 1 - PWM0 = 1 / PWM1 = 1 / PWM2 = 0
+   // 2 => 1 / 0 / 1 / 0 - PWM0 = 1 / PWM1 = 1 / PWM2 = 0 (the recordings show 0 / 1 / 0 / 1: the same 50%, the other phase)
    // 3 => 1 / 1 / 1 / 1 - PWM0 = 1 / PWM1 = 1 / PWM2 = 1
    core_dmd_submit_frame(core_gameData->lcdLayout, &locals.pwmDmdFrames[0 * 256 * 8], 1); // PWM0
    core_dmd_submit_frame(core_gameData->lcdLayout, &locals.pwmDmdFrames[2 * 256 * 8], 1); // PWM2
@@ -1148,6 +1149,48 @@ static void romstar_irq1(int data) {
   cpu_set_irq_line(0, MC68306_IRQ_1, PULSE_LINE);
 }
 
+// Track Sound Commands:
+
+/* Goofy Hoops has no explicit sound board or commands: the 68306 drives the QSound chip with a sequencer
+   of its own. The game plays an effect with play_sfx(sequence, pan, channel) and a song with
+   play_song(song); both keep what they play in RAM for the sequencer's interrupt, which advances it
+   itself:
+   - play_sfx stores the sequence (one past its priority byte) in the channel's structure, at 4 bytes
+     from its start (channels at $99C, 18 bytes each);
+   - play_song stores the song's address in $B16.
+   The address of the sequence or song is the sound command. The two stores (a move.l from A0) are
+   found in the program, so that only these instructions count */
+#define ROMSTAR_CMD_START 0x0990
+#define ROMSTAR_CMD_END   0x0b3f
+static struct { UINT32 sfxPc, songPc; } romstarCmd;
+
+static WRITE16_HANDLER(romstar_cmd_w) {
+  const int addr = ROMSTAR_CMD_START + offset * 2;
+  const UINT32 pc = activecpu_get_previouspc();
+  COMBINE_DATA(&ramptr[ROMSTAR_CMD_START / 2 + offset]);
+  if (pc == romstarCmd.sfxPc && (addr - 0x99c) % 0x12 == 6) // the low word of the sequence pointer
+    snd_cmd_log(0, ((ramptr[addr / 2 - 1] << 16) | ramptr[addr / 2]) - 1);
+  else if (pc == romstarCmd.songPc && addr == 0xb18) // the low word of the song pointer
+    snd_cmd_log(0, (ramptr[addr / 2 - 1] << 16) | ramptr[addr / 2]);
+}
+
+static void romstar_findSounds(void) {
+  // "move.l A0,($4,A1); move.l A0,(A1); move.w #1,($c,A1)" and "move.l A0,$b1a.w; move.l A0,$b16.w"
+  static const UINT16 sfx[] = { 0x2348, 0x0004, 0x2288, 0x337c, 0x0001, 0x000c };
+  static const UINT16 song[] = { 0x21c8, 0x0b1a, 0x21c8, 0x0b16 };
+  const UINT16 *rom = (const UINT16 *)memory_region(REGION_USER1);
+  int i;
+  memset(&romstarCmd, 0, sizeof(romstarCmd));
+  for (i = 0; i < 0x80000 - 8; i++) {
+    if (!romstarCmd.sfxPc && !memcmp(rom + i, sfx, sizeof(sfx)))
+      romstarCmd.sfxPc = 0x10000000 + 2 * i;
+    else if (!romstarCmd.songPc && !memcmp(rom + i, song, sizeof(song)))
+      romstarCmd.songPc = 0x10000000 + 2 * i + 4;
+  }
+  if (romstarCmd.sfxPc && romstarCmd.songPc)
+    install_mem_write16_handler(0, ROMSTAR_CMD_START, ROMSTAR_CMD_END, romstar_cmd_w);
+}
+
 static MACHINE_INIT(romstar) {
   memset(&locals, 0, sizeof(locals));
 
@@ -1159,6 +1202,8 @@ static MACHINE_INIT(romstar) {
 
   //Init soundboard (needed for sound commander to work)
   sndbrd_0_init(core_gameData->hw.soundBoard, CAPCOMS_CPUNO, memory_region(CAPCOMS_ROMREGION),NULL,NULL);
+
+  romstar_findSounds();
 
   //IRQ1 clock - trying to come as near as possible to the real thing
   timer_pulse(TIME_IN_HZ(970), 0, romstar_irq1);
@@ -1217,7 +1262,8 @@ static WRITE16_HANDLER(vol_w) {
 }
 
 static WRITE16_HANDLER(disp_w) {
-  if (!offset) locals.dmdRasterizerAddress = 0x00070000 | data;
+  // visible page: 4 KB (one 256x64 frame of 2 bit dots) each, the 16 of them at the top of RAM from 0x70000
+  if (!offset) locals.dmdRasterizerAddress = (UINT32)((0x70 | data) & 0xFF) << 12;
 }
 
 static WRITE16_HANDLER(sol_w) {

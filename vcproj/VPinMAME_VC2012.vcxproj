@@ -1251,6 +1251,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="..\src\wpc\recelgames.c" />
     <ClCompile Include="..\src\wpc\pinheck.c" />
     <ClCompile Include="..\src\wpc\pinheckgames.c" />
+    <ClCompile Include="..\src\wpc\sims\atari\prelim\fourx4.c" />
     <ClCompile Include="..\src\wpc\sims\pinheck\amh.c" />
     <ClCompile Include="..\src\wpc\pinheck\dmd.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)pinheck\</ObjectFileName>

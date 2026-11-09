@@ -561,6 +561,8 @@ PINMAMEAPI void PinmameSetSolenoidMask(const int low, const uint32_t mask);
 PINMAMEAPI PINMAME_MOD_OUTPUT_TYPE PinmameGetModOutputType(const int output, const int no);
 PINMAMEAPI void PinmameSetModOutputType(const int output, const int no, const PINMAME_MOD_OUTPUT_TYPE type);
 PINMAMEAPI void PinmameSetTimeFence(const double timeInS);
+// PinmameGetChanged* and PinmameGetNewSoundCommands report what changed since the previous call, kept once for the whole
+// process: poll each of them from a single thread and a single consumer (concurrent or separate callers split the changes)
 PINMAMEAPI int PinmameGetMaxSolenoids();
 // With modulated or physical outputs (PinmameSetSolenoidMask(2, ...)) a solenoid's state is a level; a coil may report
 // less than full while on (Capcom's flippers report their strength setting), so treat any state above 0 as on

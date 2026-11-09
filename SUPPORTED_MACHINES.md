@@ -31,25 +31,25 @@ onwards** is listed separately below as not expected rather than as missing.
 
 | Status                           | Machines | Share |
 | -------------------------------- | -------: | ----: |
-| Fully working                    |      582 | 70.0% |
+| Fully working                    |      584 | 69.9% |
 | Partially working                |       31 |  3.7% |
-| Emulated but not working         |        1 |  0.1% |
-| Not emulated                     |      142 | 17.1% |
-| Not emulated — released recently |       76 |  9.1% |
-| **Total**                        |  **832** |       |
+| Emulated but not working         |        0 |  0.0% |
+| Not emulated                     |      141 | 16.9% |
+| Not emulated — released recently |       79 |  9.5% |
+| **Total**                        |  **835** |       |
 
 ### By decade
 
 | Decade | Total | Fully working | Partial | Not working | Not emulated |
 | ------ | ----: | ------------: | ------: | ----------: | -----------: |
 | 1970s  |   170 |           111 |       5 |           0 |           54 |
-| 1980s  |   328 |           280 |      23 |           1 |           24 |
+| 1980s  |   328 |           282 |      23 |           0 |           23 |
 | 1990s  |   148 |           142 |       3 |           0 |            3 |
 | 2000s  |    25 |            24 |       0 |           0 |            1 |
 | 2010s  |    73 |            24 |       0 |           0 |           49 |
-| 2020s  |    88 |             1 |       0 |           0 |           87 |
+| 2020s  |    91 |             1 |       0 |           0 |           90 |
 
-## Fully working (582)
+## Fully working (584)
 
 Every known ROM set runs, and the driver flags nothing wrong with any of them.
 
@@ -245,6 +245,7 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | Devil's Dare                                   | 1982 | Gottlieb               | Alphanumeric | `dvlsdre`, `dvlsdre2`, `dvlsdrea`                    |             |       |
 | Dragonfist                                     | 1982 | Stern Electronics      | Alphanumeric | `dragfib2`, `dragfifp`, `dragfisb` + 7 more          |             |       |
 | Eclipse                                        | 1982 | Gottlieb               | Alphanumeric | `eclipse`, `eclipse7`                                |             |       |
+| Genesis                                        | 1982 | Elbos                  | Alphanumeric | `elgenesi`                                           |             |       |
 | Gork                                           | 1982 | Taito                  | Alphanumeric | `gork`                                               |             |       |
 | Haunted House                                  | 1982 | Gottlieb               | Alphanumeric | `hh`, `hh_1`, `hh_3` + 6 more                        |             |       |
 | Mr. & Mrs. Pac-Man                             | 1982 | Bally                  | Alphanumeric | `m_mpac`, `m_mpaca`, `m_mpacb`                       |             |       |
@@ -263,6 +264,7 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | Thunderball                                    | 1982 | Williams               | Alphanumeric | `thund_p1`, `thund_p2`, `thund_p3`                   |             |       |
 | Varkon                                         | 1982 | Williams               | Alphanumeric | `vrkon_l1`                                           |             |       |
 | Warlok                                         | 1982 | Williams               | Alphanumeric | `wrlok_l3`                                           |             |       |
+| 4X4                                            | 1983 | Atari                  | Alphanumeric | `fourx4`                                             | preliminary |       |
 | Amazon Hunt                                    | 1983 | Gottlieb               | Alphanumeric | `amazonh`, `amazonha`, `amazn2fp` + 1 more           |             |       |
 | Farfalla                                       | 1983 | Zaccaria               | Alphanumeric | `farfalla`, `farfallaa`, `farfallf` + 9 more         |             |       |
 | Firepower II                                   | 1983 | Williams               | Alphanumeric | `fpwr2_l2`                                           |             |       |
@@ -469,7 +471,6 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | A.G. Soccer-Ball / A.G. Football               | 1991 | Alvin G. & Co          | Alphanumeric | `agfoot07`, `agsocc07`, `usafoota` + 6 more          |             |       |
 | Atleta                                         | 1991 | Inder                  | Alphanumeric | `atleta`                                             |             |       |
 | Batman                                         | 1991 | Data East              | DMD          | `btmn_101`, `btmn_103`, `btmn_106` + 2 more          |             |       |
-| Bride of Pinbot                                | 1991 | Williams               | Alphanumeric | `bop_d2`, `bop_d3`, `bop_d4` + 11 more               | full        |       |
 | Cactus Jack's                                  | 1991 | Gottlieb               | Alphanumeric | `cactjack`                                           |             |       |
 | Car Hop                                        | 1991 | Gottlieb               | Alphanumeric | `carhop`                                             |             |       |
 | Checkpoint                                     | 1991 | Data East              | DMD          | `ckpt_a17`                                           |             |       |
@@ -482,6 +483,7 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | Surf 'n Safari                                 | 1991 | Gottlieb               | Alphanumeric | `surfnsaf`, `surfnsat`                               |             |       |
 | Teenage Mutant Ninja Turtles                   | 1991 | Data East              | DMD          | `tmnt_101`, `tmnt_103`, `tmnt_104` + 3 more          |             |       |
 | Terminator 2: Judgment Day                     | 1991 | Williams               | DMD          | `t2_d2`, `t2_d3`, `t2_d4` + 17 more                  | full        |       |
+| The Machine: Bride of Pinbot                   | 1991 | Williams               | Alphanumeric | `bop_d2`, `bop_d3`, `bop_d4` + 11 more               | full        |       |
 | The Party Zone                                 | 1991 | Bally                  | DMD          | `pz_d1`, `pz_d2`, `pz_d3` + 6 more                   | full        |       |
 | 250 cc                                         | 1992 | Inder                  | Alphanumeric | `ind250cc`                                           |             |       |
 | Al's Garage Band goes on a World Tour          | 1992 | Alvin G. & Co          | DMD          | `wrldtou2`, `wrldtou3`, `wrldtou4` + 1 more          |             |       |
@@ -628,12 +630,12 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | America's Most Haunted                         | 2014 | Spooky Pinball         | DMD          | `amh_022`, `amh_023`                                 | yes         |       |
 | Mustang                                        | 2014 | Stern                  | DMD          | `mt_120`, `mt_130`, `mt_130h` + 8 more               |             |       |
 | The Walking Dead                               | 2014 | Stern                  | DMD          | `twd_105`, `twd_111`, `twd_111h` + 20 more           |             |       |
-| Game of Thrones                                | 2015 | Stern                  | DMD          | `got_137`, `got_137h`                                |             |       |
-| KISS                                           | 2015 | Stern                  | DMD          | `kiss15_141`, `kiss15_141h`                          |             |       |
-| Whoa Nellie / PBR                              | 2015 | Stern                  | Reels        | `wnbjm_155`, `pabst_101`, `primus_103`               |             |       |
-| WrestleMania                                   | 2015 | Stern                  | DMD          | `wwe_135h`                                           |             |       |
+| Game of Thrones                                | 2015 | Stern                  | DMD          | `got_100h`, `got_101h`, `got_102h` + 22 more         |             |       |
+| KISS                                           | 2015 | Stern                  | DMD          | `kiss15_102`, `kiss15_102h`, `kiss15_103` + 13 more  |             |       |
+| Whoa Nellie / PBR                              | 2015 | Stern                  | Reels        | `wnbjm_151`, `wnbjm_152`, `wnbjm_155` + 4 more       |             |       |
+| WrestleMania                                   | 2015 | Stern                  | DMD          | `wwe_117`, `wwe_119`, `wwe_119h` + 7 more            |             |       |
 | Domino's Spectacular Pinball Adventure         | 2016 | Spooky Pinball         | DMD          | `dominos_005`, `dominos_006`                         | yes         |       |
-| Ghostbusters                                   | 2016 | Stern                  | DMD          | `gbust_117`, `gbust_117h`                            |             |       |
+| Ghostbusters                                   | 2016 | Stern                  | DMD          | `gbust_104`, `gbust_105`, `gbust_105h` + 11 more     |             |       |
 | Rob Zombie's Spookshow International           | 2016 | Spooky Pinball         | DMD          | `rzspook_019`, `rzspook_026`                         | yes         |       |
 | The Jetsons                                    | 2017 | Spooky Pinball         | DMD          | `jetsons_004`                                        | yes         |       |
 | Heavy Metal                                    | 2020 | Stern                  | DMD          | `heavym20_102`                                       |             |       |
@@ -679,16 +681,14 @@ regional variant or a prototype is at fault while the production ROMs are fine.
 | Congo                     | 1995 | Williams     | DMD          | `congo_11`, `congo_13`, `congo_20` + 2 more   | preliminary | imperfect sound in `congo_20s10k`; 4 other revisions clean        |
 | Revenge From Mars         | 1999 | Bally        | CGA          | `rfm_010`, `rfm_070`, `rfm_071` + 33 more     |             | does not run in `rfm_121`; 35 other revisions clean               |
 
-## Emulated but not working (1)
+## Emulated but not working (0)
 
 A driver exists and the ROMs are known, but every ROM set is marked `GAME_NOT_WORKING`: it
 does not boot or does not play.
 
-| Machine | Year | Manufacturer | Display      | PinMAME ROM sets | Simulator | Notes        |
-| ------- | ---: | ------------ | ------------ | ---------------- | --------- | ------------ |
-| 4X4     | 1983 | Atari        | Alphanumeric | `fourx4`         |           | does not run |
+_None._
 
-## Not emulated (142)
+## Not emulated (141)
 
 No driver. These machines are old enough to be in scope, so they are the candidates for
 future work.
@@ -761,7 +761,6 @@ future work.
 | White Shark                                 | 1980 | Bell Coin Matic           | Alphanumeric |
 | Neutron Star                                | 1981 | Atari                     | Alphanumeric |
 | Diana                                       | 1982 | Rowamet                   | Alphanumeric |
-| Genesis                                     | 1982 | Elbos                     | Alphanumeric |
 | Tiger Woman                                 | 1982 | I.D.I.                    | Alphanumeric |
 | Valkyrie                                    | 1982 | Jeutel                    | Alphanumeric |
 | Vulcan IV                                   | 1982 | Rowamet                   | Alphanumeric |
@@ -838,7 +837,7 @@ future work.
 | Shoot 'n Scoot                              | 2020 | Multimorphic              | LCD          |
 | Teenage Mutant Ninja Turtles                | 2020 | Stern                     | LCD          |
 
-## Not emulated — released recently (76)
+## Not emulated — released recently (79)
 
 No driver, and not expected to get one soon: see the note on end-of-life machines above.
 
@@ -909,11 +908,14 @@ No driver, and not expected to get one soon: see the note on end-of-life machine
 | Star Wars: Fall of the Empire                     | 2025 | Stern                    | LCD          |
 | The Walking Dead Remastered                       | 2025 | Stern                    | LCD          |
 | Winchester Mystery House                          | 2025 | Barrels of Fun           | LCD          |
+| AC/DC Remastered                                  | 2026 | Stern                    | LCD          |
 | Bon Jovi                                          | 2026 | Barrels of Fun           | LCD          |
 | Carni-Ball Night                                  | 2026 | Deluxia Studios          | LCD          |
 | Dungeon Crawler Carl                              | 2026 | Multimorphic             | LCD          |
 | Ender's Game                                      | 2026 | Multimorphic             | LCD          |
 | Fallout                                           | 2026 | Stern                    | LCD          |
+| Lost in Space                                     | 2026 | Vector Pinball           | Alphanumeric |
+| Ned Kelly                                         | 2026 | Vector Pinball           | Alphanumeric |
 | Pokémon                                           | 2026 | Stern                    | LCD          |
 | Sonic the Hedgehog                                | 2026 | Jersey Jack Pinball      | LCD          |
 | Teenage Mutant Ninja Turtles: Battle in the Sewer | 2026 | Wonderland Amusements    | LCD          |
@@ -1149,8 +1151,8 @@ scripts/gen_supported_machines.py
 
 The script reads a cached copy of OPDB and re-downloads only with `--refresh`; `--check`
 fails if this file is out of date. Machine data comes from the OPDB snapshot of
-**2026-10-27**; driver data from `src/wpc` at the commit this file was generated from, on
-**2026-10-27**.
+**2026-11-09**; driver data from `src/wpc` at the commit this file was generated from, on
+**2026-11-09**.
 
 A machine is one OPDB *group*, so a title and its remakes are one row, dated and credited
 to the original. Its status is that of the *worst* of its ROM sets, so "fully working"

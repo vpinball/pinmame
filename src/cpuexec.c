@@ -214,6 +214,7 @@ static double perfect_interleave;
 
 // PinMame: time fence global offset
 volatile double time_fence_global_offset = 0.0;
+void (*cpu_publish_outputs)(int force) = NULL;
 
 // PinMAME: while nonzero, the external time fence is IGNORED. Set by the OSD for the duration of the FastFrames measurement window
 // (unthrottled startup frames, see the OSD's render_frame/update_timing), so raw emulation speed can be measured even while a host (VPX) drives fences.
@@ -962,6 +963,7 @@ void time_fence_exit()
 #else
 
 #include <semaphore.h>
+#include <time.h>
 static sem_t time_fence_semaphore;
 static int time_fence_initialized = 0;
 static int max(int a, int b)
@@ -988,11 +990,13 @@ void time_fence_post()
 
 int time_fence_wait(double secs)
 {
-	int ns = max((int)ceil(secs * 1000000000.), 1);
-	struct timespec wait_length;
-	wait_length.tv_sec = 0ul;
-	wait_length.tv_nsec = ns;
-	return time_fence_is_supported() && (sem_timedwait(&time_fence_semaphore, &wait_length) == 0);
+	// sem_timedwait takes an absolute CLOCK_REALTIME deadline, not a duration
+	struct timespec deadline;
+	clock_gettime(CLOCK_REALTIME, &deadline);
+	const long long ns = (long long)deadline.tv_nsec + (long long)max((int)ceil(secs * 1000000000.), 1);
+	deadline.tv_sec += (time_t)(ns / 1000000000LL);
+	deadline.tv_nsec = (long)(ns % 1000000000LL);
+	return time_fence_is_supported() && (sem_timedwait(&time_fence_semaphore, &deadline) == 0);
 }
 
 void time_fence_exit()
@@ -1032,6 +1036,10 @@ static void cpu_timeslice(void)
 			return;
 	}
 #endif
+	// keep the PWM/physical outputs the clients read up to date (rate limited)
+	if (cpu_publish_outputs)
+		cpu_publish_outputs(0);
+
 #if defined(VPINMAME)
 	// Continuously pump message loop, otherwise it creates stutters between COM server and client (VPinMAME locks VPX scripts until message are processed)
 	// It also causes a deadlock if using a TimeFence since messages are normally processed by a CPU callback that may not happen depending on the TimeFence.
@@ -1053,6 +1061,9 @@ static void cpu_timeslice(void)
 			extern void libpinmame_drain_pending_writes(void);
 			libpinmame_drain_pending_writes();
 #endif
+			// client sees the outputs as they are when the emulation stops here
+			if (cpu_publish_outputs)
+				cpu_publish_outputs(1);
 			if (now - options.time_fence - time_fence_global_offset >= 1.0)
 			{
 				// We are ahead by a large amount: realign external clock
@@ -1821,6 +1832,8 @@ static void cpu_firstvblankcallback(int param)
 
 static void cpu_synccallback(int param)
 {
+	if (cpu_publish_outputs) // client sees the outputs as they are while the throttle waits
+		cpu_publish_outputs(1);
 	throttle_speed_part(LOW_LATENCY_THROTTLE_PARTS-sync_countdown, LOW_LATENCY_THROTTLE_PARTS);
 	if(!--sync_countdown)
 		timer_adjust(sync_timer, TIME_NEVER, 0, TIME_NEVER);
@@ -1871,6 +1884,10 @@ static void cpu_vblankcallback(int param)
 	/* is it a real VBLANK? */
 	if (!--vblank_countdown)
 	{
+		/* once per frame, before the screen update and its throttle: client sees the outputs as they are while it waits */
+		if (cpu_publish_outputs)
+			cpu_publish_outputs(1);
+
 		/* do we update the screen now? */
 		if (!(Machine->drv->video_attributes & VIDEO_UPDATE_AFTER_VBLANK))
 			time_to_quit = updatescreen();

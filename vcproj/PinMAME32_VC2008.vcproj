@@ -4167,6 +4167,18 @@
 					Name="sims"
 					>
 					<Filter
+						Name="atari"
+						>
+						<Filter
+							Name="prelim_atari"
+							>
+							<File
+								RelativePath=".\..\src\wpc\sims\atari\prelim\fourx4.c"
+								>
+							</File>
+						</Filter>
+					</Filter>
+					<Filter
 						Name="s11"
 						>
 						<Filter

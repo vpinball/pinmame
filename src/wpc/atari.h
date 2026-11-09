@@ -196,6 +196,73 @@
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x8000, "1" )
 
+/*-- 4x4 has sixteen DIPs, read as two POKEY pot scans of eight bits each.
+/   MDRV_DIPS has to match the number of DIP ports declared here: sim_run
+/   takes the first game inport as CORE_COREINPORT + (dips+31)/16. --*/
+#define ATARI4_COMPORTS \
+  PORT_START /* 0 */ \
+    /* these land in switch column 6, see SWITCH_UPDATE(ATARI4) */ \
+    COREPORT_BIT(     0x0002, "Tilt", KEYCODE_9)  \
+    COREPORT_BIT(     0x0004, "Game", KEYCODE_1)  \
+    COREPORT_BIT(     0x0008, "Left Coin", KEYCODE_3)  \
+    COREPORT_BIT(     0x0010, "Right Coin", KEYCODE_5)  \
+    COREPORT_BIT(     0x0081, "Test", KEYCODE_7)  \
+  PORT_START /* 1 */ \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "S1 (not read)") \
+      COREPORT_DIPSET(0x0000, "open (reads 1)" ) \
+      COREPORT_DIPSET(0x0001, "closed (reads 0)" ) \
+    COREPORT_DIPNAME( 0x0002, 0x0000, "S2 (not read)") \
+      COREPORT_DIPSET(0x0000, "open (reads 1)" ) \
+      COREPORT_DIPSET(0x0002, "closed (reads 0)" ) \
+    COREPORT_DIPNAME( 0x0004, 0x0000, "S3 lamp level bit 0") \
+      COREPORT_DIPSET(0x0000, "open (reads 1)" ) \
+      COREPORT_DIPSET(0x0004, "closed (reads 0)" ) \
+    COREPORT_DIPNAME( 0x0008, 0x0008, "S4 lamp level bit 1") \
+      COREPORT_DIPSET(0x0000, "open (reads 1)" ) \
+      COREPORT_DIPSET(0x0008, "closed (reads 0)" ) \
+    COREPORT_DIPNAME( 0x0010, 0x0010, "S5 lamp level bit 2") \
+      COREPORT_DIPSET(0x0000, "open (reads 1)" ) \
+      COREPORT_DIPSET(0x0010, "closed (reads 0)" ) \
+    COREPORT_DIPNAME( 0x0020, 0x0020, "S6 (not read)") \
+      COREPORT_DIPSET(0x0000, "open (reads 1)" ) \
+      COREPORT_DIPSET(0x0020, "closed (reads 0)" ) \
+    COREPORT_DIPNAME( 0x0040, 0x0040, "S7 credits") \
+      COREPORT_DIPSET(0x0000, "open: consume a credit" ) \
+      COREPORT_DIPSET(0x0040, DEF_STR( Free_Play ) ) \
+    COREPORT_DIPNAME( 0x0080, 0x0080, "S8 credits") \
+      COREPORT_DIPSET(0x0000, "open: consume a credit" ) \
+      COREPORT_DIPSET(0x0080, DEF_STR( Free_Play ) ) \
+    COREPORT_DIPNAME( 0x0100, 0x0000, "S9 (second pack, not read)") \
+      COREPORT_DIPSET(0x0000, "open (reads 1)" ) \
+      COREPORT_DIPSET(0x0100, "closed (reads 0)" ) \
+    COREPORT_DIPNAME( 0x0200, 0x0000, "S10 (second pack, not read)") \
+      COREPORT_DIPSET(0x0000, "open (reads 1)" ) \
+      COREPORT_DIPSET(0x0200, "closed (reads 0)" ) \
+    COREPORT_DIPNAME( 0x0400, 0x0000, "S11 (second pack, not read)") \
+      COREPORT_DIPSET(0x0000, "open (reads 1)" ) \
+      COREPORT_DIPSET(0x0400, "closed (reads 0)" ) \
+    COREPORT_DIPNAME( 0x0800, 0x0000, "S12 (second pack, not read)") \
+      COREPORT_DIPSET(0x0000, "open (reads 1)" ) \
+      COREPORT_DIPSET(0x0800, "closed (reads 0)" ) \
+    COREPORT_DIPNAME( 0x1000, 0x0000, "S13 (second pack, not read)") \
+      COREPORT_DIPSET(0x0000, "open (reads 1)" ) \
+      COREPORT_DIPSET(0x1000, "closed (reads 0)" ) \
+    COREPORT_DIPNAME( 0x2000, 0x2000, "S14 (second pack, not read)") \
+      COREPORT_DIPSET(0x0000, "open (reads 1)" ) \
+      COREPORT_DIPSET(0x2000, "closed (reads 0)" ) \
+    COREPORT_DIPNAME( 0x4000, 0x4000, "S15 (second pack, not read)") \
+      COREPORT_DIPSET(0x0000, "open (reads 1)" ) \
+      COREPORT_DIPSET(0x4000, "closed (reads 0)" ) \
+    COREPORT_DIPNAME( 0x8000, 0x0000, "S16 (second pack, not read)") \
+      COREPORT_DIPSET(0x0000, "open (reads 1)" ) \
+      COREPORT_DIPSET(0x8000, "closed (reads 0)" )
+
+#define ATARI4_INPUT_PORTS_START(name,balls) \
+  INPUT_PORTS_START(name) \
+    CORE_PORTS \
+    SIM_PORTS(balls) \
+    ATARI4_COMPORTS
+
 #define ATARI3_COMPORTS \
   PORT_START /* 3 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S33") \
@@ -378,6 +445,9 @@ extern MACHINE_DRIVER_EXTERN(ATARI2);
 extern MACHINE_DRIVER_EXTERN(ATARI3);
 extern MACHINE_DRIVER_EXTERN(ATARI4);
 extern MACHINE_DRIVER_EXTERN(atari2s);
+extern MACHINE_DRIVER_EXTERN(atari4s);
+extern void atari4snd_w(int chip, int offset, int data);
+extern int atari4snd_r(int chip, int offset);
 extern MACHINE_DRIVER_EXTERN(atari1s);
 
 #define gl_mATARI0		ATARI0
