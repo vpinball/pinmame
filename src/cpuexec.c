@@ -963,6 +963,7 @@ void time_fence_exit()
 #else
 
 #include <semaphore.h>
+#include <time.h>
 static sem_t time_fence_semaphore;
 static int time_fence_initialized = 0;
 static int max(int a, int b)
@@ -989,11 +990,13 @@ void time_fence_post()
 
 int time_fence_wait(double secs)
 {
-	int ns = max((int)ceil(secs * 1000000000.), 1);
-	struct timespec wait_length;
-	wait_length.tv_sec = 0ul;
-	wait_length.tv_nsec = ns;
-	return time_fence_is_supported() && (sem_timedwait(&time_fence_semaphore, &wait_length) == 0);
+	// sem_timedwait takes an absolute CLOCK_REALTIME deadline, not a duration
+	struct timespec deadline;
+	clock_gettime(CLOCK_REALTIME, &deadline);
+	const long long ns = (long long)deadline.tv_nsec + (long long)max((int)ceil(secs * 1000000000.), 1);
+	deadline.tv_sec += (time_t)(ns / 1000000000LL);
+	deadline.tv_nsec = (long)(ns % 1000000000LL);
+	return time_fence_is_supported() && (sem_timedwait(&time_fence_semaphore, &deadline) == 0);
 }
 
 void time_fence_exit()
