@@ -50,7 +50,7 @@ const syscall_name SYSCALL_NAMES[] = {
 	{15,"chmod"},{19,"lseek"},{20,"getpid"},{21,"mount"},{33,"access"},{36,"sync"},{37,"kill"},{38,"rename"},
 	{39,"mkdir"},{40,"rmdir"},{41,"dup"},{42,"pipe"},{43,"times"},{45,"brk"},{52,"umount2"},{54,"ioctl"},{55,"fcntl"},
 	{57,"setpgid"},{60,"umask"},{63,"dup2"},{64,"getppid"},{66,"setsid"},{77,"getrusage"},
-	{78,"gettimeofday"},{85,"readlink"},{91,"munmap"},{93,"ftruncate"},{96,"getpriority"},
+	{78,"gettimeofday"},{79,"settimeofday"},{85,"readlink"},{91,"munmap"},{93,"ftruncate"},{96,"getpriority"},
 	{97,"setpriority"},{106,"stat"},{108,"fstat"},{114,"wait4"},{116,"sysinfo"},{118,"fsync"},
 	{120,"clone"},{122,"uname"},{125,"mprotect"},{140,"_llseek"},{141,"getdents"},{142,"_newselect"},
 	{143,"flock"},{144,"msync"},{145,"readv"},{146,"writev"},{148,"fdatasync"},{150,"mlock"},
@@ -797,6 +797,18 @@ int32_t spike1_linux::syscall(uint32_t nr, const uint32_t a[7], bool &handled, s
 		const uint64_t ns = m_wall_base_ns + now_ns();
 		const uint32_t tv[2] = { uint32_t(ns / 1000000000ull), uint32_t(ns % 1000000000ull / 1000) };
 		return (!a[0] || m_mem.write(a[0], tv, 8)) ? 0 : -E_FAULT;
+	}
+	case 79: { // settimeofday: the service menu's date and time, and a tournament's start (glibc's stime comes here too)
+		if (!a[0]) return 0; // the time zone alone, which nothing here keeps
+		uint32_t tv[2];
+		if (!m_mem.read(a[0], tv, 8)) return -E_FAULT;
+		if (tv[1] >= 1000000) return -E_INVAL;
+		// the kernel refuses a time before the boot, where the wall clock would fall behind the monotonic one
+		const uint64_t ns = uint64_t(tv[0]) * 1000000000ull + uint64_t(tv[1]) * 1000ull;
+		if (ns < BOOT_NS + now_ns()) return -E_INVAL;
+		m_wall_base_ns = ns - now_ns();
+		SPIKE1_DEBUG_ONLY(note = "wall clock set to " + std::to_string(tv[0]);)
+		return 0;
 	}
 	case 13: { // time
 		const uint32_t t = uint32_t((m_wall_base_ns + now_ns()) / 1000000000ull);
