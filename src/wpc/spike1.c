@@ -884,12 +884,13 @@ MACHINE_DRIVER_START(spike1)
   MDRV_PALETTE_LENGTH(SPIKE1_PEN0 + 32768)
 MACHINE_DRIVER_END
 
-/* A title with the CPU board's LCD (WWE): the DMD with the LCD below it is taller than PinMAME's default screen outside VPinMAME (320x256) */
+/* A title with the CPU board's LCD (WWE): the DMD, the LCD and the core's status display below them
+   take more rows than PinMAME's default screen outside VPinMAME (320x256) */
 MACHINE_DRIVER_START(spike1_lcd)
   MDRV_IMPORT_FROM(spike1)
-#if CORE_SCREENY < 68 + SPIKE1_LCD_HEIGHT
-  MDRV_SCREEN_SIZE(SPIKE1_LCD_WIDTH, 68 + SPIKE1_LCD_HEIGHT)
-  MDRV_VISIBLE_AREA(0, SPIKE1_LCD_WIDTH - 1, 0, 68 + SPIKE1_LCD_HEIGHT - 1)
+#if CORE_SCREENY < 68 + SPIKE1_LCD_HEIGHT + CORE_STATUSROWS
+  MDRV_SCREEN_SIZE(SPIKE1_LCD_WIDTH, 68 + SPIKE1_LCD_HEIGHT + CORE_STATUSROWS)
+  MDRV_VISIBLE_AREA(0, SPIKE1_LCD_WIDTH - 1, 0, 68 + SPIKE1_LCD_HEIGHT + CORE_STATUSROWS - 1)
 #endif
 MACHINE_DRIVER_END
 
@@ -1750,7 +1751,7 @@ ROM_START(wwe_133h)
     ROM_LOAD("pinnode-LPC1112_201-0_18_2.hex", 0xaae2e000, 0x00007dd1, CRC(c6c75408) SHA1(31efd310ff2b9790d7acb03d6f1bc422ba80bdbc))
     ROM_LOAD("pinnode-LPC1313-0_18_2.hex", 0xaae36000, 0x00009e29, CRC(f4fd14e6) SHA1(5f6b228741dd35a6a48dcbed1d6147bda8eef673))
 ROM_END
-SPIKE1_CLONEDEF(wwe, 133h, wwe_135h, wwe, "Legends of Wrestlemania Limited Edition (1.33.0)", 2015, spike1)
+SPIKE1_CLONEDEF(wwe, 133h, wwe_135h, wwe, "Legends of Wrestlemania Limited Edition (1.33.0)", 2015, spike1_lcd)
 
 ROM_START(wwe_133)
   ROM_REGION(0x54cf5000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -1815,7 +1816,7 @@ ROM_START(wwe_120h)
     ROM_LOAD("image.bin", 0x565c4000, 0x2512b5d0, CRC(ba0fc9c5) SHA1(7475085b50c82f4fe79f7989b8652fe319d48562))
     ROM_LOAD("pinnode-0_15_11.hex", 0x7b6f0000, 0x0000802a, CRC(9530d62d) SHA1(a368fc6fcfdd92439a3993951c97549fbb2f0fbd))
 ROM_END
-SPIKE1_CLONEDEF(wwe, 120h, wwe_135h, wwe, "Legends of Wrestlemania Limited Edition (1.20.0)", 2015, spike1)
+SPIKE1_CLONEDEF(wwe, 120h, wwe_135h, wwe, "Legends of Wrestlemania Limited Edition (1.20.0)", 2015, spike1_lcd)
 
 ROM_START(wwe_120)
   ROM_REGION(0x255af000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -1864,7 +1865,7 @@ ROM_START(wwe_119h)
     ROM_LOAD("image.bin", 0x565aa000, 0x2512b5d0, CRC(d39341b0) SHA1(5f02e69a73cbf4e7b7caf6498e2885d868de106a))
     ROM_LOAD("pinnode-0_15_7.hex", 0x7b6d6000, 0x00007dd9, CRC(6873c641) SHA1(16719e683ec70c6b2a616745b5978e54254d8177))
 ROM_END
-SPIKE1_CLONEDEF(wwe, 119h, wwe_135h, wwe, "Legends of Wrestlemania Limited Edition (1.19.0)", 2015, spike1)
+SPIKE1_CLONEDEF(wwe, 119h, wwe_135h, wwe, "Legends of Wrestlemania Limited Edition (1.19.0)", 2015, spike1_lcd)
 
 ROM_START(wwe_119)
   ROM_REGION(0x25595000, SPIKE1_REGION, ROMREGION_MAPPED)
