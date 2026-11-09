@@ -54,8 +54,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 #if HAS_SPIKE1
+
+#ifdef LIBPINMAME
+extern void libpinmame_log_error(const char* format, ...);
+#endif
+
+/* What stops the game or keeps it from starting: on PinMAME's screen, and in the log of a libpinmame host (VPX's plugin), which does not show that screen */
+static void spike1_problem(int seconds, const char *format, ...)
+{
+  char text[512];
+  va_list arg;
+  va_start(arg, format);
+  vsnprintf(text, sizeof(text), format, arg);
+  va_end(arg);
+  usrintf_showmessage_secs(seconds, "%s", text);
+#ifdef LIBPINMAME
+  libpinmame_log_error("%s", text);
+#else
+  logerror("%s\n", text);
+#endif
+}
 
 #define SPIKE1_REGION     REGION_USER1 /* the game folder's files, mapped from the set on disk (ROMREGION_MAPPED) */
 #define SPIKE1_AUDIO_RATE 44100        /* the stream's rate until the game sets /dev/i2s to its own */
@@ -453,7 +474,7 @@ static INTERRUPT_GEN(spike1_vblank)
 #endif
     if (!locals.warned && !spike1_pinmame_running(reason, sizeof(reason))) {
       locals.warned = 1;
-      usrintf_showmessage_secs(30, "SPIKE 1: the game program stopped: %s", reason);
+      spike1_problem(30, "SPIKE 1: the game program stopped: %s", reason);
     }
   }
   core_updateSw(0); /* the flippers are the node boards' own (FLIP_SOL), see spike1_sync_io */
@@ -590,9 +611,9 @@ static void spike1_provide_video_key(void)
   found = spike1_read_video_key(name, key);
   if (found > 0 && spike1_pinmame_video_key(key)) return;
   if (found < 0)
-    usrintf_showmessage_secs(30, "SPIKE 1: %s does not hold a video key (32 hex digits)", name);
+    spike1_problem(30, "SPIKE 1: %s does not hold a video key (32 hex digits)", name);
   else
-    usrintf_showmessage_secs(30, "SPIKE 1: the LCD videos need their key: put it in %s beside the ROM set", name);
+    spike1_problem(30, "SPIKE 1: the LCD videos need their key: put it in %s beside the ROM set", name);
 }
 
 static core_tLCDLayout spike1_dmd[] = {
@@ -798,11 +819,11 @@ static MACHINE_INIT(spike1)
     }
   }
   if (missing) {
-    usrintf_showmessage_secs(30, "SPIKE 1: the ROM set's %s is not open", missing);
+    spike1_problem(30, "SPIKE 1: the ROM set's %s is not open", missing);
     return;
   }
   if (!spike1_pinmame_start(spike1_game()->folder, spike1_game()->program, files, count, spike1_game()->symbols, nvBlock, nvSize, error, sizeof(error))) {
-    usrintf_showmessage_secs(30, "SPIKE 1: the game program does not start: %s", error);
+    spike1_problem(30, "SPIKE 1: the game program does not start: %s", error);
     return;
   }
   locals.running = 1;

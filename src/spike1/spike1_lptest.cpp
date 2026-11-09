@@ -196,7 +196,7 @@ int PINMAMECALLBACK is_key_pressed(PINMAME_KEYCODE, void *) { return 0; }
 
 void PINMAMECALLBACK on_log(PINMAME_LOG_LEVEL level, const char *format, va_list args, void *)
 {
-	char buffer[1024];
+	char buffer[8192]; // the ROM loader's error list (up to 4 KB) comes as one message
 	std::vsnprintf(buffer, sizeof(buffer), format, args);
 	std::printf("[%7.3f] %s: %s\n", now_s(), level == PINMAME_LOG_LEVEL_ERROR ? "ERROR" : level == PINMAME_LOG_LEVEL_INFO ? "INFO" : "DEBUG", buffer);
 }
