@@ -293,7 +293,16 @@ int main(int argc, char **argv)
 	for (;;) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(20));
 		if (run_at < 0.0) {
-			if (g_state != 1) { if (now_s() > 600.0) break; continue; }
+			if (g_state != 1) {
+				// Back to stopped from starting: the set did not load (the log says why)
+				if (!is_running()) {
+					std::printf("[%7.3f] stopped before running\n", now_s());
+					stop();
+					return 1;
+				}
+				if (now_s() > 600.0) break;
+				continue;
+			}
 			run_at = now_s();
 			std::printf("[%7.3f] running: hardware gen 0x%llx\n", run_at, (unsigned long long)hardware_gen());
 		}
