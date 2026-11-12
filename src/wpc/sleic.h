@@ -289,6 +289,15 @@
 		core_gameData = &name##GameData; \
 	}
 
+/* Bike Race sets with the ball simulator; their ports are BIKERACE_SIM_PORTS in
+   sims/sleic/bikerace.c */
+#define INITGAME3(name, disptype, simdata) \
+	static core_tGameData name##GameData = {GEN_SLEIC,disptype,{FLIP_SW(FLIP_L),0,0,0, \
+		0,0,0,0, NULL, bikerace_handleMech}, simdata}; \
+	static void init_##name(void) { \
+		core_gameData = &name##GameData; \
+	}
+
 #define SLEIC_INPUT_PORTS_END INPUT_PORTS_END
 
 #define SLEIC_COMINPORT      CORE_COREINPORT
@@ -376,6 +385,9 @@ extern int iomoon_getSol(int solNo);
 
 /* Raises the drop-target bank on the derived bank reset; defined in sims/sleic/iomoon.c */
 extern void iomoon_handleMech(int mech);
+
+/* Raises Bike Race's drop-target bank on its reset coil; defined in sims/sleic/bikerace.c */
+extern void bikerace_handleMech(int mech);
 
 #define gl_mSLEIC1      SLEIC1
 #define gl_mSLEIC2      SLEIC2
