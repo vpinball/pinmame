@@ -125,10 +125,14 @@ static struct {
 static void sleic_dmd_dump(const UINT8 *frame) {
   const char *pfx = getenv("SLEIC_DMD_DUMP");
   static int seq = 0;
+  static UINT8 prev[128 * 32];
   char fn[512];
   FILE *fp;
   int i;
   if (!pfx) return;
+  /* SLEIC_DMD_DUMP_CHANGED: skip a frame identical to the last one; the numbering keeps counting */
+  if (getenv("SLEIC_DMD_DUMP_CHANGED") && seq && !memcmp(prev, frame, sizeof prev)) { seq++; return; }
+  memcpy(prev, frame, sizeof prev);
   snprintf(fn, sizeof fn, "%s.%05d.pgm", pfx, seq++);
   if (!(fp = fopen(fn, "wb"))) return;
   fprintf(fp, "P5\n128 32\n255\n");
@@ -821,6 +825,9 @@ static WRITE_HANDLER(sleic_periph_w) {
        * (gate B), cmd 0xD5 -> reply ball-status 0x5B/5C/5D (gate C), via the Z80's normal
        * send path (port 0x80 + strobe -> 0xA0100) */
       locals.cmd188 = data;
+#ifdef DEBUG_SLEIC
+      if (getenv("SLEIC_TRACE_J1")) fprintf(stderr, "[%d 188->z80] %02x\n", locals.vblankCount, data);
+#endif
       cpu_set_irq_line(SLEIC_IO_CPU, IRQ_LINE_NMI, PULSE_LINE);
       break;
     case 0x200:                        /* PCS4: DMD mode; bit 3 = frame swap */
@@ -1408,7 +1415,12 @@ MEMORY_END
  * at every machine start and it must survive locals' memset */
 static UINT8 sleic3_nvram[0x2000];
 static READ_HANDLER(sleic3_nvram_r)  { return sleic3_nvram[offset]; }
-static WRITE_HANDLER(sleic3_nvram_w) { sleic3_nvram[offset] = data; }
+static WRITE_HANDLER(sleic3_nvram_w) {
+#ifdef DEBUG_SLEIC
+  if (getenv("SLEIC_NVRAM_RO")) return; /* writes that never land: the EEPROM fault path */
+#endif
+  sleic3_nvram[offset] = data;
+}
 static NVRAM_HANDLER(SLEIC3) {
   core_nvram(file, read_or_write, sleic3_nvram, sizeof sleic3_nvram, 0x00);
 }
@@ -1512,7 +1524,39 @@ static struct {
   UINT8 lampRow;  /* port 0x84: lamp row byte, latched until the 0x83 column strobe */
   UINT8 ctrl;     /* port 0x81: control register shadow */
   UINT8 sndData;  /* port 0x80: last byte written */
+#ifdef DEBUG_SLEIC
+  UINT8 sol85, sol86;
+#endif
 } sleic_io;
+
+#ifdef DEBUG_SLEIC
+/* SLEIC_J1_MUTE=<from>-<to>: drop the Z80's J1 bytes in that VBLANK window (the BK07 fault path) */
+static int sleic3_debug_j1_muted(void) {
+  const char *e = getenv("SLEIC_J1_MUTE");
+  char *q;
+  long lo, hi;
+  if (!e) return 0;
+  lo = strtol(e, &q, 10); hi = (*q == '-') ? strtol(q + 1, NULL, 10) : lo;
+  return locals.vblankCount >= lo && locals.vblankCount <= hi;
+}
+
+/* SLEIC_INJECT_J1="f:hh,...": hand the 80188 byte hh at VBLANK f as if the Z80 had sent it */
+static void sleic3_debug_inject_j1(void) {
+  const char *p = getenv("SLEIC_INJECT_J1");
+  while (p && *p) {
+    char *q;
+    const long f = strtol(p, &q, 10);
+    const long b = (*q == ':') ? strtol(q + 1, &q, 16) : -1;
+    if (f == locals.vblankCount && b >= 0) {
+      locals.j1Inbound = (UINT8)b;
+      locals.j1Fresh = 1;
+      cpu_set_irq_line(SLEIC_MAIN_CPU, IRQ_LINE_NMI, PULSE_LINE);
+    }
+    p = strchr(q, ',');
+    if (p) p++;
+  }
+}
+#endif
 
 /* Bike Race (SLEIC3) Z80 I/O processor ports.  Port map from the bkio07
  * disassembly.  Three boot-critical details: the J1 status bit is port-0x01
@@ -1528,7 +1572,11 @@ static READ_HANDLER(sleic3_z80_read) {
     case 0x01: return 0x20;                                         /* status: bit 5 = J1 "80188 ready" (bkio07 polls bit 5); always-ready */
     case 0x02: return ~coreGlobals.swMatrix[1 + sleic_io.swStrobe]; /* switch-matrix column return (active-low) */
     case 0x03: return ~coreGlobals.swMatrix[9];                     /* all 6 direct/cabinet buttons (active-low); see SWITCH_UPDATE */
-    case 0x04: return 0xff;                                         /* idle: bit7=1 normal boot, bit4=1 trough-query enable */
+    case 0x04:                                                      /* idle: bit7=1 normal boot, bit4=1 trough-query enable */
+#ifdef DEBUG_SLEIC
+      if (getenv("SLEIC_PORT04")) return (UINT8)strtol(getenv("SLEIC_PORT04"), NULL, 0);
+#endif
+      return 0xff;
     default:   logerror("bikerace Z80 read port %02x\n", offset);
   }
   return 0;
@@ -1541,9 +1589,16 @@ static WRITE_HANDLER(sleic3_z80_write) {
       locals.j1Inbound = data;
       break;
     case 0x01:  /* port 0x81: control; bit-2 rising edge latches the J1 byte into 80188 PCS2 (0xA0100) */
-      if ((data & 0x04) && !(locals.j1PrevCtrl & 0x04)) {
+      if ((data & 0x04) && !(locals.j1PrevCtrl & 0x04)
+#ifdef DEBUG_SLEIC
+          && !sleic3_debug_j1_muted()
+#endif
+         ) {
         locals.j1Inbound = sleic_io.sndData;
         locals.j1Fresh = 1;
+#ifdef DEBUG_SLEIC
+        if (getenv("SLEIC_TRACE_J1")) fprintf(stderr, "[%d z80->188] %02x\n", locals.vblankCount, sleic_io.sndData);
+#endif
         /* The port-0x81 bit-2 strobe latches the byte into PCS2 (0xA0100) AND raises the
          * 80188 NMI. The NMI handler (E000:0272) consumes exactly ONE J1 byte per assertion,
          * so the NMI MUST be strobe-driven here, not periodic (see sleic3_irq_gen) */
@@ -1568,9 +1623,17 @@ static WRITE_HANDLER(sleic3_z80_write) {
       /* Write the driver-local shadow, not coreGlobals.solenoids: the VBLANK handler
        * (SLEIC_interface_update) copies locals.solenoids -> coreGlobals.solenoids each frame */
       locals.solenoids = (locals.solenoids & 0xffff00) | (data ^ 0xff);
+#ifdef DEBUG_SLEIC
+      if (getenv("SLEIC_TRACE_J1") && (data ^ 0xff) != (sleic_io.sol85)) fprintf(stderr, "[%d sol85] %02x\n", locals.vblankCount, data ^ 0xff);
+      sleic_io.sol85 = data ^ 0xff;
+#endif
       break;
     case 0x06:  /* port 0x86: solenoid bank 2 (active-low) */
       locals.solenoids = (locals.solenoids & 0xff00ff) | ((data ^ 0xff) << 8);
+#ifdef DEBUG_SLEIC
+      if (getenv("SLEIC_TRACE_J1") && (data ^ 0xff) != (sleic_io.sol86)) fprintf(stderr, "[%d sol86] %02x\n", locals.vblankCount, data ^ 0xff);
+      sleic_io.sol86 = data ^ 0xff;
+#endif
       break;
     case 0x07:  /* port 0x87: switch-matrix row strobe / Z80 control bits (NOT the lamp column).
                  * Switches are read via the 0x82 column strobe + port-0x02 data, so no action here */
@@ -2551,6 +2614,7 @@ static SWITCH_UPDATE(SLEIC3) {
   sleic3_ball_update(balls, out);
 #ifdef DEBUG_SLEIC
   sleic_debug_switches(5, SLEIC3_TROUGH_BITS); /* COL4 optos, same mask the model uses */
+  sleic3_debug_inject_j1();
 #endif
 }
 
