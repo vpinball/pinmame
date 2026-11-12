@@ -36,6 +36,7 @@
 static struct {
   int    vblankCount;
   UINT32 solenoids;
+  UINT32 solPulsed;  /* coils switched on since the last VBLANK */
   //UINT8  sndCmd;
   UINT8  swCol;
   UINT8  lampCol;
@@ -583,7 +584,9 @@ static INTERRUPT_GEN(SLEIC_interface_update) {
     memcpy((void*)coreGlobals.lampMatrix, (void*)coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
 
   /*-- solenoids --*/
-  coreGlobals.solenoids = locals.solenoids;
+  /* Bike Race pulses some coils for less than a frame; report them for one */
+  coreGlobals.solenoids = locals.solenoids | locals.solPulsed;
+  locals.solPulsed = 0;
   if (locals.iomDerivedSol.serve)     locals.iomDerivedSol.serve--;
   if (locals.iomDerivedSol.bankReset) locals.iomDerivedSol.bankReset--;
 
@@ -1623,6 +1626,7 @@ static WRITE_HANDLER(sleic3_z80_write) {
       /* Write the driver-local shadow, not coreGlobals.solenoids: the VBLANK handler
        * (SLEIC_interface_update) copies locals.solenoids -> coreGlobals.solenoids each frame */
       locals.solenoids = (locals.solenoids & 0xffff00) | (data ^ 0xff);
+      locals.solPulsed |= data ^ 0xff;
 #ifdef DEBUG_SLEIC
       if (getenv("SLEIC_TRACE_J1") && (data ^ 0xff) != (sleic_io.sol85)) fprintf(stderr, "[%d sol85] %02x\n", locals.vblankCount, data ^ 0xff);
       sleic_io.sol85 = data ^ 0xff;
@@ -1630,6 +1634,7 @@ static WRITE_HANDLER(sleic3_z80_write) {
       break;
     case 0x06:  /* port 0x86: solenoid bank 2 (active-low) */
       locals.solenoids = (locals.solenoids & 0xff00ff) | ((data ^ 0xff) << 8);
+      locals.solPulsed |= (data ^ 0xff) << 8;
 #ifdef DEBUG_SLEIC
       if (getenv("SLEIC_TRACE_J1") && (data ^ 0xff) != (sleic_io.sol86)) fprintf(stderr, "[%d sol86] %02x\n", locals.vblankCount, data ^ 0xff);
       sleic_io.sol86 = data ^ 0xff;
@@ -2550,14 +2555,10 @@ static const struct { int key; UINT8 col; UINT8 bit; } sleic3_pf_keys[] = {
 /  matrix keys down for the whole session before a game can be started.  Setting "Balls"
 /  to any non-zero value hands that job to the driver.
 /
-/  This is a SIMPLER model than Io Moon's, deliberately.  Io Moon's trough is three
-/  contacts in a line with a kicker command (0xE9) and a drain sensor, so the state a ball
-/  is in can be tracked and each contact driven from it.  What Bike Race exposes on COL4
-/  is a ball-PRESENT check answered by the Z80's cmd-0xD5 handler, and no serve command
-/  has been identified in either Z80 ROM.  So nothing here tracks a ball count or a
-/  kicker: it presents the complement the firmware wants to see, and the cabinet port's
-/  "Ball out of trough" key lifts it.  Inventing a serve would be inventing mechanics the
-/  disassembly does not show.
+/  It serves bikerace and bikerac2; the V4.1 sets use the ball simulator
+/  (sims/sleic/bikerace.c) and this model stands down under it.  It tracks no ball
+/  count or kicker: it presents the complement the firmware wants to see, and the
+/  cabinet port's "Ball out of trough" key lifts it.
 /
 /  THE MASK.  0xE0 closes all three of COL4's monitored optos at once, which satisfies
 /  every version's rule without the driver having to know which set is running:
@@ -2579,7 +2580,7 @@ static const struct { int key; UINT8 col; UINT8 bit; } sleic3_pf_keys[] = {
  * balls = the simulator port's "Balls" setting, 0 (the default) meaning model off.
  * out   = the cabinet port's "Ball out of trough", held while the ball is away */
 static void sleic3_ball_update(int balls, int out) {
-  if (balls <= 0 || out) return;
+  if (coreGlobals.simAvail || balls <= 0 || out) return;
   coreGlobals.swMatrix[SLEIC3_TROUGH_COL] |= SLEIC3_TROUGH_BITS;
 }
 
@@ -2603,12 +2604,15 @@ static SWITCH_UPDATE(SLEIC3) {
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 4,  0x10, 9); /* START   0x100 -> bit4 (C2) */
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 4,  0x20, 9); /* COIN    0x200 -> bit5 (C3) */
   }
-  /* playfield matrix: closed (bit set) while the key is held */
-  for (i = 0; i < sizeof(sleic3_pf_keys)/sizeof(sleic3_pf_keys[0]); i++) {
-    if (keyboard_pressed(sleic3_pf_keys[i].key))
-      coreGlobals.swMatrix[sleic3_pf_keys[i].col] |=  sleic3_pf_keys[i].bit;
-    else
-      coreGlobals.swMatrix[sleic3_pf_keys[i].col] &= ~sleic3_pf_keys[i].bit;
+  /* playfield matrix: closed while the key is held; under the simulator only while
+   * its keys are switched off (Del) */
+  if (!coreGlobals.simAvail || !inports || (inports[CORE_SIMINPORT] & SIM_SWITCHKEY)) {
+    for (i = 0; i < sizeof(sleic3_pf_keys)/sizeof(sleic3_pf_keys[0]); i++) {
+      if (keyboard_pressed(sleic3_pf_keys[i].key))
+        coreGlobals.swMatrix[sleic3_pf_keys[i].col] |=  sleic3_pf_keys[i].bit;
+      else
+        coreGlobals.swMatrix[sleic3_pf_keys[i].col] &= ~sleic3_pf_keys[i].bit;
+    }
   }
   /* After the key loop, because it ORs its optos in on top -- see the comment on it */
   sleic3_ball_update(balls, out);
