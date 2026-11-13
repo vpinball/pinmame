@@ -164,6 +164,7 @@ PINGAMES += $(PINOBJ)/sims/s11/full/dd.o
 PINGAMES += $(PINOBJ)/sims/se/prelim/monopoly.o
 PINGAMES += $(PINOBJ)/sims/se/prelim/elvis.o
 PINGAMES += $(PINOBJ)/sims/se/prelim/harley.o
+PINGAMES += $(PINOBJ)/sims/sleic/bikerace.o
 PINGAMES += $(PINOBJ)/sims/sleic/iomoon.o
 PINGAMES += $(PINOBJ)/sims/wpc/full/afm.o
 PINGAMES += $(PINOBJ)/sims/wpc/full/bop.o
