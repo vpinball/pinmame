@@ -260,6 +260,7 @@ import "ocidl.idl";
 		[propput, id(88), helpstring("property ModOutputType")] HRESULT ModOutputType([in] int output, [in] int no, [in] int newVal);
 		[propput, id(89), helpstring("property TimeFence")] HRESULT TimeFence([in] double timeInS);
 		[propget, id(90), helpstring("property PMBuildVersion")] HRESULT PMBuildVersion([out, retval] double *pVal);
+		[id(91), helpstring("method ReadMainCPUByte")] HRESULT ReadMainCPUByte([in] long address, [out, retval] int *pVal);
 	};
 
 	// WSHDlg and related interfaces
