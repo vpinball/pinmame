@@ -386,9 +386,12 @@ static const char* CheckGameAlias(const char* const romName)
 
 			char* token = strtok(line, ", ");
 
-			if (!strcasecmp(token, romName))
+			if (token && !strcasecmp(token, romName))
 			{
-				strcpy(_aliasFromFile,  strtok(nullptr, " ,\r\n#;'"));
+				const char* const alias = strtok(nullptr, " ,\r\n#;'");
+				if (!alias)
+					continue;
+				strcpy(_aliasFromFile, alias);
 				fclose(file);
 				return _aliasFromFile;
 			}
