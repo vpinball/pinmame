@@ -272,6 +272,7 @@ private:
 	uint32_t m_nb_cflag = 0;                 // the settings in force
 	std::vector<uint8_t> m_nb_nodes;         // bus addresses of the title's boards
 	bool m_nb_nodes_known = false;
+	uint32_t m_nb_part[128] = {};            // the part number of the board type the title expects at each address (0: not known)
 	size_t m_nb_poll = 0;
 	std::map<uint32_t, uint64_t> m_nb_counts;   // (cmd << 8 | node) -> frames
 	std::set<uint32_t> m_nb_logged;          // (node << 8 | command) already reported as not modelled
