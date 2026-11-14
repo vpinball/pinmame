@@ -64,6 +64,13 @@ int spike1_pinmame_running(char *reason, unsigned reason_size);
    every guest thread waits, so emulated time keeps PinMAME's pace */
 int spike1_pinmame_run(int cycles);
 
+/* The game program's memory, for a host that reads its variables (scores, settings: PinMAME's memory
+   maps), from any thread while the machine runs: size bytes from the guest address on, out of the
+   program's image, heap and mmap area (where its variables and thread stacks live), copied into
+   buffer. The bytes read, 0 when the range is outside that area or no machine runs. A value the
+   game is changing as it is read can come out half changed, as on any PinMAME machine */
+unsigned spike1_pinmame_read_memory(unsigned address, unsigned char *buffer, unsigned size);
+
 /* Everything the machine keeps across power cycles, as one block: the size it needs, copied into dst when it fits in capacity */
 unsigned spike1_pinmame_nvram(unsigned char *dst, unsigned capacity);
 /* Switches the machine off as the mains would. A game keeps settings, audits and the like in

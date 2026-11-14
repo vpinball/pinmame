@@ -141,10 +141,27 @@ prints the mechs' positions as they change),
 `--video-key <32 hex digits>` hands the game the key its LCD clips are encrypted with, `--lcd <s>`
 saves the CPU board's LCD every s seconds as a PPM file in the state directory,
 `--poke <s>:<hex address>:<hex byte>` writes a byte of guest memory then (for experiments),
+`--peek-every <s>` prints the `--peek` ranges every s seconds as well,
+`--balls <drain after s>[:<switch>[:<every s>]]` keeps the balls (below),
 `--slice <ms>` sets the emulated time per `run()` call (1 by
 default, the period PinMAME exchanges the I/O at). With `SPIKE1_NODE_STATS` set in the environment, it
 prints the node-bus frame count per command and board (and per second), and how much of the time
 the wire carried bytes.
+
+The ball keeper (`--balls`) stands in for a playfield, by the title's own switch and coil names, so a
+scripted game plays past ball 1: a fire of the trough's coil (TROUGH, TROUGH EJECT; 10 ms or more,
+so the power-on driver check moves nothing) puts the next ball in the shooter lane - the trough's
+last closed opto opens, SHOOTER LANE closes - and the auto plunger, or a player's plunge after
+1.5 s, launches it (SHOOTER LANE opens; SHOOTER LANE EXIT, on the ELG titles, closes for a moment).
+The ball drains the given seconds after its launch, through CENTER DRAIN where there is one, into
+the trough's next opto. While a ball is in play the named switch closes for a moment every few
+seconds (5 by default): the game scores and runs no ball search. The switch must be one the game
+takes as a ball on the playfield, or it serves the ball again after each drain as if it had never
+been played: a return lane or an orbit does (Game of Thrones: LEFT RETURN LANE; KISS: RIGHT RETURN
+LANE; Wrestlemania: LEFT RETURN LANE; Spider-Man: RIGHT ORBIT), a standup target does on
+Ghostbusters, Whoa Nellie, Primus, Pabst and Supreme. With 8 coins and START twice, every title
+with a symbol table plays a 2-player game to its end this way. Until SHOOTER LANE closes, Game of
+Thrones fires its trough again about every half second.
 
 `--root` is the machine's root filesystem extracted from its image (with `games/<name>/game` and
 `image.bin` in it). `--files` instead loads the game's folder (`games/<name>`: the program,
@@ -154,13 +171,13 @@ needs nothing else from the root. The state directory keeps the machine's NVRAM 
 traffic, files not found, threads) are logged. From Git Bash, set `MSYS_NO_PATHCONV=1`, or it turns
 `/games/...` into a Windows path.
 
-`spike1_lptest` (Windows; MinGW: `g++ -std=c++17 -O2 -static -o build/lptest/spike1_lptest.exe
+`spike1_lptest` (Windows; MinGW: `g++ -std=c++20 -O2 -static -o build/lptest/spike1_lptest.exe
 src/spike1/spike1_lptest.cpp`) runs a set through `pinmame64.dll` as a VPX table does:
 
 ```sh
 spike1_lptest <pinmame64.dll> <vpm path> <set> [--seconds <n>] [--coin <switch>] [--coins <n>] [--coin-at <s>]
               [--start <switch>] [--start-at <s>] [--press <s>:<switch>[:<ms>]]... [--lamp <n>]... [--mech <n>]...
-              [--frames <dir>]
+              [--frames <dir>] [--memmap <platform.json> <map.json> [--states <s>]] [--read-memory <address>:<bytes>]...
 ```
 
 The vpm path holds `roms/` and `nvram/`; the times are seconds of a running machine, and the
@@ -171,7 +188,10 @@ a lamp's level as it changes, `--mech` a mech's `GetMech()` value (Slimer is mec
 leaves `HandleMechanics` at its default, as a table does), `--frames` saves the DMD and the video
 displays as `display<n>_<second>.png`, each second's last frame, and the library's "Average FPS"
 line at the end gives the frame rate. `SPIKE1_LOG` passes the subsystem's log on, from a libpinmame
-built with `SPIKE1_DEBUG` (see Diagnostics below).
+built with `SPIKE1_DEBUG` (see Diagnostics below). `--memmap` hands the library a memory map (see
+Memory maps below) and reads the plugin-bus states it makes of it every `--states` seconds, as a
+plugin does - the tool is the plugin host - printing those that changed; `--read-memory` prints
+bytes of the game's memory through `PinmameReadMainCPUMemory` as they change.
 
 ## Devices (`spike1_devices.*`)
 
@@ -538,6 +558,30 @@ model takes it for a program with `node_query_t()` and `nodemap_init()` (`elg_*`
   off the way the mains would (`spike1_pinmame_power_down()`): the line sense reads 0 V, the game's
   line-sense thread sends itself SIGPWR, its handler wakes the power-loss thread, which commits and
   syncs - about 170 ms of emulated time.
+- **Memory maps** (libpinmame's `PinmameSetMemMap`, VPX's `plugins\pinmame\memmaps`): a map reads
+  fixed addresses of the game's memory, which on SPIKE 1 is not CPU 0's (a placeholder) but the
+  game program's own: the driver sets `core_readMemoryHook`, which the map's states and
+  `PinmameReadMainCPUMemory` read through, and the subsystem answers from the program's image, heap
+  and mmap area (`spike1_pinmame_read_memory()`, from any thread). A program with its symbol table
+  keeps its variables at fixed addresses, so `scripts/spike1/spike1_memmap.py <program> <set>`
+  writes a map in the pinmame-nvram-maps format from the program's own tables, with nothing typed in
+  by hand: the game state (player up, ball, players, credits, game over, the scores), the high
+  scores and mode champions (`hstd_table`, `hstd_entry_table`: initials at +0, the value at +0x18),
+  every adjustment (`adjustment_table`: 32-byte entries, +0 the value's block - an i32, then its
+  check word - and +0x18 its name in four languages) and every audit the service menu shows from a
+  count (`audit_display_table`, in the menu's order: EARNINGS AUDIT #1 is its entry 1; a block's
+  first u32 is the count). `--platform` writes the `stern-spike1` platform file, and `--free-only`
+  marks a home model that always plays free (Spider-Man The Pin). The maps read live memory, not
+  the set's `.nv` file (the machine's own NVRAM block). Checked in the
+  harness on every title with a symbol table (Ghostbusters LE/Pro, KISS LE/Pro, Game of Thrones
+  LE/Pro, Wrestlemania LE, Whoa Nellie, Primus 1.03, Pabst 1.01, Supreme, Spider-Man The Pin): a
+  2-player game with the ball keeper, every field read once a second - players, player up and ball
+  follow the game to its end, credits the coins and the starts, the audits what the run did, every
+  adjustment inside its own minimum and maximum (Wrestlemania's BONUS ADV. COUNT. INC is 0 under a
+  minimum of 1: the game's own default); on Ghostbusters LE a new Grand Champion entered at the end
+  reads back with its initials and score. Through `pinmame64.dll` (`spike1_lptest --memmap`) the
+  states follow the coins, START and the score. Heavy Metal (no symbol table) and the ELG titles (a
+  different framework) have no map.
 - **Diagnostics**: all of the logging is compiled in only with `SPIKE1_DEBUG` (`src/spike1/spike1_debug.h`;
   `-DPINMAME_SPIKE1_DEBUG=ON` in CMake, `SPIKE1_DEBUG=1` in a Visual Studio project's preprocessor
   definitions; `spike1boot` always has it), so the builds users play on spend nothing on it - they
@@ -681,7 +725,8 @@ Spider-Man The Pin's (`smancp`: SAM's `sman` and `cp`), from PinMAME's SAM sets 
 
 ## Open items
 
-1. Ball physics are the table's job (PinMAME/VPX); the harness has none, so a game stops at ball 1.
+1. Ball physics are the table's job (PinMAME/VPX); the harness has none, only its ball keeper
+   (`--balls`), which serves, launches and drains a ball on a timetable.
 2. Outputs, what is left: the extra time and switch condition some coil fires carry; command 0x43
    (coil priority, a query answered with zeros); the LCD insert's fill command, the meaning of
    its animation-status reply (answered with zeros) and of a run's loop count.

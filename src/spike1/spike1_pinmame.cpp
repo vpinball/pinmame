@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -35,6 +36,7 @@ struct machine
 };
 
 std::unique_ptr<machine> g_machine;
+std::mutex g_machine_lock; // the machine coming and going (start, stop) against spike1_pinmame_read_memory() on another thread
 #if SPIKE1_DEBUG
 bool g_log_all = false;
 #else
@@ -67,7 +69,10 @@ extern "C" {
 int spike1_pinmame_start(const char *game, const char *program, const spike1_file *files, unsigned count, const spike1_symbol *symbols,
                          const unsigned char *nvram, unsigned nvram_size, char *error, unsigned error_size)
 {
-	g_machine.reset();
+	{
+		const std::lock_guard<std::mutex> lock(g_machine_lock);
+		g_machine.reset();
+	}
 #if SPIKE1_DEBUG
 	g_log_all = std::getenv("SPIKE1_LOG") != nullptr; // SPIKE1_LOG=1: the subsystem's whole log on stderr
 #endif
@@ -105,10 +110,14 @@ int spike1_pinmame_start(const char *game, const char *program, const spike1_fil
 		if (g_log_all || line.rfind("stop:", 0) == 0 || line.rfind("nvram:", 0) == 0) std::fprintf(stderr, "[spike1] %s\n", line.c_str());
 	};
 	m->os = std::make_unique<spike1_linux>(*m->cpu, m->memory);
-	g_machine = std::move(m); // before start(): a fault during it reports through g_machine
+	{
+		const std::lock_guard<std::mutex> lock(g_machine_lock);
+		g_machine = std::move(m); // before start(): a fault during it reports through g_machine
+	}
 	std::string reason;
 	if (!g_machine->os->start(cfg, reason)) {
 		copy_text(reason, error, error_size);
+		const std::lock_guard<std::mutex> lock(g_machine_lock);
 		g_machine.reset();
 		return 0;
 	}
@@ -119,6 +128,7 @@ void spike1_pinmame_stop(void)
 {
 	if (g_machine && p2k_active_config == &g_machine->config) p2k_active_config = nullptr;
 	if (g_machine && device_t::s_machine == &g_machine->running) device_t::s_machine = nullptr;
+	const std::lock_guard<std::mutex> lock(g_machine_lock);
 	g_machine.reset();
 }
 
@@ -135,6 +145,12 @@ int spike1_pinmame_run(int cycles)
 	if (g_machine && cycles > 0 && g_machine->os->state() == spike1_linux::status::running)
 		g_machine->os->run(cycles);
 	return cycles;
+}
+
+unsigned spike1_pinmame_read_memory(unsigned address, unsigned char *buffer, unsigned size)
+{
+	const std::lock_guard<std::mutex> lock(g_machine_lock);
+	return buffer && size && g_machine && g_machine->memory.read_shared(address, buffer, size) ? size : 0;
 }
 
 unsigned spike1_pinmame_nvram(unsigned char *dst, unsigned capacity)

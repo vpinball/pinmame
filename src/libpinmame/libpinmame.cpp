@@ -2091,6 +2091,11 @@ PINMAMEAPI int PinmameReadMainCPUMemory(const uint32_t address, uint8_t* const p
 		return 0;
 	}
 
+	if (core_readMemoryHook != nullptr)
+	{
+		return core_readMemoryHook(address, p_buffer, size);
+	}
+
 	for (int i = 0; i < size; i++)
 	{
 		uint8_t* p_memory = static_cast<uint8_t*>(memory_get_read_ptr(0, address + i));
@@ -3282,6 +3287,20 @@ PINMAMEAPI void PinmameSetMsgAPI(MsgPluginAPI* msgApi, unsigned int endpointId)
    msgLocals.endpointId = endpointId;
 }
 
+// Where a memory map entry's bytes are: a pointer p such that p + (offset - base) is each offset's
+// byte. CPU 0's memory as the driver maps it, or, for a driver whose CPU 0 does not hold the game's
+// memory (core_readMemoryHook: SPIKE 1), a copy of the entry's bytes, lowest to highest, taken through
+// the driver. Null when the bytes cannot be read
+static const uint8_t* MemMapEntryBase(const unsigned int base, const unsigned int lowest, const unsigned int highest, std::vector<uint8_t>& copy)
+{
+   if (core_readMemoryHook == nullptr)
+      return static_cast<const uint8_t*>(memory_find_base(0, base));
+   copy.resize((size_t)(highest - lowest) + 1);
+   if (core_readMemoryHook(lowest, copy.data(), (int)copy.size()) != (int)copy.size())
+      return nullptr;
+   return copy.data() + (base - lowest);
+}
+
 static void SetMemMapImpl(uint8_t* platform, size_t platformSize, uint8_t* game, size_t gameSize)
 {
    const auto parseAddress = [](const json& node, unsigned int& value) -> bool
@@ -3482,6 +3501,8 @@ static void SetMemMapImpl(uint8_t* platform, size_t platformSize, uint8_t* game,
          }
          if (offsets.empty())
             return;
+         const unsigned int lowest = *std::min_element(offsets.begin(), offsets.end());
+         const unsigned int highest = *std::max_element(offsets.begin(), offsets.end());
 
          unsigned int type = 0;
          std::function<void(unsigned int index, void* pResult)> getter;
@@ -3579,7 +3600,7 @@ static void SetMemMapImpl(uint8_t* platform, size_t platformSize, uint8_t* game,
                enumValues.clear();
 
             type = enumIsString ? CTLPI_STATE_FORMAT_STRING : CTLPI_STATE_FORMAT_INT64;
-            getter = [offsets, nibble, byteMask, isBCD, isBool, isReversed, isLittleEndian, valueScale, valueOffset, enumValues, enumIsString](unsigned int index, void* pResult)
+            getter = [offsets, lowest, highest, nibble, byteMask, isBCD, isBool, isReversed, isLittleEndian, valueScale, valueOffset, enumValues, enumIsString](unsigned int index, void* pResult)
                {
                   int64_t v = 0;
 
@@ -3587,7 +3608,8 @@ static void SetMemMapImpl(uint8_t* platform, size_t platformSize, uint8_t* game,
                   // FIXME We take for granted that we will read in a continuous block of RAM (dangerous)
                   // FIXME we consider that the map always apply to CPU #0 which should be true, but there may be exceptions to this
                   const unsigned int baseOffset = isLittleEndian ? offsets.back() : offsets.front();
-                  const uint8_t* const ptr = static_cast<const uint8_t*>(memory_find_base(0, baseOffset));
+                  std::vector<uint8_t> copy;
+                  const uint8_t* const ptr = MemMapEntryBase(baseOffset, lowest, highest, copy);
                   if (ptr == nullptr)
                      return;
                   if (isBCD)
@@ -3706,10 +3728,11 @@ static void SetMemMapImpl(uint8_t* platform, size_t platformSize, uint8_t* game,
                nullMode = fields["null"].get<std::string>();
 
             type = CTLPI_STATE_FORMAT_STRING;
-            getter = [offsets, byteMask, nullMode, charMap](unsigned int index, void* pResult)
+            getter = [offsets, lowest, highest, byteMask, nullMode, charMap](unsigned int index, void* pResult)
                {
                   const unsigned int baseOffset = offsets[0];
-                  const uint8_t* const ptr = static_cast<const uint8_t*>(memory_find_base(0, baseOffset));
+                  std::vector<uint8_t> copy;
+                  const uint8_t* const ptr = MemMapEntryBase(baseOffset, lowest, highest, copy);
                   if (ptr == nullptr)
                      return;
 

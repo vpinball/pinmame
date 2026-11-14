@@ -124,6 +124,114 @@ static void save_rgb(spike1_linux &os, const std::string &dir)
 	std::fclose(f);
 }
 
+// The ball keeper (--balls): the harness has no playfield, so it moves the balls a game needs to
+// get past ball 1, by the title's own switch and coil names. A fire of the trough's coil (TROUGH,
+// TROUGH EJECT; 10 ms or more, as the power-on driver check's 1 ms pulses move no ball) puts the
+// next ball in the shooter lane: the trough's last closed opto opens and
+// SHOOTER LANE closes. The game re-fires the trough until SHOOTER LANE closes (Game of Thrones:
+// every half second), so a fire with a ball already there does nothing. A fire of the auto plunger
+// launches the ball, or a player's plunge does after 1.5 s: SHOOTER LANE opens, and SHOOTER LANE
+// EXIT closes for a moment as the ball passes, where the title has one (Transformers). The ball
+// drains `drain_s` after its launch, through CENTER DRAIN where there is one, into the trough's next
+// opto. While a ball is in play, the `hit` switch closes for a moment every `every_s` (a target:
+// the game scores and runs no ball search)
+class ball_keeper
+{
+public:
+	bool setup(spike1_devices &dev, double drain_s, const std::string &hit, double every_s, std::string &error)
+	{
+		m_drain_ns = uint64_t(drain_s * 1e9);
+		m_every_ns = uint64_t(every_s * 1e9);
+		// the trough's optos in ball order (TROUGH 1 at the eject), or a single one (TROUGH OPTO)
+		std::vector<std::pair<int, const spike1_devices::switch_info *>> numbered;
+		for (const auto &s : dev.switches()) {
+			if (s.name.rfind("TROUGH ", 0) == 0 && s.name.size() > 7 && std::isdigit(uint8_t(s.name[7])) && s.name.find_first_not_of("0123456789", 7) == std::string::npos)
+				numbered.emplace_back(std::atoi(s.name.c_str() + 7), &s);
+		}
+		std::sort(numbered.begin(), numbered.end(), [](const auto &a, const auto &b) { return a.first < b.first; });
+		for (const auto &n : numbered) m_trough.push_back(n.second);
+		if (m_trough.empty())
+			if (const auto *s = dev.find_switch("TROUGH OPTO")) m_trough.push_back(s);
+		m_shooter = dev.find_switch("SHOOTER LANE");
+		m_exit = dev.find_switch("SHOOTER LANE EXIT");
+		m_drain = dev.find_switch("CENTER DRAIN");
+		m_hit = hit.empty() ? nullptr : dev.find_switch(hit);
+		for (const auto &c : dev.coils()) {
+			if (c.name == "TROUGH" || c.name == "TROUGH EJECT") m_eject = &c;
+			if (c.name == "AUTO PLUNGER" || c.name == "AUTO LAUNCH") m_launcher = &c;
+		}
+		if (m_trough.empty() || !m_shooter || !m_eject) { error = "--balls: the title has no trough optos, SHOOTER LANE or trough coil by those names"; return false; }
+		if (!hit.empty() && !m_hit) { error = "--balls: no switch named \"" + hit + "\""; return false; }
+		for (const auto *s : m_trough) if (dev.switch_closed(s->node, s->position)) m_in_trough++;
+		std::printf("balls: %u in the trough (%zu optos), eject %s, launch %s%s%s\n", m_in_trough, m_trough.size(), m_eject->name.c_str(),
+			m_launcher ? m_launcher->name.c_str() : "by plunge", m_exit ? ", SHOOTER LANE EXIT" : "", m_drain ? ", CENTER DRAIN" : "");
+		return true;
+	}
+
+	void run(spike1_devices &dev, uint64_t now)
+	{
+		const double t = double(now) / 1e9;
+		auto set = [&](const spike1_devices::switch_info *s, bool closed) { if (s) dev.set_switch(s->node, s->position, closed, now); };
+		// a fire: the coil on for 10 ms - the power-on driver check's 1 ms pulses move no ball
+		auto fired = [&](const spike1_devices::output_info *c, uint64_t &on_since, bool &counted) {
+			if (!c || !dev.coil_level(c->node, c->position, now)) { on_since = 0; counted = false; return false; }
+			if (!on_since) on_since = now;
+			if (counted || now - on_since < 10000000ull) return false;
+			return counted = true;
+		};
+		if (fired(m_eject, m_eject_since, m_eject_counted)) {
+			if (m_in_lane) std::printf("[%10.6f] balls: trough fired with a ball in the shooter lane\n", t);
+			else if (m_serve_at) std::printf("[%10.6f] balls: trough fired again before the ball reached the lane\n", t);
+			else if (!m_in_trough) std::printf("[%10.6f] balls: trough fired, empty\n", t);
+			else m_serve_at = now + 300000000ull; // the ball's way up to the lane
+		}
+		if (m_serve_at && now >= m_serve_at) {
+			m_serve_at = 0;
+			set(m_trough[--m_in_trough], false);
+			set(m_shooter, true);
+			m_in_lane = true;
+			m_lane_since = now;
+			std::printf("[%10.6f] balls: one to the shooter lane, %u left in the trough\n", t, m_in_trough);
+		}
+		const bool launched = fired(m_launcher, m_launcher_since, m_launcher_counted);
+		if (m_in_lane && (launched || now - m_lane_since >= 1500000000ull)) {
+			m_in_lane = false;
+			set(m_shooter, false);
+			if (m_exit) m_exit_at = now + 100000000ull;
+			m_drains.push_back(now + m_drain_ns);
+			if (!m_next_hit) m_next_hit = now + m_every_ns;
+			std::printf("[%10.6f] balls: launched (%s), %zu in play\n", t, launched ? m_launcher->name.c_str() : "plunged", m_drains.size());
+		}
+		if (m_exit_at && now >= m_exit_at) { set(m_exit, true); m_exit_at = 0; m_exit_open_at = now + 30000000ull; }
+		if (m_exit_open_at && now >= m_exit_open_at) { set(m_exit, false); m_exit_open_at = 0; }
+		if (!m_drains.empty() && now >= m_drains.front()) {
+			m_drains.erase(m_drains.begin());
+			if (m_in_trough < m_trough.size()) set(m_trough[m_in_trough++], true);
+			if (m_drain) { set(m_drain, true); m_drain_open_at = now + 50000000ull; }
+			std::printf("[%10.6f] balls: drained, %u in the trough, %zu in play\n", t, m_in_trough, m_drains.size());
+		}
+		if (m_drain_open_at && now >= m_drain_open_at) { set(m_drain, false); m_drain_open_at = 0; }
+		if (m_drains.empty()) m_next_hit = 0;
+		else if (m_hit && m_every_ns && m_next_hit && now >= m_next_hit) {
+			set(m_hit, true);
+			m_hit_open_at = now + 30000000ull;
+			m_next_hit = now + m_every_ns;
+		}
+		if (m_hit_open_at && now >= m_hit_open_at) { set(m_hit, false); m_hit_open_at = 0; }
+	}
+
+private:
+	std::vector<const spike1_devices::switch_info *> m_trough;
+	const spike1_devices::switch_info *m_shooter = nullptr, *m_exit = nullptr, *m_drain = nullptr, *m_hit = nullptr;
+	const spike1_devices::output_info *m_eject = nullptr, *m_launcher = nullptr;
+	uint64_t m_drain_ns = 0, m_every_ns = 0;
+	unsigned m_in_trough = 0;
+	uint64_t m_eject_since = 0, m_launcher_since = 0;
+	bool m_eject_counted = false, m_launcher_counted = false, m_in_lane = false;
+	uint64_t m_serve_at = 0, m_lane_since = 0, m_exit_at = 0, m_exit_open_at = 0, m_drain_open_at = 0, m_next_hit = 0, m_hit_open_at = 0;
+	std::vector<uint64_t> m_drains; // when each ball in play drains
+};
+
 // Outside the CPU's fast windows: a file view the memory holds beyond them (the bus context), or a fault
 static u32 unmapped_read(void *ctx, offs_t addr, u32)
 {
@@ -141,6 +249,10 @@ int main(int argc, char **argv)
 	std::string display_link;
 	std::vector<uint8_t> video_key;
 	std::vector<std::pair<uint32_t, uint32_t>> peeks;
+	double peek_every = 0.0;
+	// --balls <drain after s>[:<switch>[:<every s>]]: the ball keeper above
+	double balls_drain_s = 0.0, balls_every_s = 0.0;
+	std::string balls_hit;
 	struct poke { double at; uint32_t addr; uint8_t value; bool done; };
 	std::vector<poke> pokes;
 	std::string state_dir, files_dir;
@@ -227,6 +339,18 @@ int main(int argc, char **argv)
 		else if (arg == "--peek") { // <address>:<bytes> of guest memory, printed at the end
 			const std::string v = next();
 			peeks.emplace_back(uint32_t(std::strtoul(v.c_str(), nullptr, 0)), uint32_t(std::strtoul(v.substr(v.find(':') + 1).c_str(), nullptr, 0)));
+		}
+		else if (arg == "--peek-every") peek_every = std::atof(next().c_str()); // the --peek ranges every s seconds too
+		else if (arg == "--balls") {
+			const std::string v = next();
+			const size_t a = v.find(':');
+			balls_drain_s = std::atof(v.c_str());
+			if (a != std::string::npos) {
+				const size_t b = v.find(':', a + 1);
+				balls_hit = v.substr(a + 1, b == std::string::npos ? std::string::npos : b - a - 1);
+				balls_every_s = b == std::string::npos ? 5.0 : std::atof(v.c_str() + b + 1);
+			}
+			if (balls_drain_s <= 0) { std::fprintf(stderr, "--balls takes <drain after s>[:<switch>[:<every s>]]\n"); return 2; }
 		}
 		else if (arg == "--poke") { // <seconds>:<hex address>:<hex byte>, written into guest memory then (for experiments)
 			poke p{};
@@ -322,6 +446,15 @@ int main(int argc, char **argv)
 		if (watched.size() == before) { std::fprintf(stderr, "no LED named \"%s\"\n", w.c_str()); return 2; }
 	}
 	std::vector<int> led_was(watched.size(), -1);
+	ball_keeper keeper;
+	if (balls_drain_s > 0 && !keeper.setup(linux_os.devices(), balls_drain_s, balls_hit, balls_every_s, error)) { std::fprintf(stderr, "%s\n", error.c_str()); return 2; }
+	auto print_peeks = [&]() {
+		for (const auto &pk : peeks) {
+			std::printf("peek %08x:", pk.first);
+			for (uint32_t i = 0; i < pk.second; i += 4) { uint32_t w = 0; memory.read(pk.first + i, &w, 4); std::printf(" %08x", w); }
+			std::printf("\n");
+		}
+	};
 
 	FILE *dump = node_dump.empty() ? nullptr : std::fopen(node_dump.c_str(), "w");
 	FILE *reads = reads_path.empty() ? nullptr : std::fopen(reads_path.c_str(), "w");
@@ -347,6 +480,7 @@ int main(int argc, char **argv)
 	uint64_t next_insert_ns = insert_every > 0 ? uint64_t(insert_every * 1e9) : UINT64_MAX;
 	uint64_t next_lcd_ns = lcd_every > 0 ? uint64_t(lcd_every * 1e9) : UINT64_MAX;
 	uint64_t next_rgb_ns = rgb_every > 0 ? uint64_t(rgb_every * 1e9) : UINT64_MAX;
+	uint64_t next_peek_ns = peek_every > 0 ? uint64_t(peek_every * 1e9) : UINT64_MAX;
 	while (linux_os.run(slice) == spike1_linux::status::running && linux_os.now_ns() < uint64_t(seconds * 1e9)) {
 		const double now_s = double(linux_os.now_ns()) / 1e9;
 		for (auto &p : presses) {
@@ -366,6 +500,12 @@ int main(int argc, char **argv)
 				linux_os.devices().set_switch(s->node, s->position, !linux_os.devices().switch_closed(s->node, s->position), linux_os.now_ns());
 				std::printf("[%10.6f] switch %s %s\n", now_s, s->name.c_str(), linux_os.devices().switch_closed(s->node, s->position) ? "closed" : "opened");
 			}
+		}
+		if (balls_drain_s > 0) keeper.run(linux_os.devices(), linux_os.now_ns());
+		if (linux_os.now_ns() >= next_peek_ns) {
+			std::printf("[%10.6f] peeks\n", now_s);
+			print_peeks();
+			next_peek_ns += uint64_t(peek_every * 1e9);
 		}
 		if (show_outputs) {
 			const auto &coils = linux_os.devices().coils();
@@ -434,11 +574,7 @@ int main(int argc, char **argv)
 				lit += " " + l.name + (level < 255 ? " (" + std::to_string(level * 100 / 255) + "%)" : "") + ",";
 		std::printf("LEDs lit at the end:%s\n", lit.empty() ? " none" : lit.substr(0, lit.size() - 1).c_str());
 	}
-	for (const auto &pk : peeks) {
-		std::printf("peek %08x:", pk.first);
-		for (uint32_t i = 0; i < pk.second; i += 4) { uint32_t w = 0; memory.read(pk.first + i, &w, 4); std::printf(" %08x", w); }
-		std::printf("\n");
-	}
+	print_peeks();
 	{
 		// switched off like a machine: the game commits what it keeps in memory first
 		if (linux_os.state() == spike1_linux::status::running) linux_os.power_down(5000000000ull, int(cfg.clock_hz / 100));

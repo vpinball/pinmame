@@ -780,6 +780,13 @@ static void spike1_map_switches(void)
   if (locals.startSw < 0) locals.startSw = spike1_pinmame_find_switch("START"); /* the ELG titles' name */
 }
 
+/* The game's memory, for libpinmame's memory maps and PinmameReadMainCPUMemory: the game program's
+   variables are in the subsystem's memory, not CPU 0's (core_readMemoryHook) */
+static int spike1_readMemory(UINT32 address, UINT8 *buffer, int size)
+{
+  return size > 0 ? (int)spike1_pinmame_read_memory(address, buffer, (unsigned)size) : 0;
+}
+
 static MACHINE_INIT(spike1)
 {
   spike1_file files[SPIKE1_MAXFILES];
@@ -827,6 +834,7 @@ static MACHINE_INIT(spike1)
     return;
   }
   locals.running = 1;
+  core_readMemoryHook = spike1_readMemory;
   if (inMemory) {
     logerror("SPIKE 1: %s is held in memory, not mapped from disk: a set's zip maps only what it stores uncompressed\n", inMemory);
     usrintf_showmessage_secs(10, "SPIKE 1: %s is held in memory, not mapped from disk (a compressed zip?)", inMemory);
@@ -868,6 +876,7 @@ static MACHINE_STOP(spike1)
   locals.running = 0;
   core_swChangedHook = NULL;
   spike1_pinmame_stop();
+  core_readMemoryHook = NULL; /* after the stop: a read meanwhile finds no machine and gets nothing */
 }
 
 /* The block is the machine's own (see spike1_linux::nvram()) and its size changes as the game
