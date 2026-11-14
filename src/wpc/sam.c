@@ -33,6 +33,7 @@
 #include <stdlib.h> // strtoul()
 #include "driver.h"
 #include "core.h"
+#include "snd_cmd.h"
 #include "sim.h"
 #include "vpintf.h"
 #include "video.h"
@@ -1330,7 +1331,52 @@ static PORT_WRITE32_START(sam_writeport)
 	{ 0x00,0xFF, sam_port_w },
 PORT_END
 
+/* The game plays a sound by calling one routine with the number of the sound call in R0; the call
+   table (20 byte records, the number is the record) tells which samples that call picks from.
+   Nothing else in the machine carries that number: the ARM mixes every voice itself and only
+   the finished stereo stream reaches PinMAME. So the routine is found in the program by its
+   code, in the 1 MB that is copied to address 0 and runs from there: it checks R0 against the
+   number of calls, then indexes the table with the sequence
+
+     ADD Rd, R0, R0, LSL #2   ;  ADD Rx, Rbase, Rd, LSL #2   ;  LDR Ry, [Rx, #8]
+
+   (an older routine of the same shape only counts the samples of a call, and saves fewer
+   registers). Of every SAM program tried, the one with this sequence under a prologue that
+   pushes six registers or more is the routine that plays the call. */
+static void sam_soundCall(unsigned int r0) {
+	snd_cmd_log(0, r0 & 0xffff);
+}
+
+static UINT32 sam_findSoundCall(void) {
+	const UINT8 *rom = memory_region(REGION_USER1);
+	UINT32 i, j;
+	if (!rom) return 0;
+	for (i = 0; i + 12 <= 0x100000; i += 4) {
+		UINT32 a = rom[i] | (rom[i+1] << 8) | (rom[i+2] << 16) | ((UINT32)rom[i+3] << 24);
+		UINT32 b, c, rd, rx;
+		if ((a & 0xFFFF0FFF) != 0xE0800100) continue;            /* ADD Rd, R0, R0, LSL #2 */
+		rd = (a >> 12) & 0xF;
+		b = rom[i+4] | (rom[i+5] << 8) | (rom[i+6] << 16) | ((UINT32)rom[i+7] << 24);
+		if ((b & 0xFFF00FF0) != 0xE0800100 || (b & 0xF) != rd) continue; /* ADD Rx, Rbase, Rd, LSL #2 */
+		rx = (b >> 12) & 0xF;
+		c = rom[i+8] | (rom[i+9] << 8) | (rom[i+10] << 16) | ((UINT32)rom[i+11] << 24);
+		if ((c & 0xFFF00FFF) != 0xE5900008 || ((c >> 16) & 0xF) != rx) continue; /* LDR Ry, [Rx, #8] */
+		for (j = i; j > 0 && i - j < 400 * 4; j -= 4) {          /* back to STMFD SP!, {..., LR} */
+			UINT32 w = rom[j] | (rom[j+1] << 8) | (rom[j+2] << 16) | ((UINT32)rom[j+3] << 24);
+			if ((w & 0xFFFF4000) == 0xE92D4000) {
+				int n = 0, k;
+				for (k = 0; k < 13; k++) n += (w >> k) & 1;
+				if (n >= 6) return j;
+				break;
+			}
+		}
+	}
+	return 0;
+}
+
 static MACHINE_INIT(sam) {
+	UINT32 soundCall = sam_findSoundCall();
+	at91_set_pc_hook(soundCall, sam_soundCall);
 	at91_set_ram_pointers(sam_reset_ram, sam_page0_ram);
 	at91_set_transmit_serial(sam_nodebus_transmit);
 #ifdef SAM_USE_JIT
@@ -1343,6 +1389,8 @@ static MACHINE_INIT(sam) {
 		// range, to JIT everything EXCEPT one or more suspect regions. Sources: the single
 		// at91jitxlo/xhi pair, plus a hex "lo-hi,lo-hi,..." list in at91jitexcl
 		at91_clear_jit_exclude();
+		if (soundCall)
+			at91_add_jit_exclude((int)(soundCall & ~0xf), (int)((soundCall & ~0xf) + 0x20)); // the interpreter has to see its first instruction
 		if ((int)options.at91jitxlo != (int)options.at91jitxhi)
 			at91_add_jit_exclude((int)options.at91jitxlo, (int)options.at91jitxhi);
 		{
