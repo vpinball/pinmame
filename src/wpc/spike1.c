@@ -54,8 +54,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 #if HAS_SPIKE1
+
+#ifdef LIBPINMAME
+extern void libpinmame_log_error(const char* format, ...);
+#endif
+
+/* What stops the game or keeps it from starting: on PinMAME's screen, and in the log of a libpinmame host (VPX's plugin), which does not show that screen */
+static void spike1_problem(int seconds, const char *format, ...)
+{
+  char text[512];
+  va_list arg;
+  va_start(arg, format);
+  vsnprintf(text, sizeof(text), format, arg);
+  va_end(arg);
+  usrintf_showmessage_secs(seconds, "%s", text);
+#ifdef LIBPINMAME
+  libpinmame_log_error("%s", text);
+#else
+  logerror("%s\n", text);
+#endif
+}
 
 #define SPIKE1_REGION     REGION_USER1 /* the game folder's files, mapped from the set on disk (ROMREGION_MAPPED) */
 #define SPIKE1_AUDIO_RATE 44100        /* the stream's rate until the game sets /dev/i2s to its own */
@@ -453,7 +474,7 @@ static INTERRUPT_GEN(spike1_vblank)
 #endif
     if (!locals.warned && !spike1_pinmame_running(reason, sizeof(reason))) {
       locals.warned = 1;
-      usrintf_showmessage_secs(30, "SPIKE 1: the game program stopped: %s", reason);
+      spike1_problem(30, "SPIKE 1: the game program stopped: %s", reason);
     }
   }
   core_updateSw(0); /* the flippers are the node boards' own (FLIP_SOL), see spike1_sync_io */
@@ -590,9 +611,9 @@ static void spike1_provide_video_key(void)
   found = spike1_read_video_key(name, key);
   if (found > 0 && spike1_pinmame_video_key(key)) return;
   if (found < 0)
-    usrintf_showmessage_secs(30, "SPIKE 1: %s does not hold a video key (32 hex digits)", name);
+    spike1_problem(30, "SPIKE 1: %s does not hold a video key (32 hex digits)", name);
   else
-    usrintf_showmessage_secs(30, "SPIKE 1: the LCD videos need their key: put it in %s beside the ROM set", name);
+    spike1_problem(30, "SPIKE 1: the LCD videos need their key: put it in %s beside the ROM set", name);
 }
 
 static core_tLCDLayout spike1_dmd[] = {
@@ -798,11 +819,11 @@ static MACHINE_INIT(spike1)
     }
   }
   if (missing) {
-    usrintf_showmessage_secs(30, "SPIKE 1: the ROM set's %s is not open", missing);
+    spike1_problem(30, "SPIKE 1: the ROM set's %s is not open", missing);
     return;
   }
   if (!spike1_pinmame_start(spike1_game()->folder, spike1_game()->program, files, count, spike1_game()->symbols, nvBlock, nvSize, error, sizeof(error))) {
-    usrintf_showmessage_secs(30, "SPIKE 1: the game program does not start: %s", error);
+    spike1_problem(30, "SPIKE 1: the game program does not start: %s", error);
     return;
   }
   locals.running = 1;
@@ -884,12 +905,13 @@ MACHINE_DRIVER_START(spike1)
   MDRV_PALETTE_LENGTH(SPIKE1_PEN0 + 32768)
 MACHINE_DRIVER_END
 
-/* A title with the CPU board's LCD (WWE): the DMD with the LCD below it is taller than PinMAME's default screen outside VPinMAME (320x256) */
+/* A title with the CPU board's LCD (WWE): the DMD, the LCD and the core's status display below them
+   take more rows than PinMAME's default screen outside VPinMAME (320x256) */
 MACHINE_DRIVER_START(spike1_lcd)
   MDRV_IMPORT_FROM(spike1)
-#if CORE_SCREENY < 68 + SPIKE1_LCD_HEIGHT
-  MDRV_SCREEN_SIZE(SPIKE1_LCD_WIDTH, 68 + SPIKE1_LCD_HEIGHT)
-  MDRV_VISIBLE_AREA(0, SPIKE1_LCD_WIDTH - 1, 0, 68 + SPIKE1_LCD_HEIGHT - 1)
+#if CORE_SCREENY < 68 + SPIKE1_LCD_HEIGHT + CORE_STATUSROWS
+  MDRV_SCREEN_SIZE(SPIKE1_LCD_WIDTH, 68 + SPIKE1_LCD_HEIGHT + CORE_STATUSROWS)
+  MDRV_VISIBLE_AREA(0, SPIKE1_LCD_WIDTH - 1, 0, 68 + SPIKE1_LCD_HEIGHT + CORE_STATUSROWS - 1)
 #endif
 MACHINE_DRIVER_END
 
@@ -1750,7 +1772,7 @@ ROM_START(wwe_133h)
     ROM_LOAD("pinnode-LPC1112_201-0_18_2.hex", 0xaae2e000, 0x00007dd1, CRC(c6c75408) SHA1(31efd310ff2b9790d7acb03d6f1bc422ba80bdbc))
     ROM_LOAD("pinnode-LPC1313-0_18_2.hex", 0xaae36000, 0x00009e29, CRC(f4fd14e6) SHA1(5f6b228741dd35a6a48dcbed1d6147bda8eef673))
 ROM_END
-SPIKE1_CLONEDEF(wwe, 133h, wwe_135h, wwe, "Legends of Wrestlemania Limited Edition (1.33.0)", 2015, spike1)
+SPIKE1_CLONEDEF(wwe, 133h, wwe_135h, wwe, "Legends of Wrestlemania Limited Edition (1.33.0)", 2015, spike1_lcd)
 
 ROM_START(wwe_133)
   ROM_REGION(0x54cf5000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -1815,7 +1837,7 @@ ROM_START(wwe_120h)
     ROM_LOAD("image.bin", 0x565c4000, 0x2512b5d0, CRC(ba0fc9c5) SHA1(7475085b50c82f4fe79f7989b8652fe319d48562))
     ROM_LOAD("pinnode-0_15_11.hex", 0x7b6f0000, 0x0000802a, CRC(9530d62d) SHA1(a368fc6fcfdd92439a3993951c97549fbb2f0fbd))
 ROM_END
-SPIKE1_CLONEDEF(wwe, 120h, wwe_135h, wwe, "Legends of Wrestlemania Limited Edition (1.20.0)", 2015, spike1)
+SPIKE1_CLONEDEF(wwe, 120h, wwe_135h, wwe, "Legends of Wrestlemania Limited Edition (1.20.0)", 2015, spike1_lcd)
 
 ROM_START(wwe_120)
   ROM_REGION(0x255af000, SPIKE1_REGION, ROMREGION_MAPPED)
@@ -1864,7 +1886,7 @@ ROM_START(wwe_119h)
     ROM_LOAD("image.bin", 0x565aa000, 0x2512b5d0, CRC(d39341b0) SHA1(5f02e69a73cbf4e7b7caf6498e2885d868de106a))
     ROM_LOAD("pinnode-0_15_7.hex", 0x7b6d6000, 0x00007dd9, CRC(6873c641) SHA1(16719e683ec70c6b2a616745b5978e54254d8177))
 ROM_END
-SPIKE1_CLONEDEF(wwe, 119h, wwe_135h, wwe, "Legends of Wrestlemania Limited Edition (1.19.0)", 2015, spike1)
+SPIKE1_CLONEDEF(wwe, 119h, wwe_135h, wwe, "Legends of Wrestlemania Limited Edition (1.19.0)", 2015, spike1_lcd)
 
 ROM_START(wwe_119)
   ROM_REGION(0x25595000, SPIKE1_REGION, ROMREGION_MAPPED)

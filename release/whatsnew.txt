@@ -54,7 +54,8 @@ Get rid of BASS external dependency (used for internal AltSound mode 1 support) 
 *** CORE/CPU ***
 Added Pinball 2000 emulation. It works in principle, but the CPU is clocked way too low (0.33x) for performance reasons (for now)! Still, it seems to work reasonably well, most likely as the graphics/video part is not emulated cycle-accurate and thus much faster than the clock rate implies
 Added Spooky Pinball Pinheck emulation
-Added Stern SPIKE 1 emulation (not fully emulated low level, also employs higher level system call emulation; also exclusively featured in 64bit builds, due to the asset size (for now))
+Added Stern SPIKE 1 emulation (not fully emulated low level, also employs higher level system call emulation). Due to the asset size (up to 1.8 GB),
+ 32bit windows builds only run the smaller titles (Transformers, Avengers, Supreme, Spider-Man, Whoa Nellie; others as the host's memory allows), and error/report on a set too large to load
 Added Atari 4x4 emulation (incl. both POKEYs for sound, displays, lamps, solenoids and a preliminary simulator). The playfield is only partly known, so switch and lamp names come from the pencilled factory diagram and the ROM
 Added Recreativos Franco emulation (Super Star), including improved i8085 emulation
 Added Recel System III emulation, every known game: Poker Plus, Fair Fight, Mr. Evil, Alaska (Interflip), Hot & Cold and Screech (both Inder), Mr. Doom, Cavalier, SwashBuckler, Don Quijote and Torneo on the 256-byte PROM,
@@ -239,7 +240,7 @@ Arena (rev. 2) (most likely official, but unreleased so far, makes it the newest
 Atlantis (rev. 3 Tournament MOD v3931)
 Bad Cats LF-1 (French)
 Bad Cats (The Cat's Meow) (MOD 1.2 & 1.3)
-Bike Race (V4.1) (V4.1, press start MOD, free play)
+Bike Race (V4.1) (V4.1, press start MOD, free play) (V4.1, press start MOD, free play, English)
 Corvette LA-2
 Cue Ball Wizard (Spanish / Vifico license)
 Diner LA-4 (Fixed Right Ramp MOD)

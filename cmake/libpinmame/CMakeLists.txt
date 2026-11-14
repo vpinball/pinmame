@@ -686,6 +686,7 @@ set(PINMAME_SOURCES
    src/wpc/sims/s11/prelim/eatpm.c
    src/wpc/sims/s7/full/bk.c
    src/wpc/sims/s7/full/tmfnt.c
+   src/wpc/sims/sleic/bikerace.c
    src/wpc/sims/sleic/iomoon.c
    src/wpc/slalom.c
    src/wpc/sleic.c
@@ -932,7 +933,7 @@ if(TARGET pinmame_static)
 endif()
 
 # --- Stern Spike 1 subsystem (src/spike1)
-# On by default in 64-bit builds; -DPINMAME_SPIKE1=OFF leaves neither the driver nor its CPU registered. After the
+# On by default; -DPINMAME_SPIKE1=OFF leaves neither the driver nor its CPU registered. After the
 # Pinball 2000 subsystem, whose MAME compatibility layer it shares - see cmake/spike1.cmake
 include(${CMAKE_SOURCE_DIR}/cmake/spike1.cmake)
 if(TARGET pinmame_shared)

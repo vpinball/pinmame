@@ -84,6 +84,7 @@ struct rom_load_data
 	UINT32 regionlength;		/* length of current region */
 
 	char errorbuf[4096];		/* accumulated errors */
+	int errorbuf_full;			/* errorbuf ends with "...": a line did not fit */
 	UINT8 tempbuf[65536];		/* temporary buffer */
 };
 

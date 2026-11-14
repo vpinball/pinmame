@@ -87,6 +87,25 @@ static struct {
   UINT8  n2data;
 } locals;
 
+/* Sound-3 board command, as the sound CPU reads it (port 2, three bits): it waits for the lines
+   to go idle (0), takes the next non-zero value, waits for idle again and takes a second one, then
+   plays the sound for that pair of values. The pair, high value first, is the command byte that
+   the manual command (play3s_man_w) and the AltSound packs are keyed on. The game sends it with
+   the lamp port, as a value held while the lamp column is scanned, then a short pulse
+   (0, value, 0) at the end of the cycle. Writing 0 is "idle", it is not a command by itself. */
+static void play3_sndCmd(int data) {
+  const int rising = data && !locals.sndLevel;
+  locals.sndLevel = data;
+  if (!rising)
+    return;
+  if (locals.sndCmdFirst < 0) {
+    locals.sndCmdFirst = data;
+  } else {
+    snd_cmd_log(0, (locals.sndCmdFirst << 4) | data);
+    locals.sndCmdFirst = -1;
+  }
+}
+
 static INTERRUPT_GEN(PLAYMATIC_irq1) {
   locals.vblankCount = (locals.vblankCount + 1) % 8;
   cpu_set_irq_line(PLAYMATIC_CPU, CDP1802_INPUT_LINE_INT, !locals.vblankCount ? ASSERT_LINE : CLEAR_LINE);
@@ -294,6 +313,7 @@ static WRITE_HANDLER(out2_n) {
         sndbrd_0_ctrl_w(0, data & 0x70);
       } else if (core_gameData->hw.soundBoard == SNDBRD_PLAY3) {
         if (locals.cpuType < 2) {
+          play3_sndCmd((data & 0x70) >> 4);
           sndbrd_0_data_w(0, (data & 0x70) >> 4);
           sndbrd_0_ctrl_w(0, !locals.enX);
         } else { // ENSN is never triggered on spain82, only why not? m8020_w used to fix sound for now
@@ -366,6 +386,9 @@ static void init_common(int cpuType) {
   memset(&locals, 0, sizeof locals);
   sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_CPU2), NULL, NULL);
   locals.cpuType = cpuType;
+  locals.sndCmdFirst = -1;
+  if (core_gameData->hw.soundBoard == SNDBRD_PLAY3 && cpuType < 2)
+    sndbrd_logData(0, 0); // play3_sndCmd logs the sound commands
   if (cpuType) locals.ef[3] = 1; else locals.resetDone = 1;
 }
 

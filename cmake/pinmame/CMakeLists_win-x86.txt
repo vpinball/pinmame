@@ -584,6 +584,7 @@ add_executable(pinmame WIN32
    src/wpc/sims/s11/prelim/eatpm.c
    src/wpc/sims/s7/full/bk.c
    src/wpc/sims/s7/full/tmfnt.c
+   src/wpc/sims/sleic/bikerace.c
    src/wpc/sims/sleic/iomoon.c
    src/wpc/slalom.c
    src/wpc/sleic.c
@@ -737,6 +738,7 @@ target_link_libraries(pinmame
 target_link_options(pinmame PUBLIC
    /SUBSYSTEM:CONSOLE
    /SAFESEH:NO
+   /LARGEADDRESSAWARE # 4 GB of address space on 64-bit Windows, for the mapped SPIKE 1 sets
    $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
    $<$<CONFIG:RELEASE>:/OPT:REF>
    $<$<CONFIG:RELEASE>:/OPT:ICF>
@@ -760,3 +762,9 @@ pinmame_enable_asmjit(pinmame)
 # come after set_target_properties() above - see cmake/p2k.cmake
 include(${CMAKE_SOURCE_DIR}/cmake/p2k.cmake)
 pinmame_enable_p2k(pinmame)
+
+# --- Stern SPIKE 1 subsystem (src/spike1)
+# On by default; -DPINMAME_SPIKE1=OFF leaves neither the SPIKE 1 drivers nor its CPU registered.
+# After the Pinball 2000 subsystem, whose MAME compatibility layer it shares - see cmake/spike1.cmake
+include(${CMAKE_SOURCE_DIR}/cmake/spike1.cmake)
+pinmame_enable_spike1(pinmame)

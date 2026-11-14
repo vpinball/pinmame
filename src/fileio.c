@@ -43,6 +43,14 @@
 #define FILEFLAG_NOZIP			0x20
 #define FILEFLAG_MAP			0x40
 
+/* A file to map that cannot be mapped is loaded instead, up to this size. In a 32-bit build a
+   large one is not: loaded, it takes the address space the host needs (a SPIKE 1 asset image is
+   0.1-1.8 GB), so the open fails and mame_fopen_rom_mapped() says why */
+#define MAP_LOAD_LIMIT			(sizeof(void *) > 4 ? ~(UINT64)0 : (UINT64)64 << 20)
+
+/* set by generic_fopen(): it found a file to map that it could neither map nor load */
+static int map_refused;
+
 
 #ifdef MAME_DEBUG
 #define DEBUG_COOKIE			0xbaadf00d
@@ -217,10 +225,16 @@ mame_file *mame_fopen_rom(const char *gamename, const char *filename, const char
 /* The same, but the file is mapped read-only from disk rather than loaded when the host can map
    it and the set's zip stores it uncompressed (or the set is a folder): a MAPPED_FILE, whose hash
    is only the zip directory's CRC (a folder's file has none, as it is not read). Otherwise it is
-   loaded as mame_fopen_rom() loads it */
-mame_file *mame_fopen_rom_mapped(const char *gamename, const char *filename, const char* exphash)
+   loaded as mame_fopen_rom() loads it, up to MAP_LOAD_LIMIT; *refused is set when it found the
+   file but it is over that, so it fails */
+mame_file *mame_fopen_rom_mapped(const char *gamename, const char *filename, const char* exphash, int *refused)
 {
-	return generic_fopen(FILETYPE_ROM, gamename, filename, exphash, FILEFLAG_OPENREAD | FILEFLAG_HASH | FILEFLAG_MAP);
+	mame_file *file;
+	map_refused = 0;
+	file = generic_fopen(FILETYPE_ROM, gamename, filename, exphash, FILEFLAG_OPENREAD | FILEFLAG_HASH | FILEFLAG_MAP);
+	if (refused)
+		*refused = !file && map_refused;
+	return file;
 }
 
 
@@ -909,6 +923,7 @@ static mame_file *generic_fopen(int pathtype, const char *gamename, const char *
 	for (pathindex = pathstart; pathindex != pathstop; pathindex += pathinc)
 	{
 		char name[1024];
+		int loadable;
 
 		/* ----------------- STEP 1: OPEN THE FILE RAW -------------------- */
 
@@ -923,6 +938,7 @@ static mame_file *generic_fopen(int pathtype, const char *gamename, const char *
 			compose_path(name, gamename, filename, extension);
 
 			/* a file to map rather than load: it is not read, so it has no checksum */
+			loadable = 1;
 			if (flags & FILEFLAG_MAP)
 			{
 				osd_file *f = osd_fopen(pathtype, pathindex, name, "rb");
@@ -932,13 +948,15 @@ static mame_file *generic_fopen(int pathtype, const char *gamename, const char *
 					osd_fclose(f);
 					if (map_file(pathtype, pathindex, name, 0, size, &file) == 0)
 						break;
+					if (size > MAP_LOAD_LIMIT)
+						map_refused = 1, loadable = 0;
 				}
 			}
 
 			/* if we need checksums, load it into RAM and compute it along the way */
 			if (flags & FILEFLAG_HASH)
 			{
-				if (checksum_file(pathtype, pathindex, name, &file.data, &file.length, file.hash) == 0)
+				if (loadable && checksum_file(pathtype, pathindex, name, &file.data, &file.length, file.hash) == 0)
 				{
 					file.type = RAM_FILE;
 					break;
@@ -1014,17 +1032,19 @@ static mame_file *generic_fopen(int pathtype, const char *gamename, const char *
 					int err;
 
 					/* an entry the zip stores uncompressed, to map rather than load: its checksum is
-					   the zip directory's CRC. A compressed one is loaded below */
+					   the zip directory's CRC. A compressed one is loaded below, up to MAP_LOAD_LIMIT */
+					loadable = 1;
 					if (flags & FILEFLAG_MAP)
 					{
 						UINT8 crcs[4];
 						UINT64 offset;
-						unsigned int length, crc = 0;
+						unsigned int length = 0, crc = 0;
+						int located;
 
 						if (hash && hash_data_extract_binary_checksum(hash, HASH_CRC, crcs) != 0)
 							crc = ((unsigned int)crcs[0] << 24) | ((unsigned int)crcs[1] << 16) | ((unsigned int)crcs[2] << 8) | (unsigned int)crcs[3];
-						if (locate_stored_zipped_file(pathtype, pathindex, name, tempname, &offset, &length, &crc) == 0 &&
-						    map_file(pathtype, pathindex, name, offset, length, &file) == 0)
+						located = locate_stored_zipped_file(pathtype, pathindex, name, tempname, &offset, &length, &crc);
+						if (located == 0 && map_file(pathtype, pathindex, name, offset, length, &file) == 0)
 						{
 							crcs[0] = (UINT8)(crc >> 24);
 							crcs[1] = (UINT8)(crc >> 16);
@@ -1034,15 +1054,17 @@ static mame_file *generic_fopen(int pathtype, const char *gamename, const char *
 							hash_data_insert_binary_checksum(file.hash, HASH_CRC, crcs);
 							break;
 						}
+						if (located != -1 && length > MAP_LOAD_LIMIT)
+							map_refused = 1, loadable = 0;
 					}
 
 					/* Try loading the file */
-					err = load_zipped_file(pathtype, pathindex, name, tempname, &file.data, &ziplength);
+					err = loadable ? load_zipped_file(pathtype, pathindex, name, tempname, &file.data, &ziplength) : -1;
 
 					/* If it failed, since this is a ZIP file, we can try to load by CRC 
 					   if an expected hash has been provided. unzip.c uses this ugly hack 
 					   of specifying the CRC as filename. */
-					if (err && hash)
+					if (err && hash && loadable)
 					{
 						char crcn[9];
 

@@ -44,7 +44,11 @@ system-call level instead.
   ELG titles' `sys_time_init()` asserts that the clock is above 0. They count all their time from
   its value then (`sys_time_get_usec()` and `sys_time_get_msec()` subtract it, and no other code
   calls `clock_gettime`; their date comes from `gettimeofday`), so any value from 1 ms on runs them
-  alike; the cards hold no log of the real one. When the program exits, the board's `game_monitor`
+  alike; the cards hold no log of the real one. The wall clock (`CLOCK_REALTIME`, `gettimeofday`,
+  `time`) starts at the host's time. The game sets it with `settimeofday` (glibc's `stime` calls it)
+  from the service menu's date and time and when a tournament starts, then writes the board's RTC
+  (`/dev/rtc`, `RTC_SET_TIME`, taken without a model); the time it sets holds until the machine
+  stops, and the next start takes the host's time again. When the program exits, the board's `game_monitor`
   (`/etc/init.d/game_monitor`: run the game, print `RESTARTING GAME`, sleep 1, run it again)
   starts it a second later as a new process: new memory, threads and open files, and the program
   loaded again. The files it wrote, the CPU board's devices, the node boards, the EEPROMs and the
@@ -419,7 +423,11 @@ model takes it for a program with `node_query_t()` and `nodemap_init()` (`elg_*`
   The loader checks each file's length, and for a zip entry the CRC its
   directory records; `-verifyroms` checks them in full. A file it cannot map - a zip that a ROM
   manager recompressed, or a host that does not map files - it loads into memory as before, and
-  the driver says so. The files are over 1 GB, so the games need a 64-bit build. `MACHINE_INIT`
+  the driver says so. A title's `image.bin` is 0.1-1.8 GB and takes that much address space, so most
+  games need a 64-bit build: a 32-bit one runs the smaller ones (Transformers, Avengers, Supreme,
+  Spider-Man, Whoa Nellie; Game of Thrones as its host leaves room) and loads no file over 64 MB that
+  it cannot map, so a larger set fails at load with `CANNOT BE MAPPED, AND IS TOO LARGE TO LOAD IN A
+  32-BIT BUILD` instead of taking the host's memory. `MACHINE_INIT`
   hands them to the subsystem (`get_mapped_rom()`), which runs the program as
   `/games/<folder>/game` and puts the clips in `video/` (a set's files sit side by side, as
   PinMAME matches a ROM by its name alone); `image.bin` and the clips are mapped into the guest

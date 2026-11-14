@@ -1426,6 +1426,7 @@ DRIVERNV(bikerace)      // 1992 - Bike Race
 DRIVERNV(bikerac2)      // 1992 - Bike Race (2-ball play)
 DRIVERNV(bikerac3)      // 1992 - Bike Race (V4.1)
 DRIVERNV(bikerc3f)      // 1992 - Bike Race (V4.1, press start MOD, free play)
+DRIVERNV(bikerc3e)      // 1992 - Bike Race (V4.1, press start MOD, free play, English)
 DRIVERNV(sleicpin)      // 1993 - Sleic Pin-Ball
 DRIVERNV(sleicpnf)      // 1993 - Sleic Pin-Ball (end-of-game scores MOD, free play)
 DRIVERNV(iomoon)        // 1994 - Io Moon

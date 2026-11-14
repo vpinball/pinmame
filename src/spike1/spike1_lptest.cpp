@@ -196,7 +196,7 @@ int PINMAMECALLBACK is_key_pressed(PINMAME_KEYCODE, void *) { return 0; }
 
 void PINMAMECALLBACK on_log(PINMAME_LOG_LEVEL level, const char *format, va_list args, void *)
 {
-	char buffer[1024];
+	char buffer[8192]; // the ROM loader's error list (up to 4 KB) comes as one message
 	std::vsnprintf(buffer, sizeof(buffer), format, args);
 	std::printf("[%7.3f] %s: %s\n", now_s(), level == PINMAME_LOG_LEVEL_ERROR ? "ERROR" : level == PINMAME_LOG_LEVEL_INFO ? "INFO" : "DEBUG", buffer);
 }
@@ -293,7 +293,16 @@ int main(int argc, char **argv)
 	for (;;) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(20));
 		if (run_at < 0.0) {
-			if (g_state != 1) { if (now_s() > 600.0) break; continue; }
+			if (g_state != 1) {
+				// Back to stopped from starting: the set did not load (the log says why)
+				if (!is_running()) {
+					std::printf("[%7.3f] stopped before running\n", now_s());
+					stop();
+					return 1;
+				}
+				if (now_s() > 600.0) break;
+				continue;
+			}
 			run_at = now_s();
 			std::printf("[%7.3f] running: hardware gen 0x%llx\n", run_at, (unsigned long long)hardware_gen());
 		}

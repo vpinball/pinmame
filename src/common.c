@@ -1112,6 +1112,32 @@ static void fill_random(UINT8 *base, UINT32 length)
 
 
 /*-------------------------------------------------
+	append_error - add a line to the accumulated
+	errors, cut short when they fill the buffer
+-------------------------------------------------*/
+
+/* A set missing altogether lists every file (a SPIKE 1 set: hundreds), more than errorbuf holds.
+   ERRORBUF_RESERVE stays free for the line display_rom_load_results() ends it with */
+#define ERRORBUF_RESERVE 128
+
+static void append_error(struct rom_load_data *romdata, const char *fmt, ...)
+{
+	const size_t len = strlen(romdata->errorbuf), room = sizeof(romdata->errorbuf) - ERRORBUF_RESERVE;
+	va_list arg;
+
+	if (romdata->errorbuf_full)
+		return;
+	va_start(arg, fmt);
+	if (vsnprintf(romdata->errorbuf + len, room - len, fmt, arg) >= (int)(room - len))
+	{
+		/* the line does not fit: the list ends with "..." instead, and takes no more */
+		strcpy(romdata->errorbuf + (len + 5 <= room ? len : room - 5), "...\n");
+		romdata->errorbuf_full = 1;
+	}
+	va_end(arg);
+}
+
+/*-------------------------------------------------
 	handle_missing_file - handles error generation
 	for missing files
 -------------------------------------------------*/
@@ -1121,21 +1147,21 @@ static void handle_missing_file(struct rom_load_data *romdata, const struct RomM
 	/* optional files are okay */
 	if (ROM_ISOPTIONAL(romp))
 	{
-		sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "OPTIONAL %-12s NOT FOUND\n", ROM_GETNAME(romp));
+		append_error(romdata, "OPTIONAL %-12s NOT FOUND\n", ROM_GETNAME(romp));
 		romdata->warnings++;
 	}
 
 	/* no good dumps are okay */
 	else if (ROM_NOGOODDUMP(romp))
 	{
-		sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "%-12s NOT FOUND (NO GOOD DUMP KNOWN)\n", ROM_GETNAME(romp));
+		append_error(romdata, "%-12s NOT FOUND (NO GOOD DUMP KNOWN)\n", ROM_GETNAME(romp));
 		romdata->warnings++;
 	}
 
 	/* anything else is bad */
 	else
 	{
-		sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "%-12s NOT FOUND\n", ROM_GETNAME(romp));
+		append_error(romdata, "%-12s NOT FOUND\n", ROM_GETNAME(romp));
 		romdata->errors++;
 	}
 }
@@ -1156,13 +1182,13 @@ static void dump_wrong_and_correct_checksums(struct rom_load_data* romdata, cons
 	found_functions = hash_data_used_functions(hash) & hash_data_used_functions(acthash);
 
 	hash_data_print(hash, found_functions, chksum);
-	sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "    EXPECTED: %s\n", chksum);
+	append_error(romdata, "    EXPECTED: %s\n", chksum);
 
 	/* We dump informations only of the functions for which MAME provided
 		a correct checksum. Other functions we might have calculated are
 		useless here */
 	hash_data_print(acthash, found_functions, chksum);
-	sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "       FOUND: %s\n", chksum);
+	append_error(romdata, "       FOUND: %s\n", chksum);
 
 	/* For debugging purposes, we check if the checksums available in the
 	   driver are correctly specified or not. This can be done by checking
@@ -1179,7 +1205,7 @@ static void dump_wrong_and_correct_checksums(struct rom_load_data* romdata, cons
 		for (i=0;i<HASH_NUM_FUNCTIONS;i++)
 			if (wrong_functions & (1<<i))
 			{
-				sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)],
+				append_error(romdata,
 					"\tInvalid %s checksum treated as 0 (check leading zeros)\n",
 					hash_function_name(1<<i));
 
@@ -1210,21 +1236,21 @@ static void verify_length_and_hash(struct rom_load_data *romdata, const char *na
 	/* verify length */
 	if (explength != actlength)
 	{
-		sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "%-12s WRONG LENGTH (expected: %08x found: %08x)\n", name, explength, actlength);
+		append_error(romdata, "%-12s WRONG LENGTH (expected: %08x found: %08x)\n", name, explength, actlength);
 		romdata->warnings++;
 	}
 
 	/* If there is no good dump known, write it */
 	if (hash_data_has_info(hash, HASH_INFO_NO_DUMP))
 	{
-			sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "%-12s NO GOOD DUMP KNOWN\n", name);
+			append_error(romdata, "%-12s NO GOOD DUMP KNOWN\n", name);
 		romdata->warnings++;
 	}
 	/* verify checksums (a file mapped from a set's folder is not read, so it has none) */
 	else if (hash_data_used_functions(acthash) && !hash_data_is_equal(hash, acthash, 0))
 	{
 		/* otherwise, it's just bad */
-		sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "%-12s WRONG CHECKSUMS:\n", name);
+		append_error(romdata, "%-12s WRONG CHECKSUMS:\n", name);
 
 		dump_wrong_and_correct_checksums(romdata, hash, acthash);
 
@@ -1233,7 +1259,7 @@ static void verify_length_and_hash(struct rom_load_data *romdata, const char *na
 	/* If it matches, but it is actually a bad dump, write it */
 	else if (hash_data_has_info(hash, HASH_INFO_BAD_DUMP))
 	{
-		sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "%-12s ROM NEEDS REDUMP\n",name);
+		append_error(romdata, "%-12s ROM NEEDS REDUMP\n",name);
 		romdata->warnings++;
 	}
 }
@@ -1366,23 +1392,30 @@ static void region_post_process(struct rom_load_data *romdata, const struct RomM
 	up the parent and loading by checksum
 -------------------------------------------------*/
 
-static int open_rom_file(struct rom_load_data *romdata, const struct RomModule *romp, int mapped)
+static int open_rom_file(struct rom_load_data *romdata, const struct RomModule *romp, int mapped, int *refused)
 {
 	const struct GameDriver *drv;
+	int refusedHere;
 
 	++romdata->romsloaded;
 
 	/* update status display */
 	if (osd_display_loading_rom_message(ROM_GETNAME(romp), romdata))
-       return 0;
+		return 0;
 
 	/* Attempt reading up the chain through the parents. It automatically also
 	   attempts any kind of load by checksum supported by the archives. */
 	romdata->file = NULL;
+	if (refused)
+		*refused = 0;
 	for (drv = Machine->gamedrv; !romdata->file && drv; drv = drv->clone_of)
 		if (drv->name && *drv->name)
-			romdata->file = mapped ? mame_fopen_rom_mapped(drv->name, ROM_GETNAME(romp), ROM_GETHASHDATA(romp))
+		{
+			romdata->file = mapped ? mame_fopen_rom_mapped(drv->name, ROM_GETNAME(romp), ROM_GETHASHDATA(romp), &refusedHere)
 			                       : mame_fopen_rom(drv->name, ROM_GETNAME(romp), ROM_GETHASHDATA(romp));
+			if (mapped && refusedHere && refused)
+				*refused = 1;
+		}
 
 	/* return the result */
 	return (romdata->file != NULL);
@@ -1664,7 +1697,7 @@ static int process_rom_entries(struct rom_load_data *romdata, const struct RomMo
 
 				/* open the file */
 				debugload("Opening ROM file: %s\n", ROM_GETNAME(romp));
-				if (!open_rom_file(romdata, romp, 0)) {
+				if (!open_rom_file(romdata, romp, 0, NULL)) {
 					handle_missing_file(romdata, romp);
 				}
 
@@ -1744,6 +1777,8 @@ static int process_mapped_entries(struct rom_load_data *romdata, const struct Ro
 	/* loop until we hit the end of this region */
 	for ( ; !ROMENTRY_ISREGIONEND(romp); romp++)
 	{
+		int refused;
+
 		/* each entry is a whole file: no fills, copies, continues or reloads */
 		if (!ROMENTRY_ISFILE(romp) || ROMENTRY_ISCONTINUE(romp + 1) || ROMENTRY_ISRELOAD(romp + 1))
 		{
@@ -1754,9 +1789,16 @@ static int process_mapped_entries(struct rom_load_data *romdata, const struct Ro
 			continue;
 
 		debugload("Opening mapped ROM file: %s\n", ROM_GETNAME(romp));
-		if (!open_rom_file(romdata, romp, 1))
+		if (!open_rom_file(romdata, romp, 1, &refused))
 		{
-			handle_missing_file(romdata, romp);
+			/* there, but neither mapped (a compressed zip, or no address space left) nor loaded: a 32-bit build loads no large file */
+			if (refused)
+			{
+				append_error(romdata, "%-12s CANNOT BE MAPPED, AND IS TOO LARGE TO LOAD IN A 32-BIT BUILD\n", ROM_GETNAME(romp));
+				romdata->errors++;
+			}
+			else
+				handle_missing_file(romdata, romp);
 			continue;
 		}
 		verify_length_and_hash(romdata, ROM_GETNAME(romp), ROM_GETLENGTH(romp), ROM_GETHASHDATA(romp));
@@ -1807,7 +1849,7 @@ static int process_disk_entries(struct rom_load_data *romdata, const struct RomM
 			source = hard_disk_open(filename, 0, NULL);
 			if (!source)
 			{
-				sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "%-12s NOT FOUND\n", filename);
+				append_error(romdata, "%-12s NOT FOUND\n", filename);
 				romdata->errors++;
 				romp++;
 				continue;
@@ -1831,14 +1873,14 @@ static int process_disk_entries(struct rom_load_data *romdata, const struct RomM
 				hash_data_insert_binary_checksum(acthash, HASH_MD5, header.md5);
 
 				/* Emit the warning to the screen */
-				sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "%-12s WRONG CHECKSUMS:\n", filename);
+				append_error(romdata, "%-12s WRONG CHECKSUMS:\n", filename);
 				dump_wrong_and_correct_checksums(romdata, ROM_GETHASHDATA(romp), acthash);
 				romdata->warnings++;
 			}
 
 			if (hash_data_used_functions(ROM_GETHASHDATA(romp)) != HASH_MD5)
 			{
-				sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "%-12s IGNORED ADDITIONAL CHECKSUM INFORMATIONS (ONLY MD5 SUPPORTED)\n",
+				append_error(romdata, "%-12s IGNORED ADDITIONAL CHECKSUM INFORMATIONS (ONLY MD5 SUPPORTED)\n",
 					filename);
 			}
 
@@ -1869,7 +1911,7 @@ static int process_disk_entries(struct rom_load_data *romdata, const struct RomM
 				err = hard_disk_create(filename, &header);
 				if (err != HDERR_NONE)
 				{
-					sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "%-12s: CAN'T CREATE DIFF FILE\n", filename);
+					append_error(romdata, "%-12s: CAN'T CREATE DIFF FILE\n", filename);
 					romdata->errors++;
 					romp++;
 					continue;
@@ -1880,7 +1922,7 @@ static int process_disk_entries(struct rom_load_data *romdata, const struct RomM
 				diff = hard_disk_open(filename, 1, source);
 				if (!diff)
 				{
-					sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "%-12s: CAN'T OPEN DIFF FILE\n", filename);
+					append_error(romdata, "%-12s: CAN'T OPEN DIFF FILE\n", filename);
 					romdata->errors++;
 					romp++;
 					continue;
@@ -1999,6 +2041,7 @@ int rom_load(const struct RomModule *romp)
 			int lastErrorCount = romdata.errors;
 			const int lastWarningCount = romdata.warnings;
 			const size_t lastErrorLen = strlen(romdata.errorbuf);
+			const int lastErrorFull = romdata.errorbuf_full;
 			if (!process_rom_entries(&romdata, region + 1))
 				return 1;
 
@@ -2007,13 +2050,14 @@ int rom_load(const struct RomModule *romp)
 				romdata.errors = lastErrorCount;
 				romdata.warnings = lastWarningCount;
 				romdata.errorbuf[lastErrorLen] = 0;
+				romdata.errorbuf_full = lastErrorFull;
 			}
 			else if ( lastErrorCount!=romdata.errors && ROMREGION_ISSOUNDONLY(region) ) {
 				// make a warning out of the error(s) for this region
 				romdata.errors = lastErrorCount;
 
 				romdata.warnings++;
-				sprintf(&romdata.errorbuf[strlen(romdata.errorbuf)], "SOUND WAS DISABLED DUE TO PROBLEMS WITH SOUND ROMS\n");
+				append_error(&romdata, "SOUND WAS DISABLED DUE TO PROBLEMS WITH SOUND ROMS\n");
 
 				// disable sound
 				Machine->sample_rate = 0;
