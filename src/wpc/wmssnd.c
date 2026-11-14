@@ -9,6 +9,7 @@
 #include "sound/dac.h"
 #include "core.h"
 #include "sndbrd.h"
+#include "snd_cmd.h"
 #include "s11.h"
 #include "wpc.h"
 #include "wmssnd.h"
@@ -2461,6 +2462,22 @@ static void dcs_dacUpdate(int num, INT16 *buffer, int length)
 /  directly.  The 8-bit sndbrd entry points below still work -- they simply
 /  forward -- so the built-in manual sound-command UI keeps functioning.
 /-------------------------------------------------------------------------*/
+/* The words the game writes to the board are framed. Once the protocol is open (ACE1, which ends
+   the boot: the words before it are the boot handshake) a sound is a request of three words, the
+   track number, the volume and pan (FF7F), the channel (8000 | channel << 7); the DCS2 control
+   commands (55AA master volume, 55AB channel volumes, 55AC pans, 55AE stop) are 55xx and one
+   parameter word. The track number of a request, the id the AltSound packs for Pinball 2000 are
+   keyed on, is logged once, as the request starts. */
+static void p2k_logRequest(UINT16 data) {
+  static int opened = 0, params = 0;
+  if (data == 0xace1) { opened = 1; params = 0; return; }
+  if (!opened) return;
+  if (params > 0) { params--; return; }
+  if ((data & 0xff00) == 0x5500) { params = 1; return; }
+  params = 2;
+  snd_cmd_log(dcslocals.brdData.boardNo, data);
+}
+
 void dcs_p2k_data_w(UINT16 data) {
   DBGLOG(("P2K data_w: %04x\n", data));
   if (dcslocals.p2k.xferState == 0) P2KTRACE(("P2K host write cmd   %04x\n", data));
@@ -2476,6 +2493,7 @@ void dcs_p2k_data_w(UINT16 data) {
   }
 #endif
   if (p2k_preprocess_write(data)) return; /* consumed by the boot-block HLE */
+  if (dcslocals.p2k.xferState == 0) p2k_logRequest(data);
   dcslocals.p2k.state = 0;                /* command sent */
   p2k_enqueue(data);
   p2k_pumpQueue();
