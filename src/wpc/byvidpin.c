@@ -109,6 +109,7 @@ static WRITE_HANDLER(byVP_CMOS_w) { byVP_CMOS[offset] = data | 0x0f; }
 
 static struct {
   int p0_a, p1_a, p1_b, p0_cb2, p1_cb2, p2_a, p2_b;// , p2_cb2;
+  int sndStb, sndLo; // sound strobe (PIA2:CB2) and the low nibble sent with its rise
   int lampadr1;
   UINT32 solenoids;
   UINT8 diagnosticLed;
@@ -233,8 +234,17 @@ static READ_HANDLER(pia2b_r) {
   return 0;
 }
 
+/* The video CPU sends a Cheap Squeak command as two nibbles on PIA2:B, framed by the sound strobe
+   (CB2): the low nibble goes out when the strobe rises, the high one when it falls again (the
+   game's boot sends 08, then 01: command 18). Log the assembled byte when the strobe falls (sound
+   command log, AltSound), not each nibble. */
 static WRITE_HANDLER(pia2cb2_w) {
   locals.diagnosticLedV |= data;
+  if (data && !locals.sndStb)
+    locals.sndLo = locals.p2_b;
+  else if (!data && locals.sndStb)
+    snd_cmd_log(0, (locals.p2_b << 4) | locals.sndLo);
+  locals.sndStb = data ? 1 : 0;
   sndbrd_0_data_w(0, locals.p2_b);
   sndbrd_0_ctrl_w(0, data);
 }
@@ -394,6 +404,7 @@ static void byVP_zeroCross(int data) {
 static MACHINE_INIT(byVP) {
   memset(&locals, 0, sizeof(locals));
   sndbrd_0_init(core_gameData->hw.soundBoard,BYVP_SCPUNO,NULL,NULL,NULL);
+  sndbrd_logData(0, 0); // pia2cb2_w logs the sound commands
   install_mem_write_handler(0,0x0200, 0x02ff, byVP_CMOS_w);
   /* init PIAs */
   pia_config(BYVP_PIA0, PIA_STANDARD_ORDERING, &piaIntf[0]);
@@ -407,6 +418,7 @@ static MACHINE_RESET(byVP)
   soundlatch_w(0, 0);
   soundlatch2_w(0, 0);
   sndbrd_0_init(core_gameData->hw.soundBoard,BYVP_SCPUNO,NULL,NULL,NULL);
+  sndbrd_logData(0, 0); // pia2cb2_w logs the sound commands
   by45_p21_w(1);
 //	pia_reset();
 //	by_vdp_interrupt(0);
