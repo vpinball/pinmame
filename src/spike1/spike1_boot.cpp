@@ -143,6 +143,9 @@ int main(int argc, char **argv)
 	std::vector<std::pair<uint32_t, uint32_t>> peeks;
 	struct poke { double at; uint32_t addr; uint8_t value; bool done; };
 	std::vector<poke> pokes;
+	// --node-frame <s>:<node>:<hex cmd and data>: a node-bus command sent to a board then, as the game would
+	struct node_frame { double at; uint8_t node; std::vector<uint8_t> bytes; bool done; };
+	std::vector<node_frame> node_frames;
 	std::string state_dir, files_dir;
 	std::vector<std::vector<uint8_t>> file_bytes;
 	// --switch <seconds>:<name>[:<ms held, default 200>]: close a switch for a while, by its name
@@ -234,6 +237,15 @@ int main(int argc, char **argv)
 			if (std::sscanf(next().c_str(), "%lf:%x:%x", &p.at, &p.addr, &value) != 3) { std::fprintf(stderr, "--poke takes <seconds>:<hex address>:<hex byte>\n"); return 2; }
 			p.value = uint8_t(value);
 			pokes.push_back(p);
+		}
+		else if (arg == "--node-frame") {
+			const std::string v = next();
+			const size_t a = v.find(':'), b = v.find(':', a + 1);
+			node_frame f{ std::atof(v.c_str()), uint8_t(std::atoi(v.c_str() + a + 1)), {}, false };
+			for (size_t k = b + 1; b != std::string::npos && k + 2 <= v.size(); k += 2)
+				f.bytes.push_back(uint8_t(std::strtoul(v.substr(k, 2).c_str(), nullptr, 16)));
+			if (a == std::string::npos || b == std::string::npos || f.bytes.empty()) { std::fprintf(stderr, "--node-frame takes <s>:<node>:<hex cmd and data>\n"); return 2; }
+			node_frames.push_back(f);
 		}
 		else { std::fprintf(stderr, "unknown argument %s\n", arg.c_str()); return 2; }
 	}
@@ -408,6 +420,13 @@ int main(int argc, char **argv)
 			save_insert(linux_os, state_dir);
 			next_insert_ns += uint64_t(insert_every * 1e9);
 		}
+		for (auto &f : node_frames)
+			if (!f.done && now_s >= f.at) {
+				f.done = true;
+				std::string note;
+				linux_os.devices().send_node_frame(f.node, f.bytes[0], f.bytes.data() + 1, uint32_t(f.bytes.size() - 1), linux_os.now_ns(), note);
+				std::printf("[%10.6f] node frame to node %u: cmd %02x, %zu bytes%s%s\n", now_s, f.node, f.bytes[0], f.bytes.size() - 1, note.empty() ? "" : " - ", note.c_str());
+			}
 		for (auto &p : pokes)
 			if (!p.done && now_s >= p.at) {
 				p.done = true;

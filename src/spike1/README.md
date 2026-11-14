@@ -141,6 +141,8 @@ prints the mechs' positions as they change),
 `--video-key <32 hex digits>` hands the game the key its LCD clips are encrypted with, `--lcd <s>`
 saves the CPU board's LCD every s seconds as a PPM file in the state directory,
 `--poke <s>:<hex address>:<hex byte>` writes a byte of guest memory then (for experiments),
+`--node-frame <s>:<node>:<hex cmd and data>` sends a board a node-bus command then as the game
+would, asking no answer (for experiments),
 `--slice <ms>` sets the emulated time per `run()` call (1 by
 default, the period PinMAME exchanges the I/O at). With `SPIKE1_NODE_STATS` set in the environment, it
 prints the node-bus frame count per command and board (and per second), and how much of the time
@@ -263,7 +265,17 @@ code (its symbols are in the program) rather than from any other emulator:
   host shows, taken every millisecond in PinMAME: a pulse that came and went between two takes
   shows at its power, and a pulse shorter than 4 ms shows nothing. That is the game's power-on driver check:
   every title but WWE fires each driver alone for 1 ms and logs its current, too short to move
-  anything (the shortest real pulse is 16 ms, Primus' slingshots).
+  anything (the shortest real pulse is 16 ms, Primus' slingshots). A second phase of time 0 is no
+  hold: the titles fire the same pulse either as `[power] [time] 00 0000` (Ghostbusters, KISS, Game
+  of Thrones) or with the second power repeating the first (`[power] [time] [power] 0000`: the other
+  titles' troughs, every coin meter, the 1-bank drop targets of Ghostbusters, KISS and Game of
+  Thrones), and never send an off after it, as a held coil would need. A fire of the coil alone
+  (`NODEBUS_CoilTrigger`) fires it as its reflex is set, as if a trigger had closed: the reflex's
+  first power for its first time, then its second power for its second time (none when that is 0);
+  checked with `--node-frame`. A fire frame can also carry more bytes after the nine (a time and a
+  switch condition, `NODEBUS_CoilFireRelease`), not modelled. In the harness no title sends either
+  form: every title at boot, in attract mode and at a game start, every title with a symbol table
+  through a 2-player game, and KISS LE through a full ball search.
 - **LEDs** (type 4, up to 96 channels a board, three for an RGB LED): `NODEBUS_SetLEDMultiple2`'s
   packed updates (command 0x80-0xBF: an index, a list or a bitmap of channels, then levels and fade
   times in compact forms; see `led_update()`). Every update in a full attract-and-play run decodes to
@@ -682,7 +694,8 @@ Spider-Man The Pin's (`smancp`: SAM's `sman` and `cp`), from PinMAME's SAM sets 
 ## Open items
 
 1. Ball physics are the table's job (PinMAME/VPX); the harness has none, so a game stops at ball 1.
-2. Outputs, what is left: the extra time and switch condition some coil fires carry; command 0x43
+2. Outputs, what is left: the extra time and switch condition a coil fire can carry (no title
+   sends one, see Coils above); command 0x43
    (coil priority, a query answered with zeros); the LCD insert's fill command, the meaning of
    its animation-status reply (answered with zeros) and of a run's loop count.
 3. Sound, what is left: the amplifier's gain steps (set through `/dev/amp`) and the center and

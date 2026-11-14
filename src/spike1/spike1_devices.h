@@ -217,6 +217,10 @@ public:
 	// failure - the moment it commits what it keeps in memory to its NVRAM files
 	void power_off() { m_power_off = true; }
 
+	// A node-bus command to a board as if the game had sent it, asking no answer (for experiments:
+	// the harness's --node-frame). Not for the ELG titles' bus
+	void send_node_frame(uint8_t node, uint8_t cmd, const uint8_t *data, uint32_t len, uint64_t now_ns, std::string &note);
+
 private:
 	// A 24xx-series serial EEPROM: a two-byte word address, then sequential bytes from there
 	struct eeprom
@@ -360,7 +364,7 @@ private:
 		bool reflex = false;
 		uint8_t trigger[3] = {}, eos = 0; // reflex switches: position | REFLEX_USED [| REFLEX_INVERT]; any trigger fires
 		uint8_t reflex_power1 = 0, reflex_power2 = 0;
-		uint32_t reflex_pulse_ms = 0, reflex_holdoff_ms = 0;
+		uint32_t reflex_pulse_ms = 0, reflex_hold_ms = 0, reflex_holdoff_ms = 0;
 		uint64_t holdoff_end_ns = 0;
 		bool trigger_was_active = false;
 		bool check = false;            // the pulse now is a driver check (coil_output())
