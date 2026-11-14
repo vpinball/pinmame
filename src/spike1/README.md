@@ -542,8 +542,10 @@ model takes it for a program with `node_query_t()` and `nodemap_init()` (`elg_*`
   Without it, a message names the file and the clips show as noise. Spider-Man's RGB matrix is its
   only display (layout `spike1_rgb`, `SPIKE1_INIT_RGB`): a 64x32 video display, display 0, in full
   colour; the set's `displayLink` goes to `spike1_pinmame_display_link()`. The ELG titles'
-  alphanumeric display is their only one: a line of 16 `CORE_SEG16S` characters (layout
-  `spike1_alnum`, `SPIKE1_INIT_ALNUM`), each segment's level (0-15) its modulated output.
+  alphanumeric display is their only one: two displays of 8 `CORE_SEG16S` characters side by side
+  (layout `spike1_alnum`, `SPIKE1_INIT_ALNUM`), player 1's on the left and player 2's on the right -
+  the game writes one line of 16 and keeps each player to its half ("PLAYER 1PLAYER 2", then each
+  score right-aligned in its 8) - each segment's level (0-15) its modulated output.
 - **Sound**: a stereo stream from the device model's samples, at the rate the game sets on
   `/dev/i2s` (Ghostbusters 44.1 kHz, Whoa Nellie 24 kHz); the mixer resamples it. The machine makes
   samples in time slices, and in about half of the stream's updates it had fewer ready than the
