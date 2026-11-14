@@ -195,7 +195,14 @@ code (its symbols are in the program) rather than from any other emulator:
 - **Node bus** (`/dev/ttyS4`): the game's own `NODEBUS_TransferMessage` framing. The board list comes
   from the title's `node_board_table`; each board's identity (firmware version, NXP part ID,
   checksum) from the firmware image the game itself loaded for it, so validation passes with no
-  forcing. Modelled: poll, bridge version/status/state, GetVersion, GetStatus (frame counts),
+  forcing. GetFullBoardID's first four bytes are the board's part number: on the newer SDKs a
+  `node_board_table` entry's word at +12 holds the bus address over the board type the title
+  expects there, an index into `node_board_type_table` (20-byte entries, the part number at +4:
+  520693600 for 520-6936-00); the game keeps it in its board block and finds the type from it
+  (`sys_node_board_type_get_from_part_number`) to choose the board's firmware image. Ghostbusters
+  LE: 520-5319 at node 1, 520-8454 (node4) at 4, 520-6985 at 8 and 9, 520-5329 (coil4node) at 10,
+  520-6976 at 12, 520-6988 (lcdnode) at 24. Wrestlemania and Spider-Man The Pin, whose tables hold
+  the address alone, keep a made-up part number. Modelled: poll, bridge version/status/state, GetVersion, GetStatus (frame counts),
   GetBootStatus, GetFullBoardID, GetChecksum, GetInputState, LCD insert info, and the outputs
   below. Other queries are answered with zeros and logged once; other commands are logged once.
   A board counts time in ticks at the rate its GetVersion reports (1000 Hz here); the game

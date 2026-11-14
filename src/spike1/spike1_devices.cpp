@@ -567,8 +567,14 @@ int32_t spike1_devices::rgb_write(uint32_t buf, uint32_t len, uint64_t now_ns, u
 // the game writes it, not when the frame's last byte has reached it
 
 // The title's boards, from its node_board_table: {entries, count, entry size}, each entry's
-// fourth word holding the bus address - in its upper half on newer SDKs (address << 16 | devices),
-// the whole word on the oldest
+// fourth word holding the bus address - in its upper half on newer SDKs (address << 16 | the
+// board type the title expects there), the whole word on the oldest. On the newer SDKs the type
+// indexes node_board_type_table, 20-byte entries with the board's part number at +4 (520693600 for
+// 520-6936-00): what a board answers GetFullBoardID with, so the game's
+// sys_node_board_type_get_from_part_number finds the type again. Ghostbusters LE: CABINET
+// (node 1) type 4, 520-5319 pinnode; TROUGH and PF1 (8, 9) type 6, 520-6985 pinnode; PF2 (10)
+// type 9, 520-5329 coil4node; NODE 4 type 17, 520-8454 node4 - each the family of the firmware
+// image the game holds for that node.
 const std::vector<uint8_t> &spike1_devices::node_bus_nodes()
 {
 	if (m_nb_nodes_known || !m_cfg.symbol) return m_nb_nodes;
@@ -582,10 +588,15 @@ const std::vector<uint8_t> &spike1_devices::node_bus_nodes()
 		guest_read(desc[0] + i * desc[2] + 12, &raw[i], 4);
 		if (raw[i] >= 0x10000) upper = true;
 	}
+	uint32_t types[3] = {};
+	const uint32_t type_table = m_cfg.symbol("node_board_type_table");
+	const bool parts = upper && type_table && guest_read(type_table, types, 12) && types[0] && types[2] == 20;
 	for (uint32_t v : raw) {
 		const uint8_t node = uint8_t((upper ? v >> 16 : v) & 0x7f);
 		if (node && std::find(m_nb_nodes.begin(), m_nb_nodes.end(), node) == m_nb_nodes.end())
 			m_nb_nodes.push_back(node);
+		const uint32_t type = v & 0xffff;
+		if (node && parts && type && type < types[1]) guest_read(types[0] + type * 20 + 4, &m_nb_part[node], 4);
 	}
 	m_nb_nodes_known = true;
 	SPIKE1_DEBUG_ONLY(std::string list; for (uint8_t n : m_nb_nodes) list += ' ' + std::to_string(n);)
@@ -868,10 +879,13 @@ void spike1_devices::node_bus_frame(const uint8_t *frame, uint32_t len, uint64_t
 		if (data_len == sizeof(r)) { node_bus_reply(r, sizeof(r)); return; }
 		break;
 	}
-	case 0xf9: { // GetFullBoardID, in two halves: any stable, non-zero ID registers the board
+	case 0xf9: { // GetFullBoardID, in two halves: any stable, non-zero ID registers the board, and
+		// the first half's first four bytes are the board's part number (node_bus_nodes())
 		uint8_t r[16];
 		const uint8_t half = len > 4 ? frame[3] & 1 : 0;
 		for (uint32_t i = 0; i < sizeof(r); i++) r[i] = uint8_t(0x40 + node * 4 + half * 0x10 + i);
+		if (!half && node_bus_nodes().size() && m_nb_part[node])
+			for (int i = 0; i < 4; i++) r[i] = uint8_t(m_nb_part[node] >> (8 * i));
 		if (data_len == sizeof(r)) { node_bus_reply(r, sizeof(r)); return; }
 		break;
 	}
