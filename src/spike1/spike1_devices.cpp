@@ -567,8 +567,14 @@ int32_t spike1_devices::rgb_write(uint32_t buf, uint32_t len, uint64_t now_ns, u
 // the game writes it, not when the frame's last byte has reached it
 
 // The title's boards, from its node_board_table: {entries, count, entry size}, each entry's
-// fourth word holding the bus address - in its upper half on newer SDKs (address << 16 | devices),
-// the whole word on the oldest
+// fourth word holding the bus address - in its upper half on newer SDKs (address << 16 | the
+// board type the title expects there), the whole word on the oldest. On the newer SDKs the type
+// indexes node_board_type_table, 20-byte entries with the board's part number at +4 (520693600 for
+// 520-6936-00): what a board answers GetFullBoardID with, so the game's
+// sys_node_board_type_get_from_part_number finds the type again. Ghostbusters LE: CABINET
+// (node 1) type 4, 520-5319 pinnode; TROUGH and PF1 (8, 9) type 6, 520-6985 pinnode; PF2 (10)
+// type 9, 520-5329 coil4node; NODE 4 type 17, 520-8454 node4 - each the family of the firmware
+// image the game holds for that node.
 const std::vector<uint8_t> &spike1_devices::node_bus_nodes()
 {
 	if (m_nb_nodes_known || !m_cfg.symbol) return m_nb_nodes;
@@ -582,10 +588,15 @@ const std::vector<uint8_t> &spike1_devices::node_bus_nodes()
 		guest_read(desc[0] + i * desc[2] + 12, &raw[i], 4);
 		if (raw[i] >= 0x10000) upper = true;
 	}
+	uint32_t types[3] = {};
+	const uint32_t type_table = m_cfg.symbol("node_board_type_table");
+	const bool parts = upper && type_table && guest_read(type_table, types, 12) && types[0] && types[2] == 20;
 	for (uint32_t v : raw) {
 		const uint8_t node = uint8_t((upper ? v >> 16 : v) & 0x7f);
 		if (node && std::find(m_nb_nodes.begin(), m_nb_nodes.end(), node) == m_nb_nodes.end())
 			m_nb_nodes.push_back(node);
+		const uint32_t type = v & 0xffff;
+		if (node && parts && type && type < types[1]) guest_read(types[0] + type * 20 + 4, &m_nb_part[node], 4);
 	}
 	m_nb_nodes_known = true;
 	SPIKE1_DEBUG_ONLY(std::string list; for (uint8_t n : m_nb_nodes) list += ' ' + std::to_string(n);)
@@ -754,6 +765,18 @@ spike1_devices::node_image spike1_devices::node_image_for(uint8_t node)
 	return img;
 }
 
+void spike1_devices::send_node_frame(uint8_t node, uint8_t cmd, const uint8_t *data, uint32_t len, uint64_t now_ns, std::string &note)
+{
+	// [0x80 | node][length - 3][cmd][data][checksum: the bytes so far sum to 0][answer length]
+	std::vector<uint8_t> frame = { uint8_t(0x80 | node), uint8_t(len + 2), cmd };
+	frame.insert(frame.end(), data, data + len);
+	uint8_t sum = 0;
+	for (uint8_t b : frame) sum += b;
+	frame.push_back(uint8_t(-sum));
+	frame.push_back(0);
+	node_bus_frame(frame.data(), uint32_t(frame.size()), now_ns, note);
+}
+
 void spike1_devices::node_bus_frame(const uint8_t *frame, uint32_t len, uint64_t now_ns, std::string &note)
 {
 	uint8_t sum = 0;
@@ -868,10 +891,13 @@ void spike1_devices::node_bus_frame(const uint8_t *frame, uint32_t len, uint64_t
 		if (data_len == sizeof(r)) { node_bus_reply(r, sizeof(r)); return; }
 		break;
 	}
-	case 0xf9: { // GetFullBoardID, in two halves: any stable, non-zero ID registers the board
+	case 0xf9: { // GetFullBoardID, in two halves: any stable, non-zero ID registers the board, and
+		// the first half's first four bytes are the board's part number (node_bus_nodes())
 		uint8_t r[16];
 		const uint8_t half = len > 4 ? frame[3] & 1 : 0;
 		for (uint32_t i = 0; i < sizeof(r); i++) r[i] = uint8_t(0x40 + node * 4 + half * 0x10 + i);
+		if (!half && node_bus_nodes().size() && m_nb_part[node])
+			for (int i = 0; i < 4; i++) r[i] = uint8_t(m_nb_part[node] >> (8 * i));
 		if (data_len == sizeof(r)) { node_bus_reply(r, sizeof(r)); return; }
 		break;
 	}
@@ -1820,6 +1846,16 @@ void spike1_devices::coil_pulse(uint8_t node, uint8_t index, uint8_t power1, uin
 
 void spike1_devices::coil_fire(uint8_t node, const uint8_t *data, uint32_t len, uint64_t now_ns, std::string &note)
 {
+	// The short form, [coil] (the game's NODEBUS_CoilTrigger): the board fires the coil as its
+	// reflex (0x41) sets it, as if a trigger switch had closed - its first power for its first time,
+	// then its second power for its second time (none when that is 0). No title sends it in the
+	// harness; Spike 2's boards run it so (Rush's held gate)
+	if (len == 1 && data[0] < COILS_PER_NODE && m_coil[node][data[0]].reflex_pulse_ms) {
+		const coil &c = m_coil[node][data[0]];
+		coil_pulse(node, data[0], c.reflex_power1, c.reflex_pulse_ms, c.reflex_hold_ms ? c.reflex_power2 : 0, c.reflex_hold_ms, now_ns);
+		SPIKE1_DEBUG_ONLY(if (tracing()) note = "node bus: node " + std::to_string(node) + " coil " + std::to_string(data[0]) + " fires as its reflex is set";)
+		return;
+	}
 	if (len < 9 || data[0] >= COILS_PER_NODE) { SPIKE1_DEBUG_ONLY(note = "node bus: node " + std::to_string(node) + " coil fire not understood: " + bytes_hex(data, len);) return; }
 	coil_pulse(node, data[0], data[1], ticks_ms(data + 2), data[4], ticks_ms(data + 5), now_ns);
 	SPIKE1_DEBUG_ONLY(if (len > 9 && std::any_of(data + 9, data + len, [](uint8_t b) { return b != 0; }) && first_time("coil fire extras"))
@@ -1848,6 +1884,7 @@ void spike1_devices::coil_reflex(uint8_t node, const uint8_t *data, uint32_t len
 	c.reflex_power1 = data[1];
 	c.reflex_power2 = data[4];
 	c.reflex_pulse_ms = ticks_ms(data + 2);
+	c.reflex_hold_ms = ticks_ms(data + 5);
 	c.reflex_holdoff_ms = ticks_ms(data + 11);
 	c.trigger_was_active = c.reflex && reflex_triggered(node, c);
 	if (!c.reflex) c.holding = false;

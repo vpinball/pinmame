@@ -641,9 +641,13 @@ static core_tLCDLayout spike1_rgb[] = {
   {0}
 };
 
-/* The ELG titles' alphanumeric display, their only one: a line of 16 characters */
+/* The ELG titles' alphanumeric display, their only one: two displays of 8 characters side by side,
+   player 1's on the left and player 2's on the right. The game writes them as one line of 16 and
+   keeps each player to its half: "PLAYER 1PLAYER 2" at a 2-player game's start, then each score
+   right-aligned in its 8 (seen in the harness on both titles). */
 static core_tLCDLayout spike1_alnum[] = {
-  {0, 0, 0, SPIKE1_ALNUM_DIGITS, CORE_SEG16S, NULL, NULL},
+  {0, 0, 0, SPIKE1_ALNUM_DIGITS / 2, CORE_SEG16S, NULL, NULL},
+  {0, SPIKE1_ALNUM_DIGITS + 2, SPIKE1_ALNUM_DIGITS / 2, SPIKE1_ALNUM_DIGITS / 2, CORE_SEG16S, NULL, NULL},
   {0}
 };
 

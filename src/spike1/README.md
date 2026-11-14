@@ -141,6 +141,8 @@ prints the mechs' positions as they change),
 `--video-key <32 hex digits>` hands the game the key its LCD clips are encrypted with, `--lcd <s>`
 saves the CPU board's LCD every s seconds as a PPM file in the state directory,
 `--poke <s>:<hex address>:<hex byte>` writes a byte of guest memory then (for experiments),
+`--node-frame <s>:<node>:<hex cmd and data>` sends a board a node-bus command then as the game
+would, asking no answer (for experiments),
 `--peek-every <s>` prints the `--peek` ranges every s seconds as well,
 `--balls <drain after s>[:<switch>[:<every s>]]` keeps the balls (below),
 `--slice <ms>` sets the emulated time per `run()` call (1 by
@@ -215,7 +217,14 @@ code (its symbols are in the program) rather than from any other emulator:
 - **Node bus** (`/dev/ttyS4`): the game's own `NODEBUS_TransferMessage` framing. The board list comes
   from the title's `node_board_table`; each board's identity (firmware version, NXP part ID,
   checksum) from the firmware image the game itself loaded for it, so validation passes with no
-  forcing. Modelled: poll, bridge version/status/state, GetVersion, GetStatus (frame counts),
+  forcing. GetFullBoardID's first four bytes are the board's part number: on the newer SDKs a
+  `node_board_table` entry's word at +12 holds the bus address over the board type the title
+  expects there, an index into `node_board_type_table` (20-byte entries, the part number at +4:
+  520693600 for 520-6936-00); the game keeps it in its board block and finds the type from it
+  (`sys_node_board_type_get_from_part_number`) to choose the board's firmware image. Ghostbusters
+  LE: 520-5319 at node 1, 520-8454 (node4) at 4, 520-6985 at 8 and 9, 520-5329 (coil4node) at 10,
+  520-6976 at 12, 520-6988 (lcdnode) at 24. Wrestlemania and Spider-Man The Pin, whose tables hold
+  the address alone, keep a made-up part number. Modelled: poll, bridge version/status/state, GetVersion, GetStatus (frame counts),
   GetBootStatus, GetFullBoardID, GetChecksum, GetInputState, LCD insert info, and the outputs
   below. Other queries are answered with zeros and logged once; other commands are logged once.
   A board counts time in ticks at the rate its GetVersion reports (1000 Hz here); the game
@@ -283,7 +292,17 @@ code (its symbols are in the program) rather than from any other emulator:
   host shows, taken every millisecond in PinMAME: a pulse that came and went between two takes
   shows at its power, and a pulse shorter than 4 ms shows nothing. That is the game's power-on driver check:
   every title but WWE fires each driver alone for 1 ms and logs its current, too short to move
-  anything (the shortest real pulse is 16 ms, Primus' slingshots).
+  anything (the shortest real pulse is 16 ms, Primus' slingshots). A second phase of time 0 is no
+  hold: the titles fire the same pulse either as `[power] [time] 00 0000` (Ghostbusters, KISS, Game
+  of Thrones) or with the second power repeating the first (`[power] [time] [power] 0000`: the other
+  titles' troughs, every coin meter, the 1-bank drop targets of Ghostbusters, KISS and Game of
+  Thrones), and never send an off after it, as a held coil would need. A fire of the coil alone
+  (`NODEBUS_CoilTrigger`) fires it as its reflex is set, as if a trigger had closed: the reflex's
+  first power for its first time, then its second power for its second time (none when that is 0);
+  checked with `--node-frame`. A fire frame can also carry more bytes after the nine (a time and a
+  switch condition, `NODEBUS_CoilFireRelease`), not modelled. In the harness no title sends either
+  form: every title at boot, in attract mode and at a game start, every title with a symbol table
+  through a 2-player game, and KISS LE through a full ball search.
 - **LEDs** (type 4, up to 96 channels a board, three for an RGB LED): `NODEBUS_SetLEDMultiple2`'s
   packed updates (command 0x80-0xBF: an index, a list or a bitmap of channels, then levels and fade
   times in compact forms; see `led_update()`). Every update in a full attract-and-play run decodes to
@@ -543,8 +562,10 @@ model takes it for a program with `node_query_t()` and `nodemap_init()` (`elg_*`
   Without it, a message names the file and the clips show as noise. Spider-Man's RGB matrix is its
   only display (layout `spike1_rgb`, `SPIKE1_INIT_RGB`): a 64x32 video display, display 0, in full
   colour; the set's `displayLink` goes to `spike1_pinmame_display_link()`. The ELG titles'
-  alphanumeric display is their only one: a line of 16 `CORE_SEG16S` characters (layout
-  `spike1_alnum`, `SPIKE1_INIT_ALNUM`), each segment's level (0-15) its modulated output.
+  alphanumeric display is their only one: two displays of 8 `CORE_SEG16S` characters side by side
+  (layout `spike1_alnum`, `SPIKE1_INIT_ALNUM`), player 1's on the left and player 2's on the right -
+  the game writes one line of 16 and keeps each player to its half ("PLAYER 1PLAYER 2", then each
+  score right-aligned in its 8) - each segment's level (0-15) its modulated output.
 - **Sound**: a stereo stream from the device model's samples, at the rate the game sets on
   `/dev/i2s` (Ghostbusters 44.1 kHz, Whoa Nellie 24 kHz); the mixer resamples it. The machine makes
   samples in time slices, and in about half of the stream's updates it had fewer ready than the
@@ -727,7 +748,8 @@ Spider-Man The Pin's (`smancp`: SAM's `sman` and `cp`), from PinMAME's SAM sets 
 
 1. Ball physics are the table's job (PinMAME/VPX); the harness has none, only its ball keeper
    (`--balls`), which serves, launches and drains a ball on a timetable.
-2. Outputs, what is left: the extra time and switch condition some coil fires carry; command 0x43
+2. Outputs, what is left: the extra time and switch condition a coil fire can carry (no title
+   sends one, see Coils above); command 0x43
    (coil priority, a query answered with zeros); the LCD insert's fill command, the meaning of
    its animation-status reply (answered with zeros) and of a run's loop count.
 3. Sound, what is left: the amplifier's gain steps (set through `/dev/amp`) and the center and
