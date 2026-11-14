@@ -10,6 +10,7 @@
 #include "sound/discrete.h"
 #include "core.h"
 #include "sndbrd.h"
+#include "snd_cmd.h"
 #include "zac.h"
 #include "zacsnd.h"
 #include "wmssnd.h"
@@ -36,6 +37,7 @@ static struct {
   UINT32 solenoids;
   UINT32 solsmooth[ZAC_SOLSMOOTH];
   UINT16 sols2;
+  UINT8 discLines; // lines of the 1311 tone circuit (solenoids 21-24) currently on, bit 0 = 21
   int actsnd[3], actspk;
   int refresh;
   int gen;
@@ -417,8 +419,18 @@ static WRITE_HANDLER(ram1_w) {
 		else
 			coreGlobals.pulsedSolState &= ~sol;
 		core_write_pwm_output(CORE_MODOUT_SOL0 + offset, 1, data & 0x01);
-		if (core_gameData->hw.soundBoard == SNDBRD_ZAC1311 && offset > 19 && offset < 24)
-			discrete_sound_w(1 << (offset-20), data);
+		if (core_gameData->hw.soundBoard == SNDBRD_ZAC1311 && offset > 19 && offset < 24) {
+			const UINT8 line = 1 << (offset-20);
+			const UINT8 lines = data ? (locals.discLines | line) : (locals.discLines & ~line);
+			discrete_sound_w(line, data);
+			// The 1311 has no sound command: the game plays by switching the four tone lines
+			// (F, A, C', F'). Log the set of lines that are on, one byte, each time it changes
+			// (00 = all off), so AltSound is told what sounds. The discrete circuit is untouched.
+			if (lines != locals.discLines) {
+				locals.discLines = lines;
+				snd_cmd_log(0, lines);
+			}
+		}
 	} else if (offset > 0x7f && offset < 0xc0) {
 		offset -= 0x80;
 		if (data & 0x01)
