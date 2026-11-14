@@ -134,6 +134,11 @@ static WRITE_HANDLER(st300_delay_w) {
       snd_cmd_log(0, st300cmd.addr);
   }
 }
+// how the sound commands on the solenoid lines are taken, see by35_sndCmd
+#define BY35_SNDCMD_ONE    1
+#define BY35_SNDCMD_LOHI   2
+#define BY35_SNDCMD_HILO   3
+#define BY35_SNDCMD_STROBE 4
 
 static struct {
   int a0, a1, b0, b1, /*ca10,*/ ca11, ca20, ca21, cb10, /*cb11,*/ cb20, cb21;
@@ -353,6 +358,8 @@ static WRITE_HANDLER(pia1ca2_w) {
   {
     sndbrd_0_ctrl_w(0, data);
     //Note: HNK only, not for LISY at the moment
+    if (locals.sndCmdMode == BY35_SNDCMD_STROBE && data && !locals.ca21) // sound strobe rises
+      snd_cmd_log(0, locals.b1 & 0x0f);
   }
 //  ok
   if ((sb == SNDBRD_ST300V) && (data)) {
@@ -378,10 +385,9 @@ static WRITE_HANDLER(pia0ca2_w) {
      (CB2), with Sound E as bit 4
    - BY35_SNDCMD_LOHI: the -56, the Squawk & Talk, the Cheap Squeak and Nuova Bell's -51N and
      -61N read the two writes after the rise as nibbles, the low one first
-   - BY35_SNDCMD_HILO: Nuova Bell's own board reads them high nibble first (see nuova_man_w) */
-#define BY35_SNDCMD_ONE  1
-#define BY35_SNDCMD_LOHI 2
-#define BY35_SNDCMD_HILO 3
+   - BY35_SNDCMD_HILO: Nuova Bell's own board reads them high nibble first (see nuova_man_w)
+   - BY35_SNDCMD_STROBE: the Hankin board takes the nibble when its own strobe (CA2) rises, see
+     pia1ca2_w */
 static void by35_sndCmd(int data) {
   if (!locals.sndCmdWait)
     return;
@@ -438,7 +444,8 @@ static READ_HANDLER(pia1ca1_r) {
 /* PIA1:CB2-W Solenoid/Sound select */
 static WRITE_HANDLER(pia1cb2_w) {
   int sb = core_gameData->hw.soundBoard;		// ok
-  if (data && !locals.cb21) locals.sndCmdWait = (locals.sndCmdMode == BY35_SNDCMD_ONE) ? 1 : 2;
+  if (data && !locals.cb21 && locals.sndCmdMode != BY35_SNDCMD_STROBE)
+    locals.sndCmdWait = (locals.sndCmdMode == BY35_SNDCMD_ONE) ? 1 : 2;
   locals.cb21 = data;
   if (((locals.hw & BY35HW_SCTRL) == 0) && ((sb & 0xff00) != SNDBRD_ST300) && (sb != SNDBRD_ASTRO) && (sb & 0xff00) != SNDBRD_ST100)
    	// ok
@@ -688,6 +695,8 @@ static MACHINE_INIT(by35) {
       locals.sndCmdMode = BY35_SNDCMD_LOHI; break;
     case SNDBRD_NUOVA:
       locals.sndCmdMode = BY35_SNDCMD_HILO; break;
+    case SNDBRD_HANKIN:
+      locals.sndCmdMode = BY35_SNDCMD_STROBE; break;
   }
   if (locals.sndCmdMode) sndbrd_logData(0, 0);
 
