@@ -44,6 +44,10 @@
 static char debugms[] = "01234567";
 // ok
 static READ_HANDLER(snd300_r) {
+#if MC6840_SOUND
+  if (st300_mc6840_active())
+    return st300_mc6840_r(offset);
+#endif
   logerror("%04x: snd300_r adress A%c data latch %02x give %02x \n", activecpu_get_previouspc(), debugms[offset],snddatst300.ax[offset],snddatst300.axb[offset]);
   snddatst300.axb[2] = snddatst300.timer1 / 256;
   snddatst300.axb[3] = snddatst300.timer1 -  (snddatst300.axb[2] * 256);
