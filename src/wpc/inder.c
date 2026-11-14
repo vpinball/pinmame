@@ -113,6 +113,7 @@ static WRITE_HANDLER(disp2_w) {
 // external sound
 static WRITE_HANDLER(snd2_w) {
   locals.sndCmd = data;
+  snd_cmd_log(0, data); // each write is one command (the NMI makes the sound CPU read it once)
   cpu_set_nmi_line(INDER_SND_CPU, PULSE_LINE);
 }
 
@@ -267,6 +268,11 @@ static WRITE_HANDLER(disp16_w) {
 
 // sound
 static WRITE_HANDLER(snd_w) {
+  // The sound CPUs poll this latch and only take a byte while its bit 7 is set. The game rewrites
+  // the latch every pass, so log a command once, when the latch changes to a value with bit 7 set
+  // (00 releases the latch).
+  if ((data & 0x80) && data != locals.sndCmd)
+    snd_cmd_log(0, data);
   locals.sndCmd = data;
 }
 // unknown, 0x21 on game start, 0x20 on game over
