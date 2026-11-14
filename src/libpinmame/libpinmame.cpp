@@ -2055,6 +2055,15 @@ PINMAMEAPI int PinmameReadMainCPUByte(const uint32_t address, uint8_t* const p_v
 	return PinmameReadMainCPUMemory(address, p_value, 1);
 }
 
+/* Where the main CPU reads an address from: the read table first, which follows banks (Williams
+   System 7 reads 0x0000-0x00FF from a bank onto 0x1000, and the region image holds nothing there),
+   then the region image, for RAM a handler serves. */
+static const uint8_t* MainCPUReadBase(const uint32_t address)
+{
+	const uint8_t* const p_memory = static_cast<const uint8_t*>(memory_get_read_ptr(0, address));
+	return p_memory ? p_memory : static_cast<const uint8_t*>(memory_find_base(0, address));
+}
+
 /* A NULL from memory_get_read_ptr() means the read table holds a handler rather than
    a direct pointer, not that the address is unreadable at all, se.c routes all of
    Whitestar/Sega main RAM through ram_r. memory_find_base() has no bounds check. */
@@ -3587,7 +3596,7 @@ static void SetMemMapImpl(uint8_t* platform, size_t platformSize, uint8_t* game,
                   // FIXME We take for granted that we will read in a continuous block of RAM (dangerous)
                   // FIXME we consider that the map always apply to CPU #0 which should be true, but there may be exceptions to this
                   const unsigned int baseOffset = isLittleEndian ? offsets.back() : offsets.front();
-                  const uint8_t* const ptr = static_cast<const uint8_t*>(memory_find_base(0, baseOffset));
+                  const uint8_t* const ptr = MainCPUReadBase(baseOffset);
                   if (ptr == nullptr)
                      return;
                   if (isBCD)
@@ -3709,7 +3718,7 @@ static void SetMemMapImpl(uint8_t* platform, size_t platformSize, uint8_t* game,
             getter = [offsets, byteMask, nullMode, charMap](unsigned int index, void* pResult)
                {
                   const unsigned int baseOffset = offsets[0];
-                  const uint8_t* const ptr = static_cast<const uint8_t*>(memory_find_base(0, baseOffset));
+                  const uint8_t* const ptr = MainCPUReadBase(baseOffset);
                   if (ptr == nullptr)
                      return;
 
