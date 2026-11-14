@@ -130,6 +130,14 @@ Added manual sound commands (sound commander) for the Bally Cheap Squeak and Tur
 Fixed the sound command logging and altsound handling for Bally MPU-17/MPU-35 machines: it now filters only the commands the game sends to the -32/-50, -51, -56, Squawk & Talk and Cheap Squeak boards, and to Nuova Bell's -51N, -61N and own sound boards
 Fixed the sound command logging and altsound handling for Whirlwind: the bytes that drive the solenoid overlay board are no longer also logged as sound commands
 Fixed the sound command logging and altsound handling for the Bally 6803 machines: one byte per command (the one the sound strobe goes out with), not every write of port 1
+Fixed the sound command logging and altsound handling for the Bally video machines
+Fixed the sound command logging and altsound handling for Game Plan MSU-3 machines
+Fixed the sound command logging and altsound handling for Hankin machines
+Fixed the sound command logging and altsound handling for Playmatic Sound-3 (Cerberus)
+Fixed the sound command logging and altsound handling for Playmatic Zira
+Fixed the sound command logging and altsound handling for Spinball / Inder machines
+Fixed the sound command logging and altsound handling for Tecnoplay Scramble
+Fixed the sound command logging and altsound handling for Zaccaria 1311 machines
 Added sound command logging for Stern SB-300, Atari Gen1/2, Early Inder & Romstar's Goofy Hoops
 Slightly improved Williams System 3-7, 9/11 and WPC89 sound boards output (some loud sounds did clip (e.g. Addams Family))
 Improved BSMT2000 sound emulation speed a bit
