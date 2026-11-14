@@ -754,6 +754,18 @@ spike1_devices::node_image spike1_devices::node_image_for(uint8_t node)
 	return img;
 }
 
+void spike1_devices::send_node_frame(uint8_t node, uint8_t cmd, const uint8_t *data, uint32_t len, uint64_t now_ns, std::string &note)
+{
+	// [0x80 | node][length - 3][cmd][data][checksum: the bytes so far sum to 0][answer length]
+	std::vector<uint8_t> frame = { uint8_t(0x80 | node), uint8_t(len + 2), cmd };
+	frame.insert(frame.end(), data, data + len);
+	uint8_t sum = 0;
+	for (uint8_t b : frame) sum += b;
+	frame.push_back(uint8_t(-sum));
+	frame.push_back(0);
+	node_bus_frame(frame.data(), uint32_t(frame.size()), now_ns, note);
+}
+
 void spike1_devices::node_bus_frame(const uint8_t *frame, uint32_t len, uint64_t now_ns, std::string &note)
 {
 	uint8_t sum = 0;
@@ -1820,6 +1832,16 @@ void spike1_devices::coil_pulse(uint8_t node, uint8_t index, uint8_t power1, uin
 
 void spike1_devices::coil_fire(uint8_t node, const uint8_t *data, uint32_t len, uint64_t now_ns, std::string &note)
 {
+	// The short form, [coil] (the game's NODEBUS_CoilTrigger): the board fires the coil as its
+	// reflex (0x41) sets it, as if a trigger switch had closed - its first power for its first time,
+	// then its second power for its second time (none when that is 0). No title sends it in the
+	// harness; Spike 2's boards run it so (Rush's held gate)
+	if (len == 1 && data[0] < COILS_PER_NODE && m_coil[node][data[0]].reflex_pulse_ms) {
+		const coil &c = m_coil[node][data[0]];
+		coil_pulse(node, data[0], c.reflex_power1, c.reflex_pulse_ms, c.reflex_hold_ms ? c.reflex_power2 : 0, c.reflex_hold_ms, now_ns);
+		SPIKE1_DEBUG_ONLY(if (tracing()) note = "node bus: node " + std::to_string(node) + " coil " + std::to_string(data[0]) + " fires as its reflex is set";)
+		return;
+	}
 	if (len < 9 || data[0] >= COILS_PER_NODE) { SPIKE1_DEBUG_ONLY(note = "node bus: node " + std::to_string(node) + " coil fire not understood: " + bytes_hex(data, len);) return; }
 	coil_pulse(node, data[0], data[1], ticks_ms(data + 2), data[4], ticks_ms(data + 5), now_ns);
 	SPIKE1_DEBUG_ONLY(if (len > 9 && std::any_of(data + 9, data + len, [](uint8_t b) { return b != 0; }) && first_time("coil fire extras"))
@@ -1848,6 +1870,7 @@ void spike1_devices::coil_reflex(uint8_t node, const uint8_t *data, uint32_t len
 	c.reflex_power1 = data[1];
 	c.reflex_power2 = data[4];
 	c.reflex_pulse_ms = ticks_ms(data + 2);
+	c.reflex_hold_ms = ticks_ms(data + 5);
 	c.reflex_holdoff_ms = ticks_ms(data + 11);
 	c.trigger_was_active = c.reflex && reflex_triggered(node, c);
 	if (!c.reflex) c.holding = false;
