@@ -104,6 +104,8 @@ extern UINT8 debugger_focus;
 #define MAX_LINE_LENGTH 256
 #define SMDCMD_DIGITTOGGLE SMDCMD_ZERO
 
+int snd_cmd_legacy_log = 0;
+
 static int playCmd(int length, int *cmd);
 static void playNextCmd();
 static int checkName(const char *buf, const char *name);

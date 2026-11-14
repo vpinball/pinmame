@@ -39,6 +39,7 @@ extern "C" {
 #include "video.h"
 #include "audit.h"
 #include "mech.h"
+#include "snd_cmd.h"
 #include "memory.h"
 
 extern int throttle;
@@ -1390,6 +1391,24 @@ PINMAMEAPI int PinmameGetCheat()
 PINMAMEAPI void PinmameSetCheat(const int cheat)
 {
 	options.cheat = cheat;
+}
+
+/******************************************************
+ * PinmameGetLegacySoundCommandLog
+ ******************************************************/
+
+PINMAMEAPI int PinmameGetLegacySoundCommandLog()
+{
+	return snd_cmd_legacy_log;
+}
+
+/******************************************************
+ * PinmameSetLegacySoundCommandLog
+ ******************************************************/
+
+PINMAMEAPI void PinmameSetLegacySoundCommandLog(const int legacy)
+{
+	snd_cmd_legacy_log = legacy ? 1 : 0;
 }
 
 /******************************************************
