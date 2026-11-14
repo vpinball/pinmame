@@ -72,10 +72,13 @@ void spike1_memory::attach(address_space &space)
 bool spike1_memory::reset()
 {
 	bool allocated = true;
-	for (block *b : { &m_low, &m_stack, &m_kuser }) {
-		release(b->mem, b->size);
-		b->mem = allocate(b->size);
-		allocated = allocated && b->mem;
+	{
+		const std::lock_guard<std::mutex> lock(m_low_lock);
+		for (block *b : { &m_low, &m_stack, &m_kuser }) {
+			release(b->mem, b->size);
+			b->mem = allocate(b->size);
+			allocated = allocated && b->mem;
+		}
 	}
 	close_map(m_file_map);
 	m_file = block();
@@ -215,6 +218,15 @@ bool spike1_memory::read(uint32_t addr, void *dst, uint32_t len)
 	const uint8_t *p = host(addr, len, false);
 	if (!p) return false;
 	std::memcpy(dst, p, len);
+	return true;
+}
+
+bool spike1_memory::read_shared(uint32_t addr, void *dst, uint32_t len)
+{
+	const std::lock_guard<std::mutex> lock(m_low_lock);
+	const uint32_t off = addr - m_low.base;
+	if (!m_low.mem || off >= m_low.size || len > m_low.size - off) return false;
+	std::memcpy(dst, m_low.mem + off, len);
 	return true;
 }
 
