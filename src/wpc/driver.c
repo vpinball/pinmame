@@ -3455,13 +3455,15 @@ DRIVER(cp,16)           //          07/98 B Champion Pub, The (1.6)
 DRIVER(cp,16pfx)        //          03/19 B Champion Pub, The (1.6 Pinball FX)
 DRIVER(mb,05)           //WPC-565:  07/98 W Monster Bash (0.5 Prototype)
 DRIVER(mb,10)           //          07/98 W Monster Bash (1.0)
-DRIVER(mb,106)          //                               (1.06 Home version)
-DRIVER(mb,106b)         //                               (1.06b Coin Play)
+DRIVER(mb,106)          //          ??/?? W Monster Bash (1.06 Home version)
+DRIVER(mb,106b)         //          ??/?? W Monster Bash (1.06b Coin Play)
 DRIVER(cc,10)           //WPC-566:  10/98 B Cactus Canyon (1.0)
 DRIVER(cc,12)           //          02/99 B Cactus Canyon (1.2)
 DRIVER(cc,13)           //          04/99 B Cactus Canyon (1.3)
 DRIVER(cc,13k)          //                  Cactus Canyon (1.3) with real knocker
 DRIVER(cc,104)          //          11/06 B Cactus Canyon (1.04 test 0.2 (The Pinball Factory) version)
+// apparently there was a WPC 'conversion' of Capcoms BBB in the making with code fully working, but maybe all art/sound still missing
+// might have been killed off though completely during the P2K efforts
 //Test Fixtures
 DRIVER(tfa,13)          //WPC-584T: 09/91   Test fixture Alphanumeric
 DRIVER(tfdmd,l3)        //WPC-584T: 09/91   Test fixture DMD
