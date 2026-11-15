@@ -14,6 +14,13 @@ extern MACHINE_DRIVER_EXTERN(st300v);
 
 extern struct sndbrdst300 snddatst300;
 
+#include "sound/mc6840.h"
+#if MC6840_SOUND
+/* the 6840 runs in the sound stream, the MPU reads it through these */
+extern int st300_mc6840_active(void);
+extern int st300_mc6840_r(int offset);
+#endif
+
 #define VSU100_ROMREGION (REGION_CPU1+1)
 
 #define VSU100_SOUNDROM_U9(u9,chk9) \
