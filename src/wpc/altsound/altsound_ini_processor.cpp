@@ -85,6 +85,12 @@ bool AltsoundIniProcessor::parse_altsound_ini(const string& path_in)
 	record_sound_commands = (record_sound_cmds == "1");
 	ALT_INFO(0, "Parsed \"record_sound_cmds\": %s", (record_sound_commands ? "true" : "false"));
 
+	// get sound command stream flag
+	string new_sound_cmds;
+	inipp::get_value(ini.sections["system"], "new_sound_commands", new_sound_cmds);
+	new_sound_commands = (new_sound_cmds == "1");
+	ALT_INFO(0, "Parsed \"new_sound_commands\": %s", (new_sound_commands ? "true" : "false"));
+
 	// get ROM volume control flag
 	string rom_control;
 	inipp::get_value(ini.sections["system"], "rom_volume_ctrl", rom_control);
@@ -587,6 +593,14 @@ bool AltsoundIniProcessor::create_altsound_ini(const std::string& path_in)
 		";                     \"cmdlog.txt\" file is created in the \"tables\"\n"
 		";                     folder. This feature is turned off by default\n"
 		";\n"
+		"; new_sound_commands : selects the sound command stream the pack was made for.\n"
+		";                     0 (default, also if the key is missing) = the command\n"
+		";                     stream and the pairing of the bytes into 16-bit\n"
+		";                     commands that older packs were made with. 1 = only the\n"
+		";                     real sound commands of the game, one byte each, as\n"
+		";                     logged by PinMAME 3.7 and later and used by packs made\n"
+		";                     with rom2altsound. Set to 1 for such packs only\n"
+		";\n"
 		"; rom_volume_ctrl   : the AltSound processor attempts to recreate original\n"
 		";                     playback behavior using commands sent from the ROM.\n"
 		";                     This does not work in all cases, resulting in undesirable\n"
@@ -605,6 +619,7 @@ bool AltsoundIniProcessor::create_altsound_ini(const std::string& path_in)
 		"\n"
 		"[system]\n"
 		"record_sound_cmds = 0\n"
+		"new_sound_commands = 0\n"
 		"rom_volume_ctrl = 1\n"
 		"cmd_skip_count = 0\n"
 		"\n"
