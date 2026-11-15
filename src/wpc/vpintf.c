@@ -127,6 +127,30 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
 }
 
 /*-------------------------------------------
+/  highest lamp number vp_getChangedLamps can report for the running game
+/  (0 without a lamp conversion)
+/-------------------------------------*/
+int vp_getMaxLampNo(void) {
+  int maxLampNo = 0, ii, n;
+  if (!coreData || !coreData->m2lamp)
+    return 0;
+  if (coreGlobals.nLamps && (options.usemodsol & CORE_MODOUT_ENABLE_PHYSOUT_LAMPS))
+    n = coreGlobals.nLamps;
+  else {
+    const int hasSAMModulatedLeds = (core_gameData->gen & GEN_SAM) && (core_gameData->hw.lampCol > 2);
+    n = 8 * (CORE_STDLAMPCOLS + (hasSAMModulatedLeds ? 2 : core_gameData->hw.lampCol));
+    if (hasSAMModulatedLeds)
+      maxLampNo = coreGlobals.nLamps; // the modulated LEDs, reported as 81 and up
+  }
+  for (ii = 0; ii < n; ii++) {
+    const int lampNo = coreData->m2lamp((ii / 8) + 1, ii & 7);
+    if (lampNo > maxLampNo)
+      maxLampNo = lampNo;
+  }
+  return maxLampNo;
+}
+
+/*-------------------------------------------
 /  get all solenoids changed since last call
 /  returns number of changed solenoids
 /-------------------------------------*/

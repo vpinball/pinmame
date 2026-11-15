@@ -75,6 +75,12 @@ int vp_getGI(int giNo);
 int vp_getChangedLamps(vp_tChgLamps chgStat);
 
 /*-------------------------------------------
+/  highest lamp number vp_getChangedLamps can report for the running game
+/  (0 without a lamp conversion)
+/-------------------------------------*/
+int vp_getMaxLampNo(void);
+
+/*-------------------------------------------
 /  get all solenoids changed since last call
 /  returns number of changed solenoids
 /-------------------------------------*/

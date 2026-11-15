@@ -7,6 +7,9 @@ Version 3.7 (XX XXth, 2026) - ""
 ------------------------------------------------------------------------------
 - Add windows COM-API method 'PMBuildVersion' returning e.g. 30700.4711 with build number (e.g. 4711) as decimal
 
+- COM-API property 'Lamps' now also returns lamp numbers above 88 (e.g. Pinball 2000: up to 128)
+  NOTE: 'LampsState' still stops at lamp 88 (as its buffer comes without a size), so use 'Lamps', 'ChangedLamps' or 'ChangedLampsState' for these machines
+
 - AltSound:
   - Properly handle Bally MPU-17/MPU-35 machines (these send just one byte per sound command)
   - Same for all the other machines without a handling of their own (e.g. Williams System 3-9, Bally 6803, Stern MPU-100/200, Gottlieb System 1/80B/3, Zaccaria, Hankin, Alvin G., Mr. Game, Taito, Atari, ...)
