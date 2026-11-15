@@ -106,6 +106,9 @@ static struct {
   int sda;				//SDA line
   UINT8 from_8752;		//Data from the 8752
   UINT8 to_8752;		//Data to the 8752
+  int log_pos;			//Sound log: position in the message being received (0 = waiting for DA)
+  int log_len;			//Sound log: number of bytes the message announced
+  int log_msg[4];		//Sound log: the bytes of the message
 #if TEST_FROM_ROM
   void *buffTimer;
   int curr[2];			//Current position we've read from the rom
@@ -147,15 +150,14 @@ int get_rts_line_from_8752(void)
    Only the log changes; the board receives the same bytes. */
 static void capcoms_log_sound(int data)
 {
-	static int pos, len, msg[4];
 	data &= 0xff;
-	if (pos == 0) { pos = (data == 0xDA) ? 1 : 0; return; }
-	if (pos == 1) { len = data; pos = (len >= 1 && len <= 4) ? 2 : 0; return; }
-	msg[pos++ - 2] = data;
-	if (pos - 2 == len) {
-		pos = 0;
-		if (len == 4 && (msg[0] == 0x06 || msg[0] == 0x07))
-			snd_cmd_log(0, (msg[2] << 8) | msg[3]);
+	if (locals.log_pos == 0) { locals.log_pos = (data == 0xDA) ? 1 : 0; return; }
+	if (locals.log_pos == 1) { locals.log_len = data; locals.log_pos = (locals.log_len >= 1 && locals.log_len <= 4) ? 2 : 0; return; }
+	locals.log_msg[locals.log_pos++ - 2] = data;
+	if (locals.log_pos - 2 == locals.log_len) {
+		locals.log_pos = 0;
+		if (locals.log_len == 4 && (locals.log_msg[0] == 0x06 || locals.log_msg[0] == 0x07))
+			snd_cmd_log(0, (locals.log_msg[2] << 8) | locals.log_msg[3]);
 	}
 }
 
