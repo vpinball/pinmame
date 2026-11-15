@@ -8,7 +8,7 @@ static int stream[MAX_2203];
 
 static const struct YM2203interface *intf;
 
-#define YM2203_YMFM 0 // 1: the YM2203 (FM and SSG) runs on ymfm, as in MAME, 0: on the old fm.c (FM) and ay8910.c (SSG) cores
+#define YM2203_YMFM 0 // 1: the YM2203 (FM and SSG) runs on ymfm, as in MAME, 0: on the old fm.c (FM) and ay8910.c (SSG) cores //!! TODO
 
 #if YM2203_YMFM
 #include "../ext/vgm/vgmwrite.h"

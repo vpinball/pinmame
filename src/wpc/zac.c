@@ -341,7 +341,7 @@ static WRITE_HANDLER(data_port_w)
     // byte (it is the one that interrupts the TMS7000); a repeat of a command is a new pair. 3F BF is the
     // idle pair the game sends between commands.
     const double now = timer_get_time();
-    const int second = locals.sndPair && now - locals.sndTime < 0.0025 && !((data ^ locals.sndData) & 0x1F);
+    const int second = locals.sndPair && now - locals.sndTime < 0.0025 && !((data ^ locals.sndData) & 0x1F); //!! magic timing
     locals.sndTime = now;
     locals.sndData = data;
     locals.sndPair = !second;

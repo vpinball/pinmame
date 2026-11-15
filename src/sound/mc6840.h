@@ -24,7 +24,7 @@
 
 // 1: the Stern SB-300 (MP-200 games) and Game Plan MSU-1 sound boards run this 6840
 // in the sound stream (src/wpc/stsnd.c, gpsnd.c), 0: the old sample based emulation
-#define MC6840_SOUND 0
+#define MC6840_SOUND 0 //!! TODO
 
 struct mc6840_timer {
 	UINT8  cr;       /* control register */

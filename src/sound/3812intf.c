@@ -21,7 +21,7 @@
 #include "fm.h"
 #include "sound/fmopl.h"
 
-#define Y8950_YMFM 0 // 1: the Y8950 runs on ymfm, as in MAME, 0: on the old fmopl.c/ymdeltat.c core
+#define Y8950_YMFM 0 // 1: the Y8950 runs on ymfm, as in MAME, 0: on the old fmopl.c/ymdeltat.c core //!! TODO
 
 #if (HAS_YM3812_YMFM || HAS_YM3526_YMFM || Y8950_YMFM)
  #include "../ext/vgm/vgmwrite.h"

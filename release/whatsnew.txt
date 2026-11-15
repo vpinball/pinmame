@@ -133,6 +133,8 @@ Fixed the sound command logging and altsound handling for the Bally 6803 machine
 Fixed the sound command logging and altsound handling for the Bally video machines
 Fixed the sound command logging and altsound handling for Game Plan MSU-3 machines
 Fixed the sound command logging and altsound handling for Hankin machines
+Fixed the sound command logging and altsound handling for Mr. Game machines
+Added the sound command logging and altsound handling for Pinball 2000 machines
 Fixed the sound command logging and altsound handling for Playmatic Sound-3 (Cerberus)
 Fixed the sound command logging and altsound handling for Playmatic Zira
 Fixed the sound command logging and altsound handling for Spinball / Inder machines
@@ -150,7 +152,6 @@ Improved the BSMT2000 sound emulation to follow the chip's own program more clos
  - proper reset on Alvin G. sound boards: reset line is wired now, so games set up the chip's mode themselves (in practice no audible change though)
 Also added an optional low level emulation of the BSMT2000 sound chip, running the chip's own program (needs bsmt2000.bin, in bsmt2000.zip in the roms folder): enable via the 'bsmt2000_lle' setting (registry key/command line), off by default as it costs more CPU
 Further improve M114 sound core (Mr. Game)
-Added an optional MC6840 timer emulation running in the sound stream for the Stern SB-300 (MP-200 games like Meteor, Galaxy, Ali, Flight 2000) and Game Plan MSU-1 sound boards: the tones follow the chip's own counting (all counter modes, exact pitch and duty cycle) instead of looped samples, and on Stern it also needs less CPU: enable via the MC6840_SOUND define in src/sound/mc6840.h, off by default
 Fixed VGM recording for machines using OKI6295 sound
 Added VGM recording for machines using BSMT2000 sound
 Added VGM recording for machines using MSM5205/MSM6585 sound
@@ -160,7 +161,6 @@ Fixed the Alvin G. BSMT2000 sound board's diagnostic LED (blinks now)
 Fixed noise filter/pass and injection filter/pass in the Votrax/SC01 emulation, plus some minor improvements (some GTS80(A)s and Taitos)
  also added closure timing and noise balance fixes to it (measured on real SC-01-A; P, T and K release bursts restored)
 Used YMFM's OPL cores (OPL/YM3526, OPL2/YM3812, OPL3/YMF262) for a more accurate emulation (Tabart; AlvinG, JVH, Mephisto, Sleic; Lancelot)
-Added optional YMFM cores for the YM2203 (incl. its SSG) and Y8950 (Tabart Hexagone, JVH Formula 1, Joctronic Punky Willy, Tecnoplay X Force and Space Team): enable via the YM2203_YMFM define in src/sound/2203intf.c and the Y8950_YMFM define in src/sound/3812intf.c, off by default
 Credits saved, and more lamps found on Stargame games Space Ship and White Force
 Added timing accurate emulation of the 6522 VIA (Gottlieb System 3, Alvin G., JVH, Barni). On Gottlieb System 3 and Alvin G. the main CPU IRQ/NMI now come from the VIAs like on the real boards, instead of the guessed fixed rates (e.g. alpha GTS3 NMI ~1984Hz instead of 1000Hz, no more fake NMI on DMD GTS3, much less IRQ time wasted, e.g. Pistol Poker lamps no longer flicker)
  !! Note that Alvin G. sound board, Barni and JVH for now stayed on the old VIA core

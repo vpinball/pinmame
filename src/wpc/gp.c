@@ -54,7 +54,7 @@ static struct {
   UINT8 val;
   int sndCmdMode;		//The sound board takes a command as a nibble sequence (MSU-3)
   int sndCmdByte;		//Command byte assembled from the nibbles written so far
-  int sndCmdNibbles;		//Number of nibbles shifted in since the lines were idle
+  int sndCmdNibbles;	//Number of nibbles shifted in since the lines were idle
   int sndCmdLast;		//Last nibble written to the sound lines
 } locals;
 
