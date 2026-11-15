@@ -529,6 +529,26 @@ S11CS_SOUNDROM88(       "cycl_u4.l5",  CRC(d04b663b) SHA1(f54c6df08ec73b733cfeb2
 S11_ROMEND
 CORE_CLONEDEF(cycln, l1, l5, "Cyclone (L-1)", 1988, "Williams", s11_mS11BS,0)
 
+//Changes from the stock L-5 ROMs:
+// 1. The Gate Jackpot is set to 500,000 at the start of every game, for every player.
+// 2. Each player has their own Gate Jackpot. Rollover increments and jackpot
+//    collection only affect the player who is up. Each player starts at 500,000.
+// 3. The end-of-game +1,000,000 jackpot bonus is removed, so the jackpot no
+//    longer depends on credits or free play.
+// 4. Free play is the factory default setting.
+// 5. The ROM version shown on the display at power-up is "564 C-5" instead of
+//    "564 L-5". Because the version changed, the first power-up with these ROMs
+//    resets the adjustments to the factory defaults (free play on).
+// 6. The per-block ROM checksums are rebalanced so the power-up ROM test passes.
+S11_ROMSTART48(cycln,l5c,"cycl_u26.c5",CRC(33DFEEB7) SHA1(69026c27deb28a88fa91cf6f1db4679f687ddc75),
+                        "cycl_u27.c5", CRC(B68AEDB6) SHA1(afb6fcad2b63707a1d059186d57f0fcbca17f5d1))
+S11XS_SOUNDROM88(       "cycl_u21.l1", CRC(d4f69a7c) SHA1(da0ce27d92b22583be54a41fc8083cee803c987a),
+                        "cycl_u22.l1", CRC(28dc8f13) SHA1(bccce3a9b6b2f52da919c6df8db07e5e3de12657))
+S11CS_SOUNDROM88(       "cycl_u4.l5",  CRC(d04b663b) SHA1(f54c6df08ec73b733cfeb2a989e44e5c04da3d9e),
+                        "cycl_u19.l1", CRC(a20f6519) SHA1(63ded5f76133340fa31d4fe65420f4465866fb85))
+S11_ROMEND
+CORE_CLONEDEF(cycln, l5c, l5, "Cyclone (L-5C Competition MOD)", 2026, "Williams", s11_mS11BS,0)
+
 /*--------------------
 / Banzai Run 7/88
 /--------------------*/
@@ -898,6 +918,24 @@ S11CS_SOUNDROM88(       "bk2k_u4.l2",  CRC(1d87281b) SHA1(609288b017aac6ce6da871
                         "bk2k_u19.l1", CRC(58e162b2) SHA1(891f810ae18b46593f570d719f0290a1d08a1a10))
 S11_ROMEND
 CORE_CLONEDEF(bk2k,pf1,l4, "Black Knight 2000 (PF-1 Prototype French)", 1989, "Williams", s11_mS11BS,0)
+
+S11_ROMSTART48(bk2k,l4c,"bk2k_u26.l4c",CRC(B4062866) SHA1(b51e96a0a93ef9b79cdc4e685dc3d76a0cdf9ba6),
+                        "bk2k_u27.l4c",CRC(2CEBC150) SHA1(f269539a72f6943e809e89a6cc92f84b640c14ca))
+S11XS_SOUNDROM88(       "bk2k_u21.l1", CRC(08be36ad) SHA1(0f4c448e003df54ed8ccf0e0c57f6123ce1e2027),
+                        "bk2k_u22.l1", CRC(9c8becd8) SHA1(9090e8104dad63f14246caabafec428d94d5e18d))
+S11CS_SOUNDROM88(       "bk2k_u4.l2",  CRC(1d87281b) SHA1(609288b017aac6ce6da8717a35fdf87013adeb3c),
+                        "bk2k_u19.l1", CRC(58e162b2) SHA1(891f810ae18b46593f570d719f0290a1d08a1a10))
+S11_ROMEND
+CORE_CLONEDEF(bk2k,l4c,l4, "Black Knight 2000 (L-4C Competition MOD Fixed 1M jackpot)", 2026, "Williams", s11_mS11BS,0)
+
+S11_ROMSTART48(bk2k,l4c2,"bk2k_u26.l4c2",CRC(CD546561) SHA1(27cacb6defce4773388ab2d57ffa59015b1e5124),
+                        "bk2k_u27.l4c",CRC(2CEBC150) SHA1(f269539a72f6943e809e89a6cc92f84b640c14ca))
+S11XS_SOUNDROM88(       "bk2k_u21.l1", CRC(08be36ad) SHA1(0f4c448e003df54ed8ccf0e0c57f6123ce1e2027),
+                        "bk2k_u22.l1", CRC(9c8becd8) SHA1(9090e8104dad63f14246caabafec428d94d5e18d))
+S11CS_SOUNDROM88(       "bk2k_u4.l2",  CRC(1d87281b) SHA1(609288b017aac6ce6da8717a35fdf87013adeb3c),
+                        "bk2k_u19.l1", CRC(58e162b2) SHA1(891f810ae18b46593f570d719f0290a1d08a1a10))
+S11_ROMEND
+CORE_CLONEDEF(bk2k,l4c2,l4, "Black Knight 2000 (L-4C Competition MOD Per-player jackpot)", 2026, "Williams", s11_mS11BS,0)
 
 /*-----------------------
 / Police Force 9/89

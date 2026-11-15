@@ -403,7 +403,7 @@ void InitDefaultPropertyPage(HINSTANCE hInst, HWND hWnd)
 	{
 		char temp[100];
 		DWORD dwError = GetLastError();
-		sprintf(temp, "Propery Sheet Error %d %X", (int)dwError, (int)dwError);
+		sprintf(temp, "Propery Sheet Error %d 0x%X", (int)dwError, (int)dwError);
 		MessageBox(0, temp, "Error", IDOK);
 	}
 

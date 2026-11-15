@@ -712,6 +712,23 @@ CORE_CLONEDEFNV(waterwl5,waterwld,"Waterworld (rev. 5)",1995,"Gottlieb",mGTS3DMD
 
 //rev 6 exists?
 
+// Bugfix MOD
+//  Sink the Deez collect, Dry Land lit+qualified : v4 lamp stays lit, v5 lamp off, qualified kept
+//  4th map segment in mode 9 / 10                : original lamp lit, v5 lamp off ($58 kept);  mode 0 unchanged (lit)
+//  Combo path ($D660) in mode 9                  : original lamp lit, v5 off + $58 set;        mode 0 unchanged
+//  After lock-phase end / multiball end          : lamp back ON
+//  Unchanged vs v4 (identical RAM): STD collect with Dry Land off, Path B start, Deez multiball start, Dry Land start when idle.
+//  Dry Land start: starts when idle; blocked with locked balls, in mode 9 and in mode 10.
+INITGAME2(waterwl5f, DMD, FLIP4142, 4, SNDBRD_GTS3, 5)
+GTS3ROMSTART(waterwl5f,	"wwldcpu5_patched.512",CRC(A362E9E5) SHA1(c4160a5dfa3ad3844dc9facbea9d7fc9a4d1ee9e))
+GTS3_DMD512_ROMSTART(	"dsprom.bin",CRC(79164099) SHA1(fa048fb7aa91cadd6c0758c570a4c74337bd7cd5))
+GTS3SOUND32512(			"yrom1.bin", CRC(6dddce0a) SHA1(6ad9b023ba8632dda0a4e04a4f66aac52ddd3b09),
+						"drom1.bin", CRC(2a8c5d04) SHA1(1a6a698fc05a199923721e91e68aaaa8d3c6a3c2),
+						"arom1.bin", CRC(3ee37668) SHA1(9ced05b4f060568bf686974bc2472ff7c05a87c6),
+						"arom2.bin", CRC(a631bf12) SHA1(4784da1fabd2858b2c47af71784eb475cbbb4ab5))
+GTS3_ROMEND
+CORE_CLONEDEFNV(waterwl5f,waterwld,"Waterworld (rev. 5-FIX MOD)",2026,"Gottlieb",mGTS3DMDS, 0)
+
 /*-------------------------------------------------------------------
 / Mario Andretti (#747)
 /-------------------------------------------------------------------*/
