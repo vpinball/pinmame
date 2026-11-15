@@ -50,6 +50,7 @@
 #include "core.h"
 #include "sim.h"
 #include "sndbrd.h"
+#include "snd_cmd.h"
 #include "mrgame.h"
 
 //use this to comment out video and sound cpu for quicker debugging of main cpu
@@ -285,8 +286,13 @@ static WRITE16_HANDLER(sound_w) {
 
 	//Main CPU sends 3 commands, Bit 7 set->cleared->set
 	//We'll trigger the NMI on the cleared->set transition
-	if(!locals.sndstb && GET_BIT7)
+	if(!locals.sndstb && GET_BIT7) {
+		// The game writes the latch itself (sndbrd_data_w is never called), so tell AltSound:
+		// the command is the 7 low bits held while bit 7 was cleared. Logged on the strobe edge,
+		// once per command. The sound CPUs are untouched.
+		snd_cmd_log(0, locals.sndcmd & 0x7f);
 		snd_nmi(0);
+	}
 	locals.sndstb = GET_BIT7;
 }
 
