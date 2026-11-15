@@ -126,7 +126,7 @@ Rebalanced sound levels:
  and the Data East YM2151/MSM5205 board (Laser War to TMNT: music a bit louder vs. the speech/samples)
 Wired up sample rate selection for Verne's World and Jolly Park (potentially fixes some samples played)
 Fixed sound problems if a OKI6295 game is used after a OKI6376 game (e.g. GTS3 after Sleic)
-Added manual sound commands (sound commander) for the Bally Cheap Squeak and Turbo Cheap Squeak sound boards
+Added manual sound commands (sound commander) for the Bally Cheap Squeak and Turbo Cheap Squeak and Nuova Bell -51N sound boards
 Fixed the sound command logging and altsound handling for Bally MPU-17/MPU-35 machines: it now filters only the commands the game sends to the -32/-50, -51, -56, Squawk & Talk and Cheap Squeak boards, and to Nuova Bell's -51N, -61N and own sound boards
 Fixed the sound command logging and altsound handling for Whirlwind: the bytes that drive the solenoid overlay board are no longer also logged as sound commands
 Fixed the sound command logging and altsound handling for the Bally 6803 machines: one byte per command (the one the sound strobe goes out with), not every write of port 1
