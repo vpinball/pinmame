@@ -573,6 +573,139 @@ static float brown_noise(const float scale)
 }
 
 
+#if MC6840_SOUND
+/*-- Optional SB-300 emulation with an MC6840 running in the sound stream --*/
+// Enabled by MC6840_SOUND (src/sound/mc6840.h).
+// The 6840 (src/sound/mc6840.c) is clocked by the MPU's E clock and runs sample by
+// sample in a 192 kHz stream, so Q1/Q2 get the pitch and duty cycle the chip makes
+// for every mode (dual 8 bit, single shot, ...) and Q3 clocks the volume envelope
+// on its real edges. The board side is what the sample based code above does:
+// Q1 at a fixed level, Q2 and the noise through the 16 step envelope (setvol),
+// the noise filtered like the sineWaveext tables, but computed on the fly.
+// Q1/Q2 come out as +-1 squares while enabled and 0 when off, like the samples did.
+
+#include "sound/mc6840.h"
+
+#ifndef M_PI
+#define M_PI 3.1415926535897932384626433832795
+#endif
+
+#define ST300_STREAM_RATE (4*48000)
+#define ST300_PTM_CLOCK   ST300_INTCLOCK // the 6840 runs from the MPU's E clock
+#define ST300_Q1_LEVEL    0.285f         // RMS of the old Q1 table at mixer volume 70, so the Q1/Q2 balance stays the same
+#define ST300_NOISE_DIV   (ST300_STREAM_RATE/48000) // the noise tables were played at 48 kHz
+
+static struct {
+	int active;
+	int stream;
+	struct mc6840 ptm;
+	UINT32 clk_acc, clk_step; // E clocks per sample, 16.16
+	float dc_x[2], dc_y[2], dc_r;
+	INT16 noise_ring[64];
+	int noise_pos, noise_div;
+	float noise_out;
+	float vol; // envelope gain of Q2 and the noise, updated where the code above calls mixer_set_volume
+} st300ptm;
+
+static void st300_ptm_update(int param, INT16 *buffer, int length)
+{
+	float *out = (float *)buffer;
+	int i;
+	for (i = 0; i < length; i++) {
+		struct mc6840_clock_result r;
+		float q[2], vol;
+		int k, n;
+
+		st300ptm.clk_acc += st300ptm.clk_step;
+		n = st300ptm.clk_acc >> 16;
+		st300ptm.clk_acc &= 0xffff;
+		mc6840_clock(&st300ptm.ptm, n, NULL, &r);
+
+		// Q3 drives the envelope counter
+		if (r.rises[2]) {
+			for (k = 0; k < r.rises[2]; k++)
+				nextvol(0);
+			st300ptm.vol = setvol(0) * ST300_VOL * (1.f / 100.f);
+		}
+		vol = st300ptm.vol;
+
+		// average output level over the sample (Q2 = timer 2, Q1 = timer 1): +-1 while the output
+		// is enabled, 0 when it is off (as the stopped samples above), then a DC blocker for the
+		// duty cycles other than 50%
+		for (k = 0; k < 2; k++) {
+			const int t = 1 - k;
+			const float x = !(st300ptm.ptm.t[t].cr & 0x80) ? 0.f : 2.f * (n ? (float)r.high[t] / (float)n : (float)r.level[t]) - 1.f;
+			st300ptm.dc_y[k] = x - st300ptm.dc_x[k] + st300ptm.dc_r * st300ptm.dc_y[k];
+			if (fabsf(st300ptm.dc_y[k]) < 1e-12f) st300ptm.dc_y[k] = 0.f; // no denormals on idle outputs
+			st300ptm.dc_x[k] = x;
+			q[k] = st300ptm.dc_y[k];
+		}
+
+		// noise: same generator and box filter as the sineWaveext tables, at 48 kHz
+		if (++st300ptm.noise_div >= ST300_NOISE_DIV) {
+			const int j = st300loc.extfreq > 0 ? st300loc.extfreq - 1 : 0;
+			float s = white_noise(0.85f) + brown_noise(0.15f);
+			st300ptm.noise_div = 0;
+			s = (s <= -1.0f) ? -32767.f : (s >= 1.0f) ? 32767.f : s * 32767.f;
+			st300ptm.noise_pos = (st300ptm.noise_pos + 1) & 63;
+			st300ptm.noise_ring[st300ptm.noise_pos] = (INT16)s;
+			if (j == 0)
+				st300ptm.noise_out = st300ptm.noise_ring[st300ptm.noise_pos] * (1.f / 32768.f);
+			else {
+				int tmp = 0;
+				for (k = 0; k <= j * 4; k++)
+					tmp += st300ptm.noise_ring[(st300ptm.noise_pos - k) & 63];
+				tmp /= (j + 1) / 2;
+				st300ptm.noise_out = ((tmp < -32768) ? -32768 : ((tmp > 32767) ? 32767 : tmp)) * (1.f / 32768.f);
+			}
+		}
+
+		// the three channels of the sample based code, mixed here (same levels), so only one stream gets resampled
+		out[i] = q[0] * vol + q[1] * ST300_Q1_LEVEL + (st300loc.noise ? st300ptm.noise_out * vol : 0.f);
+	}
+}
+
+static int st300_ptm_start(const int *mixing_levels)
+{
+	memset(&st300ptm, 0, sizeof(st300ptm));
+	mc6840_reset(&st300ptm.ptm, NULL);
+	st300ptm.clk_step = (UINT32)(ST300_PTM_CLOCK * 65536. / ST300_STREAM_RATE + 0.5);
+	st300ptm.dc_r = (float)(1. - 2. * M_PI * 10. / ST300_STREAM_RATE); // ~10 Hz
+	st300ptm.stream = stream_init_float("MC6840", mixing_levels[0], ST300_STREAM_RATE, 0, st300_ptm_update, 1);
+	if (st300ptm.stream < 0)
+		return 1;
+	// keep the mixer channel numbering of the sample based code (3 channels): the VSU-1000 volume is set on channel 9
+	{
+		const int spare = mixer_allocate_channels(2, mixing_levels);
+		mixer_set_name(spare, "MC6840 (unused)");
+		mixer_set_name(spare + 1, "MC6840 (unused)");
+	}
+	st300loc.channel = st300ptm.stream;
+	st300ptm.active = 1;
+	return 0;
+}
+
+static void st300_ptm_w(int offset, int data)
+{
+	stream_update(st300ptm.stream, 0);
+	mc6840_w(&st300ptm.ptm, offset, data);
+	if (offset == 1 && !(data & 0x80))
+		st300loc.volnr = 0; // Q2 output off: Q2 and the noise go quiet on the next Q3 clock, as above
+}
+
+int st300_mc6840_active(void)
+{
+	return st300ptm.active;
+}
+
+int st300_mc6840_r(int offset)
+{
+	stream_update(st300ptm.stream, 0);
+	return mc6840_r(&st300ptm.ptm, offset);
+}
+#endif
+
+
 static int st300_sh_start(const struct MachineSound *msound) {
 	static const int mixing_levels[3] = {30,30,30};
 	int i,j;
@@ -584,6 +717,10 @@ static int st300_sh_start(const struct MachineSound *msound) {
 		snddatst300.axb[i] = 0;
 		snddatst300.c0 = 0;
 	}
+
+#if MC6840_SOUND
+	return st300_ptm_start(mixing_levels);
+#endif
 
 	// very very rough approximation sample table for what the real noise generator is doing (not that important though, noise is very very rarely triggered on the tables):
 	// original noise sample table in [0]
@@ -637,6 +774,9 @@ static int st300_sh_start(const struct MachineSound *msound) {
 }
 
 static void st300_sh_stop(void) {
+#if MC6840_SOUND
+	st300ptm.active = 0;
+#endif
 	samples_sh_stop();
 }
 
@@ -652,6 +792,19 @@ static struct {
 
 
 static WRITE_HANDLER(st300_ctrl_w) {
+#if MC6840_SOUND
+	if (!st300loc.voiceSw && st300ptm.active) {
+		stream_update(st300ptm.stream, 0);
+		snddatst300.c0 = data;
+		st300loc.extfreq = ((data & 0xf0) >> 4) + 1;
+		st300loc.noise   =  (data & 0x08) >> 3;
+		st300loc.conx = (data & 0x04) >> 2;
+		st300loc.altx = (data & 0x02) >> 1;
+		st300loc.dir  =  data & 0x01;
+		startvol(0);
+		st300ptm.vol = setvol(0) * ST300_VOL * (1.f / 100.f);
+	} else
+#endif
 	if (!st300loc.voiceSw) {
 //	cycles for 4536
 //	c0 -> 00 -> 2 clock cycles
@@ -697,6 +850,12 @@ static WRITE_HANDLER(st300_ctrl_w) {
 
 static WRITE_HANDLER(st300_data_w) {
 	int w;
+#if MC6840_SOUND
+	if (st300ptm.active) {
+		st300_ptm_w(data, snddatst300.ax[data]);
+		return;
+	}
+#endif
 	if (data == 3) {
 		int w1;
 		st300loc.timlat1 = snddatst300.ax[data] + snddatst300.ax[data-1] * 256;
@@ -899,3 +1058,8 @@ MACHINE_DRIVER_START(st300v)
 #endif
 	MDRV_SOUND_ADD_TAG("S14001A", S14001A, s14001a_interface)
 MACHINE_DRIVER_END
+
+#if MC6840_SOUND
+// the MC6840 core is compiled here (also used by gpsnd.c), so the build scripts need no change
+#include "sound/mc6840.c"
+#endif

@@ -963,6 +963,19 @@ void time_fence_exit()
 #else
 
 #include <semaphore.h>
+#include <time.h>
+// sem_timedwait's deadline is on CLOCK_REALTIME, so a step back of the wall clock (e.g. NTP, a cabinet
+// without a clock battery) would lengthen the wait by the step. sem_clockwait takes the deadline
+// on CLOCK_MONOTONIC (glibc 2.30+, Android API 30+); elsewhere (musl) the wait stays on CLOCK_REALTIME
+#if (defined(__GLIBC__) && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 30))) || (defined(__ANDROID_API__) && __ANDROID_API__ >= 30)
+ #define TIME_FENCE_MONOTONIC 1
+ #if defined(__GLIBC__) && !defined(__USE_GNU)
+  // glibc only declares it under _GNU_SOURCE
+  extern int sem_clockwait(sem_t *sem, clockid_t clock, const struct timespec *abstime);
+ #endif
+#else
+ #define TIME_FENCE_MONOTONIC 0
+#endif
 static sem_t time_fence_semaphore;
 static int time_fence_initialized = 0;
 static int max(int a, int b)
@@ -989,11 +1002,21 @@ void time_fence_post()
 
 int time_fence_wait(double secs)
 {
-	int ns = max((int)ceil(secs * 1000000000.), 1);
-	struct timespec wait_length;
-	wait_length.tv_sec = 0ul;
-	wait_length.tv_nsec = ns;
-	return time_fence_is_supported() && (sem_timedwait(&time_fence_semaphore, &wait_length) == 0);
+	// sem_clockwait and sem_timedwait take an absolute deadline, not a duration
+	struct timespec deadline;
+#if TIME_FENCE_MONOTONIC
+	clock_gettime(CLOCK_MONOTONIC, &deadline);
+#else
+	clock_gettime(CLOCK_REALTIME, &deadline);
+#endif
+	const long long ns = (long long)deadline.tv_nsec + (long long)max((int)ceil(secs * 1000000000.), 1);
+	deadline.tv_sec += (time_t)(ns / 1000000000LL);
+	deadline.tv_nsec = (long)(ns % 1000000000LL);
+#if TIME_FENCE_MONOTONIC
+	return time_fence_is_supported() && (sem_clockwait(&time_fence_semaphore, CLOCK_MONOTONIC, &deadline) == 0);
+#else
+	return time_fence_is_supported() && (sem_timedwait(&time_fence_semaphore, &deadline) == 0);
+#endif
 }
 
 void time_fence_exit()

@@ -80,7 +80,7 @@ typedef struct _mame_file mame_file;
 int mame_faccess(const char *filename, int filetype);
 mame_file *mame_fopen(const char *gamename, const char *filename, int filetype, int openforwrite);
 mame_file *mame_fopen_rom(const char *gamename, const char *filename, const char* exphash);
-mame_file *mame_fopen_rom_mapped(const char *gamename, const char *filename, const char* exphash);
+mame_file *mame_fopen_rom_mapped(const char *gamename, const char *filename, const char* exphash, int *refused);
 UINT32 mame_fread(mame_file *file, void *buffer, size_t length);
 UINT32 mame_fwrite(mame_file *file, const void *buffer, size_t length);
 UINT32 mame_fread_swap(mame_file *file, void *buffer, size_t length);

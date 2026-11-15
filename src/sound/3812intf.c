@@ -21,7 +21,9 @@
 #include "fm.h"
 #include "sound/fmopl.h"
 
-#if (HAS_YM3812_YMFM || HAS_YM3526_YMFM)
+#define Y8950_YMFM 0 // 1: the Y8950 runs on ymfm, as in MAME, 0: on the old fmopl.c/ymdeltat.c core
+
+#if (HAS_YM3812_YMFM || HAS_YM3526_YMFM || Y8950_YMFM)
  #include "../ext/vgm/vgmwrite.h"
  // unified ymfm OPL glue (see ext/ymfm/ymfm_opl_pinmame_specific.h)
  void* ymfm_opl_create(int chiptype, int baseindex, void(*irqhandler)(int irq), double baseclock, void(*callback)(int param));
@@ -32,10 +34,13 @@
  unsigned char ymfm_opl_read(void* obj, unsigned int offset);
  void ymfm_opl_write(void* obj, unsigned int offset, unsigned char data);
  void ymfm_opl_generate(void* obj, INT16** output, unsigned int numsamples, unsigned int numch);
+ void ymfm_opl_set_external(void* obj, const unsigned char* rom, unsigned int romsize, int chip,
+	mem_read_handler io_r, mem_write_handler io_w, mem_read_handler kbd_r, mem_write_handler kbd_w);
  // chip-type enum, mirror of ymfm_opl_pinmame_specific.h
  #define YMFM_OPL_YM3526 0
  #define YMFM_OPL_YM3812 1
  #define YMFM_OPL_YMF262 2
+ #define YMFM_OPL_Y8950  3
 #endif
 
 
@@ -510,6 +515,79 @@ static void TimerHandler_8950(int c,double period)
 }
 
 
+#if Y8950_YMFM
+static void *chip_8950[MAX_8950];
+static unsigned short vgm_idx_8950[MAX_8950];
+static UINT8 lastreg_8950[MAX_8950];
+
+static void Y8950UpdateYMFM(int num, INT16 *buffer, int length)
+{
+	INT16 *buffers[1] = { buffer };
+	ymfm_opl_generate(chip_8950[num], buffers, length, 1);
+}
+
+static void timercallback_8950_ymfm(int timer_num)
+{
+	ymfm_opl_callback(chip_8950[timer_num/2], timer_num%2);
+}
+
+static int Y8950_sh_start_ymfm(const struct MachineSound *msound)
+{
+	int i;
+	const double rate = intf_8950->baseclock/72.;
+
+	for (i = 0;i < intf_8950->num;i++)
+	{
+		char name[40];
+		int vol = intf_8950->mixing_level[i];
+		const unsigned char *rom = (const unsigned char *)memory_region(intf_8950->rom_region[i]);
+		const unsigned int romsize = memory_region_length(intf_8950->rom_region[i]);
+		sprintf(name,"%s #%d",sound_name(msound),i);
+
+		stream_8950[i] = stream_init(name,vol,rate,i,Y8950UpdateYMFM);
+
+		chip_8950[i] = ymfm_opl_create(YMFM_OPL_Y8950, i*2, intf_8950->handler[i], intf_8950->baseclock, timercallback_8950_ymfm);
+		/* ADPCM ROM data, I/O and keyboard ports */
+		ymfm_opl_set_external(chip_8950[i], rom, romsize, i,
+			intf_8950->portread[i], intf_8950->portwrite[i], intf_8950->keyboardread[i], intf_8950->keyboardwrite[i]);
+		vgm_idx_8950[i] = vgm_open(VGMC_Y8950, intf_8950->baseclock);
+		if (rom)
+			vgm_write_large_data(vgm_idx_8950[i], 0x01, romsize, 0x00, 0x00, rom);
+		lastreg_8950[i] = 0;
+	}
+	return 0;
+}
+
+static void Y8950Write_ymfm(int n, int a, int v)
+{
+	if (a & 1) /* data port */
+	{
+		/* render the stream up to this write first, as the old core does */
+		stream_update(stream_8950[n], 0);
+		vgm_write(vgm_idx_8950[n], 0x00, lastreg_8950[n], v);
+		ymfm_opl_write(chip_8950[n], 1, v);
+	}
+	else /* control / address port */
+	{
+		lastreg_8950[n] = v;
+		ymfm_opl_write(chip_8950[n], 0, v);
+	}
+}
+
+static unsigned char Y8950Read_ymfm(int n, int a)
+{
+	/* the ADPCM status bits depend on the playback position */
+	stream_update(stream_8950[n], 0);
+	return ymfm_opl_read(chip_8950[n], a);
+}
+
+#define Y8950_r Y8950Read_ymfm
+#define Y8950_w Y8950Write_ymfm
+#else
+#define Y8950_r Y8950Read
+#define Y8950_w Y8950Write
+#endif /* Y8950_YMFM */
+
 static unsigned char Y8950PortHandler_r(int chip)
 {
 	if (intf_8950->portread[chip])
@@ -543,6 +621,10 @@ int Y8950_sh_start(const struct MachineSound *msound)
 
 	intf_8950 = msound->sound_interface;
 	if( intf_8950->num > MAX_8950 ) return 1;
+
+#if Y8950_YMFM
+	return Y8950_sh_start_ymfm(msound);
+#endif
 
 	//if (options.use_filter)
 		rate = intf_8950->baseclock/72.;
@@ -586,6 +668,17 @@ int Y8950_sh_start(const struct MachineSound *msound)
 }
 void Y8950_sh_stop(void)
 {
+#if Y8950_YMFM
+	{
+		int i;
+		for (i = 0;i < intf_8950->num;i++)
+		{
+			ymfm_opl_destroy(chip_8950[i]);
+			chip_8950[i] = NULL;
+		}
+		return;
+	}
+#endif
 	Y8950Shutdown();
 }
 
@@ -594,35 +687,43 @@ void Y8950_sh_reset(void)
 {
 	int i;
 
+#if Y8950_YMFM
+	for (i = 0;i < intf_8950->num;i++)
+	{
+		ymfm_opl_invalidate_caches(chip_8950[i]);
+		ymfm_opl_reset(chip_8950[i]);
+	}
+	return;
+#endif
 	for (i = 0;i < intf_8950->num;i++)
 		Y8950ResetChip(i);
 }
 
 WRITE_HANDLER( Y8950_control_port_0_w ) {
-	Y8950Write(0, 0, data);
+	Y8950_w(0, 0, data);
 }
 WRITE_HANDLER( Y8950_write_port_0_w ) {
-	Y8950Write(0, 1, data);
+	Y8950_w(0, 1, data);
 }
 READ_HANDLER( Y8950_status_port_0_r ) {
-	return Y8950Read(0, 0);
+	return Y8950_r(0, 0);
 }
 READ_HANDLER( Y8950_read_port_0_r ) {
-	return Y8950Read(0, 1);
+	return Y8950_r(0, 1);
 }
 
 
 WRITE_HANDLER( Y8950_control_port_1_w ) {
-	Y8950Write(1, 0, data);
+	Y8950_w(1, 0, data);
 }
 WRITE_HANDLER( Y8950_write_port_1_w ) {
-	Y8950Write(1, 1, data);
+	Y8950_w(1, 1, data);
 }
 READ_HANDLER( Y8950_status_port_1_r ) {
-	return Y8950Read(1, 0);
+	return Y8950_r(1, 0);
 }
 READ_HANDLER( Y8950_read_port_1_r ) {
-	return Y8950Read(1, 1);
+	return Y8950_r(1, 1);
 }
 
 #endif

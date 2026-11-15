@@ -447,6 +447,7 @@ extern MACHINE_DRIVER_EXTERN(ATARI4);
 extern MACHINE_DRIVER_EXTERN(atari2s);
 extern MACHINE_DRIVER_EXTERN(atari4s);
 extern void atari4snd_w(int chip, int offset, int data);
+extern int atari4snd_r(int chip, int offset);
 extern MACHINE_DRIVER_EXTERN(atari1s);
 
 #define gl_mATARI0		ATARI0

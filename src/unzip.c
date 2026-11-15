@@ -900,7 +900,8 @@ int /* error */ checksum_zipped_file (int pathtype, int pathindex, const char *z
 /*	Where the zip stores filename uncompressed, for mapping its data straight from the zip file:
 	by name, else by sum when it is not 0 (load by CRC). The directory is read afresh, not from
 	the cache, which can be from before the zip was rewritten, and the entry's local header must
-	agree with it. *offset is where the data starts in the zip file */
+	agree with it. *offset is where the data starts in the zip file. -2 when the zip holds the
+	entry but it cannot be mapped (compressed): *length is then its size */
 int /* error */ locate_stored_zipped_file (int pathtype, int pathindex, const char *zipfile, const char *filename, UINT64 *offset, unsigned int *length, unsigned int *sum) {
 	ZIP* zip;
 	struct zipent* ent;
@@ -918,6 +919,12 @@ int /* error */ locate_stored_zipped_file (int pathtype, int pathindex, const ch
 		rewindzip(zip);
 		while ((ent = readzip(zip)) != NULL && ent->crc32 != *sum)
 			;
+	}
+
+	/* an entry it holds, but compressed (or not where its directory says): -2, with its length */
+	if (ent) {
+		*length = ent->uncompressed_size;
+		err = -2;
 	}
 
 	if (ent && ent->compression_method == 0 && ent->compressed_size == ent->uncompressed_size &&

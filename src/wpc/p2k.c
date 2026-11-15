@@ -714,10 +714,10 @@ MACHINE_DRIVER_START(p2k)
 	   It is a scheduler callback, which is exactly what wpc.c and se.c use theirs for */
 	MDRV_CPU_VBLANK_INT(p2k_vblank, 1)
 	MDRV_IMPORT_FROM(wmssnd_dcs3)
-	/* 480 rows, not the 240 the frame buffer holds: core_initDisplaySize() forces the visible
-	   height to Machine->drv->screen_height, so the layout's row count alone does not size the window. See P2K_LINE_DOUBLE */
-	MDRV_SCREEN_SIZE(640, 240 * P2K_LINE_DOUBLE)
-	MDRV_VISIBLE_AREA(0, 639, 0, 240 * P2K_LINE_DOUBLE - 1)
+	/* The video's 480 rows (the frame buffer's 240, see P2K_LINE_DOUBLE), then the core's status display.
+	   core_initDisplaySize() sizes the window from screen_height, not from the layout; DMD only cuts it to the video */
+	MDRV_SCREEN_SIZE(640, 240 * P2K_LINE_DOUBLE + CORE_STATUSROWS)
+	MDRV_VISIBLE_AREA(0, 639, 0, 240 * P2K_LINE_DOUBLE + CORE_STATUSROWS - 1)
 	MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER | VIDEO_RGB_DIRECT)
 MACHINE_DRIVER_END
 

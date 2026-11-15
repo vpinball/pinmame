@@ -495,14 +495,17 @@ STDMETHODIMP CController::get_Lamps(VARIANT *pVal)
 	if ( !pVal )
 		return S_FALSE;
 
-	SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, 89);
+	// Indexed by lamp number, up to the game's highest (Pinball 2000: 128)
+	const bool timeout = (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT);
+	const int maxLampNo = timeout ? 0 : vp_getMaxLampNo();
+	const int nLamps = maxLampNo >= 89 ? maxLampNo + 1 : 89;
+	SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, nLamps);
 
 	VARIANT* pData;
 	SafeArrayAccessData(psa, (void**)&pData);
-	const bool timeout = (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT);
 	if (!timeout)
 		core_update_pwm_lamps();
-	for (int i = timeout ? 11 : 0; i < 89; ++i)
+	for (int i = 0; i < nLamps; ++i)
 	{
 		pData[i].vt = VT_BOOL;
 		pData[i].boolVal = timeout ? VARIANT_FALSE : (vp_getLamp(i) ? VARIANT_TRUE : VARIANT_FALSE);
@@ -928,7 +931,8 @@ STDMETHODIMP CController::get_LampsState(int **buf, int *pVal)
 	/*-- list lamps states to array --*/
 	int *dst = reinterpret_cast<int*>(buf);
 
-	// FIXME this implementation supposes that the lamp array has 89 lamps which is wrong
+	// FIXME: Always only lamps 0-88: the caller's buffer comes without a size, so more could overrun it.
+	// Lamps and ChangedLampsState cover higher lamp numbers (Pinball 2000: up to 128)
 	if ( WaitForSingleObject(m_hEmuIsRunning, 0)==WAIT_TIMEOUT ) {
 		for (int ix=0; ix<89; ix++)
 			*(dst++) = 0;

@@ -10,6 +10,7 @@
 #include "sound/discrete.h"
 #include "core.h"
 #include "sndbrd.h"
+#include "snd_cmd.h"
 #include "zac.h"
 #include "zacsnd.h"
 #include "wmssnd.h"
@@ -21,7 +22,10 @@
 
 static void ZAC_soundInit(void) {
   if (core_gameData->hw.soundBoard == SNDBRD_TECHNO)
+  {
     sndbrd_0_init(core_gameData->hw.soundBoard, ZACSND_CPUA, memory_region(ZACSND_CPUCREGION), NULL, NULL);
+    sndbrd_logData(0, 0); // data_port_w logs the Tecnoplay sound commands, see there
+  }
   else
     sndbrd_0_init(core_gameData->hw.soundBoard, ZACSND_CPUA, memory_region(ZACSND_CPUAREGION), NULL, NULL);
 }
@@ -36,6 +40,7 @@ static struct {
   UINT32 solenoids;
   UINT32 solsmooth[ZAC_SOLSMOOTH];
   UINT16 sols2;
+  UINT8 discLines; // lines of the 1311 tone circuit (solenoids 21-24) currently on, bit 0 = 21
   int actsnd[3], actspk;
   int refresh;
   int gen;
@@ -49,6 +54,11 @@ static struct {
 
   UINT8 write_bitno;
   UINT8 write_startbit;
+
+  // Tecnoplay sound board: the game writes each command as a pair of bytes
+  double sndTime;
+  UINT8 sndData;
+  UINT8 sndPair; // the last write opened a pair, its partner is still to come
 } locals;
 
 static INTERRUPT_GEN(ZAC_vblank_old) {
@@ -325,6 +335,19 @@ static WRITE_HANDLER(ctrl_port_w)
 /*   DATA PORT : WRITE = Sound Data 0-7 */
 static WRITE_HANDLER(data_port_w)
 {
+  if (core_gameData->hw.soundBoard == SNDBRD_TECHNO) {
+    // The Tecnoplay program sends every command as two writes about 0.1 ms apart, with the same low five
+    // bits (28 A8; FE BE for a TMS7000 sample), and the board takes both. Log the pair once, as its first
+    // byte (it is the one that interrupts the TMS7000); a repeat of a command is a new pair. 3F BF is the
+    // idle pair the game sends between commands.
+    const double now = timer_get_time();
+    const int second = locals.sndPair && now - locals.sndTime < 0.0025 && !((data ^ locals.sndData) & 0x1F);
+    locals.sndTime = now;
+    locals.sndData = data;
+    locals.sndPair = !second;
+    if (!second && data != 0x3F && data != 0xBF)
+      snd_cmd_log(0, data);
+  }
   sndbrd_0_data_w(ZACSND_CPUA, data);
   //logerror("%x: Sound Data Write=%x\n",activecpu_get_previouspc(),data);
 }
@@ -417,8 +440,18 @@ static WRITE_HANDLER(ram1_w) {
 		else
 			coreGlobals.pulsedSolState &= ~sol;
 		core_write_pwm_output(CORE_MODOUT_SOL0 + offset, 1, data & 0x01);
-		if (core_gameData->hw.soundBoard == SNDBRD_ZAC1311 && offset > 19 && offset < 24)
-			discrete_sound_w(1 << (offset-20), data);
+		if (core_gameData->hw.soundBoard == SNDBRD_ZAC1311 && offset > 19 && offset < 24) {
+			const UINT8 line = 1 << (offset-20);
+			const UINT8 lines = data ? (locals.discLines | line) : (locals.discLines & ~line);
+			discrete_sound_w(line, data);
+			// The 1311 has no sound command: the game plays by switching the four tone lines
+			// (F, A, C', F'). Log the set of lines that are on, one byte, each time it changes
+			// (00 = all off), so AltSound is told what sounds. The discrete circuit is untouched.
+			if (lines != locals.discLines) {
+				locals.discLines = lines;
+				snd_cmd_log(0, lines);
+			}
+		}
 	} else if (offset > 0x7f && offset < 0xc0) {
 		offset -= 0x80;
 		if (data & 0x01)

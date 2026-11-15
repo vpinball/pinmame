@@ -591,6 +591,11 @@ DRIVERNV(detest)        //Data East MPU: ??/?? DE Test Chip
 DRIVERNV(deleontest4)   //Data East MPU: ??/0? DE Leon Test Chip (version 4)
 
 // --------------------
+// ELBOS
+// --------------------
+DRIVERNV(elgenesi)      //BY35      ??/82 Genesis
+
+// --------------------
 // FASCINATION INTERNATIONAL, INC.
 // --------------------
 DRIVERNV(royclark)      // 09/77 Roy Clark - The Entertainer
@@ -958,6 +963,7 @@ DRIVERNV(snspare1)      //                Strikes N' Spares (rev.1)
 DRIVERNV(snspare2)      //                Strikes N' Spares (rev.2)
 DRIVERNV(waterwld)      //S3-746:   10/95 Waterworld (rev.3)
 DRIVERNV(waterwl5)      //                Waterworld (rev.5)
+DRIVERNV(waterwl5f)     //          11/26 Waterworld (rev.5-FIX MOD)
 DRIVERNV(waterwl2)      //                Waterworld (rev.2)
 DRIVERNV(andretti)      //S3-747:   12/95 Mario Andretti
 DRIVERNV(andrett4)      //                Mario Andretti (rev.T4)
@@ -1421,6 +1427,7 @@ DRIVERNV(bikerace)      // 1992 - Bike Race
 DRIVERNV(bikerac2)      // 1992 - Bike Race (2-ball play)
 DRIVERNV(bikerac3)      // 1992 - Bike Race (V4.1)
 DRIVERNV(bikerc3f)      // 1992 - Bike Race (V4.1, press start MOD, free play)
+DRIVERNV(bikerc3e)      // 1992 - Bike Race (V4.1, press start MOD, free play, English)
 DRIVERNV(sleicpin)      // 1993 - Sleic Pin-Ball
 DRIVERNV(sleicpnf)      // 1993 - Sleic Pin-Ball (end-of-game scores MOD, free play)
 DRIVERNV(iomoon)        // 1994 - Io Moon
@@ -2471,19 +2478,80 @@ DRIVER(smanve,101c)     // pinball browser colorized using extend memory
 #if HAS_SPIKE1
 DRIVER(tfcp,1018)       //SPIKE 1: ??/12 Transformers The Pin - 1.0.18
 DRIVER(avscp,103)       //SPIKE 1: ??/13 Avengers The Pin - 1.0.3
-                        //SPIKE 1: ??/15 Wrestlemania
+DRIVER(wwe,117)         //SPIKE 1: ??/15 Wrestlemania - 1.17.0
+DRIVER(wwe,119)         //         ??/15 Wrestlemania - 1.19.0
+DRIVER(wwe,119h)        //         ??/15 Legends of Wrestlemania - 1.19.0 Limited Edition
+DRIVER(wwe,120)         //         ??/15 Wrestlemania - 1.20.0
+DRIVER(wwe,120h)        //         ??/15 Legends of Wrestlemania - 1.20.0 Limited Edition
+DRIVER(wwe,125)         //         ??/15 Wrestlemania - 1.25.0
+DRIVER(wwe,133)         //         ??/15 Wrestlemania - 1.33.0
+DRIVER(wwe,133h)        //         ??/15 Legends of Wrestlemania - 1.33.0 Limited Edition
+DRIVER(wwe,135)         //         ??/15 Wrestlemania - 1.35.0
 DRIVER(wwe,135h)        //         ??/15 Legends of Wrestlemania - 1.35.0 Limited Edition
-DRIVER(wnbjm,155)       //SPIKE 1: ??/15 Whoa Nellie! Big Juicy Melons - 1.55.0
-DRIVER(kiss15,141)      //SPIKE 1: ??/15 KISS - 1.41.0
+DRIVER(wnbjm,151)       //SPIKE 1: ??/15 Whoa Nellie! Big Juicy Melons - 1.51.0
+DRIVER(wnbjm,152)       //         ??/15 Whoa Nellie! Big Juicy Melons - 1.52.0
+DRIVER(wnbjm,155)       //         ??/15 Whoa Nellie! Big Juicy Melons - 1.55.0
+DRIVER(kiss15,102)      //SPIKE 1: ??/15 KISS - 1.02.0
+DRIVER(kiss15,102h)     //         ??/15 KISS - 1.02.0 Limited Edition
+DRIVER(kiss15,103)      //         ??/15 KISS - 1.03.0
+DRIVER(kiss15,103h)     //         ??/15 KISS - 1.03.0 Limited Edition
+DRIVER(kiss15,104)      //         ??/15 KISS - 1.04.0
+DRIVER(kiss15,104h)     //         ??/15 KISS - 1.04.0 Limited Edition
+DRIVER(kiss15,105)      //         ??/15 KISS - 1.05.0
+DRIVER(kiss15,105h)     //         ??/15 KISS - 1.05.0 Limited Edition
+DRIVER(kiss15,128)      //         ??/15 KISS - 1.28.0
+DRIVER(kiss15,128h)     //         ??/15 KISS - 1.28.0 Limited Edition
+DRIVER(kiss15,130)      //         ??/15 KISS - 1.30.0
+DRIVER(kiss15,130h)     //         ??/15 KISS - 1.30.0 Limited Edition
+DRIVER(kiss15,140)      //         ??/15 KISS - 1.40.0
+DRIVER(kiss15,140h)     //         ??/15 KISS - 1.40.0 Limited Edition
+DRIVER(kiss15,141)      //         ??/15 KISS - 1.41.0
 DRIVER(kiss15,141h)     //         ??/15 KISS - 1.41.0 Limited Edition
-DRIVER(got,137)         //SPIKE 1: ??/15 Game of Thrones - 1.37.0
+DRIVER(got,100h)        //SPIKE 1: ??/15 Game of Thrones - 1.00.0 Limited Edition
+DRIVER(got,101h)        //         ??/15 Game of Thrones - 1.01.0 Limited Edition
+DRIVER(got,102h)        //         ??/15 Game of Thrones - 1.02.0 Limited Edition
+DRIVER(got,103h)        //         ??/15 Game of Thrones - 1.03.0 Limited Edition
+DRIVER(got,110)         //         ??/15 Game of Thrones - 1.10.0
+DRIVER(got,115)         //         ??/15 Game of Thrones - 1.15.0
+DRIVER(got,117)         //         ??/15 Game of Thrones - 1.17.0
+DRIVER(got,118)         //         ??/15 Game of Thrones - 1.18.0
+DRIVER(got,119)         //         ??/15 Game of Thrones - 1.19.0
+DRIVER(got,120)         //         ??/15 Game of Thrones - 1.20.0
+DRIVER(got,120h)        //         ??/15 Game of Thrones - 1.20.0 Limited Edition
+DRIVER(got,121)         //         ??/15 Game of Thrones - 1.21.0
+DRIVER(got,121h)        //         ??/15 Game of Thrones - 1.21.0 Limited Edition
+DRIVER(got,122)         //         ??/15 Game of Thrones - 1.22.0
+DRIVER(got,122h)        //         ??/15 Game of Thrones - 1.22.0 Limited Edition
+DRIVER(got,123)         //         ??/15 Game of Thrones - 1.23.0
+DRIVER(got,123h)        //         ??/15 Game of Thrones - 1.23.0 Limited Edition
+DRIVER(got,126)         //         ??/15 Game of Thrones - 1.26.0
+DRIVER(got,126h)        //         ??/15 Game of Thrones - 1.26.0 Limited Edition
+DRIVER(got,129)         //         ??/15 Game of Thrones - 1.29.0
+DRIVER(got,129h)        //         ??/15 Game of Thrones - 1.29.0 Limited Edition
+DRIVER(got,134)         //         ??/15 Game of Thrones - 1.34.0
+DRIVER(got,134h)        //         ??/15 Game of Thrones - 1.34.0 Limited Edition
+DRIVER(got,137)         //         ??/15 Game of Thrones - 1.37.0
 DRIVER(got,137h)        //         ??/15 Game of Thrones - 1.37.0 Limited Edition
-DRIVER(gbust,117)       //SPIKE 1: ??/16 Ghostbusters - 1.17.0
+DRIVER(gbust,104)       //SPIKE 1: ??/16 Ghostbusters - 1.04.0
+DRIVER(gbust,105)       //         ??/16 Ghostbusters - 1.05.0
+DRIVER(gbust,105h)      //         ??/16 Ghostbusters - 1.05.0 Limited Edition
+DRIVER(gbust,107)       //         ??/16 Ghostbusters - 1.07.0
+DRIVER(gbust,110)       //         ??/16 Ghostbusters - 1.10.0
+DRIVER(gbust,110h)      //         ??/16 Ghostbusters - 1.10.0 Limited Edition
+DRIVER(gbust,111)       //         ??/16 Ghostbusters - 1.11.0
+DRIVER(gbust,111h)      //         ??/16 Ghostbusters - 1.11.0 Limited Edition
+DRIVER(gbust,112)       //         ??/16 Ghostbusters - 1.12.0
+DRIVER(gbust,112h)      //         ??/16 Ghostbusters - 1.12.0 Limited Edition
+DRIVER(gbust,113)       //         ??/16 Ghostbusters - 1.13.0
+DRIVER(gbust,113h)      //         ??/16 Ghostbusters - 1.13.0 Limited Edition
+DRIVER(gbust,117)       //         ??/16 Ghostbusters - 1.17.0
 DRIVER(gbust,117h)      //         ??/16 Ghostbusters - 1.17.0 Limited Edition
 DRIVER(pabst,101)       //SPIKE 1: ??/16 Pabst Can Crusher, The - 1.01.0
+DRIVER(pabst,102)       //         ??/16 Pabst Can Crusher, The - 1.02.0
 DRIVER(smancp,101)      //SPIKE 1: ??/16 Spider-Man The Pin - 1.01
 DRIVER(supreme,101)     //SPIKE 1: ??/18 Supreme - 1.01.0
 DRIVER(primus,103)      //SPIKE 1: ??/18 Primus - 1.03.0
+DRIVER(primus,104)      //         ??/18 Primus - 1.04.0
 DRIVER(heavym20,102)    //SPIKE 1: ??/20 Heavy Metal - 1.02.0
 #endif
 
@@ -2769,6 +2837,7 @@ DRIVER(shfin,l1)        //S11-922:  ??/87 W Shuffle Inn (Shuffle)
 DRIVER(cycln,l1)        //S11-564:  02/88 W Cyclone (L-1)
 DRIVER(cycln,l4)        //          02/88 W Cyclone (L-4)
 DRIVER(cycln,l5)        //          02/88 W Cyclone (L-5)
+DRIVER(cycln,l5c)       //          11/26   Cyclone (L-5C Competition MOD)
 DRIVER(bnzai,pa)        //S11-566:  05/88 W Banzai Run (P-A)
 DRIVER(bnzai,l1)        //          05/88 W Banzai Run (L-1)
 DRIVER(bnzai,l3)        //          05/88 W Banzai Run (L-3)
@@ -2806,6 +2875,8 @@ DRIVER(bk2k,l4)         //          04/89 W Black Knight 2000 (L-4)
 DRIVER(bk2k,la2)        //          04/89 W Black Knight 2000 (LA-2)
 DRIVER(bk2k,pa7)        //          04/89 W Black Knight 2000 (PA-7 Prototype)
 DRIVER(bk2k,pa5)        //          04/89 W Black Knight 2000 (PA-5 Prototype)
+DRIVER(bk2k,l4c)        //          11/26   Black Knight 2000 (L-4C Competition MOD Fixed 1M jackpot)
+DRIVER(bk2k,l4c2)       //          11/26   Black Knight 2000 (L-4C Competition MOD Per-player jackpot)
                         //S11:      05/89 W Pool
 //First Game produced entirely by Williams after Merger to use Bally Name
 DRIVER(tsptr,l3)        //S11-2630: 07/89 B Transporter the Rescue (L-3)
@@ -3178,7 +3249,8 @@ DRIVER(dm,dh5b)         //                  Demolition Man (DH-5) with rude spee
 DRIVER(dm,h6)           //          08/95 W Demolition Man (H-6) with rude speech
 DRIVER(dm,h6b)          //                  Demolition Man (H-6) with rude speech (Coin Play)
 DRIVER(dm,h6c)          //          11/19   Demolition Man (H-6C Competition MOD) with rude speech
-//DRIVER(dm,h7)           //          03/22   Demolition Man (7.0 Competition MOD) with rude speech //commercial release
+//DRIVER(dm,70h)          //          03/22   Demolition Man (7.0 Competition MOD) with rude speech //commercial release
+//DRIVER(dm,70)           //          03/22   Demolition Man (7.0 Competition MOD) //commercial release
 DRIVER(dm,dt099)        //          04/14   Demolition Man (FreeWPC/Demolition Time 0.99)
 DRIVER(dm,dt101)        //          09/14   Demolition Man (FreeWPC/Demolition Time 1.01)
 DRIVER(tafg,h3)         //WPC-538:  ??/94 B Addams Family Special Collectors Edition / Gold, The (Home version)
@@ -3388,13 +3460,15 @@ DRIVER(cp,16)           //          07/98 B Champion Pub, The (1.6)
 DRIVER(cp,16pfx)        //          03/19 B Champion Pub, The (1.6 Pinball FX)
 DRIVER(mb,05)           //WPC-565:  07/98 W Monster Bash (0.5 Prototype)
 DRIVER(mb,10)           //          07/98 W Monster Bash (1.0)
-DRIVER(mb,106)          //                               (1.06 Home version)
-DRIVER(mb,106b)         //                               (1.06b Coin Play)
+DRIVER(mb,106)          //          ??/?? W Monster Bash (1.06 Home version)
+DRIVER(mb,106b)         //          ??/?? W Monster Bash (1.06b Coin Play)
 DRIVER(cc,10)           //WPC-566:  10/98 B Cactus Canyon (1.0)
 DRIVER(cc,12)           //          02/99 B Cactus Canyon (1.2)
 DRIVER(cc,13)           //          04/99 B Cactus Canyon (1.3)
 DRIVER(cc,13k)          //                  Cactus Canyon (1.3) with real knocker
 DRIVER(cc,104)          //          11/06 B Cactus Canyon (1.04 test 0.2 (The Pinball Factory) version)
+// apparently there was a WPC 'conversion' of Capcoms BBB in the making with code fully working, but maybe all art/sound still missing
+// might have been killed off though completely during the P2K efforts
 //Test Fixtures
 DRIVER(tfa,13)          //WPC-584T: 09/91   Test fixture Alphanumeric
 DRIVER(tfdmd,l3)        //WPC-584T: 09/91   Test fixture DMD

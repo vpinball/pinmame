@@ -51,6 +51,10 @@
 #  define CORE_SCREENX 320
 #  define CORE_SCREENY 256
 #endif /* VPINMAME */
+/*-- the rows the status display (lamps, switches, solenoids) takes below a machine's displays: a 3 row gap,
+     then its tallest block, the solenoids at 2 rows per 8 up to CORE_MODOUT_SOL_MAX (19 rows). For a driver
+     whose displays fill its screen; a 7 segment diagnostic LED would need more */
+#define CORE_STATUSROWS (3 + 2 * (CORE_MODOUT_SOL_MAX / 8) + 1)
 
 /*-----------------
 /  define the game

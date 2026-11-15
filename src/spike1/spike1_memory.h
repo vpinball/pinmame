@@ -20,6 +20,13 @@ class spike1_memory
 {
 public:
 	// The low block holds the program image from 0x8000, the brk heap after it and the mmap area
+	// TODO: a smaller block on 32-bit hosts. It is reserved in one piece, and in a 2 GB process it is
+	// what fails beside a 1.3-1.5 GB asset image (Primus, Pabst). Measured in attract and at a game
+	// start (Transformers, Primus, Pabst, WWE Pro): at most ~13 MB of brk heap and ~82 MB of mmap
+	// area, mostly 8 MB thread stacks (STACK_SIZE, which ugetrlimit reports). 256 MB with MMAP_BASE
+	// at 64 MB would leave 5x / 2.3x that. Unmeasured: Heavy Metal, Ghostbusters, Game of Thrones,
+	// KISS, and any game in play. A guest out of mmap space would end the game mid-play, not fail at
+	// start, so measure those first, and log the out-of-memory if it is done
 	static constexpr uint32_t LOW_SIZE    = 0x20000000;
 	static constexpr uint32_t MMAP_BASE   = 0x08000000;
 	static constexpr uint32_t STACK_TOP   = 0xbf000000;

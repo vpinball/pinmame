@@ -1218,6 +1218,9 @@
     <ClCompile Include="..\src\wpc\sims\se\prelim\monopoly.c">
       <Filter>Source Files\PinMAME\sims\se\prelim_se</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\wpc\sims\sleic\bikerace.c">
+      <Filter>Source Files\PinMAME\sims\sleic</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\wpc\sims\sleic\iomoon.c">
       <Filter>Source Files\PinMAME\sims\sleic</Filter>
     </ClCompile>
@@ -1321,6 +1324,12 @@
       <Filter>Source Files\external\zlib</Filter>
     </ClCompile>
     <ClCompile Include="..\ext\ymfm\ymfm_opl.cpp">
+      <Filter>Source Files\external\ymfm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext\ymfm\ymfm_opn.cpp">
+      <Filter>Source Files\external\ymfm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext\ymfm\ymfm_ssg.cpp">
       <Filter>Source Files\external\ymfm</Filter>
     </ClCompile>
     <ClCompile Include="..\ext\ymfm\ymfm_adpcm.cpp">
@@ -1962,6 +1971,12 @@
       <Filter>Source Files\MAME\Sound</Filter>
     </ClInclude>
     <ClInclude Include="..\ext\ymfm\ymfm_opm.h">
+      <Filter>Source Files\external\ymfm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext\ymfm\ymfm_opn.h">
+      <Filter>Source Files\external\ymfm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext\ymfm\ymfm_ssg.h">
       <Filter>Source Files\external\ymfm</Filter>
     </ClInclude>
     <ClInclude Include="..\src\libpinmame\video.h">

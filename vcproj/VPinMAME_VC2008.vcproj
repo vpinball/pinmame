@@ -4443,6 +4443,10 @@
 						Name="sleic"
 						>
 						<File
+							RelativePath=".\..\src\wpc\sims\sleic\bikerace.c"
+							>
+						</File>
+						<File
 							RelativePath=".\..\src\wpc\sims\sleic\iomoon.c"
 							>
 						</File>

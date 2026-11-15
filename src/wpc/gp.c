@@ -27,6 +27,7 @@
 #include "machine/8255ppi.h"
 #include "core.h"
 #include "sndbrd.h"
+#include "snd_cmd.h"
 #include "gp.h"
 #include "gpsnd.h"
 
@@ -51,7 +52,25 @@ static struct {
   WRITE_HANDLER((*PORTA_WRITE));
 
   UINT8 val;
+  int sndCmdMode;		//The sound board takes a command as a nibble sequence (MSU-3)
+  int sndCmdByte;		//Command byte assembled from the nibbles written so far
+  int sndCmdNibbles;		//Number of nibbles shifted in since the lines were idle
+  int sndCmdLast;		//Last nibble written to the sound lines
 } locals;
+
+/* The MSU-3's program shifts every change of the sound lines into a byte (low nibble first)
+   and plays it when the lines return to idle (0F). Log that byte once instead of each nibble. */
+static void GP_logMSU3Cmd(int nibble) {
+  if (nibble == locals.sndCmdLast) return; // no change on the lines, the board sees nothing
+  locals.sndCmdLast = nibble;
+  if (nibble != 0x0f) {
+    locals.sndCmdByte = (nibble << 4) | (locals.sndCmdByte >> 4);
+    locals.sndCmdNibbles++;
+  } else {
+    if (locals.sndCmdNibbles >= 2) snd_cmd_log(0, locals.sndCmdByte & 0xff);
+    locals.sndCmdNibbles = 0;
+  }
+}
 
 static void GP_dispStrobe(int mask) {
   int digit = locals.disp_col;
@@ -110,6 +129,7 @@ static void GP_UpdateSolenoids (int bank, int data) {
     }
   } else { // sound commands, solenoids 17-30
 //  if ((data & 0x0f) != 0x0f) printf("snd = %02x\n", data);
+    if (locals.sndCmdMode) GP_logMSU3Cmd(soldata);
     if (core_gameData->hw.soundBoard != SNDBRD_GPSSU1)
       sndbrd_0_data_w(GP_SCPUNO, data);
     if (soldata != 0x0f) {
@@ -448,6 +468,11 @@ static void GP_common_init(void) {
   /* init sound */
   sndbrd_0_init(core_gameData->hw.soundBoard, GP_SCPUNO, memory_region(GP_MEMREG_SCPU), NULL, NULL);
   memset(&locals, 0, sizeof(locals));
+  if (core_gameData->hw.soundBoard == SNDBRD_GPMSU3) {
+    locals.sndCmdMode = 1;
+    locals.sndCmdLast = 0x0f;
+    sndbrd_logData(0, 0); // GP_logMSU3Cmd logs the sound commands
+  }
 
   /* init PPI */
   ppi8255_init(&ppi8255_intf);

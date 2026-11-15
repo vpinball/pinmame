@@ -582,6 +582,7 @@ add_executable(pinmame32 WIN32
    src/wpc/sims/s11/prelim/eatpm.c
    src/wpc/sims/s7/full/bk.c
    src/wpc/sims/s7/full/tmfnt.c
+   src/wpc/sims/sleic/bikerace.c
    src/wpc/sims/sleic/iomoon.c
    src/wpc/slalom.c
    src/wpc/sleic.c
@@ -694,6 +695,10 @@ add_executable(pinmame32 WIN32
    ext/ymfm/ymfm_opm.h
    ext/ymfm/ymfm_opl.cpp
    ext/ymfm/ymfm_opl.h
+   ext/ymfm/ymfm_opn.cpp
+   ext/ymfm/ymfm_opn.h
+   ext/ymfm/ymfm_ssg.cpp
+   ext/ymfm/ymfm_ssg.h
    ext/ymfm/ymfm_adpcm.cpp
    ext/ymfm/ymfm_adpcm.h
    ext/ymfm/ymfm_pcm.cpp

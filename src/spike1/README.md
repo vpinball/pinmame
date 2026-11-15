@@ -44,7 +44,11 @@ system-call level instead.
   ELG titles' `sys_time_init()` asserts that the clock is above 0. They count all their time from
   its value then (`sys_time_get_usec()` and `sys_time_get_msec()` subtract it, and no other code
   calls `clock_gettime`; their date comes from `gettimeofday`), so any value from 1 ms on runs them
-  alike; the cards hold no log of the real one. When the program exits, the board's `game_monitor`
+  alike; the cards hold no log of the real one. The wall clock (`CLOCK_REALTIME`, `gettimeofday`,
+  `time`) starts at the host's time. The game sets it with `settimeofday` (glibc's `stime` calls it)
+  from the service menu's date and time and when a tournament starts, then writes the board's RTC
+  (`/dev/rtc`, `RTC_SET_TIME`, taken without a model); the time it sets holds until the machine
+  stops, and the next start takes the host's time again. When the program exits, the board's `game_monitor`
   (`/etc/init.d/game_monitor`: run the game, print `RESTARTING GAME`, sleep 1, run it again)
   starts it a second later as a new process: new memory, threads and open files, and the program
   loaded again. The files it wrote, the CPU board's devices, the node boards, the EEPROMs and the
@@ -137,6 +141,8 @@ prints the mechs' positions as they change),
 `--video-key <32 hex digits>` hands the game the key its LCD clips are encrypted with, `--lcd <s>`
 saves the CPU board's LCD every s seconds as a PPM file in the state directory,
 `--poke <s>:<hex address>:<hex byte>` writes a byte of guest memory then (for experiments),
+`--node-frame <s>:<node>:<hex cmd and data>` sends a board a node-bus command then as the game
+would, asking no answer (for experiments),
 `--slice <ms>` sets the emulated time per `run()` call (1 by
 default, the period PinMAME exchanges the I/O at). With `SPIKE1_NODE_STATS` set in the environment, it
 prints the node-bus frame count per command and board (and per second), and how much of the time
@@ -191,7 +197,14 @@ code (its symbols are in the program) rather than from any other emulator:
 - **Node bus** (`/dev/ttyS4`): the game's own `NODEBUS_TransferMessage` framing. The board list comes
   from the title's `node_board_table`; each board's identity (firmware version, NXP part ID,
   checksum) from the firmware image the game itself loaded for it, so validation passes with no
-  forcing. Modelled: poll, bridge version/status/state, GetVersion, GetStatus (frame counts),
+  forcing. GetFullBoardID's first four bytes are the board's part number: on the newer SDKs a
+  `node_board_table` entry's word at +12 holds the bus address over the board type the title
+  expects there, an index into `node_board_type_table` (20-byte entries, the part number at +4:
+  520693600 for 520-6936-00); the game keeps it in its board block and finds the type from it
+  (`sys_node_board_type_get_from_part_number`) to choose the board's firmware image. Ghostbusters
+  LE: 520-5319 at node 1, 520-8454 (node4) at 4, 520-6985 at 8 and 9, 520-5329 (coil4node) at 10,
+  520-6976 at 12, 520-6988 (lcdnode) at 24. Wrestlemania and Spider-Man The Pin, whose tables hold
+  the address alone, keep a made-up part number. Modelled: poll, bridge version/status/state, GetVersion, GetStatus (frame counts),
   GetBootStatus, GetFullBoardID, GetChecksum, GetInputState, LCD insert info, and the outputs
   below. Other queries are answered with zeros and logged once; other commands are logged once.
   A board counts time in ticks at the rate its GetVersion reports (1000 Hz here); the game
@@ -259,7 +272,17 @@ code (its symbols are in the program) rather than from any other emulator:
   host shows, taken every millisecond in PinMAME: a pulse that came and went between two takes
   shows at its power, and a pulse shorter than 4 ms shows nothing. That is the game's power-on driver check:
   every title but WWE fires each driver alone for 1 ms and logs its current, too short to move
-  anything (the shortest real pulse is 16 ms, Primus' slingshots).
+  anything (the shortest real pulse is 16 ms, Primus' slingshots). A second phase of time 0 is no
+  hold: the titles fire the same pulse either as `[power] [time] 00 0000` (Ghostbusters, KISS, Game
+  of Thrones) or with the second power repeating the first (`[power] [time] [power] 0000`: the other
+  titles' troughs, every coin meter, the 1-bank drop targets of Ghostbusters, KISS and Game of
+  Thrones), and never send an off after it, as a held coil would need. A fire of the coil alone
+  (`NODEBUS_CoilTrigger`) fires it as its reflex is set, as if a trigger had closed: the reflex's
+  first power for its first time, then its second power for its second time (none when that is 0);
+  checked with `--node-frame`. A fire frame can also carry more bytes after the nine (a time and a
+  switch condition, `NODEBUS_CoilFireRelease`), not modelled. In the harness no title sends either
+  form: every title at boot, in attract mode and at a game start, every title with a symbol table
+  through a 2-player game, and KISS LE through a full ball search.
 - **LEDs** (type 4, up to 96 channels a board, three for an RGB LED): `NODEBUS_SetLEDMultiple2`'s
   packed updates (command 0x80-0xBF: an index, a list or a bitmap of channels, then levels and fade
   times in compact forms; see `led_update()`). Every update in a full attract-and-play run decodes to
@@ -419,7 +442,11 @@ model takes it for a program with `node_query_t()` and `nodemap_init()` (`elg_*`
   The loader checks each file's length, and for a zip entry the CRC its
   directory records; `-verifyroms` checks them in full. A file it cannot map - a zip that a ROM
   manager recompressed, or a host that does not map files - it loads into memory as before, and
-  the driver says so. The files are over 1 GB, so the games need a 64-bit build. `MACHINE_INIT`
+  the driver says so. A title's `image.bin` is 0.1-1.8 GB and takes that much address space, so most
+  games need a 64-bit build: a 32-bit one runs the smaller ones (Transformers, Avengers, Supreme,
+  Spider-Man, Whoa Nellie; Game of Thrones as its host leaves room) and loads no file over 64 MB that
+  it cannot map, so a larger set fails at load with `CANNOT BE MAPPED, AND IS TOO LARGE TO LOAD IN A
+  32-BIT BUILD` instead of taking the host's memory. `MACHINE_INIT`
   hands them to the subsystem (`get_mapped_rom()`), which runs the program as
   `/games/<folder>/game` and puts the clips in `video/` (a set's files sit side by side, as
   PinMAME matches a ROM by its name alone); `image.bin` and the clips are mapped into the guest
@@ -430,10 +457,19 @@ model takes it for a program with `node_query_t()` and `nodemap_init()` (`elg_*`
   image's ext3 partitions, reads it straight out of the zip in a few forward passes (its own zip
   reader: .NET's refuses Supreme's zip, whose ZIP64 extra field carries fields its header does not
   call for), writes `<set>.zip` stored, and checks every file against the
-  set's CRCs - a new set needs its files added to the script's `KnownSet` table. It reads Stern's
+  set's CRCs - a new set needs its files added to the script's `KnownSet` table.
+  `scripts/spike1/Make-Spike1RomDef.ps1 <zip or folder> -Set <name>_<version> -LongName "<name>
+  (<version>)" -Year <year>` writes those lines from the zip the builder makes for an unknown
+  version (or a game folder): the set's `ROM_START` block for `spike1.c`, laid out as the sets
+  there are, its `CORE_GAMEDEF` (`-Parent` an older version's `CORE_CLONEDEF`, with `-Data`
+  another edition's `SPIKE1_CLONEDEF`), its `driver.c` line and its `KnownSet` entry. The game data
+  (`SPIKE1_INIT*`) is the title's own: `spike1boot --list-switches` prints its tables. It reads Stern's
   `.spk` update package too (Heavy Metal comes only as one): `SPKS`, then groups (`SPK0`), each an
   index (`SIDX`: the group's name, a path table `STRS` and a `FINF` record per file) and the files'
   bytes (`SDAT`), stored; the game folder is the group holding `<name>/game` and `<name>/image.bin`.
+  An older package (WWE's) starts with its installer, a gzipped tar (`install` and `bin/spk`, which
+  the machine runs from a USB stick), and the package proper follows it: the builder looks for
+  `SPKS` in the first 16 MB.
   An ELG title's game folder is `/usr/local/games/<name>-elg` on the root file system, with no
   `image.bin` and its sounds in a `sounds` directory, whose WAV files the set holds under their own
   names: Transformers' from Stern's `transformers_pin-1.0.18.iso`, Avengers' from the raw dump of
@@ -443,10 +479,11 @@ model takes it for a program with `node_query_t()` and `nodemap_init()` (`elg_*`
   more than that: about 10 s for the set.
 - **Editions**: Stern's Pro is a lesser-featured edition of a title. Its set is a clone of the
   Limited Edition's, named as PinMAME names Stern's SAM sets (`got_137` beside `got_137h`,
-  `kiss15_141` beside `kiss15_141h`, `gbust_117` beside `gbust_117h`), with its own game data
-  (`SPIKE1_CLONEDEF`: its folder, display layout, switch numbers, lamps, steppers and motors). The
-  files it shares with the parent - the Game of Thrones, KISS and Ghostbusters Pros share all but
-  the game program, and the Ghostbusters Pro has no `lcdinsert.bin` - can come from the parent's
+  `kiss15_141` beside `kiss15_141h`, `gbust_117` beside `gbust_117h`, `wwe_135` beside `wwe_135h`),
+  with its own game data (`SPIKE1_CLONEDEF`: its folder, display layout, switch numbers, lamps,
+  steppers and motors). The files it shares with the parent - the Game of Thrones, KISS,
+  Ghostbusters and WWE Pros share all but the game program, the Ghostbusters Pro has no
+  `lcdinsert.bin` and the WWE Pro no LCD clips - can come from the parent's
   ROM set, so a Pro set's zip can hold its game program alone; the builder writes the whole folder.
 - **A program without a symbol table** (Heavy Metal): the set's `SPIKE1_INIT_SYMBOLS` lists the
   addresses of the tables and functions the subsystem reads by name, which `spike1_pinmame_start()`
@@ -505,8 +542,10 @@ model takes it for a program with `node_query_t()` and `nodemap_init()` (`elg_*`
   Without it, a message names the file and the clips show as noise. Spider-Man's RGB matrix is its
   only display (layout `spike1_rgb`, `SPIKE1_INIT_RGB`): a 64x32 video display, display 0, in full
   colour; the set's `displayLink` goes to `spike1_pinmame_display_link()`. The ELG titles'
-  alphanumeric display is their only one: a line of 16 `CORE_SEG16S` characters (layout
-  `spike1_alnum`, `SPIKE1_INIT_ALNUM`), each segment's level (0-15) its modulated output.
+  alphanumeric display is their only one: two displays of 8 `CORE_SEG16S` characters side by side
+  (layout `spike1_alnum`, `SPIKE1_INIT_ALNUM`), player 1's on the left and player 2's on the right -
+  the game writes one line of 16 and keeps each player to its half ("PLAYER 1PLAYER 2", then each
+  score right-aligned in its 8) - each segment's level (0-15) its modulated output.
 - **Sound**: a stereo stream from the device model's samples, at the rate the game sets on
   `/dev/i2s` (Ghostbusters 44.1 kHz, Whoa Nellie 24 kHz); the mixer resamples it. The machine makes
   samples in time slices, and in about half of the stream's updates it had fewer ready than the
@@ -607,6 +646,20 @@ positions, each service button acts as the next one), the framebuffer, views for
 attract video nudge above. BACK in attract mode adds a service credit, as the game intends. Stern's `WWE_LE-1_35.iso.zip` copy here had an unreadable area on its disk; the
 `.iso` inside it builds the same set.
 
+Wrestlemania 1.35.0, the Pro (set `wwe_135`, folder `WWE`, from `WWE-1_35.iso.zip` or
+`WWE-1_35.spk`, which give the same files), shares the LE's asset image and node firmware. It has
+no playfield LCD (it never opens the framebuffer) and no upper flipper: 18 coils, 85 switches and
+101 LED channels, its cabinet switches the LE's, the flipper buttons' upper leaf (74, 75) still in
+its switch table. It takes coins and starts a game through libpinmame.
+
+Primus 1.04.0 and Pabst Can Crusher 1.02.0 (sets `primus_104` and `pabst_102`, the parents of
+`primus_103` and `pabst_101`; from Stern's `primus-1_04_0.spk` and `can_crusher-1_02_0.spk`) moved
+to a newer SDK than their first versions: node firmware 0.65.0 with a node4 (LPC1124) image beside
+the others, and their own asset images; their programs keep their symbols. Their switch, coil and
+LED tables are the earlier versions' (85 switches, 19 coils, 79 LED channels), so each version
+pair shares its game data. Both boot to attract mode, take coins and start a game through
+libpinmame.
+
 Heavy Metal 1.02.0 (the newest SDK, node firmware 0.67.0, four node boards - one a TMC2590 stepper
 driver - and four balls; set `heavym20_102`, as `heavymtl` and `hvymetal` are taken) boots to attract mode, takes
 coins and starts a game in the harness and through libpinmame. Stern ships it only as a `.spk`,
@@ -650,7 +703,8 @@ Spider-Man The Pin's (`smancp`: SAM's `sman` and `cp`), from PinMAME's SAM sets 
 ## Open items
 
 1. Ball physics are the table's job (PinMAME/VPX); the harness has none, so a game stops at ball 1.
-2. Outputs, what is left: the extra time and switch condition some coil fires carry; command 0x43
+2. Outputs, what is left: the extra time and switch condition a coil fire can carry (no title
+   sends one, see Coils above); command 0x43
    (coil priority, a query answered with zeros); the LCD insert's fill command, the meaning of
    its animation-status reply (answered with zeros) and of a run's loop count.
 3. Sound, what is left: the amplifier's gain steps (set through `/dev/amp`) and the center and
