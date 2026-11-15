@@ -21,6 +21,7 @@
 #include "capcom.h"
 #include "capcoms.h"
 #include "sndbrd.h"
+#include "snd_cmd.h"
 
 //#define VERBOSE
 //#define DEBUGGING
@@ -105,6 +106,9 @@ static struct {
   int sda;				//SDA line
   UINT8 from_8752;		//Data from the 8752
   UINT8 to_8752;		//Data to the 8752
+  int log_pos;			//Sound log: position in the message being received (0 = waiting for DA)
+  int log_len;			//Sound log: number of bytes the message announced
+  int log_msg[4];		//Sound log: the bytes of the message
 #if TEST_FROM_ROM
   void *buffTimer;
   int curr[2];			//Current position we've read from the rom
@@ -139,8 +143,27 @@ int get_rts_line_from_8752(void)
 	return locals.rts;
 }
 
+/* The game talks to the board in messages: DA, the number of bytes that follow, then those bytes.
+   A sound is played by DA 04 07 vv nnnn (06 instead of 07 loops it), nnnn being the sample number.
+   The bytes never go through sndbrd_data_w, so the sound command log (AltSound) saw nothing: log the
+   sample number once per sound, whoever sends the bytes (the game's DUART, or the manual handler).
+   Only the log changes; the board receives the same bytes. */
+static void capcoms_log_sound(int data)
+{
+	data &= 0xff;
+	if (locals.log_pos == 0) { locals.log_pos = (data == 0xDA) ? 1 : 0; return; }
+	if (locals.log_pos == 1) { locals.log_len = data; locals.log_pos = (locals.log_len >= 1 && locals.log_len <= 4) ? 2 : 0; return; }
+	locals.log_msg[locals.log_pos++ - 2] = data;
+	if (locals.log_pos - 2 == locals.log_len) {
+		locals.log_pos = 0;
+		if (locals.log_len == 4 && (locals.log_msg[0] == 0x06 || locals.log_msg[0] == 0x07))
+			snd_cmd_log(0, (locals.log_msg[2] << 8) | locals.log_msg[3]);
+	}
+}
+
 void send_data_to_8752(int data)
 {
+	capcoms_log_sound(data);
 	locals.to_8752 = data;
 	PRINTF(("Data TO 8752 Write = %x\n",data));
 
