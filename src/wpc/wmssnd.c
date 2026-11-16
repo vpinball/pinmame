@@ -1401,6 +1401,10 @@ static struct {
     int     xferByteCount;
     UINT32  xferTemp;
     UINT32  xferData[P2K_XFER_MAX_WORDS];
+    /*-- sound command log, see p2k_logRequest --*/
+    int     logOpened;    /* ACE1 seen, the protocol is open */
+    int     logParams;    /* parameter words still to come for the current request */
+    int     logSkip;      /* the word comes from the sound commander, see dcs_data_w */
   } p2k;
 } dcslocals;
 
@@ -1653,7 +1657,10 @@ static void dcsoff_init(struct sndbrdData *brdData) {
 
   memset(&dcsoff, 0, sizeof(dcsoff));
   dcsoff.enabled = (brdData->subType != DCS_SUBTYPE_P2K);
-  if (!dcsoff.enabled) return;
+  if (!dcsoff.enabled) { /* Pinball 2000 still takes (and logs) its host words (dcs_p2k_data_w), without dcs_init */
+    memset(&dcslocals.p2k, 0, sizeof(dcslocals.p2k));
+    return;
+  }
   dcsoff.dcs95 = (brdData->subType == (SNDBRD_DCS95 & 0xff));
   dcsoff.rom = brdData->romRegion;
   dcsoff.romLen = (UINT32)memory_region_length(DCS_ROMREGION);
@@ -2469,12 +2476,11 @@ static void dcs_dacUpdate(int num, INT16 *buffer, int length)
    parameter word. The track number of a request, the id the AltSound packs for Pinball 2000 are
    keyed on, is logged once, as the request starts. */
 static void p2k_logRequest(UINT16 data) {
-  static int opened = 0, params = 0;
-  if (data == 0xace1) { opened = 1; params = 0; return; }
-  if (!opened) return;
-  if (params > 0) { params--; return; }
-  if ((data & 0xff00) == 0x5500) { params = 1; return; }
-  params = 2;
+  if (data == 0xace1) { dcslocals.p2k.logOpened = 1; dcslocals.p2k.logParams = 0; return; }
+  if (!dcslocals.p2k.logOpened) return;
+  if (dcslocals.p2k.logParams > 0) { dcslocals.p2k.logParams--; return; }
+  if ((data & 0xff00) == 0x5500) { dcslocals.p2k.logParams = 1; return; }
+  dcslocals.p2k.logParams = 2;
   snd_cmd_log(dcslocals.brdData.boardNo, data);
 }
 
@@ -2493,7 +2499,7 @@ void dcs_p2k_data_w(UINT16 data) {
   }
 #endif
   if (p2k_preprocess_write(data)) return; /* consumed by the boot-block HLE */
-  if (dcslocals.p2k.xferState == 0) p2k_logRequest(data);
+  if (dcslocals.p2k.xferState == 0 && !dcslocals.p2k.logSkip) p2k_logRequest(data);
   dcslocals.p2k.state = 0;                /* command sent */
   p2k_enqueue(data);
   p2k_pumpQueue();
@@ -2555,8 +2561,12 @@ static READ_HANDLER(dcs_data_r) {
 
 static WRITE_HANDLER(dcs_data_w) {
   DBGLOG(("Latch_w: %02x\n",data));
-  if (dcslocals.brdData.subType == DCS_SUBTYPE_P2K)
-    { dcs_p2k_data_w(data); return; }
+  if (dcslocals.brdData.subType == DCS_SUBTYPE_P2K) {
+    /* only the sound commander gets here (the game calls dcs_p2k_data_w): its single word is no request,
+       keep it out of the sound command log, whose request framing it would shift */
+    dcslocals.p2k.logSkip = 1; dcs_p2k_data_w(data); dcslocals.p2k.logSkip = 0;
+    return;
+  }
   soundlatch_w(0, data); cpu_set_irq_line(dcslocals.brdData.cpuNo, ADSP2105_IRQ2, ASSERT_LINE);
 }
 
