@@ -307,6 +307,10 @@ static struct {
 enum DMDSTATUSCODE { IDLE=0, SB_ERROR, UNKNOWN, BUSY };
 #define DMDSTATUS (SPINBlocals.DMDStat1*2 + SPINBlocals.DMDStat0)
 
+// 80C31 port 1 bits on the display board
+enum P1BITS { RAMCE=0, DESP=1, RDATA=2, ROWCK=3, COLATCH=4, READY=5, STAT0=6, STAT1=7 };
+#define GETBIT(value,bitno) (((value) >> (bitno)) & 1)
+
 /* -------------------*/
 /* --- Interfaces --- */
 /* -------------------*/
@@ -823,6 +827,13 @@ static WRITE_HANDLER(dmdbd_w)
 {
 	LOG(("DMD WRITE = %x\n",data));
 	SPINBlocals.DMDData = data;
+	/* Verne's World: the write clocks a 74HC74 (CI7) whose Q is BUSY and /Q is /INT0. Its CLR is
+	   the 74HC139 Y3 output, so while the 80C31 has Y3 selected (P1.0 = P1.5 = 1) the flip-flop is
+	   held reset: the byte is still latched, but BUSY and INT0 stay low */
+	if (SPINBlocals.nmiSeries == 2 && GETBIT(SPINBlocals.dmdP1,RAMCE) && GETBIT(SPINBlocals.dmdP1,READY)) {
+		activecpu_abort_timeslice();
+		return;
+	}
 	SPINBlocals.DMDReady = 0;
 	//Trigger an interrupt on INT0
 	cpu_set_irq_line(SPINB_CPU_DMD, I8051_INT0_LINE, ASSERT_LINE);
@@ -973,9 +984,6 @@ static READ_HANDLER(i8031_port_read)
 	return data;
 }
 
-enum P1BITS { RAMCE=0, DESP=1, RDATA=2, ROWCK=3, COLATCH=4, READY=5, STAT0=6, STAT1=7 };
-#define GETBIT(value,bitno) (((value) >> (bitno)) & 1)
-
 static void P1_update(int data)
 {
   int chg = data ^ SPINBlocals.dmdP1;	// bits which have changed
@@ -1037,10 +1045,14 @@ static void P1_update(int data)
       }
     } else {
       if (chg & 0x21) {
-        SPINBlocals.DMDReady = !GETBIT(data,RAMCE) || !GETBIT(data,READY);
         SPINBlocals.DMDRom1Enabled = GETBIT(data,RAMCE) && !GETBIT(data,READY);
         SPINBlocals.DMDRom2Enabled = !GETBIT(data,RAMCE) && GETBIT(data,READY);
-        if (SPINBlocals.DMDReady) cpu_set_irq_line(SPINB_CPU_DMD, I8051_INT0_LINE, CLEAR_LINE);
+        /* P1.0/P1.5 drive a 74HC139: Y0 = RAM, Y1 = ROM1, Y2 = ROM2, Y3 = command latch. Y3 also
+           clears the CI7 flip-flop, which drops BUSY and releases /INT0 (see dmdbd_w) */
+        if (GETBIT(data,RAMCE) && GETBIT(data,READY)) {
+          SPINBlocals.DMDReady = 1;
+          cpu_set_irq_line(SPINB_CPU_DMD, I8051_INT0_LINE, CLEAR_LINE);
+        }
       }
     }
 
