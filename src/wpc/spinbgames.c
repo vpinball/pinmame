@@ -27,6 +27,13 @@ static core_tLCDLayout spinb_dispDMD[] = {
 		core_gameData = &name##GameData; \
 	}
 
+#define INITGAMED(name, dips, disptype, flippers, balls, sb, db, gs1, gs2) \
+	SPINB_INPUT_PORTS_DIPS_START(name, balls, dips) SPINB_INPUT_PORTS_END \
+	static core_tGameData name##GameData = {GEN_SPINB,disptype,{flippers,0,4,0,sb,db,gs1,gs2}}; \
+	static void init_##name(void) { \
+		core_gameData = &name##GameData; \
+	}
+
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
 
 /*-------------------------------------------------------------------
@@ -80,7 +87,7 @@ CORE_CLONEDEFNV(bushidob,bushido,"Bushido (alternate set B)",1993,"Inder/Spinbal
 /*-------------------------------------------------------------------
 / Mach 2 (1995) // or Mach 2.0 Two ?
 /-------------------------------------------------------------------*/
-INITGAME(mach2, spinb_dispDMD, FLIP_SWNO(0,0), 3, SNDBRD_SPINB, SPINB_DSP2, SPINB_GS1(0x11,0,0,TRUE), 175)
+INITGAMED(mach2, SPINB_DIPS_MACH2, spinb_dispDMD, FLIP_SWNO(0,0), 3, SNDBRD_SPINB, SPINB_DSP2, SPINB_GS1(0x11,0,0,TRUE), 175)
 SPINB_ROMSTART(mach2,	"m2cpu0.19", CRC(274c8040) SHA1(6b039b79b7e08f2bf2045bc4f1cbba790c999fed),
 						"m2cpu1.19", CRC(c445df0b) SHA1(1f346c1df8df0a3c4e8cb1186280d2f34959b3f8))
 SPINB_DMDROM1(			"m2dmdf.01", CRC(c45ccc74) SHA1(8362e799a76536a16dd2d5dde500ad3db273180f))
@@ -108,7 +115,7 @@ CORE_CLONEDEFNV(mach2a,mach2,"Mach 2 (alternate set)",1995,"Spinball (Spain)",mS
 /*-------------------------------------------------------------------
 / Jolly Park (1996)
 /-------------------------------------------------------------------*/
-INITGAME(jolypark, spinb_dispDMD, FLIP_SWNO(0,0), 4, SNDBRD_SPINB, SPINB_DSP3, SPINB_GS1(0x11,0,0xff,TRUE), 175)
+INITGAMED(jolypark, SPINB_DIPS_JOLYPARK, spinb_dispDMD, FLIP_SWNO(0,0), 4, SNDBRD_SPINB, SPINB_DSP3, SPINB_GS1(0x11,0,0xff,TRUE), 175)
 SPINB_ROMSTART(jolypark,"jpcpu0.rom", CRC(061967af) SHA1(45048e1d9f17efa3382460fd474a5aeb4191d617),
 						"jpcpu1.rom", CRC(ea99202f) SHA1(e04825e73fd25f6469b3315f063f598ea1ab44c7))
 SPINB_DMDROM2(			"jpdmd0.rom", CRC(b57565cb) SHA1(3fef66d298893029de78fdb6ecdb562c33d76180),
@@ -127,7 +134,7 @@ CORE_GAMEDEFNV(jolypark,"Jolly Park",1996,"Spinball (Spain)",mSPINBSNMI,0)
 /*-------------------------------------------------------------------
 / Verne's World (1996)
 /-------------------------------------------------------------------*/
-INITGAME(vrnwrld, spinb_dispDMD, FLIP_SWNO(0,0), 4, SNDBRD_SPINB, SPINB_DSP3/*?*/, SPINB_GS1(0xff,0xff,0xff,TRUE), 175)
+INITGAMED(vrnwrld, SPINB_DIPS_VRNWRLD, spinb_dispDMD, FLIP_SWNO(0,0), 4, SNDBRD_SPINB, SPINB_DSP3/*?*/, SPINB_GS1(0xff,0xff,0xff,TRUE), 175)
 SPINB_ROMSTART2(vrnwrld,"vwcpu0.rom",  CRC(89c980e7) SHA1(09eeed0232255875cf119d59143d839ff40e30dd),
 						"vwcpu1.rom",  CRC(a4db4e64) SHA1(fc55781295fc723741de24ad60311b7e33551830))
 SPINB_DMDROM3(			"vwdmd0.rom",  CRC(40600060) SHA1(7ad619bcb5e5e50325360f4e946b5bfa072caead),
