@@ -404,7 +404,7 @@ static void byVP_zeroCross(int data) {
 static MACHINE_INIT(byVP) {
   memset(&locals, 0, sizeof(locals));
   sndbrd_0_init(core_gameData->hw.soundBoard,BYVP_SCPUNO,NULL,NULL,NULL);
-  sndbrd_logData(0, 0); // pia2cb2_w logs the sound commands
+  sndbrd_logData(0, SNDBRD_DATALOG_LEGACY); // pia2cb2_w logs the sound commands; old AltSound packs use the data writes
   install_mem_write_handler(0,0x0200, 0x02ff, byVP_CMOS_w);
   /* init PIAs */
   pia_config(BYVP_PIA0, PIA_STANDARD_ORDERING, &piaIntf[0]);
@@ -418,7 +418,7 @@ static MACHINE_RESET(byVP)
   soundlatch_w(0, 0);
   soundlatch2_w(0, 0);
   sndbrd_0_init(core_gameData->hw.soundBoard,BYVP_SCPUNO,NULL,NULL,NULL);
-  sndbrd_logData(0, 0); // pia2cb2_w logs the sound commands
+  sndbrd_logData(0, SNDBRD_DATALOG_LEGACY); // pia2cb2_w logs the sound commands; old AltSound packs use the data writes
   by45_p21_w(1);
 //	pia_reset();
 //	by_vdp_interrupt(0);

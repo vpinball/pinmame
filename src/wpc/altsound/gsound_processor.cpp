@@ -192,6 +192,8 @@ GSoundProcessor::~GSoundProcessor()
 	cur_solo_stream_idx = UNSET_IDX;
 	cur_overlay_stream_idx = UNSET_IDX;
 	
+	// under io_mutex, as the stream end callbacks (miniaudio thread) free streams too
+	std::lock_guard<std::mutex> guard(io_mutex);
 	stopAllStreams();
 }
 
@@ -689,6 +691,9 @@ bool GSoundProcessor::stopMusic()
 {
 	ALT_DEBUG(0, "BEGIN GSoundProcessor::stopMusic()");
 	INDENT;
+
+	// under io_mutex, as the stream end callbacks (miniaudio thread) free streams too
+	std::lock_guard<std::mutex> guard(io_mutex);
 
 	//DAR_TODO add error checking
 	if (!stopExclusiveStream(MUSIC)) {

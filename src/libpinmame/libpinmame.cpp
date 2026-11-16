@@ -789,6 +789,12 @@ static void OnSoundCommand(void* userData)
 	delete msg;
 }
 
+// TODO: Pass the command's source (SND_CMD_*, see snd_cmd.h) on to the callback/message, plus the SND_CMD_LEGACY
+// data writes (snd_cmd_log_src returns before this for those), so libaltsound can take the commands as PinMAME's own
+// AltSound does (alt_sound_handle, preprocess_commands in snd_alt.cpp): a driver's own commands one by one for any pack,
+// the data writes logged as in 3.6 paired for the old packs, and for the boards whose logging changed in 3.7
+// (SNDBRD_DATALOG_LEGACY) their old data writes for the old packs. Counterparts: TODOs in libaltsound (altsound.h,
+// altsound.cpp) and in VPX's AltSound plugin (OnGameEvent)
 extern "C" void libpinmame_snd_cmd_log(int boardNo, int cmd)
 {
 	if (_p_Config->cb_OnSoundCommand)

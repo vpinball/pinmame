@@ -471,7 +471,7 @@ static void GP_common_init(void) {
   if (core_gameData->hw.soundBoard == SNDBRD_GPMSU3) {
     locals.sndCmdMode = 1;
     locals.sndCmdLast = 0x0f;
-    sndbrd_logData(0, 0); // GP_logMSU3Cmd logs the sound commands
+    sndbrd_logData(0, SNDBRD_DATALOG_LEGACY); // GP_logMSU3Cmd logs the sound commands; old AltSound packs use the data writes
   }
 
   /* init PPI */

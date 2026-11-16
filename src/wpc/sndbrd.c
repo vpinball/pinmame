@@ -22,7 +22,11 @@ static struct intfData {
   WRITE_HANDLER((*ctrl_cb));
   int type;
   int manCmdBuf; // if board requires 2 sound commands, keep last value here.
-  int noDataLog; // the main board logs the sound commands itself, see sndbrd_logData
+  WRITE_HANDLER((*manCmd)); // the main board's own sound commander handler for the board, see sndbrd_setManCmd
+  int dataLog; // SNDBRD_DATALOG_*, see sndbrd_logData
+  int dataLogged; // a data write was logged (SND_CMD_DATA): the game's sound commands come through sndbrd_data_w
+  int inManCmd; // in sndbrd_manCmd's call of the board's manCmd_w
+  int manCmdLogged; // ... and that logged the command already (through sndbrd_data_w)
 } intf[2];
 
 /* The interface that drives the board now: its own one, or with the sound off its
@@ -39,7 +43,10 @@ void sndbrd_init(int brdNo, int brdType, int cpuNo, UINT8 *romRegion,
   const struct sndbrdIntf *b = allsndboards[brdType>>8];
   struct intfData *i = &intf[brdNo];
   struct sndbrdData brdData;
-  i->noDataLog = 0;
+  i->dataLog = SNDBRD_DATALOG_ON;
+  i->dataLogged = 0;
+  i->inManCmd = 0;
+  i->manCmd = NULL;
 #if HAS_SAMPLES
   if ((brdType != SNDBRD_NONE) &&
       ((b->flags & SNDBRD_NOTSOUND) ||
@@ -87,8 +94,15 @@ void sndbrd_diag(int board, int button) {
 void sndbrd_data_w(int board, int data) {
   const struct sndbrdIntf *b = intf[board].brdIntf;
   if(b && (b->flags & SNDBRD_NOTSOUND)==0) {
-    if (!intf[board].noDataLog) // else the main board logs the commands itself, see sndbrd_logData
-      snd_cmd_log(board, data);
+    if (intf[board].dataLog == SNDBRD_DATALOG_ON) {
+      snd_cmd_log_src(board, data, SND_CMD_DATA);
+      if (intf[board].inManCmd)
+        intf[board].manCmdLogged = 1;
+      else
+        intf[board].dataLogged = 1;
+    }
+    else if (intf[board].dataLog == SNDBRD_DATALOG_LEGACY) // for the old AltSound packs only
+      snd_cmd_log_src(board, data, SND_CMD_LEGACY);
 #if defined(LISY_SUPPORT)
     lisy_sound_handler( board, data ); // LISY still gets every write, as before sndbrd_logData
 #endif
@@ -146,21 +160,43 @@ void sndbrd_data_cb(int board, int data) {
   }
 }
 void sndbrd_manCmd(int board, int cmd) {
-  const struct sndbrdIntf *b = sndbrd_intf(board);
-  if (b && b->manCmd_w) {
-    if ((b->flags & SNDBRD_DOUBLECMD) && (intf[board].manCmdBuf < 0))
-      { intf[board].manCmdBuf = cmd; return; }
-    b->manCmd_w(intf[board].manCmdBuf, cmd); intf[board].manCmdBuf = -1;
+  const struct sndbrdIntf *b;
+  if (board < 0 || board >= (int)(sizeof(intf) / sizeof(intf[0])))
+    return;
+  b = sndbrd_intf(board);
+  if (b && (b->manCmd_w || (b == intf[board].brdIntf && intf[board].manCmd))) {
+    struct intfData *i = &intf[board];
+    const mem_write_handler manCmd_w = (b == i->brdIntf && i->manCmd) ? i->manCmd : b->manCmd_w;
+    if ((b->flags & SNDBRD_DOUBLECMD) && (i->manCmdBuf < 0))
+      { i->manCmdBuf = cmd; return; }
+    i->inManCmd = 1; i->manCmdLogged = 0;
+    manCmd_w(i->manCmdBuf, cmd);
+    i->inManCmd = 0;
+    /* The commander's command is what the game writes to the board: log it as such (AltSound, libpinmame,
+       PinSound; not the commander's own log), unless manCmd_w did already (via sndbrd_data_w, e.g. Alvin G.).
+       Only where the game's commands come through sndbrd_data_w: where the driver logs them itself, its
+       commander path does so if it can (e.g. Mr. Game, Capcom). -1 ends a 2 board command with an odd byte count */
+    if (!i->manCmdLogged && i->dataLog == SNDBRD_DATALOG_ON && i->dataLogged && cmd >= 0) {
+      if (i->manCmdBuf >= 0)
+        snd_cmd_log_src(board, i->manCmdBuf, SND_CMD_DATA);
+      snd_cmd_log_src(board, cmd, SND_CMD_DATA);
+    }
+    i->manCmdBuf = -1;
   }
 }
-/* By default every data write is logged as a sound command (snd_cmd_log). A main board whose
-   data lines are not only used for sound commands logs the commands itself and turns this off. */
-void sndbrd_logData(int board, int on) {
-  intf[board].noDataLog = !on;
+/* By default every data write is logged as a sound command (SNDBRD_DATALOG_ON). A main board whose
+   data lines are not only used for sound commands logs the commands itself and turns this off
+   (SNDBRD_DATALOG_OFF, or SNDBRD_DATALOG_LEGACY if AltSound packs were made from the data writes). */
+void sndbrd_logData(int board, int mode) {
+  intf[board].dataLog = mode;
 }
+int sndbrd_getLogData(int board) {
+  return (board >= 0 && board < (int)(sizeof(intf) / sizeof(intf[0]))) ? intf[board].dataLog : SNDBRD_DATALOG_ON;
+}
+/* The main board handles the commander's commands for the board itself. For this game only: sndbrd_init
+   resets it (the board interface is shared by all games) */
 void sndbrd_setManCmd(int board, WRITE_HANDLER((*manCmd))) {
-  struct sndbrdIntf *b = (struct sndbrdIntf *)intf[board].brdIntf;
-  b->manCmd_w = manCmd;
+  intf[board].manCmd = manCmd;
 }
 void sndbrd_0_init(int brdType, int cpuNo, UINT8 *romRegion,
                    WRITE_HANDLER((*data_cb)),WRITE_HANDLER((*ctrl_cb))) {

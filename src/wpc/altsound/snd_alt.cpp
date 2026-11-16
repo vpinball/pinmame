@@ -17,6 +17,7 @@
 #endif
   #include "core.h"
   #include "osdepend.h"
+  #include "snd_cmd.h"
 #ifdef __cplusplus
   }
 #endif
@@ -127,7 +128,7 @@ static void AltsoundEngineProcess(void* pUserData, float* pFramesOut, ma_uint64 
 // Functional code
 // ---------------------------------------------------------------------------
 
-extern "C" void alt_sound_handle(int boardNo, int cmd)
+extern "C" void alt_sound_handle(int boardNo, int cmd, int src, int legacyBoard)
 {
 	ALT_DEBUG(0, "");
 	ALT_DEBUG(0, "BEGIN alt_sound_handle()");
@@ -140,6 +141,17 @@ extern "C" void alt_sound_handle(int boardNo, int cmd)
 
 	if (!is_initialized || !altsound_stable) {
 		ALT_ERROR(0, "Altsound unstable. Processing skipped.");
+
+		OUTDENT;
+		ALT_DEBUG(0, "END alt_sound_handle()");
+		return;
+	}
+
+	// The boards whose driver now logs the real sound commands in place of the data writes 3.6 and before
+	// logged (SNDBRD_DATALOG_LEGACY) send both: the data writes (SND_CMD_LEGACY) for the packs made back then,
+	// the driver's commands for the newer ones (new_sound_commands = 1). Take only the pack's
+	if (src == SND_CMD_LEGACY ? new_sound_commands : (src == SND_CMD_DRIVER && legacyBoard && !new_sound_commands)) {
+		ALT_DEBUG(0, "Command %04X not of the stream the pack was made for, skipped", cmd);
 
 		OUTDENT;
 		ALT_DEBUG(0, "END alt_sound_handle()");
@@ -160,7 +172,7 @@ extern "C" void alt_sound_handle(int boardNo, int cmd)
 	cmds.cmd_buffer[0] = cmd; //add command to slot 0
 
 	// pre-process commands based on ROM hardware platform
-	preprocess_commands(&cmds, cmd);
+	preprocess_commands(&cmds, cmd, src);
 
 	if (cmds.cmd_filter || (cmds.cmd_counter & 1) != 0) {
 		// Some commands are 16-bits collected from two 8-bit commands.  If
@@ -190,7 +202,13 @@ extern "C" void alt_sound_handle(int boardNo, int cmd)
 	ALT_DEBUG(0, "Command complete. Processing...");
 
 	// combine stored command with the current
-	const unsigned int cmd_combined = (cmds.stored_command << 8) | cmd;
+	unsigned int cmd_combined = (cmds.stored_command << 8) | cmd;
+
+	// System 11 machines with two sound boards: both take bytes 01..FF, so the commands of
+	// board 1 (the separate sound board) are 0x01xx when the pack has a sample for them (as libaltsound)
+	if (boardNo == 1 && (core_gameData->gen == GEN_S11X || core_gameData->gen == GEN_S11B2)
+		&& processor->hasSample(0x0100 | cmd_combined))
+		cmd_combined |= 0x0100;
 
 	// Handle the resulting command
 	if (!ALT_CALL(processor->handleCmd(cmd_combined))) {
@@ -397,6 +415,9 @@ extern "C" void alt_sound_pause(BOOL pause) {
 	ALT_DEBUG(0, "BEGIN alt_sound_pause()");
 	INDENT;
 
+	// under io_mutex, as the stream end callbacks (miniaudio thread) free streams too
+	std::lock_guard<std::mutex> guard(io_mutex);
+
 	if (pause) {
 		ALT_INFO(0, "Pausing stream playback (ALL)");
 
@@ -442,14 +463,14 @@ extern "C" void alt_sound_pause(BOOL pause) {
 
 // ---------------------------------------------------------------------------
 
-void preprocess_commands(CmdData* cmds_out, int cmd_in)
+void preprocess_commands(CmdData* cmds_out, int cmd_in, int src)
 {
 	ALT_DEBUG(0, "BEGIN preprocess_commands()");
 	INDENT;
 
 	// Get hardware generation
 	const UINT64 hardware_gen = core_gameData->gen;
-	ALT_DEBUG(0, "MAME_GEN: %d", hardware_gen);
+	ALT_DEBUG(0, "MAME_GEN: 0x%llx", (unsigned long long)hardware_gen);
 
 	// syntactic candy
 	unsigned int* cmd_buffer = cmds_out->cmd_buffer;
@@ -678,12 +699,14 @@ void preprocess_commands(CmdData* cmds_out, int cmd_in)
 		}
 	}
 
-	// Bally MPU-17 and MPU-35, and every generation without a case above: one byte per sound command for the
-	// packs made for the real sound commands (new_sound_commands = 1). Older packs get their bytes paired two by two, as before
+	// Bally MPU-17/MPU-35 and every generation without a case above: one byte per sound command for the packs
+	// made for the real sound commands (new_sound_commands = 1), and always for the commands a driver logs
+	// itself (3.6 and before logged only data writes, so no older pack is keyed on these). The data writes
+	// are paired two by two for the older packs, as before
 	if (!(hardware_gen & (GEN_ALLWPC | GEN_S11 | GEN_S11X | GEN_S11B2 | GEN_S11C |
 		GEN_DE | GEN_DEDMD16 | GEN_DEDMD32 | GEN_DEDMD64 | GEN_ALLWS | GEN_GTS80A)))
 	{
-		if (new_sound_commands) {
+		if (new_sound_commands || src == SND_CMD_DRIVER) {
 			ALT_DEBUG(0, "Hardware Generation: GEN_BY17, GEN_BY35 or other (one byte per command)");
 
 			*stored_command = 0;
@@ -707,7 +730,7 @@ void postprocess_commands(const unsigned int combined_cmd) {
 
 	// Get hardware generation
 	const UINT64 hardware_gen = core_gameData->gen;
-	ALT_DEBUG(0, "MAME_GEN: %d", hardware_gen);
+	ALT_DEBUG(0, "MAME_GEN: 0x%llx", (unsigned long long)hardware_gen);
 
 	if (hardware_gen == GEN_WPCDCS
 		|| hardware_gen == GEN_WPCSECURITY

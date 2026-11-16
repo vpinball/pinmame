@@ -671,7 +671,7 @@ static void atari1_initCmd(void) {
     if (atari1cmd.pending[i] < 0x200)
       atari1cmd.watch[atari1cmd.pending[i]] = 1;
   if (atari1cmd.numStarts || atari1cmd.numPending)
-    sndbrd_logData(0, 0); // ram_w logs the sound commands
+    sndbrd_logData(0, SNDBRD_DATALOG_OFF); // ram_w logs the sound commands
 }
 
 static MACHINE_INIT(ATARI1) {
@@ -692,7 +692,7 @@ static MACHINE_INIT(ATARI2) {
   init_common();
   atari2_findInstruction();
   if (atari2cmd.incPc)
-    sndbrd_logData(0, 0); // ram2_w logs the sound commands
+    sndbrd_logData(0, SNDBRD_DATALOG_OFF); // ram2_w logs the sound commands
 }
 
 static MACHINE_STOP(ATARI) {

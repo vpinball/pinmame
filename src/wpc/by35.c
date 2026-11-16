@@ -702,7 +702,8 @@ static MACHINE_INIT(by35) {
     case SNDBRD_HANKIN:
       locals.sndCmdMode = BY35_SNDCMD_STROBE; break;
   }
-  if (locals.sndCmdMode) sndbrd_logData(0, 0);
+  if (locals.sndCmdMode) // old AltSound packs use the data writes (not Hankin's: solenoid writes mixed in)
+    sndbrd_logData(0, (locals.sndCmdMode == BY35_SNDCMD_STROBE) ? SNDBRD_DATALOG_OFF : SNDBRD_DATALOG_LEGACY);
 
   if ((sb & 0xff00) == SNDBRD_ST300 || sb == SNDBRD_ASTRO) {
     install_mem_write_handler(0,0x00a0, 0x00a7, snd300_w);  // ok
@@ -712,7 +713,7 @@ static MACHINE_INIT(by35) {
     if (st300cmd.ptr) {
       install_mem_write_handler(0,st300cmd.ptr, st300cmd.ptr+1, st300_ptr_w);
       install_mem_write_handler(0,st300cmd.delay, st300cmd.delay, st300_delay_w);
-      sndbrd_logData(0, 0); // st300_delay_w logs the sound commands
+      sndbrd_logData(0, SNDBRD_DATALOG_OFF); // st300_delay_w logs the sound commands
     }
   } else if (sb == SNDBRD_ST100) {
     install_mem_write_handler(0,0x00a0, 0x00a0, stern100_snd_w); // sounds on (DIP 23 = 1)

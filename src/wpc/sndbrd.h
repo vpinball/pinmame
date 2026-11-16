@@ -16,7 +16,13 @@ extern int sndbrd_ctrl_r(int board);
 extern void sndbrd_ctrl_cb(int board, int data);
 extern void sndbrd_data_cb(int board, int data);
 void sndbrd_setManCmd(int board, WRITE_HANDLER((*manCmd)));
-void sndbrd_logData(int board, int on);
+/* sndbrd_logData modes: is a data write to the board logged as a sound command? */
+#define SNDBRD_DATALOG_OFF    0 /* no, the main board logs the sound commands itself (snd_cmd_log) */
+#define SNDBRD_DATALOG_ON     1 /* yes (default) */
+#define SNDBRD_DATALOG_LEGACY 2 /* as OFF, but PinMAME 3.6 and before logged the data writes and old AltSound packs are
+                                   keyed on them: these still go to AltSound (SND_CMD_LEGACY) */
+void sndbrd_logData(int board, int mode);
+int sndbrd_getLogData(int board);
 void sndbrd_manCmd(int board, int cmd);
 extern void sndbrd_0_init(int brdType, int cpuNo, UINT8 *romRegion,
                           WRITE_HANDLER((*data_cb)),WRITE_HANDLER((*ctrl_cb)));

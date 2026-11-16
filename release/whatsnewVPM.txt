@@ -14,7 +14,14 @@ Version 3.7 (XX XXth, 2026) - ""
   - Properly handle Bally MPU-17/MPU-35 machines (these send just one byte per sound command)
   - Same for all the other machines without a handling of their own (e.g. Williams System 3-9, Bally 6803, Stern MPU-100/200, Gottlieb System 1/80B/3, Zaccaria, Hankin, Alvin G., Mr. Game, Taito, Atari, ...)
   - Only for packs with new_sound_commands = 1 in the [system] section of their altsound.ini (new key, 0 if missing): packs made before keep getting their sound command bytes paired two by two
-  - Fixed the master volume behavior (positive did nothing, negative accumulated)
+    Exceptions: the machines that had no usable sound commands before (e.g. Capcom, Pinball 2000, Mr. Game, Atari, Hankin, Zaccaria 1311, Spinball/Inder) always get one per command,
+    and the packs made before for Bally MPU-17/MPU-35, Bally 6803, the Bally video pins, Game Plan MSU-3 and Tecnoplay Scramble get the same commands as back then
+  - The commands played with the sound commander now also reach AltSound on most machines, so packs can be tried out with it
+  - Fixed the master volume behavior (positive did nothing, negative accumulated), it now also applies to the samples already playing
+  - System 11 machines with two sound boards: the commands of the separate sound board are 0x01xx if the pack has samples for them (as in libaltsound)
+  - Fixed the volume of the playing samples after the game set its volume to 0, and rare crashes while samples end
+  - Fixed crashes when a legacy (folder) format pack contains other files or folders, and loading such a pack no longer changes the current directory
+  - Added Ogg Vorbis support
 
 - Fix script dialog API/UI for non-standard DPI values
 

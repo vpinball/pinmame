@@ -127,6 +127,7 @@ Rebalanced sound levels:
 Wired up sample rate selection for Verne's World and Jolly Park (potentially fixes some samples played)
 Fixed sound problems if a OKI6295 game is used after a OKI6376 game (e.g. GTS3 after Sleic)
 Added manual sound commands (sound commander) for the Bally Cheap Squeak and Turbo Cheap Squeak and Nuova Bell -51N sound boards
+Sound commander's commands are now also passed to libPinMAME's sound command callback
 Added or fixed the sound command logging and altsound handling for the following machines/generations:
  Atari Gen1/2
  Bally MPU-17/MPU-35: it now filters only the commands the game sends to the -32/-50, -51, -56, Squawk & Talk and Cheap Squeak boards, and to Nuova Bell's -51N, -61N and own sound boards

@@ -388,7 +388,7 @@ static void init_common(int cpuType) {
   locals.cpuType = cpuType;
   locals.sndCmdFirst = -1;
   if (core_gameData->hw.soundBoard == SNDBRD_PLAY3 && cpuType < 2)
-    sndbrd_logData(0, 0); // play3_sndCmd logs the sound commands
+    sndbrd_logData(0, SNDBRD_DATALOG_OFF); // play3_sndCmd logs the sound commands
   if (cpuType) locals.ef[3] = 1; else locals.resetDone = 1;
 }
 

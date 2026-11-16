@@ -50,6 +50,10 @@ bool AltsoundCsvParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 
 	try {
 		while (std::getline(file, line)) {
+			// a CSV with Windows line ends read where they are not converted
+			if (!line.empty() && line.back() == '\r')
+				line.pop_back();
+
 			if (line.empty()) {
 				// ignore blank lines
 				continue;

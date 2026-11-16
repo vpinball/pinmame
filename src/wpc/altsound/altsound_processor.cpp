@@ -70,6 +70,8 @@ AltsoundProcessor::~AltsoundProcessor()
 	cur_mus_stream = nullptr;
 	cur_jin_stream = nullptr;
 
+	// under io_mutex, as the stream end callbacks (miniaudio thread) free streams too
+	std::lock_guard<std::mutex> guard(io_mutex);
 	stopAllStreams();
 }
 
@@ -276,23 +278,11 @@ void AltsoundProcessor::init()
 
 void AltsoundProcessorBase::setGlobalVol(const float vol_in)
 {
-	std::vector<float> vol(channel_stream.size());
-
-	for (size_t index = 0; index < channel_stream.size(); ++index) {
-		const auto stream = channel_stream[index];
-		if (stream) {
-			vol[index] = getStreamVolume(stream->hstream);
-		}
-	}
-
+	// the streams that play keep their volume relative to the new global volume. Under io_mutex,
+	// as the stream end callbacks (miniaudio thread) free streams
+	std::lock_guard<std::mutex> guard(io_mutex);
 	global_vol = vol_in;
-
-	for (size_t index = 0; index < channel_stream.size(); ++index) {
-		const auto stream = channel_stream[index];
-		if (stream) {
-			setStreamVolume(stream->hstream, vol[index]);
-		}
-	}
+	reapplyStreamVolumes();
 }
 
 // ---------------------------------------------------------------------------
@@ -506,6 +496,8 @@ bool AltsoundProcessor::process_sfx(AltsoundStreamInfo* stream_out)
 
 bool AltsoundProcessor::stopMusic()
 {
+	// under io_mutex, as the stream end callbacks (miniaudio thread) free streams too
+	std::lock_guard<std::mutex> guard(io_mutex);
 	if (!stopMusicStream()) {
 		ALT_ERROR(0, "FAILED AltsoundProcessor::stopMusicStream()");
 		return false;

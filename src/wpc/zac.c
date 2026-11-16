@@ -24,7 +24,7 @@ static void ZAC_soundInit(void) {
   if (core_gameData->hw.soundBoard == SNDBRD_TECHNO)
   {
     sndbrd_0_init(core_gameData->hw.soundBoard, ZACSND_CPUA, memory_region(ZACSND_CPUCREGION), NULL, NULL);
-    sndbrd_logData(0, 0); // data_port_w logs the Tecnoplay sound commands, see there
+    sndbrd_logData(0, SNDBRD_DATALOG_LEGACY); // data_port_w logs the Tecnoplay sound commands, see there; old AltSound packs use the data writes
   }
   else
     sndbrd_0_init(core_gameData->hw.soundBoard, ZACSND_CPUA, memory_region(ZACSND_CPUAREGION), NULL, NULL);

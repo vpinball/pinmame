@@ -44,7 +44,9 @@
   extern "C" {
 #endif
   // Main entrypoint for AltSound handling
-  void alt_sound_handle(int boardNo, int cmd);
+  // src: where the command comes from (SND_CMD_*, see snd_cmd.h)
+  // legacyBoard: the board's data writes are logged as SND_CMD_LEGACY (SNDBRD_DATALOG_LEGACY)
+  void alt_sound_handle(int boardNo, int cmd, int src, int legacyBoard);
 
   // Pause/Resume all streams
   void alt_sound_pause(BOOL pause);
@@ -63,7 +65,7 @@
 BOOL alt_sound_init(CmdData* cmds_out);
 
 // Function to pre-process commands based on ROM hardware platform
-void preprocess_commands(CmdData* cmds_out, int cmd);
+void preprocess_commands(CmdData* cmds_out, int cmd, int src);
 
 // Function to process combined commands based on ROM hardware platform
 void postprocess_commands(const unsigned int combined_cmd);

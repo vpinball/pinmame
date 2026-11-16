@@ -521,7 +521,7 @@ static MACHINE_INIT(by6803) {
   memset(&locals, 0, sizeof(locals));
   locals.old_lampadr = 0x0f;
   sndbrd_0_init(core_gameData->hw.soundBoard,1,memory_region(REGION_SOUND1),NULL,by6803_soundLED);
-  sndbrd_logData(0, 0); // port2_w logs the sound commands
+  sndbrd_logData(0, SNDBRD_DATALOG_LEGACY); // port2_w logs the sound commands; old AltSound packs use the data writes
   pia_config(BY6803_PIA0, PIA_STANDARD_ORDERING, &piaIntf[0]);
   pia_config(BY6803_PIA1, PIA_STANDARD_ORDERING, &piaIntf[1]);
   locals.vblankCount = 1;

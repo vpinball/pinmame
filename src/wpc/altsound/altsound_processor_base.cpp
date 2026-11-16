@@ -9,8 +9,10 @@
 // ---------------------------------------------------------------------------
 #include "altsound_processor_base.hpp"
 
+#include <cfloat>
 #include <chrono>
 #include <iomanip>
+#include <mutex>
 
 #include "altsound_logger.hpp"
 #include "miniaudio_bass_compat.hpp"
@@ -21,10 +23,12 @@ extern "C"
 
 extern AltsoundLogger alog;
 extern StreamArray channel_stream;
+extern std::mutex io_mutex;
 
 // initialize static data members
 float AltsoundProcessorBase::global_vol = 1.0f;
 float AltsoundProcessorBase::master_vol = 1.0f;
+std::unordered_map<unsigned int, float> AltsoundProcessorBase::stream_vol;
 
 // reference to sound command recording status
 extern bool rec_snd_cmds;
@@ -184,6 +188,7 @@ bool AltsoundProcessorBase::setStreamVolume(unsigned int stream_in, const float 
 	if (stream_in == MINIAUDIO_NO_STREAM)
 		return true;
 
+	stream_vol[stream_in] = vol_in; // see reapplyStreamVolumes
 	const float new_vol = vol_in * global_vol * master_vol;
 	ALT_INFO(1, "Setting volume for stream %u", stream_in);
 	ALT_DEBUG(1, "SAMPLE_VOL:%.02f  GLOBAL_VOL:%.02f  MASTER_VOL:%.02f", vol_in,
@@ -209,11 +214,36 @@ float AltsoundProcessorBase::getStreamVolume(unsigned int stream_in)
 	if (stream_in == MINIAUDIO_NO_STREAM)
 		return -FLT_MAX;
 
-	float vol;
-	if (!MiniAudio_ChannelGetVolume(stream_in, vol))
-		return -FLT_MAX;
-	else
-		return vol/(global_vol * master_vol);
+	// the volume as set, not read back from the stream and divided by the global and master volume,
+	// which can be 0
+	const auto it = stream_vol.find(stream_in);
+	return (it != stream_vol.end()) ? it->second : -FLT_MAX;
+}
+
+// ----------------------------------------------------------------------------
+
+void AltsoundProcessorBase::reapplyStreamVolumes()
+{
+	for (const auto stream : channel_stream) {
+		if (stream) {
+			const float vol = getStreamVolume(stream->hstream);
+			if (vol != -FLT_MAX)
+				setStreamVolume(stream->hstream, vol);
+		}
+	}
+}
+
+// ----------------------------------------------------------------------------
+
+void AltsoundProcessorBase::setMasterVol(const float vol_in)
+{
+	if (vol_in == master_vol)
+		return;
+
+	// the streams that play keep their volume relative to the new master volume
+	std::lock_guard<std::mutex> guard(io_mutex);
+	master_vol = vol_in;
+	reapplyStreamVolumes();
 }
 
 // ----------------------------------------------------------------------------
@@ -285,6 +315,7 @@ bool AltsoundProcessorBase::freeStream(const unsigned int hstream_in)
 	INDENT;
 
 	const bool success = MiniAudio_StreamFree(hstream_in);
+	stream_vol.erase(hstream_in);
 	if (!success) {
 		ALT_ERROR(1, "Failed to free stream(%u)", hstream_in);
 	}

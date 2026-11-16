@@ -69,6 +69,13 @@ bool AltsoundFileParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 	ALT_DEBUG(0, "BEGIN AltsoundFileParser::parse()");
 	INDENT;
 
+#ifdef _WIN32
+	// The Windows opendir() (src/vc/dirent.c) changes the current directory of the process (VPinMAME's host),
+	// so restore it afterwards
+	char cwd[MAX_PATH];
+	const bool have_cwd = (_getcwd(cwd, MAX_PATH) != nullptr);
+#endif
+
 	const std::string path_jingle = "jingle/";
 	const std::string path_music = "music/";
 	const std::string path_sfx = "sfx/";
@@ -160,25 +167,45 @@ bool AltsoundFileParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 					ducking = parsedDucking;
 				}
 
-				dir2 = opendir(PATH2.c_str());
+				// the folder name starts with the command number (decimal); skip anything else, e.g. a
+				// plain file or a folder with another name
+				unsigned int folder_id = 0;
+				bool folder_ok = dir_exists(PATH2);
+				if (folder_ok) {
+					char id[7] = { 0, 0, 0, 0, 0, 0, 0 };
+					strncpy(id, entry->d_name, 6);
+					try {
+						folder_id = (unsigned int)std::stoul(trim(id), nullptr);
+					}
+					catch (const std::exception&) {
+						folder_ok = false;
+					}
+				}
+
+				dir2 = folder_ok ? opendir(PATH2.c_str()) : nullptr;
 				ALT_INFO(1, "opendir(%s)", PATH2.c_str());
+				if (!dir2) {
+					ALT_WARNING(1, "Skipped (no sample folder named by a command number): %s", PATH2.c_str());
+
+					*dir = backup_dir;
+					*entry = backup_entry;
+					entry = readdir(dir);
+					continue;
+				}
 
 				entry2 = readdir(dir2);
 				while (entry2 != nullptr) {
 					if (entry2->d_name[0] != '.'
 						&& strstr(entry2->d_name, ".txt") == nullptr
-						&& strstr(entry2->d_name, ".ini") == nullptr)
+						&& strstr(entry2->d_name, ".ini") == nullptr
+						&& !dir_exists(PATH2 + '/' + entry2->d_name)) // samples only, no subfolders
 					{
 						//LOG(("CURRENT_ENTRY2: %s\n", entry->d_name));
-						const char* ptr = strrchr(PATH2.c_str(), '/');
-						char id[7] = { 0, 0, 0, 0, 0, 0, 0 };
-
 						AltsoundSampleInfo sample;
 
 						sample.fname = PATH2 + '/' + entry2->d_name;
 
-						memcpy(id, ptr + 1, 6);
-						sample.id = std::stoul(trim(id), nullptr);
+						sample.id = folder_id;
 
 						// DAR@20230828
 						// Original code divided the gain by 20 before storing.
@@ -232,10 +259,15 @@ bool AltsoundFileParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 		}
 		closedir(dir);
 	}
-	ALT_INFO(0, "Found %d samples", samples_out.size());
+	ALT_INFO(0, "Found %d samples", (int)samples_out.size());
+
+#ifdef _WIN32
+	if (have_cwd)
+		_chdir(cwd);
+#endif
 
 	OUTDENT;
-	ALT_DEBUG(0, "BEGIN AltsoundFileParser::parse()");
+	ALT_DEBUG(0, "END AltsoundFileParser::parse()");
 	return true;
 }
 

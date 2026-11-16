@@ -117,6 +117,12 @@ static struct cmds {
   char   name[MAX_NAME_LENGTH];
 } cmds = {NULL, NULL, 2, {0,0}, "Stop playing"};
 
+/* Entries ever written to locals.cmdLog, kept across games, so a reader still holding a position from the
+   previous game (e.g. VPinMAME's NewSoundCommands after Stop/Run) can tell. Written once, after the
+   entries, so a reader on another thread never sees half of one */
+static volatile unsigned int logCount;
+static unsigned int logStart; // logCount at the start of the current game
+
 static struct {
   struct cmds *currCmd;
   //int sndCmd;
@@ -124,8 +130,7 @@ static struct {
   int digitMode;
   int currDigit;
   int digits[MAX_CMD_LENGTH*2];
-  int cmdLog[MAX_CMD_LOG];
-  int firstLog;
+  int cmdLog[MAX_CMD_LOG]; // ring buffer, entry n at n % MAX_CMD_LOG, see logCount
   //mem_write_handler soundCmd;
   int boards; // 0 = none, 1 = board0, 2 = board1, 3 = both
   int rollover; 
@@ -156,6 +161,7 @@ static void wave_next(void);
 void snd_cmd_init(void) {
   int ii;
   memset(&locals, 0, sizeof(locals));
+  logStart = logCount;
   locals.currCmd = &cmds;
   locals.boards = sndbrd_exists(0) + 2*sndbrd_exists(1);
   switch (locals.boards) {
@@ -547,10 +553,16 @@ void reinit_pinSound() {}
 / log handling
 /-----------------*/
 void snd_cmd_log(int boardNo, int cmd) {
+  snd_cmd_log_src(boardNo, cmd, SND_CMD_DRIVER);
+}
+
+void snd_cmd_log_src(int boardNo, int cmd, int src) {
 #ifdef VPINMAME_ALTSOUND
   if (options.samplerate != 0 && pmoptions.sound_mode == 1)
-    alt_sound_handle(boardNo, cmd);
+    alt_sound_handle(boardNo, cmd, src, sndbrd_getLogData(boardNo) == SNDBRD_DATALOG_LEGACY);
 #endif
+  if (src == SND_CMD_LEGACY) return; // AltSound only
+
 #ifdef LIBPINMAME
   libpinmame_snd_cmd_log(boardNo, cmd);
 #endif
@@ -560,21 +572,28 @@ void snd_cmd_log(int boardNo, int cmd) {
 #endif
 
   if (locals.soundMode || (locals.boards == 0)) return; // Don't log from within sound commander
-  if (locals.boards == 3) {
-    locals.cmdLog[locals.firstLog++] = boardNo;
-    locals.firstLog %= MAX_CMD_LOG;
+  {
+    unsigned int n = logCount;
+    if (locals.boards == 3)
+      locals.cmdLog[n++ % MAX_CMD_LOG] = boardNo;
+    locals.cmdLog[n++ % MAX_CMD_LOG] = cmd;
+    logCount = n;
   }
-
-  locals.cmdLog[locals.firstLog++] = cmd;
-  locals.firstLog %= MAX_CMD_LOG;
 }
 
+/* *last: the reader's position (logCount after its previous call), buffer: room for MAX_CMD_LOG entries */
 int snd_get_cmd_log(int *last, int *buffer) {
+  const unsigned int end = logCount;
+  const unsigned int max = (locals.boards == 3) ? MAX_CMD_LOG-2 : MAX_CMD_LOG-1; // whole (board, command) pairs
+  unsigned int pos = (unsigned int)*last;
   int count = 0;
-  while (*last != locals.firstLog) {
-    buffer[count++] = locals.cmdLog[(*last)++];
-    *last %= MAX_CMD_LOG;
-  }
+  if (pos - logStart > end - logStart) // a position from before this game: start with the game's first command
+    pos = logStart;
+  if (end - pos > max) // the older ones were overwritten already
+    pos = end - max;
+  while (pos != end)
+    buffer[count++] = locals.cmdLog[pos++ % MAX_CMD_LOG];
+  *last = (int)pos;
   return count;
 }
 
@@ -745,7 +764,7 @@ int manual_sound_commands(struct mame_bitmap *bitmap) {
     core_textOutf(SND_XROW, 130, BLACK, "Last commands");
     for (ii = 0; ii < MAX_CMD_LOG; ii++)
       core_textOutf(SND_XROW + 13*ii, 140, BLACK, "%02x",
-                   locals.cmdLog[(locals.firstLog+ii) % MAX_CMD_LOG]);
+                   locals.cmdLog[(logCount+ii) % MAX_CMD_LOG]);
     playCmd(-1, NULL);
     return FALSE;
   }
