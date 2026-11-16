@@ -37,7 +37,7 @@
    family is normal.  At 1.28MHz, S2=L with S1 toggling gives 8 and 16KHz - which fits the
    schematic as drawn, our 16KHz as the S1=H leg (and MAME's current 4KHz being a full 4x slow),
    and spinb.c's "toggles between 4Khz, 8Khz" header as those same pin states computed at 640kHz.
-   Settling it needs the crystal data from a real board */
+   The Verne's World speech samples confirm 16KHz (S1=H at 1.28MHz), see spinb.c */
 
 struct MSM5205interface
 {
