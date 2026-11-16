@@ -6,6 +6,14 @@
 
 [ymfm](https://github.com/aaronsgiles/ymfm) is a collection of BSD-licensed Yamaha FM sound cores (OPM, OPN, OPL, and others), written by [Aaron Giles](https://aarongiles.com)
 
+## PinMAME notes
+
+The sources here follow MAME's copy of ymfm ([3rdparty/ymfm](https://github.com/mamedev/mame/tree/master/3rdparty/ymfm)), last synced with MAME master of 2026-11-16 (ea3d23b), and not the standalone [ymfm](https://github.com/aaronsgiles/ymfm) repository: MAME's copy has a newer ADPCM-B (timing rework, used by the Y8950) and the EOS handling for the Y8950/OPNA/OPNB that goes with it.
+
+* `ymfm_*_pinmame_specific.h` are PinMAME's own glue code (C entry points, timers, IRQs, external memory/ports), included at the end of `ymfm_opl.cpp`, `ymfm_opm.cpp` and `ymfm_opn.cpp`
+* every other difference to MAME's copy is marked in the code: `// PinMAME` for PinMAME's own changes, `// original ymfm` for code that is still as in the standalone repository, where MAME changed it
+* to sync again, take MAME's `3rdparty/ymfm/src` files and re-apply the marked lines (and the glue includes)
+
 ## Supported environments
 
 This code should compile cleanly in any environment that has C++14 support.

@@ -143,7 +143,7 @@ opz_registers::opz_registers() :
 		m_lfo_waveform[2][index] = am | (pm << 8);
 
 		// waveform 3 is noise; it is filled in dynamically
-		m_lfo_waveform[3][index] = 0;
+		m_lfo_waveform[3][index] = 0; // original ymfm, not in MAME
 	}
 }
 
@@ -155,7 +155,7 @@ opz_registers::opz_registers() :
 void opz_registers::reset()
 {
 	std::fill_n(&m_regdata[0], REGISTERS, 0);
-	std::fill_n(&m_phase_substep[0], OPERATORS, 0);
+	std::fill_n(&m_phase_substep[0], OPERATORS, 0); // original ymfm, not in MAME
 
 	// enable output on both channels by default
 	m_regdata[0x30] = m_regdata[0x31] = m_regdata[0x32] = m_regdata[0x33] = 0x01;

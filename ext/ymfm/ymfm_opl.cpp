@@ -1012,7 +1012,9 @@ void y8950::write_data(uint8_t data)
 	{
 		case 0x04:  // IRQ control
 			m_fm.write(m_address, data);
-			if ((data & STATUS_ADPCM_B_EOS) != 0)
+			// PinMAME: also on an IRQ reset (bit 7, as fmopl.c), as the channel keeps EOS until cleared and
+			// read_status() below would set it again. MAME only checks STATUS_ADPCM_B_EOS
+			if ((data & (0x80 | STATUS_ADPCM_B_EOS)) != 0)
 				m_adpcm_b.clear_status(adpcm_b_channel::STATUS_EOS);
 			read_status();
 			break;
@@ -2221,6 +2223,6 @@ template class fm_engine_base<opl_registers_base<4>>;
 
 }
 
-#ifdef PINMAME
+#ifdef PINMAME // PinMAME
 #include "ymfm_opl_pinmame_specific.h"
 #endif

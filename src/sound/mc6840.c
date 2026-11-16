@@ -131,7 +131,7 @@ void mc6840_w(struct mc6840 *p, int offset, int data)
 					for (i = 0; i < 3; i++)
 						init_counter(p, i, 1);
 				}
-				p->status = 0;
+				p->status &= 0x80; /* clear the flags, keep the IRQ bit so update_irq sees it drop */
 				p->status_read = 0;
 				update_irq(p);
 			}

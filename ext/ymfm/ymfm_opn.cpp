@@ -2489,6 +2489,6 @@ void ymf276::generate(output_data *output, uint32_t numsamples)
 
 }
 
-#ifdef PINMAME
+#ifdef PINMAME // PinMAME
 #include "ymfm_opn_pinmame_specific.h"
 #endif

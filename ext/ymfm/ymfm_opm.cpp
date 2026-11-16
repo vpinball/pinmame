@@ -538,6 +538,6 @@ void ym2151::generate(output_data *output, uint32_t numsamples)
 
 }
 
-#ifdef PINMAME
+#ifdef PINMAME // PinMAME
 #include "ymfm_opm_pinmame_specific.h"
 #endif

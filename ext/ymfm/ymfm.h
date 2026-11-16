@@ -37,7 +37,7 @@
  #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-#if _MSC_VER >= 1700
+#if _MSC_VER >= 1700 // PinMAME
  #ifdef inline
   #undef inline
  #endif
@@ -351,6 +351,7 @@ public:
 			FILE *out = fopen(name, "wb");
 
 			// make the wav file header
+			// original ymfm: MAME writes the header (and the samples on big endian hosts) endian safe, with put_u16/put_u32
 			uint8_t header[44];
 			memcpy(&header[0], "RIFF", 4);
 			*(uint32_t *)&header[4] = m_buffer.size() * 2 + 44 - 8;
