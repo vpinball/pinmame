@@ -175,11 +175,13 @@ void sndbrd_manCmd(int board, int cmd) {
     /* The commander's command is what the game writes to the board: log it as such (AltSound, libpinmame,
        PinSound; not the commander's own log), unless manCmd_w did already (via sndbrd_data_w, e.g. Alvin G.).
        Only where the game's commands come through sndbrd_data_w: where the driver logs them itself, its
-       commander path does so if it can (e.g. Mr. Game, Capcom). -1 ends a 2 board command with an odd byte count */
-    if (!i->manCmdLogged && i->dataLog == SNDBRD_DATALOG_ON && i->dataLogged && cmd >= 0) {
+       commander path does so if it can (e.g. Mr. Game, Capcom). -1 (no byte) ends a 2 board command with an
+       odd byte count, a byte held back for a SNDBRD_DOUBLECMD board is still sent then */
+    if (!i->manCmdLogged && i->dataLog == SNDBRD_DATALOG_ON && i->dataLogged) {
       if (i->manCmdBuf >= 0)
         snd_cmd_log_src(board, i->manCmdBuf, SND_CMD_DATA);
-      snd_cmd_log_src(board, cmd, SND_CMD_DATA);
+      if (cmd >= 0)
+        snd_cmd_log_src(board, cmd, SND_CMD_DATA);
     }
     i->manCmdBuf = -1;
   }

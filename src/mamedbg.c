@@ -64,7 +64,7 @@ static int dbg_sound_disable = 0;	/*for disabling/enabling sound with debugger w
 /****************************************************************************
  * Limits
  ****************************************************************************/
-#define MAX_DATA	512 		/* Maximum memory size in bytes of a dump window */
+#define MAX_DATA	4096		/* Maximum memory size in bytes of a dump window (PinMAME: a larger one shows fewer lines) */
 #define MAX_MEM 	2			/* You can't redefine this... too easy */
 
 #define MAX_LOOPS	64			/* Maximum loop addresses recognized by trace */
@@ -657,6 +657,11 @@ static void get_screen_size( unsigned *width, unsigned *height )
 {
 	*width = Machine->debug_bitmap->width / Machine->debugger_font->width;
 	*height = Machine->debug_bitmap->height / Machine->debugger_font->height;
+#ifdef PINMAME
+	/* s_edit holds screen positions in UINT8s (and see dasm_pc_row in cmd_dasm_page_up) */
+	if( *width > 255 ) *width = 255;
+	if( *height > 255 ) *height = 255;
+#endif
 }
 
 static int readkey(void)
@@ -2899,6 +2904,7 @@ static void dump_mem_hex( int which, unsigned len_addr, unsigned len_data )
 	UINT8 spc_data = 1; 	/* assume one space between adjacent data elements */
 	UINT8 spc_hyphen = 0;	/* assume no space around center hyphen */
 	unsigned offs, column;
+	int lines = h;			/* lines shown */
 
 	/* how many elements (bytes,words,dwords) will fit in a line? */
 	DBGMEM[which].width = (w - len_addr - 1) / (len_data + spc_data);
@@ -2922,8 +2928,13 @@ static void dump_mem_hex( int which, unsigned len_addr, unsigned len_data )
 
 	/* calculate number of bytes per line */
 	DBGMEM[which].bytes = DBGMEM[which].width * len_data / 2;
+#ifdef PINMAME
+	/* no more lines than MAX_DATA holds (a large -debug_resolution) */
+	if( DBGMEM[which].bytes > 0 && DBGMEM[which].bytes * h > MAX_DATA )
+		lines = MAX_DATA / DBGMEM[which].bytes;
+#endif
 	/* calculate the DBGMEM[which].size using that data width */
-	DBGMEM[which].size = DBGMEM[which].bytes * h;
+	DBGMEM[which].size = DBGMEM[which].bytes * lines;
 
 	/* will a space after the address fit into the line? */
 	if( ( len_addr + spc_addr + DBGMEM[which].width * (len_data + spc_data) + 1 ) < w )
@@ -3027,6 +3038,14 @@ static void dump_mem_hex( int which, unsigned len_addr, unsigned len_data )
 			column = 0;
 		}
 	}
+#ifdef PINMAME
+	/* blank the lines left over */
+	for( ; lines < h; lines++ )
+	{
+		win_set_curpos( win, 0, lines );
+		win_erase_eol( win, ' ' );
+	}
+#endif
 }
 
 /**************************************************************************
@@ -5006,7 +5025,7 @@ static void cmd_dasm_page_up( void )
 	 */
 	if( DBGDASM.pc_top > 0 )
 	{
-		unsigned dasm_pc_row[50];	/* needs to be > max windows height */
+		unsigned dasm_pc_row[256];	/* needs to be > max windows height (PinMAME: 255 at most, see get_screen_size) */
 		unsigned h = win_get_h(WIN_DASM(active_cpu));
 		unsigned dasm_pc_tmp = lshift((rshift(DBGDASM.pc_top) - h * INSTL) & AMASK);
 

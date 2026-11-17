@@ -505,6 +505,7 @@ static UINT8 video_dib_info_data[sizeof(BITMAPINFO) + 256 * sizeof(RGBQUAD)];
 static BITMAPINFO *video_dib_info = (BITMAPINFO *)video_dib_info_data;
 static UINT8 debug_dib_info_data[sizeof(BITMAPINFO) + 256 * sizeof(RGBQUAD)];
 static BITMAPINFO *debug_dib_info = (BITMAPINFO *)debug_dib_info_data;
+static int debug_scale = 1; // the debugger bitmap is shown at this multiple, see win_dpi_scale
 // Must be 16-byte aligned, as the blit wants: this used to be rounded up into
 // params.dstdata while GDI was still handed the array, and on x86/VS2022 the two then differed by 8 bytes, showing every row 4 pixels off (#535)
 #ifdef _MSC_VER
@@ -604,6 +605,110 @@ INLINE int wnd_extra_height(void)
 #endif
 	return (window.bottom - window.top) - 100;
 }
+
+
+
+//============================================================
+//	win_dpi_scale
+//============================================================
+
+#ifndef VPINMAME
+// The standalone builds are DPI aware (set_dpi_awareness() in winmain.c), so Windows no longer
+// enlarges their windows on a scaled desktop.  They show their bitmaps at the desktop scale instead,
+// rounded to a whole multiple, so each pixel stays an equal block (no blur, no uneven DMD dots).
+// VPinMAME leaves the DPI awareness, and so the window size, to its host
+static int win_dpi_scale(HWND wnd)
+{
+	typedef UINT (WINAPI *pGDFW)(HWND);
+	const HMODULE u32 = GetModuleHandleA("user32.dll");
+	const pGDFW gdfw = u32 ? (pGDFW)GetProcAddress(u32, "GetDpiForWindow") : NULL;
+	UINT dpi = (wnd && gdfw) ? gdfw(wnd) : 0; // Win10 1607+: the DPI of the window's monitor
+	if (dpi == 0)
+	{
+		HDC dc = GetDC(NULL);
+		if (dc)
+		{
+			dpi = GetDeviceCaps(dc, LOGPIXELSY);
+			ReleaseDC(NULL, dc);
+		}
+	}
+	return (dpi > 96) ? (int)((dpi + 48) / 96) : 1;
+}
+
+#ifndef WM_DPICHANGED
+#define WM_DPICHANGED 0x02E0
+#endif
+
+// work area of the monitor (or the primary one)
+static void get_monitor_work_area(HMONITOR mon, RECT *work)
+{
+	MONITORINFO info;
+	info.cbSize = sizeof(info);
+	if (mon && GetMonitorInfo(mon, &info))
+		*work = info.rcWork;
+	else
+		SystemParametersInfo(SPI_GETWORKAREA, 0, work, 0);
+}
+
+// Largest multiple up to scale of the width x height image that the blitter draws (beyond, the image
+// stays smaller, centered), converted_bitmap holds and the window takes in the work area
+static int win_fit_scale(int scale, int width, int height, const RECT *work)
+{
+	scale = min(scale, min(MAX_X_MULTIPLY, MAX_Y_MULTIPLY));
+	scale = min(scale, min(effect_table[win_blit_effect].max_xscale, effect_table[win_blit_effect].max_yscale));
+	while (scale > 1 && (width * scale + wnd_extra_width() > work->right - work->left ||
+	                     height * scale + wnd_extra_height() > work->bottom - work->top ||
+	                     width * scale > MAX_VIDEO_WIDTH || height * scale > MAX_VIDEO_HEIGHT))
+		scale--;
+	return max(scale, 1);
+}
+
+// Largest multiple up to scale of the width x height debugger bitmap that the window takes in the work area
+static int debug_fit_scale(int scale, int width, int height, const RECT *work)
+{
+	for (; scale > 1; scale--)
+	{
+		RECT bounds = { 0, 0, width * scale, height * scale };
+		AdjustWindowRectEx(&bounds, WINDOW_STYLE, FALSE, WINDOW_STYLE_EX);
+		if ((bounds.right - bounds.left) <= (work->right - work->left) &&
+		    (bounds.bottom - bounds.top) <= (work->bottom - work->top))
+			break;
+	}
+	return max(scale, 1);
+}
+
+// WM_DPICHANGED, the window moved to a monitor with another scale: Windows suggests a rect that keeps
+// its size relative to the scale.  Take it, then size the client to the nearest multiple of the
+// width x height bitmap, as far as fit allows, and return that multiple
+static int win_dpi_changed(HWND wnd, const RECT *suggested, int width, int height, int (*fit)(int, int, int, const RECT *))
+{
+	RECT window, client, work;
+	int scale = 1;
+
+	// the current multiple, times the change of scale
+	GetClientRect(wnd, &client);
+	if (height > 0)
+		scale = max((client.bottom - client.top) / height, 1);
+	GetWindowRect(wnd, &window);
+	if (window.bottom > window.top)
+		scale = (scale * (suggested->bottom - suggested->top) + (window.bottom - window.top) / 2) / (window.bottom - window.top);
+
+	SetWindowPos(wnd, NULL, suggested->left, suggested->top, suggested->right - suggested->left, suggested->bottom - suggested->top,
+	             SWP_NOZORDER | SWP_NOACTIVATE);
+
+	get_monitor_work_area(MonitorFromWindow(wnd, MONITOR_DEFAULTTONEAREST), &work);
+	scale = fit(max(scale, 1), width, height, &work);
+
+	// the frame as it is now, on the new monitor, around the client we want
+	GetClientRect(wnd, &client);
+	GetWindowRect(wnd, &window);
+	SetWindowPos(wnd, NULL, 0, 0,
+	             (window.right - window.left) - (client.right - client.left) + width * scale,
+	             (window.bottom - window.top) - (client.bottom - client.top) + height * scale,
+	             SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
+	return scale;
+}
+#endif
 
 
 
@@ -920,9 +1025,18 @@ int win_create_window(int width, int height, int depth, int attributes, double a
 
 	// No extra 2 for MAME's 1 pixel surround: VPinMAME stretches the client, so anything
 	// larger than the image there is a rescale (blur).  wnd_extra_*() is the frame itself
-	set_aligned_window_pos(win_video_window, NULL, 20, 20,
-			width + wnd_extra_width(), height + wnd_extra_height(),
-			SWP_NOZORDER);
+	{
+		int scale = 1;
+#ifndef VPINMAME
+		// on a scaled desktop, the matching multiple (see win_dpi_scale)
+		RECT work;
+		get_monitor_work_area(MonitorFromWindow(win_video_window, MONITOR_DEFAULTTOPRIMARY), &work);
+		scale = win_fit_scale(win_dpi_scale(win_video_window), width, height, &work);
+#endif
+		set_aligned_window_pos(win_video_window, NULL, 20, 20,
+				width * scale + wnd_extra_width(), height * scale + wnd_extra_height(),
+				SWP_NOZORDER);
+	}
 
 	// make sure we paint the window once here
 	win_update_video_window(NULL, NULL);
@@ -1236,6 +1350,17 @@ static LRESULT CALLBACK video_window_proc(HWND wnd, UINT message, WPARAM wparam,
 #endif
 			break;
 		}
+
+#ifndef VPINMAME
+		// moved to a monitor with another scale, see win_dpi_scale
+		case WM_DPICHANGED:
+			if (win_window_mode && win_visible_width > 0 && win_visible_height > 0)
+			{
+				win_dpi_changed(wnd, (const RECT *)lparam, win_visible_width, win_visible_height, win_fit_scale);
+				InvalidateRect(wnd, NULL, FALSE);
+			}
+			break;
+#endif
 
 		// sizing: constrain to the aspect ratio unless control key is held down
 		case WM_SIZING:
@@ -2197,14 +2322,19 @@ static int create_debug_window(void)
 
 	snprintf(title, sizeof(title), "Debug: %s [%s]", Machine->gamedrv->description, Machine->gamedrv->name);
 
-	// get the adjusted bounds
-	bounds.top = bounds.left = 0;
-	bounds.right = options.debug_width;
-	bounds.bottom = options.debug_height;
-	AdjustWindowRectEx(&bounds, WINDOW_STYLE, FALSE, WINDOW_STYLE_EX);
-
 	// get the work bounds
 	SystemParametersInfo(SPI_GETWORKAREA, 0, &work_bounds, 0);
+
+	// on a scaled desktop, the matching multiple (see win_dpi_scale)
+#ifndef VPINMAME
+	debug_scale = debug_fit_scale(win_dpi_scale(win_video_window), options.debug_width, options.debug_height, &work_bounds);
+#endif
+
+	// get the adjusted bounds
+	bounds.top = bounds.left = 0;
+	bounds.right = options.debug_width * debug_scale;
+	bounds.bottom = options.debug_height * debug_scale;
+	AdjustWindowRectEx(&bounds, WINDOW_STYLE, FALSE, WINDOW_STYLE_EX);
 
 	// create the window
 	win_debug_window = CreateWindowEx(DEBUG_WINDOW_STYLE_EX, TEXT("MAMEDebug"), title, DEBUG_WINDOW_STYLE,
@@ -2298,7 +2428,7 @@ static void draw_debug_contents(HDC dc, struct mame_bitmap *bitmap, const rgb_t 
 	debug_dib_info->bmiHeader.biBitCount = bitmap->depth;
 
 	// blit to the screen
-	StretchDIBits(dc, 0, 0, bitmap->width, bitmap->height,
+	StretchDIBits(dc, 0, 0, bitmap->width * debug_scale, bitmap->height * debug_scale,
 			0, 0, bitmap->width, bitmap->height,
 			bitmap->base, debug_dib_info, DIB_RGB_COLORS, SRCCOPY);
 }
@@ -2339,6 +2469,14 @@ static LRESULT CALLBACK debug_window_proc(HWND wnd, UINT message, WPARAM wparam,
 			InvalidateRect(win_debug_window, NULL, FALSE);
 			break;
 		}
+
+#ifndef VPINMAME
+		// moved to a monitor with another scale, see win_dpi_scale
+		case WM_DPICHANGED:
+			debug_scale = win_dpi_changed(wnd, (const RECT *)lparam, options.debug_width, options.debug_height, debug_fit_scale);
+			InvalidateRect(wnd, NULL, FALSE);
+			break;
+#endif
 
 		// destroy: close down the app
 		case WM_DESTROY:

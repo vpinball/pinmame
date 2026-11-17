@@ -29,6 +29,10 @@ Add -skip_gamewarnings option, for headless runs of not-yet-working/imperfect ga
 Fixed 'F6' DMD frame recording into the 'DmdDump' folder in PinMAME(32) and xpinmame (only worked in VPinMAME before)
 
 Fixed debugger lockup when tabbing backwards
+Fixed debugger crashes when using a large -debug_resolution (e.g. 1280x960)
+
+PinMAME(32) on Windows is now DPI aware, so its windows are not blurry anymore on a scaled desktop (125%, 150%, ...):
+ the game and the debugger are shown at the nearest whole multiple of the desktop scale, also after moving the window to a monitor with another scale
 
 Fixed broken fast frames UI/registry option (VPinMAME, to enable faster boot/startup) and nothrottle (PinMAME(32), e.g. for benchmarking)
  also added the "fastframes" command line option to PinMAME(32)
