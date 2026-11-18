@@ -43,6 +43,40 @@
 #include "mamedbg.h"
 #include "../window.h"
 
+#if (defined(__GNUC__) && (__GNUC__ < 4) && !defined(COMPILE_MULTIMON_STUBS))
+#define MONITOR_DEFAULTTONULL       0x00000000
+#define MONITOR_DEFAULTTOPRIMARY    0x00000001
+#define MONITOR_DEFAULTTONEAREST    0x00000002
+#define MONITORINFOF_PRIMARY        0x00000001
+typedef struct _DISPLAY_DEVICEA {
+    DWORD  cb;
+    CHAR   DeviceName[32];
+    CHAR   DeviceString[128];
+    DWORD  StateFlags;
+    CHAR   DeviceID[128];
+    CHAR   DeviceKey[128];
+} DISPLAY_DEVICEA, *PDISPLAY_DEVICEA, *LPDISPLAY_DEVICEA;
+typedef struct _DISPLAY_DEVICEW {
+    DWORD  cb;
+    WCHAR  DeviceName[32];
+    WCHAR  DeviceString[128];
+    DWORD  StateFlags;
+    WCHAR  DeviceID[128];
+    WCHAR  DeviceKey[128];
+} DISPLAY_DEVICEW, *PDISPLAY_DEVICEW, *LPDISPLAY_DEVICEW;
+#define DISPLAY_DEVICE_ATTACHED_TO_DESKTOP 0x00000001
+#define DISPLAY_DEVICE_MULTI_DRIVER        0x00000002
+#define DISPLAY_DEVICE_PRIMARY_DEVICE      0x00000004
+#define DISPLAY_DEVICE_MIRRORING_DRIVER    0x00000008
+#define DISPLAY_DEVICE_VGA_COMPATIBLE      0x00000010
+typedef struct
+{
+    MONITORINFO;
+    TCHAR       szDevice[CCHDEVICENAME];
+} MONITORINFOEX, *LPMONITORINFOEX;
+#include "multidef.h"
+#endif // __GNUC__ < 4
+
 #ifndef VPINMAME
  #define FAST_NN_BLIT // define for much faster nearest neighbor blitting, otherwise uses bilinear resample in dib_draw_window()
 #endif
