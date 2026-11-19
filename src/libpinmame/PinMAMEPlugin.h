@@ -90,6 +90,10 @@ typedef struct PinMAMEWriteMemoryMsg
 // Some PinMAME driver exposes communication between the main controller board (CPU node) and the child nodes (Sound & DMD board)
 // and SAM driver exposes console data through these event messages
 #define PMPI_EVT_ON_AUDIO_CMD                "OnAudioCmd:1"
+// The data writes that PinMAME 3.6 and before logged as sound commands and that the driver now replaces by its own
+// commands (SNDBRD_DATALOG_LEGACY), same message as OnAudioCmd. They are only for the AltSound packs made back then
+// (new_sound_commands = 0), so a listener that does not know about them never sees one in OnAudioCmd.
+#define PMPI_EVT_ON_AUDIO_LEGACY_CMD         "OnAudioLegacyCmd:1"
 #define PMPI_EVT_ON_DISPLAY_CMD              "OnDisplayCmd:1"
 #define PMPI_EVT_ON_CONSOLE_DATA             "OnConsoleData:1"
 
@@ -97,6 +101,9 @@ typedef struct PinMAMEChildBoardEventMsg
 {
    uint32_t boardNo;
    uint32_t cmd;
+   // Added after the first two fields, so a listener built without them still reads the message correctly
+   uint32_t src;         // where the command comes from: SND_CMD_DRIVER 0, SND_CMD_DATA 1 or SND_CMD_LEGACY 2 (see snd_cmd.h)
+   uint32_t legacyBoard; // 1 if the board logs its old data writes for the old packs (SNDBRD_DATALOG_LEGACY)
 } PinMAMEChildBoardEventMsg;
 
 typedef struct PinMAMEConsoleDataMsg

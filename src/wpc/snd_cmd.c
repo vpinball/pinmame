@@ -29,7 +29,7 @@
 #endif
 
 #ifdef LIBPINMAME
-  extern void libpinmame_snd_cmd_log(int boardNo, int cmd);
+  extern void libpinmame_snd_cmd_log(int boardNo, int cmd, int src, int legacyBoard);
 #endif
 
 #define VERBOSE 0
@@ -561,11 +561,11 @@ void snd_cmd_log_src(int boardNo, int cmd, int src) {
   if (options.samplerate != 0 && pmoptions.sound_mode == 1)
     alt_sound_handle(boardNo, cmd, src, sndbrd_getLogData(boardNo) == SNDBRD_DATALOG_LEGACY);
 #endif
-  if (src == SND_CMD_LEGACY) return; // AltSound only
-
 #ifdef LIBPINMAME
-  libpinmame_snd_cmd_log(boardNo, cmd);
+  // Also the SND_CMD_LEGACY writes: libpinmame passes them on separately, for the old AltSound packs only
+  libpinmame_snd_cmd_log(boardNo, cmd, src, sndbrd_getLogData(boardNo) == SNDBRD_DATALOG_LEGACY);
 #endif
+  if (src == SND_CMD_LEGACY) return; // AltSound only
 #ifdef VPINMAME_PINSOUND
   if (options.samplerate != 0 && (pmoptions.sound_mode == 2 || pmoptions.sound_mode == 3))
     pinsound_handle(boardNo, cmd);
