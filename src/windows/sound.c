@@ -392,7 +392,7 @@ int osd_update_audio_stream(INT16 *buffer)
 		if(!is_stereo && force_mono_to_stereo)
 		{
 			int i;
-			for (i = 0; i < input_bytes/2; ++i)
+			for (i = 0; i < (int)samples_this_frame; ++i)
 				mix_buffer[i*2] = mix_buffer[i*2+1] = buffer[i];
 			buffer = mix_buffer;
 		}
@@ -401,7 +401,7 @@ int osd_update_audio_stream(INT16 *buffer)
 		{
 			const float vgf = (float)volume_gain;
 			int i;
-			for (i = 0; i < input_bytes; ++i)
+			for (i = 0; i < input_bytes / 2; ++i) // INT16s
 			{
 #if defined(RESAMPLER_SSE_OPT)
  #if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || defined(__ia64__) || defined(__x86_64__)

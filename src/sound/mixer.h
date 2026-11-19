@@ -97,6 +97,8 @@ void mixer_sound_enable_global_w(const UINT8 enable);
 
 void mixer_play_streamed_sample_16(const int channel, const INT16 *data, int len, const double freq);
 int mixer_samples_this_frame(void);
+void mixer_set_float_output(int enable);
+const float *mixer_float_buffer(void);
 int mixer_need_samples_this_frame(const int channel, const double freq);
 
 /* private functions for user interface only - don't call them from drivers! */

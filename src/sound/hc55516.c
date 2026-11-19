@@ -492,8 +492,11 @@ struct hc55516_data
 	// out of libsamplerate here.  This is a circular buffer.
 	struct
 	{
-		// PCM samples, scaled to HC55516 simulated voltage output level
-		float pcm[1000];
+		// PCM samples, scaled to HC55516 simulated voltage output level.
+		// hc55516_update() converts a whole run of bits at once, about a frame
+		// plus work_ahead: ~920 samples at 48kHz, ~1840 at 96kHz (60 fps).
+		// When full, the oldest samples are dropped, so we leave plenty of room
+		float pcm[4096];
 
 		// Read/write indices.  The buffer is empty when read == write.
 		int read;

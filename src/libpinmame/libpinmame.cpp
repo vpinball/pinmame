@@ -609,6 +609,9 @@ extern "C" int osd_start_audio_stream(const int stereo)
 {
    msgLocals.nAudioChannels = stereo ? 2 : 1;
 
+   // float output skips the mixer's INT16 conversion (no clipping at full scale, no dither)
+   mixer_set_float_output(_p_Config->audioFormat == PINMAME_AUDIO_FORMAT_FLOAT);
+
    if (msgLocals.msgApi != nullptr)
    {
       // Number of samples per frame supported by the output, which we suppose to be the default of the machine
@@ -646,6 +649,7 @@ extern "C" int osd_update_audio_stream(INT16* p_buffer)
          return 0;
 
       const int samplesThisFrame = mixer_samples_this_frame();
+      const bool isFloat = _p_Config->audioFormat == PINMAME_AUDIO_FORMAT_FLOAT;
 
       // Data are only valid in the context of the call, we need to copy the data to feed them on the message thread.
       AudioUpdateMsg* audioUpdate = new AudioUpdateMsg();
@@ -653,11 +657,11 @@ extern "C" int osd_update_audio_stream(INT16* p_buffer)
       audioUpdate->sourceId = { msgLocals.endpointId, 0 }; // Source is always tied to endpoint
       audioUpdate->streamId = { msgLocals.endpointId, 0 }; // Single stream source
       audioUpdate->channelFormat = (msgLocals.nAudioChannels == 1) ? CTLPI_AUDIO_FORMAT_CHANNEL_MONO : CTLPI_AUDIO_FORMAT_CHANNEL_STEREO;
-      audioUpdate->sampleFormat = CTLPI_AUDIO_FORMAT_SAMPLE_INT16;
+      audioUpdate->sampleFormat = isFloat ? CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT : CTLPI_AUDIO_FORMAT_SAMPLE_INT16;
       audioUpdate->sampleRate = Machine->sample_rate;
-      audioUpdate->bufferSize = samplesThisFrame * 2 * msgLocals.nAudioChannels;
+      audioUpdate->bufferSize = samplesThisFrame * (isFloat ? (int)sizeof(float) : (int)sizeof(INT16)) * msgLocals.nAudioChannels;
       audioUpdate->buffer = new uint8_t[audioUpdate->bufferSize];
-      memcpy(audioUpdate->buffer, p_buffer, audioUpdate->bufferSize);
+      memcpy(audioUpdate->buffer, isFloat ? static_cast<const void*>(mixer_float_buffer()) : static_cast<const void*>(p_buffer), audioUpdate->bufferSize);
 
       msgLocals.msgApi->RunOnMainThread(msgLocals.endpointId, 0, [](void* userData) {
          AudioUpdateMsg* msg = static_cast<AudioUpdateMsg*>(userData);
@@ -676,7 +680,7 @@ extern "C" int osd_update_audio_stream(INT16* p_buffer)
       if (_p_Config->audioFormat == PINMAME_AUDIO_FORMAT_INT16)
          return (*(_p_Config->cb_OnAudioUpdated))((void*)p_buffer, samplesThisFrame, _p_userData);
 
-      src_short_to_float_array(p_buffer, _audioData, samplesThisFrame * _audioInfo.channels);
+      memcpy(_audioData, mixer_float_buffer(), samplesThisFrame * _audioInfo.channels * sizeof(float));
 
       return (*(_p_Config->cb_OnAudioUpdated))((void*)_audioData, samplesThisFrame, _p_userData);
    }

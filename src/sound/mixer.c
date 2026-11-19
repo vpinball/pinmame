@@ -131,7 +131,9 @@ static float in_f[ACCUMULATOR_SAMPLES*25]; //!! 25=magic, should be able to hand
 static float out_f[ACCUMULATOR_SAMPLES];
 
 /* 16-bit mix buffers */
-static INT16 mix_buffer[ACCUMULATOR_SAMPLES*2]; /* *2 for stereo */
+static INT16 mix_buffer[ACCUMULATOR_SAMPLES*2];   /* *2 for stereo */
+static float mix_buffer_f[ACCUMULATOR_SAMPLES*2]; /* the same as float, unclipped (1.0 = full scale), undithered, if mixer_float_output */
+static int mixer_float_output;
 
 /* global sample tracking */
 static unsigned samples_this_frame;
@@ -876,6 +878,7 @@ int mixer_sh_start()
 	memset(left_accum, 0, sizeof(left_accum));
 	memset(right_accum, 0, sizeof(right_accum));
 
+	mixer_float_output = 0; /* osd_start_audio_stream may enable it */
 	r = osd_start_audio_stream(is_stereo);
 	if (r < 0)
 		return -1;
@@ -988,6 +991,8 @@ void mixer_sh_update()
 #endif
 			/* store and zero out behind us */
 			*mix++ = samplei;
+			if (mixer_float_output)
+				mix_buffer_f[i] = left_accum[accum_pos];
 			left_accum[accum_pos] = 0;
 
 			/* advance to the next sample */
@@ -1020,6 +1025,8 @@ void mixer_sh_update()
 #endif
 			/* store and zero out behind us */
 			*mix++ = samplei;
+			if (mixer_float_output)
+				mix_buffer_f[i*2] = left_accum[accum_pos];
 			left_accum[accum_pos] = 0;
 
 			dither = xorshift(&xorshift_state[2]) - xorshift(&xorshift_state[3]); // add TPDF dither
@@ -1040,6 +1047,8 @@ void mixer_sh_update()
 #endif
 			/* store and zero out behind us */
 			*mix++ = samplei;
+			if (mixer_float_output)
+				mix_buffer_f[i*2+1] = right_accum[accum_pos];
 			right_accum[accum_pos] = 0;
 
 			/* advance to the next sample */
@@ -1364,6 +1373,25 @@ void mixer_play_streamed_sample_16(const int ch, const INT16 *data, int len, con
 int mixer_samples_this_frame()
 {
 	return samples_this_frame;
+}
+
+
+
+/***************************************************************************
+	mixer_set_float_output / mixer_float_buffer
+***************************************************************************/
+
+/* Keep each frame also as float, unclipped and undithered (1.0 = full scale, interleaved if stereo), next to the
+   INT16 buffer passed to osd_update_audio_stream.  Call it from osd_start_audio_stream (e.g. libpinmame) */
+void mixer_set_float_output(int enable)
+{
+	mixer_float_output = enable;
+}
+
+/* that float frame, valid during the osd_update_audio_stream call */
+const float *mixer_float_buffer(void)
+{
+	return mix_buffer_f;
 }
 
 
