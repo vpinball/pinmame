@@ -790,8 +790,15 @@ void *memory_get_read_ptr(int cpunum, offs_t offset)
 	if (entry >= SUBTABLE_BASE)
 		entry = memport->read.table[LEVEL2_INDEX(entry, offset, memport->abits, minbits)];
 
-	/* 8-bit case: RAM/ROM/RAMROM */
-	if (entry > STATIC_RAM || (minbits == 0 && entry != STATIC_RAM))
+	/* 8-bit case: RAM/ROM/RAMROM, and banks still read by their stock handler. 8-bit CPUs
+	read banks through handlers so that memory_set_bankhandler_r() can replace one, and a
+	replaced bank has no pointer to give; a stock handler reads cpu_bankbase[entry] at
+	the offset below, so the pointer is what the CPU reads (Williams System 7 maps its
+	scratch RAM at 0x0000-0x00FF this way, onto 0x1000). */
+	if (entry > STATIC_RAM)
+		return NULL;
+	if (minbits == 0 && entry != STATIC_RAM &&
+		!(entry >= STATIC_BANK1 && entry <= STATIC_BANKMAX && handlist[entry].handler == (genf *)rmemhandler8s[entry]))
 		return NULL;
 	offset -= handlist[entry].offset;
 	/* cpu_bankbase[STATIC_RAM] is rewritten to the active CPU's base on every
