@@ -120,8 +120,9 @@ int CLIB_DECL mame_fprintf(mame_file *f, const char *fmt, ...);
 #endif /* __GNUC__ */
 
 #ifdef LIBPINMAME
-void setPath(int type, const char* path); 
+void setPath(int type, const char* path);
 const char* getPath(int type);
+void libpinmame_get_full_path(int pathtype, int pathindex, const char *filename, char *output, size_t outputSize);
 #endif
 
 #ifdef __cplusplus

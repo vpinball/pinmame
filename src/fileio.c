@@ -66,6 +66,10 @@ static const char *get_extension_for_filetype(int filetype);
 static int checksum_file(int pathtype, int pathindex, const char *file, UINT8 **p, UINT64 *size, char* hash);
 static int map_file(int pathtype, int pathindex, const char *name, UINT64 offset, UINT64 length, mame_file *file);
 
+#ifdef LIBPINMAME
+extern void libpinmame_on_rom_loaded(int pathtype, int pathindex, const char *gamename, const char *romName);
+#endif
+
 
 /***************************************************************************
 	mame_fopen
@@ -947,7 +951,13 @@ static mame_file *generic_fopen(int pathtype, const char *gamename, const char *
 					const UINT64 size = osd_fsize(f);
 					osd_fclose(f);
 					if (map_file(pathtype, pathindex, name, 0, size, &file) == 0)
+					{
+#ifdef LIBPINMAME
+						if (pathtype == FILETYPE_ROM && !(flags & FILEFLAG_VERIFY_ONLY) && gamename && *gamename)
+							libpinmame_on_rom_loaded(pathtype, pathindex, gamename, gamename);
+#endif
 						break;
+					}
 					if (size > MAP_LOAD_LIMIT)
 						map_refused = 1, loadable = 0;
 				}
@@ -959,6 +969,10 @@ static mame_file *generic_fopen(int pathtype, const char *gamename, const char *
 				if (loadable && checksum_file(pathtype, pathindex, name, &file.data, &file.length, file.hash) == 0)
 				{
 					file.type = RAM_FILE;
+#ifdef LIBPINMAME
+					if (pathtype == FILETYPE_ROM && !(flags & FILEFLAG_VERIFY_ONLY) && gamename && *gamename)
+						libpinmame_on_rom_loaded(pathtype, pathindex, gamename, gamename);
+#endif
 					break;
 				}
 			}
@@ -971,7 +985,13 @@ static mame_file *generic_fopen(int pathtype, const char *gamename, const char *
 				if (file.file == NULL && (flags & 3) == 3)
 					file.file = osd_fopen(pathtype, pathindex, name, "w+b");
 				if (file.file != NULL)
+				{
+#ifdef LIBPINMAME
+					if (pathtype == FILETYPE_ROM && !(flags & FILEFLAG_VERIFY_ONLY) && gamename && *gamename)
+						libpinmame_on_rom_loaded(pathtype, pathindex, gamename, gamename);
+#endif
 					break;
+				}
 			}
 		}
 
@@ -1052,6 +1072,10 @@ static mame_file *generic_fopen(int pathtype, const char *gamename, const char *
 							crcs[3] = (UINT8)(crc >> 0);
 							hash_data_clear(file.hash);
 							hash_data_insert_binary_checksum(file.hash, HASH_CRC, crcs);
+#ifdef LIBPINMAME
+							if (pathtype == FILETYPE_ROM && gamename && *gamename)
+								libpinmame_on_rom_loaded(pathtype, pathindex, gamename, name);
+#endif
 							break;
 						}
 						if (located != -1 && length > MAP_LOAD_LIMIT)
@@ -1091,6 +1115,10 @@ static mame_file *generic_fopen(int pathtype, const char *gamename, const char *
 							functions = HASH_CRC;
 
 						hash_compute(file.hash, file.data, file.length, functions);
+#ifdef LIBPINMAME
+						if (pathtype == FILETYPE_ROM && gamename && *gamename)
+							libpinmame_on_rom_loaded(pathtype, pathindex, gamename, name);
+#endif
 						break;
 					}
 				}
