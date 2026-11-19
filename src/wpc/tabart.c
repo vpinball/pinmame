@@ -3,6 +3,7 @@
 #include "driver.h"
 #include "core.h"
 #include "sndbrd.h"
+#include "snd_cmd.h"
 
 /* Sound section for C. Tabart games */
 
@@ -12,12 +13,18 @@ static struct {
   int subtype;
 
   UINT8 toggle;
+  UINT8 swLast[8]; // switch returns of each strobe as the sound program saw them last
+  UINT8 chimes;    // chime lines as last written by the game
 } sndlocals;
 
 static void tabart_init(struct sndbrdData *brdData) {
   memset(&sndlocals, 0, sizeof sndlocals);
   memset(memory_region(REGION_CPU2) + 0x4000, 0xff, 0x80); // sahalove needs a clean RAM for sound 05 to work correctly
   sndlocals.subtype = brdData->subType;
+  // L'Hexagone takes no command: its sound program reacts to the switches and the chime lines,
+  // so those are logged as the sound commands (see below), not the raw writes of the lines.
+  if (!sndlocals.subtype)
+    sndbrd_logData(brdData->boardNo, 0);
 }
 
 static WRITE_HANDLER(tabart_manCmd_w) {
@@ -62,6 +69,17 @@ static WRITE_HANDLER(tabart_data_w) {
 
   sndlocals.sndCmd = data ^ 0xc7;
   sndlocals.outhole = core_getSw(66) ? 1 : 0;
+
+  // With the outhole closed (the bonus count) the program plays a sound for each chime line
+  // that is raised: log it as 0xC0 | line (0x04 the 10's, 0x02 the 100's, 0x01 the 1000's chime).
+  if (sndlocals.outhole) {
+    const UINT8 raised = data & ~sndlocals.chimes & 0x07;
+    int line;
+    for (line = 0; line < 3; line++)
+      if (raised & (1 << line))
+        snd_cmd_log(0, 0xc0 | (1 << line));
+  }
+  sndlocals.chimes = data & 0x07;
 }
 
 const struct sndbrdIntf tabartIntf = {
@@ -76,7 +94,26 @@ static READ_HANDLER(ym2203_port_a_r) {
 }
 
 static READ_HANDLER(ym2203_port_b_r) {
-  return sndlocals.swStrobe ? coreGlobals.swMatrix[sndlocals.swStrobe] : ~sndlocals.manCmd;
+  if (!sndlocals.swStrobe)
+    return ~sndlocals.manCmd;
+  {
+    const int strobe = sndlocals.swStrobe & 7;
+    const UINT8 sw = coreGlobals.swMatrix[strobe];
+    const UINT8 closed = sw & ~sndlocals.swLast[strobe]; // what the program finds newly closed
+    sndlocals.swLast[strobe] = sw;
+    // The sound program plays a routine for each newly closed switch while the outhole is open.
+    // Log which switch it is as the game's switch number (column * 10 + row, written in BCD, so
+    // switch 41 is 0x41), row being the strobe - 1 and column the bit.
+    if (closed && !sndlocals.outhole && strobe <= 5) {
+      int bit;
+      for (bit = 0; bit < 8; bit++) {
+        const int code = (bit << 4) | (strobe - 1);
+        if ((closed & (1 << bit)) && code) // 00 is "none" to the program
+          snd_cmd_log(0, code);
+      }
+    }
+    return ~sw;
+  }
 }
 
 static void tabart_irq(int state) {
