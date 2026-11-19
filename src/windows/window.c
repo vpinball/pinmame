@@ -592,6 +592,9 @@ static struct win_effect_data effect_table[] =
 //============================================================
 
 static void compute_multipliers_internal(const RECT *rect, int visible_width, int visible_height, int *xmult, int *ymult);
+#ifndef VPINMAME
+static void client_multipliers(const RECT *rect, int visible_width, int visible_height, int *xmult, int *ymult);
+#endif
 static void update_system_menu(void);
 static LRESULT CALLBACK video_window_proc(HWND wnd, UINT message, WPARAM wparam, LPARAM lparam);
 static void draw_video_contents(HDC dc, struct mame_bitmap *bitmap, const struct rectangle *bounds, int update);
@@ -684,15 +687,29 @@ static void get_monitor_work_area(HMONITOR mon, RECT *work)
 		SystemParametersInfo(SPI_GETWORKAREA, 0, work, 0);
 }
 
-// Largest multiple up to scale of the width x height image that the blitter draws (beyond, the image
-// stays smaller, centered), converted_bitmap holds and the window takes in the work area
+// Whether a window is limited to the blitter's multiples (beyond, the image stays smaller, centered):
+// not with hardware stretch, nor with GDI and square pixels (see client_multipliers)
+static int blitter_limited(void)
+{
+#ifndef DISABLE_DX7
+	if (win_use_d3d || (win_use_ddraw && win_dd_hw_stretch))
+		return 0;
+	if (win_use_ddraw)
+		return 1;
+#endif
+	return pixel_aspect_ratio != VIDEO_PIXEL_ASPECT_RATIO_1_1;
+}
+
+// Largest multiple up to scale of the width x height image that is drawn in full and whose window fits the work area
 static int win_fit_scale(int scale, int width, int height, const RECT *work)
 {
-	scale = min(scale, min(MAX_X_MULTIPLY, MAX_Y_MULTIPLY));
-	scale = min(scale, min(effect_table[win_blit_effect].max_xscale, effect_table[win_blit_effect].max_yscale));
+	if (blitter_limited())
+	{
+		scale = min(scale, min(MAX_X_MULTIPLY, MAX_Y_MULTIPLY));
+		scale = min(scale, min(effect_table[win_blit_effect].max_xscale, effect_table[win_blit_effect].max_yscale));
+	}
 	while (scale > 1 && (width * scale + wnd_extra_width() > work->right - work->left ||
-	                     height * scale + wnd_extra_height() > work->bottom - work->top ||
-	                     width * scale > MAX_VIDEO_WIDTH || height * scale > MAX_VIDEO_HEIGHT))
+	                     height * scale + wnd_extra_height() > work->bottom - work->top))
 		scale--;
 	return max(scale, 1);
 }
@@ -1665,7 +1682,11 @@ void win_adjust_window_for_visible(int min_x, int max_x, int min_y, int max_y)
  		int xmult, ymult;
 
  		GetClientRect(win_video_window, &r);
+#ifndef VPINMAME
+ 		client_multipliers(&r, old_visible_width, old_visible_height, &xmult, &ymult);
+#else
  		compute_multipliers_internal(&r, old_visible_width, old_visible_height, &xmult, &ymult);
+#endif
 
  		GetWindowRect(win_video_window, &r);
  		r.right += (win_visible_width - old_visible_width) * xmult;
@@ -1824,7 +1845,11 @@ void win_toggle_maximize(void)
 
 			current.right  -= extrawidth;
 			current.bottom -= extraheight;
+#ifndef VPINMAME
+			client_multipliers(&current, win_visible_width, win_visible_height, &xmult, &ymult);
+#else
 			win_compute_multipliers(&current, &xmult, &ymult);
+#endif
 			current.right = current.left + win_visible_width  * xmult + extrawidth;
 			current.bottom = current.top + win_visible_height * ymult + extraheight;
 		}
@@ -2107,11 +2132,27 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 	RECT client;
 #ifndef VPINMAME
 	int cx, cy;
+	int stretch = 1; // the blitted image is drawn at this multiple (see client_multipliers)
 #endif
 
 	// compute the multipliers
 	GetClientRect(win_video_window, &client);
 	win_compute_multipliers(&client, &xmult, &ymult);
+#ifndef VPINMAME
+	{
+		// beyond the blitter's multiples: blit at a divisor of the client's multiple, stretch the rest exactly
+		int client_xmult, client_ymult;
+		client_multipliers(&client, win_visible_width, win_visible_height, &client_xmult, &client_ymult);
+		if (client_xmult != xmult || client_ymult != ymult)
+		{
+			int mult = min(xmult, ymult);
+			while (client_xmult % mult)
+				mult--;
+			xmult = ymult = mult;
+			stretch = client_xmult / mult;
+		}
+	}
+#endif
 
 	// blit to our temporary bitmap
 	params.dstdata		= converted_bitmap; //(void *)(((size_t)converted_bitmap + 15) & ~15); // always 16b aligned
@@ -2168,8 +2209,8 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 
 	// compute the center position
 #ifndef VPINMAME // The old code prevents the DMD window from scaling-to-fit, so remove that in the VPM case.
-	cx = client.left + ((client.right - client.left) - win_visible_width * xmult) / 2;
-	cy = client.top + ((client.bottom - client.top) - win_visible_height * ymult) / 2;
+	cx = client.left + ((client.right - client.left) - win_visible_width * xmult * stretch) / 2;
+	cy = client.top + ((client.bottom - client.top) - win_visible_height * ymult * stretch) / 2;
 #endif
 
 	// Blit to the screen.  SetDIBitsToDevice never scales, so it also serves a client the
@@ -2177,7 +2218,8 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 	// out the surround.  VPinMAME stretches to fill instead, so there it must match exactly
 #ifndef VPINMAME
 	{ const int dstx = cx, dsty = cy;
-	  const int fits = ((client.right - client.left) >= win_visible_width  * xmult) &&
+	  const int fits = (stretch == 1) &&
+	                   ((client.right - client.left) >= win_visible_width  * xmult) &&
 	                   ((client.bottom - client.top) >= win_visible_height * ymult);
 #else
 	{ const int dstx = 0, dsty = 0;
@@ -2194,7 +2236,7 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 	{
 	//!! SetStretchBltMode(dc, HALFTONE); // Does not really work. Internet says this could be due to some heuristic which does not do filtering on small images, but maybe also because its (unsupported) 15/16bit input?
 #ifndef VPINMAME
-	StretchDIBits(dc, cx, cy, win_visible_width * xmult, win_visible_height * ymult,
+	StretchDIBits(dc, cx, cy, win_visible_width * xmult * stretch, win_visible_height * ymult * stretch,
 #else
 	StretchDIBits(dc, 0, 0, (client.right - client.left), (client.bottom - client.top),
 #endif
@@ -2246,8 +2288,8 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 
 		inner.left = cx;
 		inner.top = cy;
-		inner.right = cx + win_visible_width * xmult;
-		inner.bottom = cy + win_visible_height * ymult;
+		inner.right = cx + win_visible_width * xmult * stretch;
+		inner.bottom = cy + win_visible_height * ymult * stretch;
 		erase_outer_rect(&client, &inner, dc);
 	}
 #endif
@@ -2341,6 +2383,27 @@ void win_compute_multipliers(const RECT *rect, int *xmult, int *ymult)
 {
 	compute_multipliers_internal(rect, win_visible_width, win_visible_height, xmult, ymult);
 }
+
+
+
+//============================================================
+//	client_multipliers
+//============================================================
+
+#ifndef VPINMAME
+// The multiples a client shows the visible area at: with GDI and square pixels the client's whole multiple,
+// also beyond the blitter's (dib_draw_window stretches the rest, e.g. on a high DPI desktop, see win_dpi_scale)
+static void client_multipliers(const RECT *rect, int visible_width, int visible_height, int *xmult, int *ymult)
+{
+	compute_multipliers_internal(rect, visible_width, visible_height, xmult, ymult);
+	if (!win_use_directx && pixel_aspect_ratio == VIDEO_PIXEL_ASPECT_RATIO_1_1)
+	{
+		const int mult = min((rect->right - rect->left) / visible_width, (rect->bottom - rect->top) / visible_height);
+		if (mult > min(*xmult, *ymult))
+			*xmult = *ymult = mult;
+	}
+}
+#endif
 
 
 
