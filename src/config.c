@@ -345,12 +345,29 @@ void config_close(config_file *cfg)
 	config_read_ports
 ***************************************************************************/
 
+/* KEYCODE_YEN was inserted after KEYCODE_BACKSPACE in April 2024 (976644f2), which shifted every
+   later standard input code by one. Map a code saved by an older build to the current numbering. */
+static InputCode code_from_pre_yen_build(InputCode code)
+{
+	return (code >= KEYCODE_YEN && code < __code_max - 1) ? code + 1 : code;
+}
+
+static int saved_port_equals(const struct InputPort *in, const struct InputPort *saved, int pre_yen)
+{
+	int j;
+	if (in->mask != saved->mask || in->default_value != saved->default_value || in->type != saved->type)
+		return 0;
+	for (j = 0; j < SEQ_MAX; j++)
+		if (in->seq[j] != (pre_yen ? code_from_pre_yen_build(saved->seq[j]) : saved->seq[j]))
+			return 0;
+	return 1;
+}
+
 int config_read_ports(config_file *cfg, struct InputPort *input_ports_default, struct InputPort *input_ports)
 {
-	//unsigned int total;
-	unsigned int saved_total;
-	struct InputPort *in;
-	struct InputPort saved;
+	unsigned int total, saved_total, i;
+	int pre_yen, matches = 0;
+	struct InputPort *saved;
 	int (*read_input_port)(mame_file *, struct InputPort *);
 
 	if (cfg->is_write || cfg->is_default)
@@ -361,40 +378,46 @@ int config_read_ports(config_file *cfg, struct InputPort *input_ports_default, s
 	read_input_port = cfg->format->read_input_port;
 
 	/* calculate the size of the array */
-	/*total =*/ count_input_ports(input_ports_default);
+	total = count_input_ports(input_ports_default);
 
 	/* read array size */
-	if (readint(cfg->file, &saved_total) != 0)
+	if (readint(cfg->file, &saved_total) != 0 || saved_total > 0x10000)
 		return CONFIG_ERROR_CORRUPT;
 
-	/* read the original settings and compare them with the ones defined in the driver */
-	in = (struct InputPort *) input_ports_default;
-	while (in->type != IPT_END)
-	{
-		if (read_input_port(cfg->file, &saved) != 0)
-			return CONFIG_ERROR_CORRUPT;
-
-		if (in->mask != saved.mask ||
-				in->default_value != saved.default_value ||
-				in->type != saved.type ||
-				seq_cmp(&in->seq, &saved.seq) !=0 )
+	/* read the whole section (the original settings as defined in the driver, then the current settings),
+	   so that the coin counters and the mixer levels behind it can still be read when the ports are dropped */
+	saved = (struct InputPort *)calloc(2 * saved_total + 1, sizeof(struct InputPort));
+	if (!saved)
+		return CONFIG_ERROR_CORRUPT;
+	for (i = 0; i < 2 * saved_total; i++)
+		if (read_input_port(cfg->file, &saved[i]) != 0)
 		{
-			return CONFIG_ERROR_CORRUPT;	/* the default values are different */
+			free(saved);
+			return CONFIG_ERROR_CORRUPT;
 		}
-
-		in++;
-	}
-
-	/* read the current settings */
-	in = input_ports;
-	while (in->type != IPT_END)
-	{
-		if (read_input_port(cfg->file, in) != 0)
-			break;
-		in++;
-	}
-
 	cfg->position = POSITION_AFTER_PORTS;
+
+	/* the saved settings are only applied if the original ones match the driver, possibly once the codes of a build older than KEYCODE_YEN are renumbered */
+	for (pre_yen = 0; pre_yen <= 1 && !matches && saved_total == total; pre_yen++)
+	{
+		matches = 1;
+		for (i = 0; i < total && matches; i++)
+			matches = saved_port_equals(&input_ports_default[i], &saved[i], pre_yen);
+		if (matches)
+			for (i = 0; i < total; i++)
+			{
+				const struct InputPort *cur = &saved[total + i];
+				int j;
+				input_ports[i].type = cur->type;
+				input_ports[i].mask = cur->mask;
+				input_ports[i].default_value = cur->default_value;
+				for (j = 0; j < SEQ_MAX; j++)
+					input_ports[i].seq[j] = pre_yen ? code_from_pre_yen_build(cur->seq[j]) : cur->seq[j];
+			}
+	}
+	free(saved);
+
+	/* the ports are ignored when they differ from the driver, but this is no reason to also drop the counters and mixer levels */
 	return CONFIG_ERROR_SUCCESS;
 }
 
