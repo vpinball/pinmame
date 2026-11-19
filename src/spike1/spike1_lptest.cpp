@@ -10,21 +10,33 @@
 //    spike1_lptest <pinmame64.dll> <vpm path> <set> [--seconds N] [--frames <dir>] [--report <s>]
 //                  [--coin <switch>] [--coins N] [--coin-at <s>] [--start <switch>] [--start-at <s>]
 //                  [--press <s>:<switch>[:<ms>]]... [--lamp <n>]... [--mech <n>]...
+//                  [--memmap <platform.json> <map.json> [--states <s>]] [--read-memory <address>:<bytes>]...
 //
 // The vpm path holds roms/<set>.zip (or roms/<set>/) and nvram/<set>.nv as PinMAME has them; the
 // defaults are Ghostbusters LE's switches (LEFT COIN 81, START BUTTON 78). A press shorter than
 // 20 ms is timed exactly, 0 ms closes and opens the switch back to back; a negative switch is one
 // closed at rest, opened for the time. --lamp prints that lamp's level as it changes, --mech that
 // mech's GetMech() value (Ghostbusters' Slimer is mech 0). SPIKE1_LOG passes the subsystem's log
-// on. Windows only: it loads the library with LoadLibrary.
+// on. --memmap hands the library a memory map (PinmameSetMemMap, the files VPX's PinMAME plugin
+// loads from its memmaps folder) and reads the states it makes of it, the plugin bus group "Game
+// States", every --states seconds (default 1) as a plugin does, printing each one that changed;
+// the tool is the plugin host for that (MsgPlugin.h). --read-memory prints those bytes of the
+// game's memory (PinmameReadMainCPUMemory) as they change. Windows only: it loads the library
+// with LoadLibrary.
 
 #include "../libpinmame/libpinmame.h"
+#include "../libpinmame/PinMAMEPlugin.h"
+#include "../libpinmame/plugins/MsgPlugin.h"
+#include "../libpinmame/plugins/ControllerPlugin.h"
 
 #include <algorithm>
 #include <array>
 #include <atomic>
 #include <chrono>
 #include <cmath>
+#include <condition_variable>
+#include <fstream>
+#include <sstream>
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
@@ -203,6 +215,118 @@ void PINMAMECALLBACK on_log(PINMAME_LOG_LEVEL level, const char *format, va_list
 
 void PINMAMECALLBACK on_sound_command(int, int, void *) {}
 
+// The plugin host for --memmap: just enough of MsgPlugin.h for the library to register its state
+// blocks at the game start (from RunOnMainThread) and for the tool to ask for them (GetStateSrc)
+namespace host {
+
+constexpr uint32_t TOOL_ENDPOINT = 1, PINMAME_ENDPOINT = 2;
+std::mutex g_lock;
+std::vector<std::string> g_msg_names; // a message's id is its index + 1
+struct subscription { uint32_t endpoint; unsigned msg; msgpi_msg_callback callback; void *context; };
+std::vector<subscription> g_subs;
+struct pending { clock_type::time_point at; msgpi_timer_callback callback; void *data; bool *done; };
+std::vector<pending> g_pending;
+std::condition_variable g_ran;
+std::thread::id g_main;
+
+unsigned MSGPIAPI get_endpoint(const char *) { return 0; }
+void MSGPIAPI get_endpoint_info(const uint32_t, MsgEndpointInfo *info) { *info = { "lptest", "spike1_lptest", "", "", "", "" }; }
+unsigned MSGPIAPI get_msg_id(const char *name_space, const char *name)
+{
+	const std::string key = std::string(name_space) + '/' + name;
+	std::lock_guard<std::mutex> lock(g_lock);
+	for (size_t i = 0; i < g_msg_names.size(); i++) if (g_msg_names[i] == key) return unsigned(i + 1);
+	g_msg_names.push_back(key);
+	return unsigned(g_msg_names.size());
+}
+void MSGPIAPI subscribe(const uint32_t endpoint, const unsigned msg, const msgpi_msg_callback callback, void *context)
+{
+	std::lock_guard<std::mutex> lock(g_lock);
+	g_subs.push_back({ endpoint, msg, callback, context });
+}
+void MSGPIAPI unsubscribe(const unsigned msg, const msgpi_msg_callback callback, void *context)
+{
+	std::lock_guard<std::mutex> lock(g_lock);
+	g_subs.erase(std::remove_if(g_subs.begin(), g_subs.end(), [&](const subscription &s) { return s.msg == msg && s.callback == callback && s.context == context; }), g_subs.end());
+}
+void deliver(const unsigned msg, const uint32_t target, void *data) // target 0: every subscriber
+{
+	std::vector<subscription> to;
+	{
+		std::lock_guard<std::mutex> lock(g_lock);
+		for (const auto &s : g_subs) if (s.msg == msg && (!target || s.endpoint == target)) to.push_back(s);
+	}
+	for (const auto &s : to) s.callback(msg, s.context, data);
+}
+void MSGPIAPI broadcast(const uint32_t, const unsigned msg, void *data) { deliver(msg, 0, data); }
+void MSGPIAPI send(const uint32_t, const unsigned msg, const uint32_t target, void *data) { deliver(msg, target, data); }
+void MSGPIAPI release_msg_id(const unsigned) {}
+void MSGPIAPI register_setting(const uint32_t, MsgSettingDef *) {}
+void MSGPIAPI save_setting(const uint32_t, MsgSettingDef *) {}
+// Run on the tool's own thread from pump(); a negative delay waits for it (at once from that thread)
+void MSGPIAPI run_on_main_thread(const uint32_t, const double delay, const msgpi_timer_callback callback, void *data)
+{
+	if (delay < 0 && std::this_thread::get_id() == g_main) { callback(data); return; }
+	bool done = false;
+	std::unique_lock<std::mutex> lock(g_lock);
+	g_pending.push_back({ clock_type::now() + std::chrono::microseconds(int64_t(std::max(0.0, delay) * 1e6)), callback, data, delay < 0 ? &done : nullptr });
+	if (delay < 0) g_ran.wait_for(lock, std::chrono::seconds(5), [&] { return done; });
+}
+void pump()
+{
+	for (;;) {
+		pending p{};
+		{
+			std::lock_guard<std::mutex> lock(g_lock);
+			const auto due = std::find_if(g_pending.begin(), g_pending.end(), [](const pending &q) { return q.at <= clock_type::now(); });
+			if (due == g_pending.end()) return;
+			p = *due;
+			g_pending.erase(due);
+		}
+		p.callback(p.data);
+		if (p.done) {
+			std::lock_guard<std::mutex> lock(g_lock);
+			*p.done = true;
+			g_ran.notify_all();
+		}
+	}
+}
+void MSGPIAPI flush(const uint32_t) { pump(); }
+
+MsgPluginAPI g_api = { 1, get_endpoint, get_endpoint_info, get_msg_id, subscribe, unsubscribe, broadcast, send, release_msg_id,
+	register_setting, save_setting, run_on_main_thread, flush };
+
+// The library's "Game States" block, each state as text, by its group and name
+std::map<std::string, std::string> game_states()
+{
+	std::map<std::string, std::string> out;
+	std::vector<StateSrcId> entries(64);
+	GetStateSrcMsg msg = { unsigned(entries.size()), 0, entries.data() };
+	broadcast(TOOL_ENDPOINT, get_msg_id(CTLPI_NAMESPACE, CTLPI_STATE_GET_SRC_MSG), &msg);
+	for (unsigned i = 0; i < std::min(msg.count, msg.maxEntryCount); i++) {
+		const StateSrcId &src = entries[i];
+		if (!src.name || std::string(src.name) != "Game States") continue;
+		for (unsigned k = 0; k < src.nStates; k++) {
+			const StateDef &d = src.stateDefs[k];
+			if (!d.GetState) continue;
+			std::string value;
+			if (d.dataFormat == CTLPI_STATE_FORMAT_STRING) {
+				const char *text = nullptr;
+				d.GetState(d.callContext, &text);
+				value = '"' + std::string(text ? text : "") + '"';
+			} else if (d.dataFormat == CTLPI_STATE_FORMAT_INT64) {
+				int64_t v = 0;
+				d.GetState(d.callContext, &v);
+				value = std::to_string(v);
+			} else value = "(format " + std::to_string(d.dataFormat) + ")";
+			out[std::string(d.desc ? d.desc : "") + " | " + (d.name ? d.name : "")] = value;
+		}
+	}
+	return out;
+}
+
+} // namespace host
+
 template <typename T> bool bind(HMODULE dll, T &fn, const char *name)
 {
 	fn = reinterpret_cast<T>(reinterpret_cast<void *>(GetProcAddress(dll, name)));
@@ -227,6 +351,9 @@ int main(int argc, char **argv)
 	std::vector<press> presses;
 	std::vector<int> watch_lamps, watch_mechs;
 	int coin = 81, coins = 4, start = 78;
+	std::string memmap_platform, memmap_game;
+	double states_every = 1.0;
+	std::vector<std::pair<uint32_t, int>> memory_reads;
 	for (int i = 4; i < argc; i++) {
 		const std::string a = argv[i];
 		auto next = [&]() -> const char * { return i + 1 < argc ? argv[++i] : ""; };
@@ -240,6 +367,12 @@ int main(int argc, char **argv)
 		else if (a == "--report") report_every = std::atof(next());
 		else if (a == "--lamp") watch_lamps.push_back(std::atoi(next()));
 		else if (a == "--mech") watch_mechs.push_back(std::atoi(next()));
+		else if (a == "--memmap") { memmap_platform = next(); memmap_game = next(); }
+		else if (a == "--states") states_every = std::atof(next());
+		else if (a == "--read-memory") { // <address>:<bytes>
+			const std::string v = next();
+			memory_reads.emplace_back(uint32_t(std::strtoul(v.c_str(), nullptr, 0)), std::atoi(v.substr(v.find(':') + 1).c_str()));
+		}
 		else if (a == "--press") { // <s>:<switch>[:<ms>]; a negative switch is opened (one closed at rest)
 			press p;
 			if (std::sscanf(next(), "%lf:%d:%d", &p.at, &p.sw, &p.ms) >= 2) presses.push_back(p);
@@ -279,6 +412,32 @@ int main(int argc, char **argv)
 	// read PinMAME's simulated mechs instead of the machine's motors and steppers
 	set_solenoid_mask(2, 2); // the lamps and coils as levels, as VPX tables for Spike 1 ask
 
+	decltype(&PinmameReadMainCPUMemory) read_memory = nullptr;
+	if (!memory_reads.empty() && !bind(dll, read_memory, "PinmameReadMainCPUMemory")) return 1;
+	std::string platform_json, map_json; // the library parses them at PinmameSetMemMap; kept to the end
+	if (!memmap_game.empty()) {
+		decltype(&PinmameSetMsgAPI) set_msg_api;
+		decltype(&PinmameSetMemMap) set_mem_map;
+		if (!bind(dll, set_msg_api, "PinmameSetMsgAPI") || !bind(dll, set_mem_map, "PinmameSetMemMap")) return 1;
+		auto slurp = [](const std::string &path, std::string &out) {
+			std::ifstream in(path, std::ios::binary);
+			std::ostringstream text;
+			text << in.rdbuf();
+			out = text.str();
+			return in.good() || in.eof();
+		};
+		if (!slurp(memmap_platform, platform_json) || !slurp(memmap_game, map_json) || map_json.empty()) {
+			std::fprintf(stderr, "cannot read %s or %s\n", memmap_platform.c_str(), memmap_game.c_str());
+			return 1;
+		}
+		host::g_main = std::this_thread::get_id();
+		set_msg_api(&host::g_api, host::PINMAME_ENDPOINT);
+		set_mem_map(reinterpret_cast<uint8_t *>(platform_json.data()), platform_json.size(), reinterpret_cast<uint8_t *>(map_json.data()), map_json.size());
+	}
+	std::map<std::string, std::string> states_were;
+	std::vector<std::vector<uint8_t>> memory_were(memory_reads.size());
+	double next_states = 0.0;
+
 	g_t0 = clock_type::now();
 	const PINMAME_STATUS status = run(set.c_str());
 	std::printf("[%7.3f] PinmameRun(%s) = %d\n", now_s(), set.c_str(), status);
@@ -292,6 +451,7 @@ int main(int argc, char **argv)
 	double next_report = 1.0, run_at = -1.0;
 	for (;;) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(20));
+		host::pump();
 		if (run_at < 0.0) {
 			if (g_state != 1) {
 				// Back to stopped from starting: the set did not load (the log says why)
@@ -351,6 +511,23 @@ int main(int argc, char **argv)
 				set_switch(sw, !pressed);
 				std::printf("[%7.3f] switch %d %s for %d ms\n", now_s(), sw, pressed ? "pressed" : "opened", p.ms);
 			}
+		}
+		if (!memmap_game.empty() && t >= next_states) {
+			next_states += states_every;
+			const auto states = host::game_states();
+			if (states.empty()) std::printf("[%7.3f] no game states yet\n", now_s());
+			for (const auto &s : states)
+				if (states_were[s.first] != s.second) std::printf("[%7.3f] state %s = %s\n", t, s.first.c_str(), s.second.c_str());
+			states_were = states;
+		}
+		for (size_t k = 0; k < memory_reads.size(); k++) {
+			std::vector<uint8_t> bytes(size_t(memory_reads[k].second));
+			bytes.resize(size_t(std::max(0, read_memory(memory_reads[k].first, bytes.data(), int(bytes.size())))));
+			if (bytes == memory_were[k]) continue;
+			memory_were[k] = bytes;
+			std::printf("[%7.3f] memory %08x:", t, memory_reads[k].first);
+			for (uint8_t b : bytes) std::printf(" %02x", b);
+			std::printf("%s\n", bytes.empty() ? " not readable" : "");
 		}
 		if (t >= next_report) {
 			next_report += report_every;
