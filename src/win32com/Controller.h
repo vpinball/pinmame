@@ -33,6 +33,7 @@ class CController :
 {
 public:
 	HANDLE				m_hThreadRun;				// Handle to the running thread!
+	DWORD				m_dwThreadRun;				// ID of the running emulation thread
 	HANDLE				m_hEmuIsRunning;			// Event handle for running emulation
 
 	// options not stored in the registry
@@ -143,6 +144,7 @@ public:
 
 	STDMETHOD(get_NVRAM)(/*[out, retval]*/ VARIANT *pVal);
 	STDMETHOD(get_ChangedNVRAM)(/*[out, retval]*/ VARIANT *pVal);
+	STDMETHOD(ReadMainCPUByte)(/*[in]*/ long address, /*[out, retval]*/ int *pVal);
 
 	STDMETHOD(get_RawDmdWidth)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(get_RawDmdHeight)(/*[out, retval]*/ int *pVal);
