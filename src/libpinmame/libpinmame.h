@@ -581,6 +581,7 @@ PINMAMEAPI int PinmameReadMainCPUMemory(uint32_t address, uint8_t* const p_buffe
 PINMAMEAPI int PinmameWriteMainCPUMemory(uint32_t address, const uint8_t* const p_buffer, int size);
 PINMAMEAPI const uint8_t* PinmameGetRawMemoryRegion(const int region);
 PINMAMEAPI size_t PinmameGetRawMemoryRegionLength(const int region);
+PINMAMEAPI const char* PinmameGetRomPath();
 PINMAMEAPI void PinmameSetUserData(void* const p_userData);
 
 // If defined, libPinMame will implement the core controller messages for display, input & output state queries
