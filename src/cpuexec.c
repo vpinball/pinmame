@@ -441,8 +441,12 @@ void cpu_run(void)
 			profiler_mark(PROFILER_EXTRA);
 
 #ifdef REMOTE_DEBUG
-			/* Tiny gap to allow HTTP thread to grab the lock */
-			usleep(1); 
+			/* Tiny gap to allow HTTP thread to grab the lock. Only when it is
+			   waiting for it: a usleep(1) sleeps ~50 us or more, and machines
+			   with many timeslices per second (e.g. a 16 kHz ADPCM VCLK timer)
+			   otherwise lose half their speed. */
+			if (remote_debug_lock_wanted())
+				usleep(1);
 #endif
 			/* if we have a load/save scheduled, handle it */
 			if (loadsave_schedule != LOADSAVE_NONE)
