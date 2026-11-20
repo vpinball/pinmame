@@ -420,6 +420,7 @@ int sysdep_create_display(int depth)
 				 );
   }
 
+  x11_watch_close_button(window);
   XMapRaised(display,window);
   XClearWindow(display,window);
   XWindowEvent(display,window,ExposureMask,&event);

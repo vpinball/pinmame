@@ -21,6 +21,23 @@ static int x11_use_winkeys = 0;
 
 static int x11_mapkey(struct rc_option *option, const char *arg, int priority);
 
+/* the window manager's close button: see x11_watch_close_button() */
+extern UINT8 trying_to_quit;
+static Atom wm_delete_window = None;
+
+/*
+ * Ask the window manager to send WM_DELETE_WINDOW when the user closes the
+ * window, instead of killing the X connection.  sysdep_update_keyboard() then
+ * sets trying_to_quit, so the core exits cleanly and saves nvram and cfg, like
+ * ESC and like the SDL3 driver does for SDL_EVENT_WINDOW_CLOSE_REQUESTED.
+ */
+void x11_watch_close_button(Window w)
+{
+	if (wm_delete_window == None)
+		wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", False);
+	XSetWMProtocols(display, w, &wm_delete_window, 1);
+}
+
 struct rc_option x11_input_opts[] = {
 	/* name, shortname, type, dest, deflt, min, max, func, help */
 	{ "X11-input related", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
@@ -164,6 +181,12 @@ void sysdep_update_keyboard (void)
 				case LeaveNotify:
 					if (use_private_cmap) XInstallColormap(display,DefaultColormapOfScreen(screen));
 					break;	
+				case ClientMessage:
+					/* window manager close button: exit cleanly (saving nvram etc),
+					   keyboard.c fakes the escape presses for this */
+					if (wm_delete_window != None && (Atom)E.xclient.data.l[0] == wm_delete_window)
+						trying_to_quit = 1;
+					break;
 #ifdef USE_XIL
 				case ConfigureNotify:
 					update_xil_window_size( E.xconfigure.width, E.xconfigure.height );
