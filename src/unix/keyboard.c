@@ -8,6 +8,7 @@
  * Include files.
  */
 #include <signal.h>
+#include <unistd.h>
 #include "xmame.h"
 #include "driver.h"
 #include "keyboard.h"
@@ -143,36 +144,54 @@ UINT8 trying_to_quit;
 /* private methods */
 FIFO(INLINE, kbd, struct xmame_keyboard_event)
 
+/* SIGQUIT, SIGINT (Ctrl+C) and SIGTERM: exit cleanly, saving nvram and cfg.
+   A second SIGINT/SIGTERM while that exit is pending (a hung emulator) uses
+   the default action and kills the process at once. */
 void sigquit_handler(int signum)
 {
-   fprintf(stderr, "info: caught SIGQUIT, exiting gracefully...\n");
+   if (trying_to_quit && signum != SIGQUIT)
+   {
+      signal(signum, SIG_DFL);
+      raise(signum);
+      return;
+   }
+   /* fprintf is not async-signal-safe, write() is */
+   static const char msg[] = "info: caught signal, exiting gracefully...\n";
+   (void)!write(2, msg, sizeof(msg) - 1);
    trying_to_quit = 1;
+}
+
+static void add_quit_handler(int signum, const char *name)
+{
+   struct sigaction new_action, old_action;
+
+   if (sigaction(signum, NULL, &old_action) != 0)
+      fprintf(stderr, "error: sigaction() failed\n");
+   else if (old_action.sa_handler == SIG_IGN)
+      fprintf(stderr, "info: %s set to ignore (SIG_IGN)\n", name);
+   else
+   {
+      fprintf(stderr, "info: adding signal handler for %s\n", name);
+      new_action.sa_handler = sigquit_handler;
+      sigemptyset(&new_action.sa_mask);
+      new_action.sa_flags = 0;
+      sigaction(signum, &new_action, NULL);
+   }
 }
 
 /* public methods (in keyboard.h / osdepend.h) */
 int xmame_keyboard_init(void)
 {
-   struct sigaction new_action, old_action;
-   
    memset(key, 0, KEY_MAX);
 
    kbd_fifo = kbd_fifo_create(256);
    if(!kbd_fifo)
       return -1;
    
-   /* Add a signal handler for SIGQUIT to quit app gracefully */
-   if (sigaction(SIGQUIT, NULL, &old_action) != 0)
-      fprintf(stderr, "error: sigaction() failed\n");
-   else if (old_action.sa_handler == SIG_IGN)
-      fprintf(stderr, "info: SIGQUIT set to ignore (SIG_IGN)\n");
-   else
-   {
-      fprintf(stderr, "info: adding signal handler for SIGQUIT\n");
-      new_action.sa_handler = sigquit_handler;
-      sigemptyset(&new_action.sa_mask);
-      new_action.sa_flags = 0;
-      sigaction(SIGQUIT, &new_action, NULL);
-   }
+   /* Add signal handlers to quit app gracefully */
+   add_quit_handler(SIGQUIT, "SIGQUIT");
+   add_quit_handler(SIGINT, "SIGINT");
+   add_quit_handler(SIGTERM, "SIGTERM");
    
    return 0;
 }

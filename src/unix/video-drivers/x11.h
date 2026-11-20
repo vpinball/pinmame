@@ -58,6 +58,7 @@ EXTERN int devicebuttonmotion;
 
 /* device related */
 void process_x11_joy_event(XEvent *event);
+void x11_watch_close_button(Window w);
 
 #ifdef x11
 

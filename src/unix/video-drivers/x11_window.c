@@ -686,6 +686,7 @@ int x11_window_create_display (int bitmap_depth)
 #endif
 
 		XStoreName (display, window, title);
+		x11_watch_close_button (window);
 
 		/* Select event mask */
 
