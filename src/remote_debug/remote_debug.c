@@ -42,6 +42,12 @@ static int halt_cpu = 0;
 static volatile sig_atomic_t should_quit = 0;
 
 static pthread_mutex_t mame_mutex;
+/* The emulator thread (the one that calls remote_debug_init() and then runs
+ * the machine) and the number of other threads blocked in remote_debug_lock().
+ * cpu_run() gives the lock away between timeslices only while that count is
+ * non-zero, see remote_debug_lock_wanted(). */
+static pthread_t emu_thread;
+static int lock_waiters = 0;
 volatile int remote_debug_ready = 0;
 
 /* Provided by api_handler.c (HTTP request dispatch). */
@@ -415,7 +421,23 @@ static char event_queue[EVENT_QUEUE_SIZE][EVENT_LEN];
 static int event_head = 0;  /* next slot to write */
 static int event_tail = 0;  /* next slot to read */
 
-void remote_debug_lock(void)   { pthread_mutex_lock(&mame_mutex); }
+void remote_debug_lock(void)
+{
+	if (pthread_equal(pthread_self(), emu_thread)) {
+		pthread_mutex_lock(&mame_mutex);
+		return;
+	}
+	__atomic_add_fetch(&lock_waiters, 1, __ATOMIC_SEQ_CST);
+	pthread_mutex_lock(&mame_mutex);
+	__atomic_sub_fetch(&lock_waiters, 1, __ATOMIC_SEQ_CST);
+}
+
+/* Nonzero while another thread (the HTTP server) waits for the debugger lock. */
+int remote_debug_lock_wanted(void)
+{
+	return __atomic_load_n(&lock_waiters, __ATOMIC_SEQ_CST) != 0;
+}
+
 void remote_debug_unlock(void) { pthread_mutex_unlock(&mame_mutex); }
 
 /* Read a byte, optionally from a specific WPC ROM bank.
@@ -685,6 +707,8 @@ void remote_debug_init(void)
 	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 	pthread_mutex_init(&mame_mutex, &attr);
 	pthread_mutexattr_destroy(&attr);
+	emu_thread = pthread_self();
+	lock_waiters = 0;
 
 	if (pmoptions.start_paused) {
 		is_paused = 1;

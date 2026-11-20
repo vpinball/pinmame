@@ -39,6 +39,7 @@ extern volatile int remote_debug_ready;
 /* Recursive lock serializing emulator thread and HTTP server thread. */
 void remote_debug_lock(void);
 void remote_debug_unlock(void);
+int  remote_debug_lock_wanted(void);
 
 /* ------------------------------------------------------------------ */
 /* Execution control (hooks called from the emulator)                 */
