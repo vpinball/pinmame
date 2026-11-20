@@ -13,8 +13,20 @@
 /--------------------------*/
 #define SPINB_ROMEND	ROM_END
 
+#define GEN_SPINB 0
+
+// DMD frames per picture
+#define SPINB_DSP1 1
+#define SPINB_DSP2 2
+#define SPINB_DSP3 3
+
+#define SPINB_GS1(solInvert0,solInvert1,solInvert2,lamp16isGameOn) \
+(((UINT32)(UINT8)(solInvert0)<<24) | ((UINT32)(UINT8)(solInvert1)<<16) | ((UINT32)(UINT8)(solInvert2)<<8) | ((UINT32)(UINT8)(lamp16isGameOn)))
+
 /*-- Common Inports for Spinball Games --*/
-#define SPINB_COMPORTS \
+#define SPINB_COMPORTS SPINB_BUTTONPORTS SPINB_DIPS_GENERIC
+
+#define SPINB_BUTTONPORTS \
   PORT_START /* 0 */ \
     /* Switch Column 1 */ \
     COREPORT_BITDEF(  0x0001, IPT_COIN1,          KEYCODE_3)\
@@ -25,7 +37,13 @@
     COREPORT_BIT(     0x0020, "Puesta A Cero",    KEYCODE_HOME)\
     COREPORT_BIT(     0x0040, "Test Economico",   KEYCODE_9)\
     COREPORT_BIT(     0x0080, "Test Tecnico",     KEYCODE_8)\
-    COREPORT_BIT(     0x0100, "Test Contacto",    KEYCODE_7)\
+    COREPORT_BIT(     0x0100, "Test Contacto",    KEYCODE_7)
+
+/* DIP switches: port 1 = SL1 (low byte) + SL2 (high byte), port 2 = SL3 (low byte).
+   On every bank switches 1-4 are wired in reverse to bits 3-0, switches 5-8 go to bits 4-7
+   (confirmed from the game code of Verne's World, Jolly Park and Mach 2).
+   Generic set, used by Bushido */
+#define SPINB_DIPS_GENERIC \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x000f, 0x0002, "Coins Per Game") \
       COREPORT_DIPSET(0x0000, "25 ptas 2 Games" ) \
@@ -101,12 +119,254 @@
       COREPORT_DIPSET(0x0000, "0" )\
       COREPORT_DIPSET(0x0080, "1" )
 
+/* Verne's World, manual pages 13-14 */
+#define SPINB_DIPS_VRNWRLD() \
+  PORT_START /* 1 */ \
+    COREPORT_DIPNAME( 0x000f, 0x0002, "Coins Per Game") \
+      COREPORT_DIPSET(0x0000, "25 ptas 2 Games" ) \
+      COREPORT_DIPSET(0x0001, "25 ptas 1 Game" ) \
+      COREPORT_DIPSET(0x0002, "25 ptas 1 Game, 100 ptas 5 Games" ) \
+      COREPORT_DIPSET(0x0003, "50 ptas 1 Game" ) \
+      COREPORT_DIPSET(0x0004, "50 ptas 1 Game, 200 ptas 5 Games" ) \
+      COREPORT_DIPSET(0x0005, "50 ptas 1 Game, 100 ptas 3 Games" ) \
+      COREPORT_DIPSET(0x0006, "100 ptas 1 Game" ) \
+      COREPORT_DIPSET(0x0007, "100 ptas 1 Game, 500 ptas 6 Games" ) \
+      COREPORT_DIPSET(0x0008, "100 ptas 1 Game, 200 ptas 3 Games" ) \
+      COREPORT_DIPSET(0x0009, "50 esc 1 Game" ) \
+      COREPORT_DIPSET(0x000a, "50 esc 1 Game, 100 esc 3 Games" ) \
+      COREPORT_DIPSET(0x000b, "100 esc 1 Game" ) \
+      COREPORT_DIPSET(0x000c, "100 esc 1 Game, 200 esc 3 Games" ) \
+      COREPORT_DIPSET(0x000d, "100 esc 1 Game, 200 esc 3 Games (2)" ) \
+      COREPORT_DIPSET(0x000e, "100 esc 1 Game, 200 esc 3 Games (3)" ) \
+      COREPORT_DIPSET(0x000f, "100 esc 2 Games, 200 esc 5 Games" ) \
+    COREPORT_DIPNAME( 0x0030, 0x0000, "Replay Score") \
+      COREPORT_DIPSET(0x0000, "300 Million" ) \
+      COREPORT_DIPSET(0x0010, "400 Million" ) \
+      COREPORT_DIPSET(0x0020, "500 Million" ) \
+      COREPORT_DIPSET(0x0030, "600 Million" ) \
+    COREPORT_DIPNAME( 0x0040, 0x0000, "Test Mode Language") \
+      COREPORT_DIPSET(0x0000, "Spanish" ) \
+      COREPORT_DIPSET(0x0040, "Portuguese" ) \
+    COREPORT_DIPNAME( 0x0080, 0x0000, "Game Mode") \
+      COREPORT_DIPSET(0x0000, "Normal" ) \
+      COREPORT_DIPSET(0x0080, "Exhibition (Free Play)" ) \
+    COREPORT_DIPNAME( 0x0800, 0x0000, "Balls Per Game") \
+      COREPORT_DIPSET(0x0000, "3" ) \
+      COREPORT_DIPSET(0x0800, "5" ) \
+    COREPORT_DIPNAME( 0x0400, 0x0000, "Reserved (SL2-2)") \
+      COREPORT_DIPSET(0x0000, DEF_STR( Off ) ) \
+      COREPORT_DIPSET(0x0400, DEF_STR( On ) ) \
+    COREPORT_DIPNAME( 0x0300, 0x0000, "Handicap Score") \
+      COREPORT_DIPSET(0x0000, "700 Million" ) \
+      COREPORT_DIPSET(0x0100, "750 Million" ) \
+      COREPORT_DIPSET(0x0200, "800 Million" ) \
+      COREPORT_DIPSET(0x0300, "850 Million" ) \
+    COREPORT_DIPNAME( 0x3000, 0x0000, "New Travel Time") \
+      COREPORT_DIPSET(0x0000, "Disabled" ) \
+      COREPORT_DIPSET(0x1000, "Short" ) \
+      COREPORT_DIPSET(0x2000, "Medium" ) \
+      COREPORT_DIPSET(0x3000, "Long" ) \
+    COREPORT_DIPNAME( 0x4000, 0x0000, "Reserved (SL2-7)") \
+      COREPORT_DIPSET(0x0000, DEF_STR( Off ) ) \
+      COREPORT_DIPSET(0x4000, DEF_STR( On ) ) \
+    COREPORT_DIPNAME( 0x8000, 0x0000, "Reserved (SL2-8)") \
+      COREPORT_DIPSET(0x0000, DEF_STR( Off ) ) \
+      COREPORT_DIPSET(0x8000, DEF_STR( On ) ) \
+  PORT_START /* 2 */ \
+    COREPORT_DIPNAME( 0x0008, 0x0000, "Automatic Replay Score") \
+      COREPORT_DIPSET(0x0000, DEF_STR( No ) ) \
+      COREPORT_DIPSET(0x0008, DEF_STR( Yes ) ) \
+    COREPORT_DIPNAME( 0x0004, 0x0000, "Reserved (SL3-2)") \
+      COREPORT_DIPSET(0x0000, DEF_STR( Off ) ) \
+      COREPORT_DIPSET(0x0004, DEF_STR( On ) ) \
+    COREPORT_DIPNAME( 0x0003, 0x0000, "Extra Ball and Special Difficulty") \
+      COREPORT_DIPSET(0x0000, "Very Easy" ) \
+      COREPORT_DIPSET(0x0001, "Easy" ) \
+      COREPORT_DIPSET(0x0002, "Hard" ) \
+      COREPORT_DIPSET(0x0003, "Very Hard" ) \
+    COREPORT_DIPNAME( 0x0030, 0x0000, "3-Ball Multiball Repeat Time") \
+      COREPORT_DIPSET(0x0000, "Disabled" ) \
+      COREPORT_DIPSET(0x0010, "Short" ) \
+      COREPORT_DIPSET(0x0020, "Medium" ) \
+      COREPORT_DIPSET(0x0030, "Long" ) \
+    COREPORT_DIPNAME( 0x0040, 0x0000, "Reserved (SL3-7)") \
+      COREPORT_DIPSET(0x0000, DEF_STR( Off ) ) \
+      COREPORT_DIPSET(0x0040, DEF_STR( On ) ) \
+    COREPORT_DIPNAME( 0x0080, 0x0000, "Reserved (SL3-8)") \
+      COREPORT_DIPSET(0x0000, DEF_STR( Off ) ) \
+      COREPORT_DIPSET(0x0080, DEF_STR( On ) )
+
+/* Jolly Park, manual pages 13-14 */
+#define SPINB_DIPS_JOLYPARK() \
+  PORT_START /* 1 */ \
+    COREPORT_DIPNAME( 0x000f, 0x0002, "Coins Per Game") \
+      COREPORT_DIPSET(0x0000, "25 ptas 2 Games" ) \
+      COREPORT_DIPSET(0x0001, "25 ptas 1 Game" ) \
+      COREPORT_DIPSET(0x0002, "25 ptas 1 Game, 100 ptas 5 Games" ) \
+      COREPORT_DIPSET(0x0003, "50 ptas 1 Game" ) \
+      COREPORT_DIPSET(0x0004, "50 ptas 1 Game, 200 ptas 5 Games" ) \
+      COREPORT_DIPSET(0x0005, "50 ptas 1 Game, 100 ptas 3 Games" ) \
+      COREPORT_DIPSET(0x0006, "100 ptas 1 Game" ) \
+      COREPORT_DIPSET(0x0007, "100 ptas 1 Game, 500 ptas 6 Games" ) \
+      COREPORT_DIPSET(0x0008, "100 ptas 1 Game, 200 ptas 3 Games" ) \
+      COREPORT_DIPSET(0x0009, "50 esc 1 Game" ) \
+      COREPORT_DIPSET(0x000a, "50 esc 1 Game, 100 esc 3 Games" ) \
+      COREPORT_DIPSET(0x000b, "100 esc 1 Game" ) \
+      COREPORT_DIPSET(0x000c, "100 esc 1 Game, 200 esc 3 Games" ) \
+      COREPORT_DIPSET(0x000d, "100 esc 1 Game, 200 esc 3 Games (2)" ) \
+      COREPORT_DIPSET(0x000e, "100 esc 1 Game, 200 esc 3 Games (3)" ) \
+      COREPORT_DIPSET(0x000f, "100 esc 2 Games, 200 esc 5 Games" ) \
+    COREPORT_DIPNAME( 0x0030, 0x0000, "Replay Score") \
+      COREPORT_DIPSET(0x0000, "300 Million" ) \
+      COREPORT_DIPSET(0x0010, "400 Million" ) \
+      COREPORT_DIPSET(0x0020, "500 Million" ) \
+      COREPORT_DIPSET(0x0030, "600 Million" ) \
+    COREPORT_DIPNAME( 0x0040, 0x0000, "Reserved (SL1-7)") \
+      COREPORT_DIPSET(0x0000, DEF_STR( Off ) ) \
+      COREPORT_DIPSET(0x0040, DEF_STR( On ) ) \
+    COREPORT_DIPNAME( 0x0080, 0x0000, "Game Mode") \
+      COREPORT_DIPSET(0x0000, "Normal" ) \
+      COREPORT_DIPSET(0x0080, "Exhibition (Free Play)" ) \
+    COREPORT_DIPNAME( 0x0800, 0x0000, "Balls Per Game") \
+      COREPORT_DIPSET(0x0000, "3" ) \
+      COREPORT_DIPSET(0x0800, "5" ) \
+    COREPORT_DIPNAME( 0x0400, 0x0000, "Reserved (SL2-2)") \
+      COREPORT_DIPSET(0x0000, DEF_STR( Off ) ) \
+      COREPORT_DIPSET(0x0400, DEF_STR( On ) ) \
+    COREPORT_DIPNAME( 0x0300, 0x0000, "Handicap Score") \
+      COREPORT_DIPSET(0x0000, "700 Million" ) \
+      COREPORT_DIPSET(0x0100, "750 Million" ) \
+      COREPORT_DIPSET(0x0200, "800 Million" ) \
+      COREPORT_DIPSET(0x0300, "850 Million" ) \
+    COREPORT_DIPNAME( 0x3000, 0x0000, "New Ticket Time") \
+      COREPORT_DIPSET(0x0000, "Disabled" ) \
+      COREPORT_DIPSET(0x1000, "Short" ) \
+      COREPORT_DIPSET(0x2000, "Medium" ) \
+      COREPORT_DIPSET(0x3000, "Long" ) \
+    COREPORT_DIPNAME( 0x4000, 0x0000, "Reserved (SL2-7)") \
+      COREPORT_DIPSET(0x0000, DEF_STR( Off ) ) \
+      COREPORT_DIPSET(0x4000, DEF_STR( On ) ) \
+    COREPORT_DIPNAME( 0x8000, 0x0000, "Reserved (SL2-8)") \
+      COREPORT_DIPSET(0x0000, DEF_STR( Off ) ) \
+      COREPORT_DIPSET(0x8000, DEF_STR( On ) ) \
+  PORT_START /* 2 */ \
+    COREPORT_DIPNAME( 0x0008, 0x0000, "Automatic Replay Score") \
+      COREPORT_DIPSET(0x0000, DEF_STR( No ) ) \
+      COREPORT_DIPSET(0x0008, DEF_STR( Yes ) ) \
+    COREPORT_DIPNAME( 0x0004, 0x0000, "Reserved (SL3-2)") \
+      COREPORT_DIPSET(0x0000, DEF_STR( Off ) ) \
+      COREPORT_DIPSET(0x0004, DEF_STR( On ) ) \
+    COREPORT_DIPNAME( 0x0003, 0x0000, "Loops For Extra Ball") \
+      COREPORT_DIPSET(0x0000, "Captive Ball On Bridge" ) \
+      COREPORT_DIPSET(0x0001, "1" ) \
+      COREPORT_DIPSET(0x0002, "2" ) \
+      COREPORT_DIPSET(0x0003, "3" ) \
+    COREPORT_DIPNAME( 0x0030, 0x0000, "3-Ball Multiball Repeat Time") \
+      COREPORT_DIPSET(0x0000, "Disabled" ) \
+      COREPORT_DIPSET(0x0010, "Short" ) \
+      COREPORT_DIPSET(0x0020, "Medium" ) \
+      COREPORT_DIPSET(0x0030, "Long" ) \
+    COREPORT_DIPNAME( 0x0040, 0x0000, "Specials Difficulty") \
+      COREPORT_DIPSET(0x0000, "Easy" ) \
+      COREPORT_DIPSET(0x0040, "Hard" ) \
+    COREPORT_DIPNAME( 0x0080, 0x0000, "Reserved (SL3-8)") \
+      COREPORT_DIPSET(0x0000, DEF_STR( Off ) ) \
+      COREPORT_DIPSET(0x0080, DEF_STR( On ) )
+
+/* Mach 2, manual pages 11-12. Exhibition mode is not in the manual (SL1-8 "reserved"), but the
+   game code skips the credit decrement with it on, as on the later games. The manual lists the
+   ramp loops as SL2-8 ON = 2 loops; the code does loops = (SL2 >> 6) + 1, so it is SL2-7 */
+#define SPINB_DIPS_MACH2() \
+  PORT_START /* 1 */ \
+    COREPORT_DIPNAME( 0x000f, 0x0002, "Coins Per Game") \
+      COREPORT_DIPSET(0x0000, "Reserved (0)" ) \
+      COREPORT_DIPSET(0x0001, "Reserved (1)" ) \
+      COREPORT_DIPSET(0x0002, "Reserved (2)" ) \
+      COREPORT_DIPSET(0x0003, "Reserved (3)" ) \
+      COREPORT_DIPSET(0x0004, "50 ptas 1 Game, 200 ptas 5 Games" ) \
+      COREPORT_DIPSET(0x0005, "50 ptas 1 Game, 100 ptas 3 Games" ) \
+      COREPORT_DIPSET(0x0006, "100 ptas 1 Game" ) \
+      COREPORT_DIPSET(0x0007, "100 ptas 1 Game, 500 ptas 6 Games" ) \
+      COREPORT_DIPSET(0x0008, "100 ptas 1 Game, 200 ptas 3 Games" ) \
+      COREPORT_DIPSET(0x0009, "50 esc 1 Game" ) \
+      COREPORT_DIPSET(0x000a, "50 esc 1 Game, 100 esc 3 Games" ) \
+      COREPORT_DIPSET(0x000b, "100 esc 1 Game" ) \
+      COREPORT_DIPSET(0x000c, "100 esc 1 Game, 200 esc 3 Games" ) \
+      COREPORT_DIPSET(0x000d, "100 esc 1 Game, 200 esc 3 Games (2)" ) \
+      COREPORT_DIPSET(0x000e, "100 esc 1 Game, 200 esc 3 Games (3)" ) \
+      COREPORT_DIPSET(0x000f, "100 esc 1 Game, 200 esc 3 Games (4)" ) \
+    COREPORT_DIPNAME( 0x0030, 0x0000, "Replay Score") \
+      COREPORT_DIPSET(0x0000, "100 Million" ) \
+      COREPORT_DIPSET(0x0010, "150 Million" ) \
+      COREPORT_DIPSET(0x0020, "200 Million" ) \
+      COREPORT_DIPSET(0x0030, "250 Million" ) \
+    COREPORT_DIPNAME( 0x0040, 0x0000, "Reserved (SL1-7)") \
+      COREPORT_DIPSET(0x0000, DEF_STR( Off ) ) \
+      COREPORT_DIPSET(0x0040, DEF_STR( On ) ) \
+    COREPORT_DIPNAME( 0x0080, 0x0000, "Game Mode") \
+      COREPORT_DIPSET(0x0000, "Normal" ) \
+      COREPORT_DIPSET(0x0080, "Exhibition (Free Play)" ) \
+    COREPORT_DIPNAME( 0x0800, 0x0000, "Balls Per Game") \
+      COREPORT_DIPSET(0x0000, "3" ) \
+      COREPORT_DIPSET(0x0800, "5" ) \
+    COREPORT_DIPNAME( 0x0400, 0x0000, "Unknown (SL2-2)") \
+      COREPORT_DIPSET(0x0000, DEF_STR( Off ) ) \
+      COREPORT_DIPSET(0x0400, DEF_STR( On ) ) \
+    COREPORT_DIPNAME( 0x0300, 0x0000, "Handicap Score") \
+      COREPORT_DIPSET(0x0000, "250 Million" ) \
+      COREPORT_DIPSET(0x0100, "300 Million" ) \
+      COREPORT_DIPSET(0x0200, "350 Million" ) \
+      COREPORT_DIPSET(0x0300, "400 Million" ) \
+    COREPORT_DIPNAME( 0x3000, 0x0000, "New Shot Time") \
+      COREPORT_DIPSET(0x0000, "Disabled" ) \
+      COREPORT_DIPSET(0x1000, "10 Seconds" ) \
+      COREPORT_DIPSET(0x2000, "12 Seconds" ) \
+      COREPORT_DIPSET(0x3000, "15 Seconds" ) \
+    COREPORT_DIPNAME( 0xc000, 0x0000, "Ramp Loops To Move Ramp") \
+      COREPORT_DIPSET(0x0000, "1" ) \
+      COREPORT_DIPSET(0x4000, "2" ) \
+      COREPORT_DIPSET(0x8000, "3" ) \
+      COREPORT_DIPSET(0xc000, "4" ) \
+  PORT_START /* 2 */ \
+    COREPORT_DIPNAME( 0x0008, 0x0000, "Automatic Replay Score") \
+      COREPORT_DIPSET(0x0000, DEF_STR( No ) ) \
+      COREPORT_DIPSET(0x0008, DEF_STR( Yes ) ) \
+    COREPORT_DIPNAME( 0x0004, 0x0000, "Special On Plane") \
+      COREPORT_DIPSET(0x0000, DEF_STR( No ) ) \
+      COREPORT_DIPSET(0x0004, DEF_STR( Yes ) ) \
+    COREPORT_DIPNAME( 0x0002, 0x0000, "Reserved (SL3-3)") \
+      COREPORT_DIPSET(0x0000, DEF_STR( Off ) ) \
+      COREPORT_DIPSET(0x0002, DEF_STR( On ) ) \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "Lock Difficulty") \
+      COREPORT_DIPSET(0x0000, "Easy" ) \
+      COREPORT_DIPSET(0x0001, "Hard" ) \
+    COREPORT_DIPNAME( 0x0010, 0x0000, "Reserved (SL3-5)") \
+      COREPORT_DIPSET(0x0000, DEF_STR( Off ) ) \
+      COREPORT_DIPSET(0x0010, DEF_STR( On ) ) \
+    COREPORT_DIPNAME( 0x0020, 0x0000, "Unknown (SL3-6)") \
+      COREPORT_DIPSET(0x0000, DEF_STR( Off ) ) \
+      COREPORT_DIPSET(0x0020, DEF_STR( On ) ) \
+    COREPORT_DIPNAME( 0x0040, 0x0000, "Unknown (SL3-7)") \
+      COREPORT_DIPSET(0x0000, DEF_STR( Off ) ) \
+      COREPORT_DIPSET(0x0040, DEF_STR( On ) ) \
+    COREPORT_DIPNAME( 0x0080, 0x0000, "Rescue Difficulty") \
+      COREPORT_DIPSET(0x0000, "Easy" ) \
+      COREPORT_DIPSET(0x0080, "Hard" )
+
 /*-- Standard input ports --*/
 #define SPINB_INPUT_PORTS_START(name,balls) \
   INPUT_PORTS_START(name) \
     CORE_PORTS \
     SIM_PORTS(balls) \
     SPINB_COMPORTS
+
+/*-- Input ports with a game specific DIP switch set --*/
+#define SPINB_INPUT_PORTS_DIPS_START(name,balls,dips) \
+  INPUT_PORTS_START(name) \
+    CORE_PORTS \
+    SIM_PORTS(balls) \
+    SPINB_BUTTONPORTS \
+    dips()
 
 #define SPINB_INPUT_PORTS_END INPUT_PORTS_END
 

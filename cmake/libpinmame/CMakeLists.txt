@@ -688,6 +688,7 @@ set(PINMAME_SOURCES
    src/wpc/sims/s7/full/tmfnt.c
    src/wpc/sims/sleic/bikerace.c
    src/wpc/sims/sleic/iomoon.c
+   src/wpc/sims/spinb/vrnwrld.c
    src/wpc/slalom.c
    src/wpc/sleic.c
    src/wpc/sleic.h
