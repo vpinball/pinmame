@@ -13,6 +13,16 @@
 /--------------------------*/
 #define SPINB_ROMEND	ROM_END
 
+#define GEN_SPINB 0
+
+// DMD frames per picture
+#define SPINB_DSP1 1
+#define SPINB_DSP2 2
+#define SPINB_DSP3 3
+
+#define SPINB_GS1(solInvert0,solInvert1,solInvert2,lamp16isGameOn) \
+(((UINT32)(UINT8)(solInvert0)<<24) | ((UINT32)(UINT8)(solInvert1)<<16) | ((UINT32)(UINT8)(solInvert2)<<8) | ((UINT32)(UINT8)(lamp16isGameOn)))
+
 /*-- Common Inports for Spinball Games --*/
 #define SPINB_COMPORTS SPINB_BUTTONPORTS SPINB_DIPS_GENERIC
 

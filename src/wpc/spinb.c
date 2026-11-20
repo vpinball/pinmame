@@ -1426,6 +1426,7 @@ MACHINE_DRIVER_START(spinb)
   MDRV_CPU_VBLANK_INT(spinb_vblank, 1)
   MDRV_SWITCH_UPDATE(spinb)
   MDRV_SWITCH_CONV(spinb_sw2m,spinb_m2sw)
+  MDRV_DIPS(24) /* SL1-SL3; also places a simulator's game ports after the DIP ports */
 MACHINE_DRIVER_END
 
 //Main CPU without NMI, DMD, Sound hardware Driver (Bushido, Mach2)
