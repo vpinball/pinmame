@@ -509,3 +509,64 @@ SPINB_SNDROM13(			"vws2ic9.rom", CRC(ab8cb4c5) SHA1(92a702c11e2cef703992244529ba
 SPINB_ROMEND
 CORE_GAMEDEFNV(vrnwrld,"Verne's World",1996,"Spinball (Spain)",mSPINBSNMI2,0)
 
+/*-------------------------------------------------------------------
+/ Verne's World, operator MOD of the CPU ROMs (vwmcpu0/1); display and
+/ sound ROMs are the parent's.  Built by build_mod.py from vw_mod.asm (kept
+/ with the Verne's World notes, not in this repository):
+/ - Serve fix: both serve routines (ball start $42BE, lock replacement $2D8D)
+/   fired the trough eject again when the ball was slow to reach the shooter
+/   lane, putting an extra ball into play.  They now fire again only if the
+/   trough still holds as many balls as before the eject (drains landing on
+/   switch 70 in meanwhile counted), and otherwise keep waiting.  The lock
+/   replacement waits 3 s per check instead of 1 s.
+/ - No-switch timeout ($81FD, ball search, then ball lost on the third)
+/   60 s instead of 16 s, 76 s instead of 32 s at game start.
+/ - Last game's scores in attract: before every second high score page the
+/   attract shows the scores of the last game, with the game's own score
+/   screen (one player: the one-player screen; more: the four-quadrant
+/   screen).  The players of the last game are kept in battery RAM ($85F2,
+/   unused by the firmware), so the page survives a power cycle, and are
+/   forgotten when a new game starts and overwrites the scores.
+/ - Final scores held until START: when the game-over sequence ends, the
+/   attract mode does not start.  The final scores stay on the display with
+/   PRESS START between them (one player: medium digits with PRESS START
+/   underneath; more: two scores per row, PRESS START in the middle row),
+/   drawn after the game's own score screen ($5018) has been sent.  START
+/   only dismisses the screen -- it never starts a game, credits or not --
+/   and the attract mode carries on; the next START starts a game.  The
+/   releasing press cannot start a game as well: START stays ignored until it
+/   has read open for 1/4 s, so contact bounce on press or release gets no
+/   second edge through.  Coins are accepted while the scores are held.  The
+/   hold is cleared at power-on ($0272), so a machine that was switched off
+/   comes up in attract mode.
+/   Hooks: the attract loop's idle test at $068D, the IRQ's START handling
+/   at $585A and its timer updates at $52C8, game over at $4A08.
+/ - Cold start restarts by itself: with empty NVRAM the original writes the
+/   factory defaults ($040F) and then loops at $047C with a dark display until
+/   the operator resets the machine.  The jump to that loop ($045C) now
+/   restarts the boot at $012A, which finds the defaults and comes up in
+/   attract mode (about 11 s instead of 6 s).  It restarts after the I/O
+/   setup at $00E3-$0129, which holds most coils on for about 0.15 s and so
+/   would kick a ball out of the trough a second time.
+/ Code cave at $5B50 (vwmcpu1.rom $1B50, erased in the original); variables at
+/ $85F0-$85F9, battery RAM the firmware clears at cold boot and never uses.
+/ Free play needs no change: the Exhibition DIP (SL1-8) already keeps one
+/ credit standing and does not spend it.
+/-------------------------------------------------------------------*/
+static void init_vrnwrldm(void) {
+  core_gameData = &vrnwrldGameData;
+}
+VRNWRLD_SIM_PORTS(vrnwrldm)
+SPINB_ROMSTART2(vrnwrldm,"vwmcpu0.rom", CRC(5030b04e) SHA1(fe5b2c29b76428d4e49a76879bf913af685053bf),
+						"vwmcpu1.rom", CRC(ddc402b2) SHA1(8ae77436ff36c14e356016ad629369617e7e2273))
+SPINB_DMDROM3(			"vwdmd0.rom",  CRC(40600060) SHA1(7ad619bcb5e5e50325360f4e946b5bfa072caead),
+						"vwdmd1.rom",  CRC(de4a1060) SHA1(6b848dfd8aafdbcf7e1593f98bd1c3d69306aa11),
+						"vwdmd2.rom",  CRC(29fc8da7) SHA1(2704f14a3338a63abda3bcbc56e9f984a679eb38))
+SPINB_SNDROM13(			"vws2ic9.rom", CRC(ab8cb4c5) SHA1(92a702c11e2cef703992244529ba86079d5ab9b0),
+						"vws3ic15.rom",CRC(d62c9443) SHA1(7c6b8662d88ba6592da8b83af11087647105e8dd),
+						"vws4ic30.rom",CRC(ecd18a19) SHA1(558e687e0429d31fafe8db05954d9a8ad90d6aeb),
+						"vws5ic25.rom",CRC(56d349f0) SHA1(e71d2d03c3e978c552e272de8850cc265255fbd1),
+						"vws6ic26.rom",CRC(bee399c1) SHA1(b2c6e4830641ed32b9643dc8c1fa08a2da5a7e9b),
+						"vws7ic27.rom",CRC(7335b29c) SHA1(4de6de09f069feecbad2e5ef50032e8d381ff9b1))
+SPINB_ROMEND
+CORE_CLONEDEFNV(vrnwrldm,vrnwrld,"Verne's World (MOD serve fix, 60 s timeout, last game scores, PRESS START)",1996,"Spinball (Spain)",mSPINBSNMI2,0)
