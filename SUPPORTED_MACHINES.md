@@ -31,19 +31,19 @@ onwards** is listed separately below as not expected rather than as missing.
 
 | Status                           | Machines | Share |
 | -------------------------------- | -------: | ----: |
-| Fully working                    |      584 | 69.9% |
+| Fully working                    |      584 | 69.7% |
 | Partially working                |       31 |  3.7% |
 | Emulated but not working         |        0 |  0.0% |
-| Not emulated                     |      141 | 16.9% |
-| Not emulated — released recently |       80 |  9.6% |
-| **Total**                        |  **836** |       |
+| Not emulated                     |      143 | 17.1% |
+| Not emulated — released recently |       80 |  9.5% |
+| **Total**                        |  **838** |       |
 
 ### By decade
 
 | Decade | Total | Fully working | Partial | Not working | Not emulated |
 | ------ | ----: | ------------: | ------: | ----------: | -----------: |
 | 1970s  |   170 |           111 |       5 |           0 |           54 |
-| 1980s  |   328 |           282 |      23 |           0 |           23 |
+| 1980s  |   330 |           282 |      23 |           0 |           25 |
 | 1990s  |   148 |           142 |       3 |           0 |            3 |
 | 2000s  |    25 |            24 |       0 |           0 |            1 |
 | 2010s  |    73 |            24 |       0 |           0 |           49 |
@@ -688,7 +688,7 @@ does not boot or does not play.
 
 _None._
 
-## Not emulated (141)
+## Not emulated (143)
 
 No driver. These machines are old enough to be in scope, so they are the candidates for
 future work.
@@ -749,6 +749,7 @@ future work.
 | Jolly Joker                                 | 1979 | Mondialmatic              | Alphanumeric |
 | Super Tris                                  | 1979 | C.E.A.                    | Alphanumeric |
 | The Best Jump                               | 1979 | Mondialmatic              | Alphanumeric |
+| Aliens & Women                              | 1980 | BEM                       | Alphanumeric |
 | Asteroid Killer                             | 1980 | Universal                 | CGA          |
 | Bronco / Mustang                            | 1980 | Fliperbol                 | Alphanumeric |
 | Circus                                      | 1980 | Brunswick                 | Alphanumeric |
@@ -758,6 +759,7 @@ future work.
 | Invader Ball                                | 1980 | Red Baron Amusements      | CGA          |
 | Monza                                       | 1980 | Atari                     | Alphanumeric |
 | The Hunter                                  | 1980 | Bell Coin Matic           | Alphanumeric |
+| Urania                                      | 1980 | BEM                       | Alphanumeric |
 | White Shark                                 | 1980 | Bell Coin Matic           | Alphanumeric |
 | Neutron Star                                | 1981 | Atari                     | Alphanumeric |
 | Diana                                       | 1982 | Rowamet                   | Alphanumeric |
@@ -1152,8 +1154,8 @@ scripts/gen_supported_machines.py
 
 The script reads a cached copy of OPDB and re-downloads only with `--refresh`; `--check`
 fails if this file is out of date. Machine data comes from the OPDB snapshot of
-**2026-11-18**; driver data from `src/wpc` at the commit this file was generated from, on
-**2026-11-18**.
+**2026-11-22**; driver data from `src/wpc` at the commit this file was generated from, on
+**2026-11-22**.
 
 A machine is one OPDB *group*, so a title and its remakes are one row, dated and credited
 to the original. Its status is that of the *worst* of its ROM sets, so "fully working"
