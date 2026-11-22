@@ -39,6 +39,7 @@ extern "C" {
 #include "video.h"
 #include "audit.h"
 #include "mech.h"
+#include "snd_cmd.h"
 #include "memory.h"
 
 extern int throttle;
@@ -289,6 +290,7 @@ static struct MsgLocals
    std::unique_ptr<PinballPlugin::Controller::CtrlItemProvider<DisplaySrcId>> displayProvider;
 
    unsigned int onAudioCmdId;
+   unsigned int onAudioLegacyCmdId;
    unsigned int onAudioUpdateId;
    unsigned int nAudioChannels;
    std::unique_ptr<AudioUpdateMsg> audioUpdate;
@@ -793,15 +795,24 @@ static void OnSoundCommand(void* userData)
 	delete msg;
 }
 
-// TODO: Pass the command's source (SND_CMD_*, see snd_cmd.h) on to the callback/message, plus the SND_CMD_LEGACY
-// data writes (snd_cmd_log_src returns before this for those), so libaltsound can take the commands as PinMAME's own
-// AltSound does (alt_sound_handle, preprocess_commands in snd_alt.cpp): a driver's own commands one by one for any pack,
-// the data writes logged as in 3.6 paired for the old packs, and for the boards whose logging changed in 3.7
-// (SNDBRD_DATALOG_LEGACY) their old data writes for the old packs. Counterparts: TODOs in libaltsound (altsound.h,
-// altsound.cpp) and in VPX's AltSound plugin (OnGameEvent)
-extern "C" void libpinmame_snd_cmd_log(int boardNo, int cmd)
+static void OnLegacySoundCommand(void* userData)
 {
-	if (_p_Config->cb_OnSoundCommand)
+   PinMAMEChildBoardEventMsg* msg = static_cast<PinMAMEChildBoardEventMsg*>(userData);
+	if (msgLocals.msgApi != nullptr && msgLocals.registered)
+		msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onAudioLegacyCmdId, msg);
+	delete msg;
+}
+
+// Where the command comes from (src, SND_CMD_*, see snd_cmd.h) and whether the board logs its old data writes for the
+// old packs (legacyBoard, SNDBRD_DATALOG_LEGACY) go to the message listeners, as alt_sound_handle needs them to take the
+// stream a pack was made for (new_sound_commands). The SND_CMD_LEGACY writes only go out as OnAudioLegacyCmd, so
+// that a listener that doesn't know about them doesn't play them next to the driver's own commands, and the C callback
+// is not called for them, for the same reason.
+extern "C" void libpinmame_snd_cmd_log(int boardNo, int cmd, int src, int legacyBoard)
+{
+	const bool legacy = (src == SND_CMD_LEGACY);
+
+	if (!legacy && _p_Config->cb_OnSoundCommand)
 		(*(_p_Config->cb_OnSoundCommand))(boardNo, cmd, _p_userData);
 
 	if (msgLocals.msgApi != nullptr && msgLocals.registered)
@@ -809,7 +820,9 @@ extern "C" void libpinmame_snd_cmd_log(int boardNo, int cmd)
       PinMAMEChildBoardEventMsg* msg = new PinMAMEChildBoardEventMsg();
 		msg->boardNo = static_cast<unsigned int>(boardNo);
 		msg->cmd = static_cast<unsigned int>(cmd);
-		msgLocals.msgApi->RunOnMainThread(msgLocals.endpointId, 0, OnSoundCommand, msg);
+		msg->src = static_cast<unsigned int>(src);
+		msg->legacyBoard = legacyBoard ? 1u : 0u;
+		msgLocals.msgApi->RunOnMainThread(msgLocals.endpointId, 0, legacy ? OnLegacySoundCommand : OnSoundCommand, msg);
 	}
 }
 
@@ -3174,6 +3187,7 @@ static void SetupMsgApiVideoDisplays()
 static void SetupMsgApiAudioStreaming()
 {
    msgLocals.onAudioCmdId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_AUDIO_CMD);
+   msgLocals.onAudioLegacyCmdId = msgLocals.msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_AUDIO_LEGACY_CMD);
    msgLocals.onAudioUpdateId = msgLocals.msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_UPDATE_MSG);
 
    msgLocals.audioProvider = std::make_unique<PinballPlugin::Controller::CtrlItemProvider<AudioSrcId>>(msgLocals.msgApi, msgLocals.endpointId, CTLPI_AUDIO_GET_SRC_MSG, CTLPI_AUDIO_ON_SRC_CHG_MSG);
@@ -3235,6 +3249,7 @@ static void ReleaseMsgApi()
    msgLocals.msgApi->BroadcastMsg(msgLocals.endpointId, msgLocals.onAudioUpdateId, &audioStreamStop); // End of stream
    msgLocals.audioProvider = nullptr;
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onAudioCmdId);
+   msgLocals.msgApi->ReleaseMsgID(msgLocals.onAudioLegacyCmdId);
    msgLocals.msgApi->ReleaseMsgID(msgLocals.onAudioUpdateId);
 
    msgLocals.displayProvider = nullptr;
