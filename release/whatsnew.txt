@@ -113,6 +113,7 @@ Fixed trolls in Medieval Madness
 Improved Taito reset/(re-)load behavior (on real machines, it tries to resume the resetted game, PinMAME instead now forces the machine into a stable 'new' state/attract-mode)
 Changed the Taito service keys to match VPX's taito.vbs: 6 Statistics, 7 Test/Reset, 8 Adjustments, 9 Diagnostics, 0 Enter, - Configurations, PgUp box door, PgDn sound test
 Improved sound for Metal Man, and a bit for Jolly Park and Verne's World (in general, slightly more authentic MSM5205 sound)
+Improved emulation of Spinballs Mach 2, Jolly Park and Verne's World (and simulator added for Verne's World)
 Fixed Wico's Af-Tor music/note tempo (and some minor details)
 Slightly improved YM262 sound for Sir Lancelot
 Slightly improved Astrocade sound for Rotation VIII
@@ -291,6 +292,7 @@ Surf 'n Safari (Tournament MOD)
 Swords of Fury (Richrom/Lionman MOD V1, with and without swords sounds)
 Terminator 2: Judgment Day (L-2, P-1 Sound)
 Transporter the Rescue L-3 (Fixed Jackpot MOD), LX-4 (Competition MOD in 2 variants: 'adult' and clean (one replaced word))
+Verne's World (MOD serve fix, 60s timeout, last game scores, PRESS START)
 Victory (tournament/competition MOD 1.1 & 1.2 & 1.3)
 Waterworld (rev.5-FIX MOD)
 World Cup Soccer LA-1

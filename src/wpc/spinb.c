@@ -187,8 +187,8 @@ SND CPU #2 8255 PPI
      at 2.5 MHz the IRQ handler takes 4.7-6.8 ms, longer than a 256 Hz period, at 5 MHz it fits
    - with the display at 16 MHz, Jolly Park's attract mode stalls the main CPU for seconds at a time
      (waiting for the display to drop STAT 3) from ~225 Hz IRQ on; at 20 MHz it is clean up to ~265 Hz */
-#define SPINB_Z80CPU_FREQ   5000000
-#define SPINB_8051CPU_FREQ 20000000
+#define SPINB_Z80CPU_FREQ   5000000 /* should be  2500000 2.5 MHz, tweaked for playability */
+#define SPINB_8051CPU_FREQ 20000000 /* should be 16000000  16 MHz, tweaked for playability */
 
 #define INTCYCLES             90 /* keep irq high for this many cycles */
 #define SPINB_NMIFREQ       1440 /* Z80 NMI frequency (confirmed by Jolly Park schematics) (should probably be INTFRQ*8=2000) */
@@ -1406,10 +1406,10 @@ MACHINE_DRIVER_END
 
 /* SOUND SECTION DRIVER */
 static MACHINE_DRIVER_START(spinbs6585) // Jolly Park
-  MDRV_CPU_ADD(Z80, 5000000)		// Schem shows 5/2 = 2.5Mhz, but too slow to feed the MSM6585 at 16KHz, see above
+  MDRV_CPU_ADD(Z80, 5000000)		// Schem shows 5/2 = 2.5Mhz, but too slow to feed the MSM6585 at 16KHz (sound distorted), see above
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(spinbsnd1_readmem, spinbsnd1_writemem)
-  MDRV_CPU_ADD(Z80, 5000000)		// Schem shows 5/2 = 2.5Mhz, but too slow to feed the MSM6585 at 16KHz, see above
+  MDRV_CPU_ADD(Z80, 5000000)		// Schem shows 5/2 = 2.5Mhz, but too slow to feed the MSM6585 at 16KHz (sound distorted), see above
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(spinbsnd2_readmem, spinbsnd2_writemem)
   MDRV_INTERLEAVE(50)
@@ -1458,10 +1458,10 @@ MACHINE_DRIVER_START(spinbs1n2)
   MDRV_CPU_MEMORY(spinb_readmem2, spinb_writemem2)
   MDRV_CPU_PERIODIC_INT(spinb_z80nmi, SPINB_NMIFREQ)
   MDRV_IMPORT_FROM(spinbdmd)
-  MDRV_CPU_ADD(Z80, 5000000)		// Schem shows 5/2 = 2.5Mhz, but too slow to feed the MSM6585 at 16KHz, see above
+  MDRV_CPU_ADD(Z80, 5000000)		// Schem shows 5/2 = 2.5Mhz, but too slow to feed the MSM6585 at 16KHz (sound distorted), see above
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(spinbsnd1_readmem, spinbsnd1_writemem)
-  MDRV_CPU_ADD(Z80, 5000000)		// Schem shows 5/2 = 2.5Mhz, but too slow to feed the MSM6585 at 16KHz, see above
+  MDRV_CPU_ADD(Z80, 5000000)		// Schem shows 5/2 = 2.5Mhz, but too slow to feed the MSM6585 at 16KHz (sound distorted), see above
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(spinbsnd2_readmem, spinbsnd2_writemem)
   MDRV_INTERLEAVE(50)

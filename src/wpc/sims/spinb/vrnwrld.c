@@ -1,4 +1,5 @@
 // license:BSD-3-Clause
+
 /*******************************************************************************
  Verne's World (Spinball, 1996) -- game definition and ball simulator.
 
@@ -45,8 +46,7 @@
 
  VW_SERVE_TIME is how long an ejected ball takes from the trough to the shooter
  lane switch (74).  The firmware gives a normal serve $2FF ticks (3 s) and a
- replacement ball after a lock only $FF ticks (1 s) before it fires the eject
- again ($2D8D).
+ replacement ball after a lock only $FF ticks (1 s) before it fires the eject again ($2D8D).
 
  The octopus counts a lock on each closing edge of CONTROL (84) ($3B35, count in
  $81A7) and releases all held balls with coil 6 on the third.
@@ -69,11 +69,11 @@
       W/E  Left/Right bumper            S  Slingshot (Expulsor)
         T  Catapult (N)                 G  Volcano entrance (S)
         H  Balloon entrance (E)         J  Octopus platform
-        K  Octopus lock target      Z/X/C/V  Drop bank targets 1-4
-      B/N  Rear bank targets x10/x20    A  Outlane (drain)      Q  Centre drain
-  Y/U/I/O/P  Lanes W-O-R-L-D       M/,/.  Top lanes V-E-R
+        K  Octopus lock target    Z/X/C/V  Drop bank targets 1-4
+      B/N  Rear bank targets x10/x20    A  Outlane (drain)        Q  Centre drain
+Y/U/I/O/P  Lanes W-O-R-L-D          M/,/.  Top lanes V-E-R
       D/F  Balloon lock targets green/yellow
-  '/\\    Volcano lock targets green/yellow
+     '/\\  Volcano lock targets green/yellow
         R  Lower special target         /  Lower right extra ball lane
       [/]  Special / Extra ball keys (teclas)
     Enter  FIRE button (launch)       End  Extra ball button (cabinet)
@@ -268,7 +268,7 @@ static int vrnwrld_handleBallState(sim_tBallStatus *ball, int *inports) {
       return setState(stShooter, 1);
 
     case stVolcanoEnt:
-      if (++ball->custom < 10) return 0;   /* give the firmware time to fire */
+      if (++ball->custom < 10) return 0; /* give the firmware time to fire */
       ball->custom = 0;
       return core_getSol(sVolcanoDiv) ? setState(stVolcano, 3) : setState(stFree, 3);
 
@@ -501,11 +501,11 @@ SPINB_DMDROM3(			"vwdmd0.rom",  CRC(40600060) SHA1(7ad619bcb5e5e50325360f4e946b5
 						"vwdmd1.rom",  CRC(de4a1060) SHA1(6b848dfd8aafdbcf7e1593f98bd1c3d69306aa11),
 						"vwdmd2.rom",  CRC(29fc8da7) SHA1(2704f14a3338a63abda3bcbc56e9f984a679eb38))
 SPINB_SNDROM13(			"vws2ic9.rom", CRC(ab8cb4c5) SHA1(92a702c11e2cef703992244529ba86079d5ab9b0),
-						"vws3ic15.rom",CRC(d62c9443) SHA1(7c6b8662d88ba6592da8b83af11087647105e8dd),	//Sound Effects 1
+						"vws3ic15.rom",CRC(d62c9443) SHA1(7c6b8662d88ba6592da8b83af11087647105e8dd), //Sound Effects 1
 						"vws4ic30.rom",CRC(ecd18a19) SHA1(558e687e0429d31fafe8db05954d9a8ad90d6aeb),
-						"vws5ic25.rom",CRC(56d349f0) SHA1(e71d2d03c3e978c552e272de8850cc265255fbd1),	//Music 1
-						"vws6ic26.rom",CRC(bee399c1) SHA1(b2c6e4830641ed32b9643dc8c1fa08a2da5a7e9b),	//Music 2
-						"vws7ic27.rom",CRC(7335b29c) SHA1(4de6de09f069feecbad2e5ef50032e8d381ff9b1))	//Music 3
+						"vws5ic25.rom",CRC(56d349f0) SHA1(e71d2d03c3e978c552e272de8850cc265255fbd1), //Music 1
+						"vws6ic26.rom",CRC(bee399c1) SHA1(b2c6e4830641ed32b9643dc8c1fa08a2da5a7e9b), //Music 2
+						"vws7ic27.rom",CRC(7335b29c) SHA1(4de6de09f069feecbad2e5ef50032e8d381ff9b1)) //Music 3
 SPINB_ROMEND
 CORE_GAMEDEFNV(vrnwrld,"Verne's World",1996,"Spinball (Spain)",mSPINBSNMI2,0)
 
@@ -551,13 +551,13 @@ CORE_GAMEDEFNV(vrnwrld,"Verne's World",1996,"Spinball (Spain)",mSPINBSNMI2,0)
 / Code cave at $5B50 (vwmcpu1.rom $1B50, erased in the original); variables at
 / $85F0-$85F9, battery RAM the firmware clears at cold boot and never uses.
 / Free play needs no change: the Exhibition DIP (SL1-8) already keeps one
-/ credit standing and does not spend it.
+/ credit standing and does not spend it
 /-------------------------------------------------------------------*/
 static void init_vrnwrldm(void) {
   core_gameData = &vrnwrldGameData;
 }
 VRNWRLD_SIM_PORTS(vrnwrldm)
-SPINB_ROMSTART2(vrnwrldm,"vwmcpu0.rom", CRC(5030b04e) SHA1(fe5b2c29b76428d4e49a76879bf913af685053bf),
+SPINB_ROMSTART2(vrnwrldm,"vwmcpu0.rom",CRC(5030b04e) SHA1(fe5b2c29b76428d4e49a76879bf913af685053bf),
 						"vwmcpu1.rom", CRC(ddc402b2) SHA1(8ae77436ff36c14e356016ad629369617e7e2273))
 SPINB_DMDROM3(			"vwdmd0.rom",  CRC(40600060) SHA1(7ad619bcb5e5e50325360f4e946b5bfa072caead),
 						"vwdmd1.rom",  CRC(de4a1060) SHA1(6b848dfd8aafdbcf7e1593f98bd1c3d69306aa11),
@@ -569,4 +569,4 @@ SPINB_SNDROM13(			"vws2ic9.rom", CRC(ab8cb4c5) SHA1(92a702c11e2cef703992244529ba
 						"vws6ic26.rom",CRC(bee399c1) SHA1(b2c6e4830641ed32b9643dc8c1fa08a2da5a7e9b),
 						"vws7ic27.rom",CRC(7335b29c) SHA1(4de6de09f069feecbad2e5ef50032e8d381ff9b1))
 SPINB_ROMEND
-CORE_CLONEDEFNV(vrnwrldm,vrnwrld,"Verne's World (MOD serve fix, 60 s timeout, last game scores, PRESS START)",1996,"Spinball (Spain)",mSPINBSNMI2,0)
+CORE_CLONEDEFNV(vrnwrldm,vrnwrld,"Verne's World (MOD serve fix, 60s timeout, last game scores, PRESS START)",2026,"Spinball (Spain)",mSPINBSNMI2,0)
