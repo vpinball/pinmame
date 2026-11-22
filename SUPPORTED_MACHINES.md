@@ -571,7 +571,7 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | Space Jam                                      | 1996 | Sega                   | DMD          | `spacejam`, `spacejm2`, `spacejmf` + 2 more          |             |       |
 | Tales of the Arabian Nights                    | 1996 | Williams               | DMD          | `totan_04`, `totan_12`, `totan_13` + 2 more          | preliminary |       |
 | Twister                                        | 1996 | Sega                   | DMD          | `twst_300`, `twst_404`, `twst_405`                   |             |       |
-| Verne's World                                  | 1996 | Spinball               | DMD          | `vrnwrld`                                            |             |       |
+| Verne's World                                  | 1996 | Spinball               | DMD          | `vrnwrld`, `vrnwrldm`                                | yes         |       |
 | Cirqus Voltaire                                | 1997 | Bally                  | DMD          | `cv_10`, `cv_11`, `cv_13` + 4 more                   | preliminary |       |
 | Medieval Madness                               | 1997 | Williams               | DMD          | `mm_05`, `mm_10`, `mm_109` + 4 more                  | full        |       |
 | NBA Fastbreak                                  | 1997 | Bally                  | DMD          | `nbaf_11`, `nbaf_115`, `nbaf_11a` + 5 more           | full        |       |
