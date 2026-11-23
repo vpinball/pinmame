@@ -31,8 +31,9 @@ Fixed 'F6' DMD frame recording into the 'DmdDump' folder in PinMAME(32) and xpin
 Fixed debugger lockup when tabbing backwards
 Fixed debugger crashes when using a large -debug_resolution (e.g. 1280x960)
 
-PinMAME(32) on Windows is now DPI aware, so its windows are not blurry anymore on a scaled desktop (125%, 150%, ...):
- the game and the debugger are shown at the nearest whole multiple of the desktop scale, also after moving the window to a monitor with another scale
+PinMAME(32) on Windows is now DPI aware: on a scaled desktop (125%, 150%, ...) the game window opens at the desktop scale, and the debugger
+ at its nearest whole multiple (so no longer blurry), also after moving a window to a monitor with another scale
+PinMAME(32)'s game window can be scaled freely, with bilinear filtering as in VPinMAME (before, the image only grew in whole multiples)
 
 Fixed broken fast frames UI/registry option (VPinMAME, to enable faster boot/startup) and nothrottle (PinMAME(32), e.g. for benchmarking)
  also added the "fastframes" command line option to PinMAME(32)
@@ -114,6 +115,8 @@ Improved Taito reset/(re-)load behavior (on real machines, it tries to resume th
 Changed the Taito service keys to match VPX's taito.vbs: 6 Statistics, 7 Test/Reset, 8 Adjustments, 9 Diagnostics, 0 Enter, - Configurations, PgUp box door, PgDn sound test
 Improved sound for Metal Man, and a bit for Jolly Park and Verne's World (in general, slightly more authentic MSM5205 sound)
 Improved emulation of Spinballs Mach 2, Jolly Park and Verne's World (and simulator added for Verne's World)
+ Also fixed Bushido's 'Number of loops for Extra Ball' DIP switch (only two of its four settings could be selected)
+ And changed Mach 2's default 'Coins Per Game' DIP setting to 50 ptas 1 Game, 200 ptas 5 Games
 Fixed Wico's Af-Tor music/note tempo (and some minor details)
 Slightly improved YM262 sound for Sir Lancelot
 Slightly improved Astrocade sound for Rotation VIII
