@@ -27,6 +27,27 @@ AltsoundCsvParser::AltsoundCsvParser(const std::string& altsound_path_in)
 
 // ----------------------------------------------------------------------------
 
+// A comment line: '#' as its first character after any blanks and quotes, so that a sample can
+// be turned off without deleting its line
+static bool is_comment_line(const std::string& line)
+{
+	const size_t pos = line.find_first_not_of(" \t\"");
+	return pos != std::string::npos && line[pos] == '#';
+}
+
+// The header row: its first field is ID, also if a tool wrote it as a comment ("#ID,...")
+static bool is_header_line(const std::string& line)
+{
+	const size_t pos = line.find_first_not_of(" \t\"#");
+	return pos != std::string::npos && line.size() >= pos + 2 &&
+		(line[pos] == 'I' || line[pos] == 'i') && (line[pos + 1] == 'D' || line[pos + 1] == 'd');
+}
+
+static bool is_blank_line(const std::string& line)
+{
+	return line.find_first_not_of(" \t") == std::string::npos;
+}
+
 bool AltsoundCsvParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 {
 	ALT_DEBUG(0, "BEGIN AltsoundCsvParser::parse()");
@@ -43,8 +64,13 @@ bool AltsoundCsvParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 
 	std::string line;
 
-	// skip header row
-	std::getline(file, line);
+	// skip the header row, and any blank or comment lines above it
+	while (std::getline(file, line)) {
+		if (!line.empty() && line.back() == '\r')
+			line.pop_back();
+		if (!is_blank_line(line) && (!is_comment_line(line) || is_header_line(line)))
+			break;
+	}
 
 	bool success = true;
 
@@ -54,13 +80,7 @@ bool AltsoundCsvParser::parse(std::vector<AltsoundSampleInfo>& samples_out)
 			if (!line.empty() && line.back() == '\r')
 				line.pop_back();
 
-			if (line.empty()) {
-				// ignore blank lines
-				continue;
-			}
-
-			// A line starting with '#' is a comment, so that a sample can be turned off without deleting its line
-			if (line.front() == '#')
+			if (is_blank_line(line) || is_comment_line(line))
 				continue;
 
 			// Some Altsounds use quotes around fields.  These need to be removed.
