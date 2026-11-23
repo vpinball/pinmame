@@ -125,6 +125,30 @@ matches manual 3.3.7: without every ORBITS lamp lit Jupiter holds no ball.  So a
 ball passing straight through either of them is the ordinary case, not a fault.
 Hole 1 is different: it has a real coil and waits for it.
 
+Verne's World (vrnwrld, vrnwrldm)
+---------------------------------
+Spinball's 1996 machine.  The simulator keys are:
+
+  W/E    Left/Right bumper            S      Slingshot (Expulsor)
+  T      Catapult                     G      Volcano entrance
+  H      Balloon entrance             J      Octopus platform
+  K      Octopus lock target          ZXCV   Drop bank targets 1-4
+  B/N    Rear bank targets x10/x20    A      Outlane (drain)
+  Q      Centre drain                 YUIOP  Lanes W-O-R-L-D
+  M,.    Top lanes V-E-R (M, comma, period)
+  D/F    Balloon lock targets green/yellow
+  '/\    Volcano lock targets green/yellow
+  R      Lower special target         /      Lower right extra ball lane
+  [/]    Special / Extra ball keys (teclas)
+  Enter  FIRE button (launches the ball from the shooter lane)
+  End    Extra ball button (cabinet)
+
+Three balloon locks start the 3-ball multiball, and the third octopus lock
+releases the balls held there.  Two faults of the original ROM show in the
+simulator: a replacement ball after a lock can be served twice, and 16 seconds
+without a scoring switch start a ball search that releases the locked balls
+(see src/wpc/sims/spinb/vrnwrld.c).
+
 4x4 (fourx4)
 ------------
 Atari's 1982-83 prototype; two machines were built and neither is in general

@@ -4451,6 +4451,14 @@
 							>
 						</File>
 					</Filter>
+					<Filter
+						Name="spinb"
+						>
+						<File
+							RelativePath=".\..\src\wpc\sims\spinb\vrnwrld.c"
+							>
+						</File>
+					</Filter>
 				</Filter>
 			</Filter>
 			<Filter

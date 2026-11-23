@@ -877,14 +877,15 @@ static INTERRUPT_GEN(spinb_vblank) {
 
 static SWITCH_UPDATE(spinb) {
 #ifdef MAME_DEBUG
+  /* keypad keys: the letters are taken by the simulators (vrnwrld.c) */
   if(!debugger_focus) {
-    if      (keyboard_pressed_memory_repeat(KEYCODE_O, 60))
+    if      (keyboard_pressed_memory_repeat(KEYCODE_SLASH_PAD, 60))
       adjust_timer(-10);
-    else if (keyboard_pressed_memory_repeat(KEYCODE_L, 60))
+    else if (keyboard_pressed_memory_repeat(KEYCODE_MINUS_PAD, 60))
       adjust_timer(-1);
-    else if (keyboard_pressed_memory_repeat(KEYCODE_COLON, 60))
+    else if (keyboard_pressed_memory_repeat(KEYCODE_PLUS_PAD, 60))
       adjust_timer(1);
-    else if (keyboard_pressed_memory_repeat(KEYCODE_P, 60))
+    else if (keyboard_pressed_memory_repeat(KEYCODE_ASTERISK, 60))
       adjust_timer(10);
   }
 #endif /* MAME_DEBUG */

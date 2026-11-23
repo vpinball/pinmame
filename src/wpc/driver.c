@@ -1460,7 +1460,7 @@ DRIVERNV(mach2)         // 1995 - Mach 2 // or Mach 2.0 Two ?
 DRIVERNV(mach2a)        // 1995 - Mach 2 (alternate set)
 DRIVERNV(jolypark)      // 1996 - Jolly Park
 DRIVERNV(vrnwrld)       // 1996 - Verne's World
-DRIVERNV(vrnwrldm)      // 1996 - Verne's World (MOD)
+DRIVERNV(vrnwrldm)      // 11/2026 - Verne's World (MOD)
 DRIVERNV(gunshot)       // 1996 - Gun Shot (vending machine in a pinball cabinet, no display)
 
 // ---------------

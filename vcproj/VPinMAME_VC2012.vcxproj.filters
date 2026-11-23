@@ -131,6 +131,9 @@
     <Filter Include="Source Files\PinMAME\sims\sleic">
       <UniqueIdentifier>{47cc0c75-0108-44cb-bfe3-5062c4cb2670}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\PinMAME\sims\spinb">
+      <UniqueIdentifier>{202ff912-6a36-4879-b727-6b0045cb88b0}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files\VC">
       <UniqueIdentifier>{0db8e67d-2716-47de-ba70-f6e606da53da}</UniqueIdentifier>
     </Filter>
@@ -1294,6 +1297,9 @@
     </ClCompile>
     <ClCompile Include="..\src\wpc\sims\sleic\iomoon.c">
       <Filter>Source Files\PinMAME\sims\sleic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\wpc\sims\spinb\vrnwrld.c">
+      <Filter>Source Files\PinMAME\sims\spinb</Filter>
     </ClCompile>
     <ClCompile Include="..\src\vc\dirent.c">
       <Filter>Source Files\VC</Filter>

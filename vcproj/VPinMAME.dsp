@@ -2185,6 +2185,14 @@ SOURCE=.\src\wpc\sims\sleic\bikerace.c
 SOURCE=.\src\wpc\sims\sleic\iomoon.c
 # End Source File
 # End Group
+# Begin Group "spinb"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\wpc\sims\spinb\vrnwrld.c
+# End Source File
+# End Group
 # End Group
 # Begin Source File
 

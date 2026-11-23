@@ -102,7 +102,7 @@
     COREPORT_DIPNAME( 0x0002, 0x0000, "Reserved")\
       COREPORT_DIPSET(0x0000, "0" )\
       COREPORT_DIPSET(0x0002, "1" )\
-    COREPORT_DIPNAME( 0x0008, 0x0000, "Number of loops for Extra Ball")\
+    COREPORT_DIPNAME( 0x000c, 0x0000, "Number of loops for Extra Ball")\
       COREPORT_DIPSET(0x0000, "0" )\
       COREPORT_DIPSET(0x0008, "1" )\
       COREPORT_DIPSET(0x0004, "2" )\
@@ -275,10 +275,11 @@
 
 /* Mach 2, manual pages 11-12. Exhibition mode is not in the manual (SL1-8 "reserved"), but the
    game code skips the credit decrement with it on, as on the later games. The manual lists the
-   ramp loops as SL2-8 ON = 2 loops; the code does loops = (SL2 >> 6) + 1, so it is SL2-7 */
+   ramp loops as SL2-8 ON = 2 loops; the code does loops = (SL2 >> 6) + 1, so it is SL2-7.
+   Coins Per Game defaults to its first setting that is not reserved */
 #define SPINB_DIPS_MACH2() \
   PORT_START /* 1 */ \
-    COREPORT_DIPNAME( 0x000f, 0x0002, "Coins Per Game") \
+    COREPORT_DIPNAME( 0x000f, 0x0004, "Coins Per Game") \
       COREPORT_DIPSET(0x0000, "Reserved (0)" ) \
       COREPORT_DIPSET(0x0001, "Reserved (1)" ) \
       COREPORT_DIPSET(0x0002, "Reserved (2)" ) \

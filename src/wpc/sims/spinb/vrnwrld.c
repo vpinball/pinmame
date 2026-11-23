@@ -352,7 +352,9 @@ static void vrnwrld_handleMech(int mech) {
     core_setSw(swBank1, FALSE); core_setSw(swBank2, FALSE);
     core_setSw(swBank3, FALSE); core_setSw(swBank4, FALSE);
   }
-  if (!vrnwrld_balls) return;
+  /* only while the simulator runs: without it (no keyboard handling, e.g. VPinMAME with
+     HandleKeyboard off) vrnwrld_balls may be left over from an earlier run */
+  if (!coreGlobals.simAvail || !vrnwrld_balls) return;
 
   /* When the stack rolls forward after a serve, the balls touch: a ball rolling towards
      a trough slot already holds that slot's switch, so no moment shows an empty trough.
@@ -364,7 +366,8 @@ static void vrnwrld_handleMech(int mech) {
   for (ii = 0; ii < vrnwrld_noOfBalls; ii++) {
     const sim_tBallStatus *ball = &vrnwrld_balls[ii];
     if (ball->state == stServe ||
-        (ball->state == stPending && ball->nextState >= stTrough1 && ball->nextState <= stTrough3))
+        (ball->state == stPending && ((ball->nextState >= stTrough1 && ball->nextState <= stTrough3) ||
+                                      ball->nextState == stServe))) /* also the served ball's first roll */
       moving += 1;
   }
   for (ii = 0; ii < vrnwrld_noOfBalls; ii++) {
