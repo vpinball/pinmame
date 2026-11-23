@@ -4274,45 +4274,37 @@ static float* core_dmd_compute_pwm(const core_tLCDLayout* layout, unsigned int *
             framePos = dmd_state->nFrames - 1;
          const UINT8* frameData = dmd_state->rawFrames + framePos * dmd_state->rawFrameSize;
          const UINT32 frame_weight = dmd_state->fir_weights[ii];
-         UINT32* line = dmd_state->tempFIRBuffer;
+         UINT32* __restrict line = dmd_state->tempFIRBuffer;
          const int width_remaining = dmd_state->width & 7;
-         if (dmd_state->revByte) {
-            if (width_remaining == 0) {
-               for (int jj = 0; jj < dmd_state->rawFrameSize; jj++) {
-                  UINT8 data = *frameData++;
-                  for (int kk = 0; kk < 8; kk++, data >>= 1, line++)
-                     if (data & 0x01) (*line) += frame_weight;
+         const int rev_byte = dmd_state->revByte; // first dot in bit 0, else in bit 7
+         // Each dot adds the weight masked by its bit, so no bit-test, to aid loops vectorization
+         if (width_remaining == 0) {
+            const int n = dmd_state->rawFrameSize;
+            if (rev_byte) {
+               for (int jj = 0; jj < n; jj++, line += 8) {
+                  const UINT32 data = frameData[jj];
+                  for (int kk = 0; kk < 8; kk++)
+                     line[kk] += frame_weight & (0u - ((data >> kk) & 1u)); // = if (data & 0x01) line[kk] += frame_weight;
                }
             }
             else {
-               const int width_bytes = (dmd_state->width + 7) / 8;
-               for (int kk = 0; kk < dmd_state->height; kk++) {
-                  for (int jj = 0; jj < width_bytes; jj++) {
-                     UINT8 data = *frameData++;
-                     const int n = (jj == width_bytes - 1) ? width_remaining : 8;
-                     for (int ll = 0; ll < n; ll++, data >>= 1, line++)
-                        if (data & 0x01) (*line) += frame_weight;
-                  }
+               for (int jj = 0; jj < n; jj++, line += 8) {
+                  const UINT32 data = frameData[jj];
+                  for (int kk = 0; kk < 8; kk++)
+                     line[kk] += frame_weight & (0u - ((data >> (7 - kk)) & 1u)); // = if (data & 0x80) line[kk] += frame_weight;
                }
             }
          }
          else {
-            if (width_remaining == 0) {
-               for (int jj = 0; jj < dmd_state->rawFrameSize; jj++) {
-                  UINT8 data = *frameData++;
-                  for (int kk = 0; kk < 8; kk++, data *= 2, line++)
-                     if (data & 0x80) (*line) += frame_weight;
-               }
-            }
-            else {
-               const int width_bytes = (dmd_state->width + 7) / 8;
-               for (int kk = 0; kk < dmd_state->height; kk++) {
-                  for (int jj = 0; jj < width_bytes; jj++) {
-                     UINT8 data = *frameData++;
-                     const int n = (jj == width_bytes - 1) ? width_remaining : 8;
-                     for (int ll = 0; ll < n; ll++, data *= 2, line++)
-                        if (data & 0x80) (*line) += frame_weight;
-                  }
+            const int width_bytes = (dmd_state->width + 7) / 8;
+            const int height = dmd_state->height;
+            for (int kk = 0; kk < height; kk++) {
+               for (int jj = 0; jj < width_bytes; jj++) {
+                  const UINT32 data = *frameData++;
+                  const int n = (jj == width_bytes - 1) ? width_remaining : 8;
+                  for (int ll = 0; ll < n; ll++)
+                     line[ll] += frame_weight & (0u - ((data >> (rev_byte ? ll : 7 - ll)) & 1u)); // = if (data & 0x80) line[ll] += frame_weight;  (or data & 0x01)
+                  line += n;
                }
             }
          }

@@ -436,7 +436,13 @@ static PINMAME_VIDEO_UPDATE(p2k_video) {
   static UINT32 frame[P2K_MAX_PIXELS];
   unsigned width, height, success, fast_path_success;
 
-  success = p2k_pinmame_frame(frame, P2K_MAX_PIXELS, &width, &height, (bitmap->depth != 32), &fast_path_success);
+  {
+    /* uses copies: as the addresses of width/height are taken, the compiler reloads them after
+       each pixel written below, and the loops then would not vectorize */
+    unsigned w = 0, h = 0;
+    success = p2k_pinmame_frame(frame, P2K_MAX_PIXELS, &w, &h, (bitmap->depth != 32), &fast_path_success);
+    width = w; height = h;
+  }
   if (!success || !width || !height) { fillbitmap(bitmap, 0, cliprect); return; }
   if (!video_mode_announced) {
     video_mode_announced = 1;
@@ -467,7 +473,7 @@ static PINMAME_VIDEO_UPDATE(p2k_video) {
     const UINT32 * const __restrict below = (y + 1 < height) ? &frame[(height - 2 - y) * width] : src;
 #endif
     for (unsigned d = 0; d < P2K_LINE_DOUBLE; d++) {
-      const unsigned ty = y * P2K_LINE_DOUBLE + d;
+      UINT16 * const __restrict dst = (UINT16 *)bitmap->line[y * P2K_LINE_DOUBLE + d];
 #if P2K_LINE_INTERPOLATE
       const UINT32 * const __restrict other = d ? below : src;
 #endif
@@ -479,7 +485,7 @@ static PINMAME_VIDEO_UPDATE(p2k_video) {
 #else
         const UINT16 rgb = src[x];
 #endif
-        ((UINT16 *)bitmap->line[ty])[x] = rgb;
+        dst[x] = rgb;
       }
     }
   }
@@ -498,27 +504,35 @@ static PINMAME_VIDEO_UPDATE(p2k_video) {
     const UINT32 * const __restrict below = (y + 1 < height) ? &frame[(height - 2 - y) * width] : src;
 #endif
     for (unsigned d = 0; d < P2K_LINE_DOUBLE; d++) {
-      const unsigned ty = y * P2K_LINE_DOUBLE + d;
+      void * const dst = bitmap->line[y * P2K_LINE_DOUBLE + d];
 #if P2K_LINE_INTERPOLATE
       /* d == 0 is the machine's own line - averaged with itself, so copied exactly. d == 1 is
          the new line, and averaging is all that separates the two cases */
       const UINT32 * const __restrict other = d ? below : src;
-#endif
-      for (unsigned x = 0; x < width; x++) {
-#if P2K_LINE_INTERPOLATE
-        const UINT32 srcx = src[x];
-        const UINT32 otherx = other[x];
-        const UINT32 rgb = P2K_AVG2(srcx, otherx);
+#define P2K_PIXEL(x) P2K_AVG2(src[x], other[x])
 #else
-        const UINT32 rgb = src[x];
+#define P2K_PIXEL(x) src[x]
 #endif
-        if (bitmap->depth == 32)
-          ((UINT32 *)bitmap->line[ty])[x] = rgb;
-        else /* 15 bit direct: RGB555 */
-          ((UINT16 *)bitmap->line[ty])[x] = (UINT16)((((rgb >> 19) & 0x1f) << 10) |
-                                                     (((rgb >> 11) & 0x1f) << 5) |
-                                                      ((rgb >> 3) & 0x1f));
+      /* the depth tested per row, so the loops vectorize */
+      if (bitmap->depth == 32) {
+#if P2K_LINE_INTERPOLATE
+        UINT32 * const __restrict dst32 = (UINT32 *)dst;
+        for (unsigned x = 0; x < width; x++)
+          dst32[x] = P2K_PIXEL(x);
+#else
+        memcpy(dst, src, width * sizeof(UINT32));
+#endif
       }
+      else { /* 15 bit direct: RGB555 */
+        UINT16 * const __restrict dst16 = (UINT16 *)dst;
+        for (unsigned x = 0; x < width; x++) {
+          const UINT32 rgb = P2K_PIXEL(x);
+          dst16[x] = (UINT16)((((rgb >> 19) & 0x1f) << 10) |
+                              (((rgb >> 11) & 0x1f) << 5) |
+                               ((rgb >> 3) & 0x1f));
+        }
+      }
+#undef P2K_PIXEL
     }
   }
   height *= P2K_LINE_DOUBLE;          /* from here on, what is in the bitmap */

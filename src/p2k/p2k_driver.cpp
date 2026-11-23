@@ -937,16 +937,18 @@ bool p2k_state::frame_rgb(u32* const __restrict dest, unsigned capacity, unsigne
 
 	if (fast_15bpp_path_success)
 	{
-	size_t offs = 0;
-	for (unsigned y = 0; y < h; ++y)
+	// Pixels past the end of video memory read as 0, as in the slow path below.
+	// Where a row reaches that end is worked out per row, so that the copy has no test and auto-vectorizes
+	const size_t room16 = room / 2; // whole pixels left in video memory
+	u32* __restrict out = dest;
+	for (unsigned y = 0; y < h; ++y, out += w)
 	{
-		unsigned off_fb = y * line_delta;
-		for (unsigned x = 0; x < w; ++x,++offs,++off_fb)
-		{
-			const unsigned off = off_fb * 2;
-			const u16 c = (off + 1 < room) ? fb16[off_fb] : 0;
-			dest[offs] = c; //!! clear highest bit?
-		}
+		const size_t off_fb = size_t(y) * line_delta;
+		const unsigned n = (off_fb >= room16) ? 0u : (room16 - off_fb < w) ? unsigned(room16 - off_fb) : w;
+		for (unsigned x = 0; x < n; ++x)
+			out[x] = fb16[off_fb + x]; //!! clear highest bit?
+		for (unsigned x = n; x < w; ++x)
+			out[x] = 0;
 	}
 	return true;
 	}
