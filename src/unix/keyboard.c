@@ -139,17 +139,20 @@ struct kbd_fifo_struct;
 static struct kbd_fifo_struct *kbd_fifo = NULL;
 static char key[KEY_MAX];
 
-UINT8 trying_to_quit;
+volatile sig_atomic_t trying_to_quit;
+/* set by the quit signals only, so that a quit already pending for another reason (the window
+   close button, -frames_to_run) does not make the first SIGINT/SIGTERM kill at once */
+static volatile sig_atomic_t quit_signalled;
 
 /* private methods */
 FIFO(INLINE, kbd, struct xmame_keyboard_event)
 
 /* SIGQUIT, SIGINT (Ctrl+C) and SIGTERM: exit cleanly, saving nvram and cfg.
-   A second SIGINT/SIGTERM while that exit is pending (a hung emulator) uses
-   the default action and kills the process at once. */
+   A SIGINT/SIGTERM after one of these signals, while that exit is pending (a hung
+   emulator), uses the default action and kills the process at once. */
 void sigquit_handler(int signum)
 {
-   if (trying_to_quit && signum != SIGQUIT)
+   if (quit_signalled && signum != SIGQUIT)
    {
       signal(signum, SIG_DFL);
       raise(signum);
@@ -158,6 +161,7 @@ void sigquit_handler(int signum)
    /* fprintf is not async-signal-safe, write() is */
    static const char msg[] = "info: caught signal, exiting gracefully...\n";
    (void)!write(2, msg, sizeof(msg) - 1);
+   quit_signalled = 1;
    trying_to_quit = 1;
 }
 
@@ -187,13 +191,19 @@ int xmame_keyboard_init(void)
    kbd_fifo = kbd_fifo_create(256);
    if(!kbd_fifo)
       return -1;
-   
-   /* Add signal handlers to quit app gracefully */
+
+   xmame_install_quit_handlers();
+
+   return 0;
+}
+
+/* Add signal handlers to quit app gracefully. Called by xmame_keyboard_init, and for a headless
+   run, which has no keyboard init, from osd_create_display */
+void xmame_install_quit_handlers(void)
+{
    add_quit_handler(SIGQUIT, "SIGQUIT");
    add_quit_handler(SIGINT, "SIGINT");
    add_quit_handler(SIGTERM, "SIGTERM");
-   
-   return 0;
 }
 
 void xmame_keyboard_exit()
@@ -206,7 +216,7 @@ void xmame_keyboard_register_event(struct xmame_keyboard_event *event)
 {
    /* register the event in our event fifo */
    kbd_fifo_put(kbd_fifo, *event);
-   
+
    /* and update the key array */
    key[event->scancode] = event->press;
 }

@@ -22,8 +22,7 @@ static int x11_use_winkeys = 0;
 static int x11_mapkey(struct rc_option *option, const char *arg, int priority);
 
 /* the window manager's close button: see x11_watch_close_button() */
-extern UINT8 trying_to_quit;
-static Atom wm_delete_window = None;
+static Atom wm_protocols = None, wm_delete_window = None;
 
 /*
  * Ask the window manager to send WM_DELETE_WINDOW when the user closes the
@@ -34,7 +33,10 @@ static Atom wm_delete_window = None;
 void x11_watch_close_button(Window w)
 {
 	if (wm_delete_window == None)
+	{
+		wm_protocols = XInternAtom(display, "WM_PROTOCOLS", False);
 		wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", False);
+	}
 	XSetWMProtocols(display, w, &wm_delete_window, 1);
 }
 
@@ -184,7 +186,8 @@ void sysdep_update_keyboard (void)
 				case ClientMessage:
 					/* window manager close button: exit cleanly (saving nvram etc),
 					   keyboard.c fakes the escape presses for this */
-					if (wm_delete_window != None && (Atom)E.xclient.data.l[0] == wm_delete_window)
+					if (wm_delete_window != None && E.xclient.message_type == wm_protocols &&
+					    E.xclient.format == 32 && (Atom)E.xclient.data.l[0] == wm_delete_window)
 						trying_to_quit = 1;
 					break;
 #ifdef USE_XIL

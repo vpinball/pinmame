@@ -57,8 +57,6 @@ UINT16 *color_values;
 int force_dirty_palette = 0;
 int emulation_paused = 0;
 
-extern UINT8 trying_to_quit;
-
 /* some prototypes */
 static int video_handle_scale(struct rc_option *option, const char *arg,
 		int priority);
@@ -444,6 +442,8 @@ int osd_create_display(const struct osd_create_params *params,
 	if (osd_input_initpost() != OSD_OK)
 		return -1;
 	}
+	else
+		xmame_install_quit_handlers(); /* so Ctrl+C and SIGTERM still save nvram and cfg */
 
 	if (bitmap_depth == 16)
 		fprintf(stderr_file,"Using 16bpp video mode\n");

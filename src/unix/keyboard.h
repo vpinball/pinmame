@@ -1,5 +1,12 @@
 #pragma once
 
+#include <signal.h>
+
+/* set to exit the emulation cleanly, saving nvram and cfg: by SIGQUIT/SIGINT/SIGTERM, the window
+   close button, -frames_to_run or SDL's quit event (keyboard.c fakes the ESC presses for it) */
+extern volatile sig_atomic_t trying_to_quit;
+void xmame_install_quit_handlers(void);
+
 struct xmame_keyboard_event {
    unsigned char press;
    unsigned char scancode;

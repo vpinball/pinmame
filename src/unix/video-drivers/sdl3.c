@@ -63,9 +63,6 @@ static int linear_filter = 0;
 static SDL_Joystick *joysticks[JOY];
 static int joystick_driver_active = 0;
 
-/* set to exit the emulation gracefully, see keyboard.c */
-extern UINT8 trying_to_quit;
-
 typedef void (*update_func_t)(struct mame_bitmap *bitmap);
 static update_func_t update_function = NULL;
 
