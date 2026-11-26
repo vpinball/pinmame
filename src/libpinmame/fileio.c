@@ -506,6 +506,55 @@ static void compose_path(TCHAR *output, int pathtype, int pathindex, const char 
 
 
 //============================================================
+//	libpinmame_get_full_path
+//============================================================
+
+void libpinmame_get_full_path(int pathtype, int pathindex, const char *filename, char *output, size_t outputSize)
+{
+#if defined(_WIN32) || defined(_WIN64)
+	const char sep = '\\';
+	const char altSep = '/';
+#else
+	const char sep = '/';
+	const char altSep = '\\';
+#endif
+	const char *basepath;
+	char *p;
+
+	if (!output || outputSize == 0)
+		return;
+
+	basepath = get_path_for_filetype(pathtype, pathindex, NULL);
+	if (basepath && *basepath)
+	{
+		size_t baseLen = strlen(basepath);
+		int hasSep = is_pathsep((TCHAR)basepath[baseLen - 1]);
+		if (filename && *filename)
+		{
+			if (hasSep)
+				snprintf(output, outputSize, "%s%s", basepath, filename);
+			else
+				snprintf(output, outputSize, "%s%c%s", basepath, sep, filename);
+		}
+		else
+		{
+			snprintf(output, outputSize, "%s", basepath);
+		}
+	}
+	else
+	{
+		snprintf(output, outputSize, "%s", filename ? filename : "");
+	}
+
+	/* normalize path separators for the current platform */
+	for (p = output; *p; p++)
+		if (*p == altSep)
+			*p = sep;
+}
+
+
+
+//============================================================
 //	osd_get_path_count
 //============================================================
 

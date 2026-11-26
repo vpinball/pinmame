@@ -70,6 +70,7 @@ static std::atomic<std::thread::id> _gameThreadId; // set by the game thread its
 static void* _p_userData = nullptr;
 
 static char _aliasFromFile[50];
+static char _romPath[PINMAME_MAX_PATH] = {};
 
 static int _mechInit[MECH_MAXMECH];
 static PinmameMechInfo _mechInfo[MECH_MAXMECH];
@@ -1075,6 +1076,19 @@ extern "C" void libpinmame_update_mech(const int mechNo, mech_tMechData* p_mechD
 }
 
 /******************************************************
+ * libpinmame_on_rom_loaded
+ ******************************************************/
+
+extern "C" void libpinmame_on_rom_loaded(const int pathtype, const int pathindex, const char* const gamename, const char* const romName)
+{
+	if (_romPath[0] != '\0')
+		return;
+
+	libpinmame_get_full_path(pathtype, pathindex, romName, _romPath, sizeof(_romPath));
+	libpinmame_log_info("Loading rom game '%s' from %s", gamename ? gamename : "", _romPath);
+}
+
+/******************************************************
  * StartGame
  ******************************************************/
 
@@ -1082,6 +1096,7 @@ static int StartGame(const int gameNum)
 {
 	memset(_mechInit, 0, sizeof(_mechInit));
 	memset(_mechInfo, 0, sizeof(_mechInfo));
+	_romPath[0] = '\0';
 
 	_gameThreadId = std::this_thread::get_id();
 
@@ -2291,6 +2306,15 @@ PINMAMEAPI size_t PinmameGetRawMemoryRegionLength(const int region)
 {
 	const std::shared_lock lock(_stateMutex);
 	return IsEmulationRunning() ? memory_region_length(region) : 0;
+}
+
+/******************************************************
+ * PinmameGetRomPath
+ ******************************************************/
+
+PINMAMEAPI const char* PinmameGetRomPath()
+{
+	return (_isRunning && _romPath[0] != '\0') ? _romPath : nullptr;
 }
 
 /******************************************************
