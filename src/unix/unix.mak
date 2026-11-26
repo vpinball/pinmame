@@ -142,11 +142,7 @@ endif
 ##############################################################################
 # "Calculate" the final CFLAGS, unix CONFIG, LIBS and OBJS
 ##############################################################################
-ifdef ZLIB
-ZLIB    = src/unix/contrib/cutzlib-1.1.4/libz.a
-endif
-
-all: $(ZLIB) objdirs osdepend $(NAME).$(DISPLAY_METHOD)
+all: objdirs osdepend $(NAME).$(DISPLAY_METHOD)
 
 # CPU core include paths
 VPATH=src $(wildcard src/cpu/*)
@@ -219,11 +215,6 @@ endif
 
 ifdef SEPARATE_LIBM
 MY_LIBS += -lm
-endif
-
-ifdef ZLIB
-MY_CFLAGS += -Isrc/unix/contrib/cutzlib-1.1.4 -I../../contrib/cutzlib-1.1.4
-LDFLAGS   += -Lsrc/unix/contrib/cutzlib-1.1.4
 endif
 
 ifdef DEBUG
@@ -345,7 +336,7 @@ $(NAME).$(DISPLAY_METHOD): $(OBJS) $(VGMOBJS) $(PROCOBJS) $(LISYOBJS) $(P2KOBJS)
 	$(CC_COMMENT) @echo 'Linking $@ ...'
 	$(CC_COMPILE) $(LD) $(LDFLAGS) -o $@ $(OBJS) $(VGMOBJS) $(PROCOBJS) $(LISYOBJS) $(P2KOBJS) $(MY_LIBS)
 
-tools: $(ZLIB) $(OBJDIRS) $(TOOLS)
+tools: $(OBJDIRS) $(TOOLS)
 
 objdirs: $(MY_OBJDIRS)
 
@@ -374,13 +365,6 @@ osdepend:
 	  CC_COMMENT="$(CC_COMMENT)" CC_COMPILE="$(CC_COMPILE)" \
 	  AR_OPTS="$(AR_OPTS)" OBJ="$(OBJ)" \
 	 )
-
-src/unix/contrib/cutzlib-1.1.4/libz.a:
-	( \
-	cd src/unix/contrib/cutzlib-1.1.4; \
-	./configure; \
-	$(MAKE) libz.a \
-	)
 
 ifdef MESS
 $(OBJ)/mess/%.o: mess/%.c
@@ -508,7 +492,7 @@ copycab:
 	for j in $$i/*; do $(INSTALL_DATA) $$j $(XMAMEROOT)/$$i; done; done
 
 clean: 
-	rm -fr $(OBJ) $(NAME).* xlistdev src/unix/contrib/cutzlib-1.1.4/libz.a src/unix/contrib/cutzlib-1.1.4/*.o $(TOOLS) src/remote_debug/ui_html.h
+	rm -fr $(OBJ) $(NAME).* xlistdev $(TOOLS) src/remote_debug/ui_html.h
 #	cd makedep; make clean
 
 clean68k:

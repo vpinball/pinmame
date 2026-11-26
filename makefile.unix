@@ -455,11 +455,6 @@ INSTALL_DATA =		$(INSTALL) -c    -o $(INSTALL_USER) -g $(INSTALL_GROUP) -m  644
 # Miscellaneous settings
 ###########################################################################
 
-# If your system doesn't have zlib, or your systems zlib is giving you
-# troubles, you can use the one distributed with xmame.  Uncomment the 
-# following line to use xmame's own version of zlib.
-# ZLIB = 1
-
 # Does your system support the gettimeofday() function?  If so, we 
 # encourage you to enable this feature.  Otherwise, comment it out.
 # :-(

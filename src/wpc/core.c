@@ -4284,14 +4284,14 @@ static float* core_dmd_compute_pwm(const core_tLCDLayout* layout, unsigned int *
                for (int jj = 0; jj < n; jj++, line += 8) {
                   const UINT32 data = frameData[jj];
                   for (int kk = 0; kk < 8; kk++)
-                     line[kk] += frame_weight & (0u - ((data >> kk) & 1u)); // = if (data & 0x01) line[kk] += frame_weight;
+                     line[kk] += frame_weight & (0u - ((data >> kk) & 1u)); // = if (data & (1u << kk)) line[kk] += frame_weight;
                }
             }
             else {
                for (int jj = 0; jj < n; jj++, line += 8) {
                   const UINT32 data = frameData[jj];
                   for (int kk = 0; kk < 8; kk++)
-                     line[kk] += frame_weight & (0u - ((data >> (7 - kk)) & 1u)); // = if (data & 0x80) line[kk] += frame_weight;
+                     line[kk] += frame_weight & (0u - ((data >> (7 - kk)) & 1u)); // = if (data & (0x80u >> kk)) line[kk] += frame_weight;
                }
             }
          }
@@ -4303,7 +4303,7 @@ static float* core_dmd_compute_pwm(const core_tLCDLayout* layout, unsigned int *
                   const UINT32 data = *frameData++;
                   const int n = (jj == width_bytes - 1) ? width_remaining : 8;
                   for (int ll = 0; ll < n; ll++)
-                     line[ll] += frame_weight & (0u - ((data >> (rev_byte ? ll : 7 - ll)) & 1u)); // = if (data & 0x80) line[ll] += frame_weight;  (or data & 0x01)
+                     line[ll] += frame_weight & (0u - ((data >> (rev_byte ? ll : 7 - ll)) & 1u)); // = if (data & (rev_byte ? 1u << ll : 0x80u >> ll)) line[ll] += frame_weight;
                   line += n;
                }
             }
