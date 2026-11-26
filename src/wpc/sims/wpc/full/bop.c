@@ -471,6 +471,14 @@ WPC_ROMSTART(bop,l7,"tmbopl_7.rom",0x40000,CRC(773e1488) SHA1(36e8957b3903b99844
 WPC_ROMSTART(bop,d7,"tmbopd_7.rom",0x40000,CRC(43e69417) SHA1(3881a04e409b18319ad33874d742a611cc783feb)) BOP_SOUND WPC_ROMEND
 WPC_ROMSTART(bop,l8,"tmbopl_8.rom",0x40000,CRC(ffeb8991) SHA1(2d9af6274cd0f60c951456198492c0bc5ae433bf)) BOP_SOUND WPC_ROMEND
 WPC_ROMSTART(bop,d8,"tmbopd_8.rom",0x40000,CRC(166473a1) SHA1(5fd24c4a579652eafac5274bb55e7502f1519371)) BOP_SOUND WPC_ROMEND
+/* Changes from the stock L-8 CPU ROM (it still shows L-8, with the same checksum):
+   1. Free Play and Tournament Play default to YES.
+   2. Light Extra Ball can be lit even when extra balls are off or at their limit; collecting it then awards nothing.
+   3. Tournament Play: both wheels follow a fixed sequence per player instead of the random percentages,
+      restarting each game. The big wheel's sequence ends with LIGHT 1 BILLION.
+   4. Tournament Play: the jackpot is kept per player and starts at 1 million (was 8 million).
+   5. The small wheel's lit-award counters no longer wrap from 0 to 255. */
+WPC_ROMSTART(bop,l8t,"tmbopl_8.rom",0x40000,CRC(790fecf5) SHA1(da9517c38d725ca9294661a1bcea4689ae63abce)) BOP_SOUND WPC_ROMEND
 WPC_ROMSTART(bop,l6,"tmbopl_6.rom",0x20000,CRC(96b844d6) SHA1(981194c249a8fc2534e24ef672380d751a5dc5fd)) BOP_SOUND WPC_ROMEND
 WPC_ROMSTART(bop,d6,"tmbopd_6.rom",0x20000,CRC(6d5d3df8) SHA1(37fe8bc12321d97e4f368392c8c29c539d8aaedf)) BOP_SOUND WPC_ROMEND
 WPC_ROMSTART(bop,l5,"tmbopl_5.rom",0x20000,CRC(fd5c426d) SHA1(e006f8e39cf382249db0b969cf966fd8deaa344a)) BOP_SOUND WPC_ROMEND
@@ -489,6 +497,7 @@ CORE_GAMEDEF(bop,l7,"Machine: Bride of Pinbot, The (L-7)",1992,"Williams",wpc_mA
 CORE_CLONEDEF(bop,d7,l7,"Machine: Bride of Pinbot, The (D-7 LED Ghost Fix)",1991,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(bop,l8,l7,"Machine: Bride of Pinbot, The (L-8 billionaire multiplayer patch)",1991,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(bop,d8,l7,"Machine: Bride of Pinbot, The (D-8 LED Ghost Fix)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(bop,l8t,l7,"Machine: Bride of Pinbot, The (L-8 Tournament MOD)",2026,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(bop,l6,l7,"Machine: Bride of Pinbot, The (L-6)",1991,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(bop,d6,l7,"Machine: Bride of Pinbot, The (D-6 LED Ghost Fix)",1991,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(bop,l5,l7,"Machine: Bride of Pinbot, The (L-5)",1991,"Williams",wpc_mAlpha2S,0)

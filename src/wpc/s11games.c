@@ -404,10 +404,25 @@ S11CS_SOUNDROM88(     "f14_u4.l1",  CRC(43ecaabf) SHA1(64b50dbff03cd556130d0cff4
                       "f14_u19.l1", CRC(d0de4a7c) SHA1(46ecd5786653add47751cc56b38d9db7c4622377))
 S11_ROMEND
 
+//Changes from the stock L-1 ROMs (only U27 differs):
+// 1. Flight Insurance always saves the ball. Stock awarded an extra ball instead, which did nothing when extra balls
+//    are off or at their limit, though the game still showed YOU ARE INSURED.
+// 2. The left (Yagov) kicker starts an 8-second ball saver when its extra ball is lit, unless Rip-Off is lit too.
+// 3. Re-locking a ball whose lock was kicked out no longer scores the lock award.
+// 4. The version is L-F, so the first power-up restores the factory settings and clears the audits and high scores.
+S11_ROMSTART48(f14,lf,"f14_u26.l1", CRC(62c2e615) SHA1(456ce0d1f74fa5e619c272880ba8ac6819848ddc),
+                      "f14_u27.l1", CRC(6b0e0dec) SHA1(13db61e001df2a5bcc48f57ec74728961bc0b6f9))
+S11XS_SOUNDROM88(     "f14_u21.l1", CRC(e412300c) SHA1(382d0cfa47abea295f0c7501bc0a010473e9d73b),
+                      "f14_u22.l1", CRC(c9dd7496) SHA1(de3cb855d87033274cc912578b02d1593d2d69f9))
+S11CS_SOUNDROM88(     "f14_u4.l1",  CRC(43ecaabf) SHA1(64b50dbff03cd556130d0cff47b951fdf37d397d),
+                      "f14_u19.l1", CRC(d0de4a7c) SHA1(46ecd5786653add47751cc56b38d9db7c4622377))
+S11_ROMEND
+
 CORE_GAMEDEF(f14, l1, "F-14 Tomcat (L-1)", 1987, "Williams", s11_mS11AS,0)
 CORE_CLONEDEF(f14, p3, l1, "F-14 Tomcat (P-3 Prototype)", 1987, "Williams", s11_mS11AS,0)
 CORE_CLONEDEF(f14, p4, l1, "F-14 Tomcat (P-4 Prototype)", 1987, "Williams", s11_mS11AS,0)
 CORE_CLONEDEF(f14, p5, l1, "F-14 Tomcat (P-5 Prototype)", 1987, "Williams", s11_mS11AS,0)
+CORE_CLONEDEF(f14, lf, l1, "F-14 Tomcat (L-F MOD)", 2026, "Williams", s11_mS11AS,0)
 
 /*--------------------
 / Fire! 8/87

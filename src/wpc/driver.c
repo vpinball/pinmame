@@ -2824,6 +2824,7 @@ DRIVER(f14,p3)          //S11-554:  03/87 W F-14 Tomcat (P-3)
 DRIVER(f14,p4)          //          03/87 W F-14 Tomcat (P-4)
 DRIVER(f14,p5)          //          03/87 W F-14 Tomcat (P-5)
 DRIVER(f14,l1)          //          05/87 W F-14 Tomcat (L-1)
+DRIVER(f14,lf)          //          11/26   F-14 Tomcat (L-F MOD)
 DRIVER(fire,l2)         //S11-556:  08/87 W Fire! (L-2)
 DRIVER(fire,l3)         //          08/87 W Fire! (L-3)
 DRIVER(bguns,p1)        //S11-557:  10/87 W Big Guns (P-1 Prototype)
@@ -2998,6 +2999,7 @@ DRIVER(bop,l7)          //          12/92 W Machine: Bride of Pinbot, The (L-7) 
 DRIVER(bop,d7)          //                  Machine: Bride of Pinbot, The (D-7) LED Ghost Fix
 DRIVER(bop,l8)          //                  Machine: Bride of Pinbot, The (L-8) fixes billionaire crash multiplayer bug
 DRIVER(bop,d8)          //                  Machine: Bride of Pinbot, The (D-8) LED Ghost Fix
+DRIVER(bop,l8t)         //          11/26   Machine: Bride of Pinbot, The (L-8 Tournament MOD)
 DRIVER(hd,l1)           //WPC-201:  02/91 B Harley-Davidson (L-1)
 DRIVER(hd,d1)           //                  Harley-Davidson (D-1) LED Ghost Fix
 DRIVER(hd,l2)           //          02/91 B Harley-Davidson (L-2)
@@ -3010,6 +3012,7 @@ DRIVER(sf,d1)           //                  SlugFest (D-1) LED Ghost Fix
 DRIVER(hurr,l2)         //WPC-512:  08/91 W Hurricane (L-2)
 DRIVER(hurr,d2)         //                  Hurricane (D-2) LED Ghost Fix
 DRIVER(hurr,d2bs)       //          08/26   Hurricane (D-2) LED Ghost Fix + Ball Saver MOD
+DRIVER(hurr,l2c)        //          11/26   Hurricane (L-2C Competition MOD)
 DRIVER(t2,l2sp1)        //WPC-513:  07/91 W Terminator 2: Judgment Day (L-2, P-1 Sound)
 DRIVER(t2,l2)           //          07/91 W Terminator 2: Judgment Day (L-2)
 DRIVER(t2,d2)           //                  Terminator 2: Judgment Day (D-2) LED Ghost Fix

@@ -347,12 +347,25 @@ WPCS_SOUNDROM222("u18.pp",CRC(63944b37) SHA1(045f8046ba5bf1c88b65a80737e2d3d0172
                  "u14.pp",CRC(51c82899) SHA1(aa6c3d9e7efa3708727b06fb3372638d5245a510))
 WPC_ROMEND
 
+/* Changes from the stock L-2 CPU ROM:
+   1. The version is L-2C, so the first power-up restores the factory settings.
+   2. Free Play and Tournament Play default to YES.
+   3. Tournament Play: the clown face is kept per player (stock shared one between all players).
+   4. Tournament Play: the Mystery award follows a fixed 16-award sequence per player instead of being random,
+      skipping awards that aren't possible at the time, and restarting each game. */
+WPC_ROMSTART(hurr,l2c,"hurcnl_2.rom",0x40000,CRC(cd4aca7d) SHA1(1723d8405d3222a5a8a017476833b8212e3952ac))
+WPCS_SOUNDROM222("u18.pp",CRC(63944b37) SHA1(045f8046ba5bf1c88b65a80737e2d3d017271c04),
+                 "u15.pp",CRC(93d02c62) SHA1(203cd6b933822d6d3f70c63e051237e3587568f1),
+                 "u14.pp",CRC(51c82899) SHA1(aa6c3d9e7efa3708727b06fb3372638d5245a510))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(hurr,l2,"Hurricane (L-2)",1991, "Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(hurr,d2,l2,"Hurricane (D-2 LED Ghost Fix)",1991, "Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(hurr,d2bs,l2,"Hurricane (D-2 LED Ghost Fix + Ball Saver MOD)",2026, "Williams / whaslbeck",wpc_mFliptronS,0)
+CORE_CLONEDEF(hurr,l2c,l2,"Hurricane (L-2C Competition MOD)",2026, "Williams",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions
