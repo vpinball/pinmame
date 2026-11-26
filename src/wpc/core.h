@@ -605,6 +605,11 @@ extern void core_setSw(int swNo, int value);
 /* Called with the matrix entry each time core_setSw changes a switch, from the caller's thread: a
    driver that samples the matrix (SPIKE 1) learns of a closure that opened again before it looked */
 extern void (*core_swChangedHook)(int swMatrixNo);
+/* The game's memory for a host that reads it (libpinmame's memory maps, PinmameReadMainCPUMemory),
+   set by a driver whose CPU 0 does not hold it (SPIKE 1: the game program runs in the subsystem's
+   own memory). Called from any thread; returns the bytes copied from address on, 0 when the range
+   cannot be read. NULL: CPU 0's memory */
+extern int (*core_readMemoryHook)(UINT32 address, UINT8 *buffer, int size);
 extern int core_getSw(int swNo);
 extern void core_updInvSw(int swNo, int inv);
 /*-- switch set by the host (VPinMAME, libpinmame), logged by -record and replayed by -playback --*/

@@ -2284,6 +2284,7 @@ int core_getSwCol(int colEn) {
 /  Set/reset a switch
 /-----------------------*/
 void (*core_swChangedHook)(int swMatrixNo) = NULL;
+int (*core_readMemoryHook)(UINT32 address, UINT8 *buffer, int size) = NULL;
 
 void core_setSw(int swNo, int value) {
   UINT8 was;

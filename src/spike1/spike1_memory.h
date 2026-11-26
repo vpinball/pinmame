@@ -11,6 +11,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -66,6 +67,10 @@ public:
 	bool write64(uint32_t addr, uint64_t value) { return write(addr, &value, 8); }
 	// A NUL-terminated guest string of at most `limit` bytes
 	bool read_string(uint32_t addr, std::string &out, size_t limit = 4096);
+	// The same as read() for a reader on another thread, out of the low block only (the program
+	// image, heap and mmap area, where the program's variables live): the one block that stays put
+	// while the program runs, and reset() replaces it under the same lock. False outside it
+	bool read_shared(uint32_t addr, void *dst, uint32_t len);
 
 	// brk heap, growing up from the end of the program image
 	void set_brk_base(uint32_t base) { m_brk_base = m_brk = (base + GUEST_PAGE_SIZE - 1) & ~(GUEST_PAGE_SIZE - 1); }
@@ -92,6 +97,7 @@ private:
 	struct host_map { void *view = nullptr; size_t size = 0; void *handle = nullptr; };
 	struct view { block b; host_map map; };
 	block m_low{}, m_stack{}, m_kuser{}, m_file{};
+	std::mutex m_low_lock; // read_shared() against reset() replacing the blocks
 	host_map m_file_map;
 	address_space *m_space = nullptr;
 
