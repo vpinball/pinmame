@@ -75,6 +75,7 @@ typedef struct
     TCHAR       szDevice[CCHDEVICENAME];
 } MONITORINFOEX, *LPMONITORINFOEX;
 #include "multidef.h"
+#define FAST_NN_BLIT
 #endif // __GNUC__ < 4
 
 //#define FAST_NN_BLIT // define for much faster nearest neighbor blitting, otherwise uses bilinear resample in dib_draw_window()
