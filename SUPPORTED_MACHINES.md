@@ -382,7 +382,7 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | City Slicker                                   | 1987 | Bally                  | Alphanumeric | `cityslck`                                           |             |       |
 | Dungeons & Dragons                             | 1987 | Bally                  | Alphanumeric | `dungdrag`                                           |             |       |
 | Escape                                         | 1987 | Jac Van Ham            | Alphanumeric | `escape`                                             |             |       |
-| F-14 Tomcat                                    | 1987 | Williams               | Alphanumeric | `f14_l1`, `f14_p3`, `f14_p4` + 1 more                |             |       |
+| F-14 Tomcat                                    | 1987 | Williams               | Alphanumeric | `f14_l1`, `f14_p3`, `f14_p4` + 2 more                |             |       |
 | F1 Grand Prix                                  | 1987 | Bell Games             | Alphanumeric | `f1gp`                                               |             |       |
 | Fire!                                          | 1987 | Williams               | Alphanumeric | `fire_l2`, `fire_l3`                                 |             |       |
 | Future Queen                                   | 1987 | Bell Games             | Alphanumeric | `futrquen`                                           |             |       |
@@ -478,12 +478,12 @@ Every known ROM set runs, and the driver flags nothing wrong with any of them.
 | Gilligan's Island                              | 1991 | Bally                  | DMD          | `gi_d3`, `gi_d4`, `gi_d6` + 6 more                   | full        |       |
 | Harley Davidson                                | 1991 | Bally                  | Alphanumeric | `hd_d1`, `hd_d2`, `hd_d3` + 3 more                   | full        |       |
 | Hoops                                          | 1991 | Gottlieb               | Alphanumeric | `hoops`                                              |             |       |
-| Hurricane                                      | 1991 | Williams               | DMD          | `hurr_d2`, `hurr_l2`, `hurr_d2bs`                    | full        |       |
+| Hurricane                                      | 1991 | Williams               | DMD          | `hurr_d2`, `hurr_l2`, `hurr_d2bs` + 1 more           | full        |       |
 | Star Trek                                      | 1991 | Data East              | DMD          | `trek_110`, `trek_117`, `trek_11a` + 5 more          |             |       |
 | Surf 'n Safari                                 | 1991 | Gottlieb               | Alphanumeric | `surfnsaf`, `surfnsat`                               |             |       |
 | Teenage Mutant Ninja Turtles                   | 1991 | Data East              | DMD          | `tmnt_101`, `tmnt_103`, `tmnt_104` + 3 more          |             |       |
 | Terminator 2: Judgment Day                     | 1991 | Williams               | DMD          | `t2_d2`, `t2_d3`, `t2_d4` + 17 more                  | full        |       |
-| The Machine: Bride of Pinbot                   | 1991 | Williams               | Alphanumeric | `bop_d2`, `bop_d3`, `bop_d4` + 11 more               | full        |       |
+| The Machine: Bride of Pinbot                   | 1991 | Williams               | Alphanumeric | `bop_d2`, `bop_d3`, `bop_d4` + 12 more               | full        |       |
 | The Party Zone                                 | 1991 | Bally                  | DMD          | `pz_d1`, `pz_d2`, `pz_d3` + 6 more                   | full        |       |
 | 250 cc                                         | 1992 | Inder                  | Alphanumeric | `ind250cc`                                           |             |       |
 | Al's Garage Band goes on a World Tour          | 1992 | Alvin G. & Co          | DMD          | `wrldtou2`, `wrldtou3`, `wrldtou4` + 1 more          |             |       |
