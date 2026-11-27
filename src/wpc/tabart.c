@@ -76,7 +76,7 @@ static READ_HANDLER(ym2203_port_a_r) {
 }
 
 static READ_HANDLER(ym2203_port_b_r) {
-  return sndlocals.swStrobe ? coreGlobals.swMatrix[sndlocals.swStrobe] : ~sndlocals.manCmd;
+  return sndlocals.swStrobe ? ~coreGlobals.swMatrix[sndlocals.swStrobe] : ~sndlocals.manCmd; // a closed switch reads low
 }
 
 static void tabart_irq(int state) {
